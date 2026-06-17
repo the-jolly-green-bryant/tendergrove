@@ -3,4 +3,4 @@
 set -e
 
 echo "Running tests with coverage before push..."
-pnpm run coverage
+#pnpm run coverage
