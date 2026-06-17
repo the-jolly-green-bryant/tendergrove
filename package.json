@@ -11,6 +11,7 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
+    "@aws-amplify/ui-react": "^6.15.4",
     "@capacitor/app": "latest",
     "@capacitor/core": "latest",
     "@capacitor/haptics": "latest",
@@ -20,6 +21,7 @@
     "@ionic/react": "latest",
     "@ionic/react-router": "latest",
     "@vitejs/plugin-react": "latest",
+    "aws-amplify": "^6.18.0",
     "date-fns": "latest",
     "ionicons": "latest",
     "react": "latest",
@@ -27,14 +29,17 @@
     "react-router": "latest",
     "react-router-dom": "latest",
     "uuid": "latest",
-    "zustand": "latest",
-    "zod": "latest"
+    "zod": "latest",
+    "zustand": "latest"
   },
   "devDependencies": {
+    "@aws-amplify/backend": "^1.23.0",
+    "@aws-amplify/backend-cli": "^1.8.3",
     "@testing-library/jest-dom": "latest",
     "@testing-library/react": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "@types/react-router-dom": "^5.3.3",
     "@types/uuid": "latest",
     "@typescript-eslint/eslint-plugin": "latest",
     "@typescript-eslint/parser": "latest",

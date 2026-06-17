@@ -3,8 +3,11 @@ import { formatDistanceToNow, isToday } from 'date-fns';
 import { Page } from '../../components/Page';
 import { StatCard } from '../../components/StatCard';
 import { useTrackerStore } from '../../stores/trackerStore';
+import {useAppAuth} from '../../auth/AuthContext'
 
 export default function DashboardPage() {
+  const { user, signOut } = useAppAuth();
+
   const { hydrate, checkIns, incidents, parentCare } = useTrackerStore();
   useIonViewWillEnter(() => { void hydrate(); });
 
@@ -14,6 +17,12 @@ export default function DashboardPage() {
   const highSeverityCount = incidents.filter(x => x.severity >= 4).length;
 
   return <Page title="Today">
+    <p>Signed in as {user?.signInDetails?.loginId}</p>
+
+    <IonButton onClick={signOut}>
+      Sign out
+    </IonButton>
+
     <div className="hero-card">
       <h1>Fast checkpoint</h1>
       <p>Capture enough to see patterns without making your day harder.</p>

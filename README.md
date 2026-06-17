@@ -43,3 +43,15 @@ src/lib               domain, schemas, persistence
 src/stores            app state
 src/theme             Ionic styling
 ```
+
+# Resources
+
+## Authentication
+
+```
+App
+  -> Cognito
+    -> Google
+      -> Cognito /oauth2/idpresponse
+        -> App localhost:8100
+ ```

@@ -1,0 +1,762 @@
+{
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31": [
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...defineBackend in @aws-amplify/backend...",
+        "<anonymous> (/Users/bryant.jackson/bibleproject/justify/amplify/backend.ts:4:1)",
+        "...node internals, @aws-amplify/backend-deployer, @aws-cdk/toolkit-lib..."
+      ]
+    },
+    {
+      "type": "aws:cdk:warning",
+      "data": "No cross-stack-reference strength configured, defaulting to \"strong\". We recommend you set feature flag \"@aws-cdk/core:defaultCrossStackReferences\" to \"both\", then deploy everywhere, then set it to \"weak\". Alternatively, set it to \"strong\" explicitly to lock in the current producer-protecting behavior. (See: https://github.com/aws/aws-cdk/blob/main/packages/aws-cdk-lib/README.md#reference-strength) [ack: @aws-cdk/core:crossStackReferencesDefaultStrong]",
+      "trace": [
+        "Annotations.addMessage (/Users/bryant.jackson/bibleproject/justify/node_modules/aws-cdk-lib/core/lib/annotations.js:1:3441)",
+        "Annotations.addWarningV2 (/Users/bryant.jackson/bibleproject/justify/node_modules/aws-cdk-lib/core/lib/annotations.js:1:2129)",
+        "resolveValue (/Users/bryant.jackson/bibleproject/justify/node_modules/aws-cdk-lib/core/lib/private/refs.js:1:6065)",
+        "resolveReferences (/Users/bryant.jackson/bibleproject/justify/node_modules/aws-cdk-lib/core/lib/private/refs.js:1:4778)",
+        "prepareApp (/Users/bryant.jackson/bibleproject/justify/node_modules/aws-cdk-lib/core/lib/private/prepare-app.js:1:1514)",
+        "synthesize (/Users/bryant.jackson/bibleproject/justify/node_modules/aws-cdk-lib/core/lib/private/synthesis.js:1:3580)",
+        "App.synth (/Users/bryant.jackson/bibleproject/justify/node_modules/aws-cdk-lib/core/lib/stage.js:1:4636)",
+        "App.synth (/Users/bryant.jackson/bibleproject/justify/node_modules/aws-cdk-lib/core/lib/app.js:1:4814)",
+        "process.<anonymous> (/Users/bryant.jackson/bibleproject/justify/node_modules/@aws-amplify/backend/src/default_stack_factory.ts:15:11)",
+        "Object.onceWrapper (node:events:633:26)",
+        "process.emit (node:events:518:28)",
+        "cdkToolkit.fromAssemblyBuilder.contextStore (file:///Users/bryant.jackson/bibleproject/justify/node_modules/@aws-amplify/backend-deployer/lib/cdk_deployer.js:204:21)",
+        "async Object.produce (/Users/bryant.jackson/bibleproject/justify/node_modules/@aws-cdk/toolkit-lib/lib/api/cloud-assembly/source-builder.js:130:36)",
+        "async ContextAwareCloudAssemblySource.produce (/Users/bryant.jackson/bibleproject/justify/node_modules/@aws-cdk/toolkit-lib/lib/api/cloud-assembly/private/context-aware-source.js:49:33)",
+        "async assemblyFromSource (/Users/bryant.jackson/bibleproject/justify/node_modules/@aws-cdk/toolkit-lib/lib/toolkit/private/index.js:21:85)",
+        "async synthAndMeasure (/Users/bryant.jackson/bibleproject/justify/node_modules/@aws-cdk/toolkit-lib/lib/toolkit/toolkit.js:1290:21)",
+        "async Toolkit.synth (/Users/bryant.jackson/bibleproject/justify/node_modules/@aws-cdk/toolkit-lib/lib/toolkit/toolkit.js:245:26)",
+        "async CDKDeployer.deploy (file:///Users/bryant.jackson/bibleproject/justify/node_modules/@aws-amplify/backend-deployer/lib/cdk_deployer.js:51:29)",
+        "async AmplifySandboxExecutor.<anonymous> (file:///Users/bryant.jackson/bibleproject/justify/node_modules/@aws-amplify/sandbox/lib/sandbox_executor.js:14:43)",
+        "async file:///Users/bryant.jackson/bibleproject/justify/node_modules/@aws-amplify/sandbox/lib/file_watching_sandbox.js:216:38",
+        "async FileWatchingSandbox.deploy (file:///Users/bryant.jackson/bibleproject/justify/node_modules/@aws-amplify/sandbox/lib/file_watching_sandbox.js:213:9)",
+        "async file:///Users/bryant.jackson/bibleproject/justify/node_modules/@aws-amplify/sandbox/lib/file_watching_sandbox.js:138:13",
+        "async FileWatchingSandbox.start (file:///Users/bryant.jackson/bibleproject/justify/node_modules/@aws-amplify/sandbox/lib/file_watching_sandbox.js:179:13)",
+        "async Object.handler (file:///Users/bryant.jackson/bibleproject/justify/node_modules/@aws-amplify/backend-cli/lib/commands/sandbox/sandbox_command.js:79:9)"
+      ]
+    },
+    {
+      "type": "aws:cdk:stack-tags",
+      "data": [
+        {
+          "key": "amplify:deployment-type",
+          "value": "sandbox"
+        },
+        {
+          "key": "created-by",
+          "value": "amplify"
+        }
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/deploymentType": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "deploymentType"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify/backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify/backend-output-storage, defineBackend in @aws-amplify/backend...",
+        "<anonymous> (/Users/bryant.jackson/bibleproject/justify/amplify/backend.ts:4:1)",
+        "...node internals, @aws-amplify/backend-deployer, @aws-cdk/toolkit-lib..."
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/region": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "region"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify/backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify/backend-output-storage, defineBackend in @aws-amplify/backend...",
+        "<anonymous> (/Users/bryant.jackson/bibleproject/justify/amplify/backend.ts:4:1)",
+        "...node internals, @aws-amplify/backend-deployer, @aws-cdk/toolkit-lib..."
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/auth": [
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)",
+        "...defineBackend in @aws-amplify/backend...",
+        "<anonymous> (/Users/bryant.jackson/bibleproject/justify/amplify/backend.ts:4:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/userPoolId": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "userPoolId"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify/backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify/backend-output-storage, @aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/webClientId": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "webClientId"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify/backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify/backend-output-storage, @aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/identityPoolId": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "identityPoolId"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify/backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify/backend-output-storage, @aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/authRegion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "authRegion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify/backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify/backend-output-storage, @aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/allowUnauthenticatedIdentities": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "allowUnauthenticatedIdentities"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify/backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify/backend-output-storage, @aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/signupAttributes": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "signupAttributes"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify/backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify/backend-output-storage, @aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/usernameAttributes": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "usernameAttributes"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify/backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify/backend-output-storage, @aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/verificationMechanisms": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "verificationMechanisms"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify/backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify/backend-output-storage, @aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/passwordPolicyMinLength": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "passwordPolicyMinLength"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify/backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify/backend-output-storage, @aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/passwordPolicyRequirements": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "passwordPolicyRequirements"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify/backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify/backend-output-storage, @aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/mfaConfiguration": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "mfaConfiguration"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify/backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify/backend-output-storage, @aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/mfaTypes": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "mfaTypes"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify/backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify/backend-output-storage, @aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/passwordlessOptions": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "passwordlessOptions"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify/backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify/backend-output-storage, @aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/socialProviders": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "socialProviders"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify/backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify/backend-output-storage, @aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/oauthCognitoDomain": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "oauthCognitoDomain"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify/backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify/backend-output-storage, @aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/oauthScope": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "oauthScope"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify/backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify/backend-output-storage, @aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/oauthRedirectSignIn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "oauthRedirectSignIn"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify/backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify/backend-output-storage, @aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/oauthRedirectSignOut": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "oauthRedirectSignOut"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify/backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify/backend-output-storage, @aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/oauthResponseType": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "oauthResponseType"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify/backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify/backend-output-storage, @aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/oauthClientId": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "oauthClientId"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify/backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify/backend-output-storage, @aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/groups": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "groups"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify/backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify/backend-output-storage, @aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/BootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "BootstrapVersion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/CheckBootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CheckBootstrapVersion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/auth/amplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthUserPool20CAA28FRef": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthUserPool20CAA28FRef"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify/backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/auth/amplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthUserPoolAppClientD2DFFAEBRef": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthUserPoolAppClientD2DFFAEBRef"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify/backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/auth/amplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthIdentityPoolF2171005Ref": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthIdentityPoolF2171005Ref"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify/backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/auth/amplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthUserPoolUserPoolDomain07D979DFRef": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthUserPoolUserPoolDomain07D979DFRef"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify/backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/auth.NestedStack/auth.NestedStackResource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "auth179371D7"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)",
+        "...defineBackend in @aws-amplify/backend...",
+        "<anonymous> (/Users/bryant.jackson/bibleproject/justify/amplify/backend.ts:4:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/CDKMetadata/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadata"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify/backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/CDKMetadata/Condition": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadataAvailable"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify/backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/auth/AmplifySecretFetcherResourceProviderLambda/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AmplifySecretFetcherResourceProviderLambda27823B35"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify/backend...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/auth/AmplifySecretFetcherResource/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AmplifySecretFetcherResource"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify/backend...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/auth/amplifyAuth/IdentityPool": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifyAuthIdentityPool3FDE84CC"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...@aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)",
+        "...defineBackend in @aws-amplify/backend...",
+        "<anonymous> (/Users/bryant.jackson/bibleproject/justify/amplify/backend.ts:4:1)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/auth/amplifyAuth/IdentityPoolRoleAttachment": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifyAuthIdentityPoolRoleAttachment045F17C8"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...@aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)",
+        "...defineBackend in @aws-amplify/backend...",
+        "<anonymous> (/Users/bryant.jackson/bibleproject/justify/amplify/backend.ts:4:1)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/auth/CDKMetadata/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadata"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify/backend...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/auth/CDKMetadata/Condition": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadataAvailable"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify/backend...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/auth/AmplifySecretFetcherResourceProviderLambda/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AmplifySecretFetcherResourceProviderLambdaServiceRole3F02FB0D"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify/backend...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/auth/AmplifySecretFetcherResourceProvider/framework-onEvent/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AmplifySecretFetcherResourceProviderframeworkonEventA62AE3A8"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify/backend...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/auth/amplifyAuth/UserPool/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifyAuthUserPool4BA7F805"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)",
+        "...@aws-amplify/backend..."
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/auth/amplifyAuth/GoogleIdP/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifyAuthGoogleIdPA9736819"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)",
+        "...@aws-amplify/backend..."
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/auth/amplifyAuth/UserPoolAppClient/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifyAuthUserPoolAppClient2626C6F8"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)",
+        "...@aws-amplify/backend..."
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/auth/amplifyAuth/authenticatedUserRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifyAuthauthenticatedUserRoleD8DA3689"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/auth/amplifyAuth/unauthenticatedUserRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifyAuthunauthenticatedUserRole2B524D9E"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/auth/AmplifySecretFetcherResourceProviderLambda/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AmplifySecretFetcherResourceProviderLambdaServiceRoleDefaultPolicy080657DD"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify/backend...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/auth/AmplifySecretFetcherResourceProvider/framework-onEvent/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AmplifySecretFetcherResourceProviderframeworkonEventServiceRole0941C6B4"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify/backend...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/auth/amplifyAuth/UserPool/UserPoolDomain/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifyAuthUserPoolUserPoolDomain1F688B5B"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify/auth-construct, @aws-amplify/backend-auth, <anonymous> in @aws-amplify/backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/auth/AmplifySecretFetcherResourceProvider/framework-onEvent/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AmplifySecretFetcherResourceProviderframeworkonEventServiceRoleDefaultPolicy749EBE05"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ]
+}
