@@ -1,0 +1,7 @@
+.safe-content { --padding-bottom: 88px; }
+.hero-card { background: linear-gradient(135deg, #ffffff, #eef5f2); border-radius: 24px; padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,.07); margin-bottom: 18px; }
+.hero-card h1 { margin-top: 0; font-size: 28px; }
+.hero-card p { color: #55615d; line-height: 1.4; }
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.stat-card ion-card-title { font-size: 24px; }
+.report-box { background: white; border-radius: 16px; padding: 12px; min-height: 420px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
