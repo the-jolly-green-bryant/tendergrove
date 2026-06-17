@@ -54,4 +54,4 @@ App
     -> Google
       -> Cognito /oauth2/idpresponse
         -> App localhost:8100
- ```
+```

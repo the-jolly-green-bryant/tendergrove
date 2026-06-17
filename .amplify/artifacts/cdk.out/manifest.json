@@ -110,10 +110,7 @@
             "explanation": "Enable this flag to make it impossible to accidentally use SecretValues in unsafe locations"
           },
           "@aws-cdk/core:target-partitions": {
-            "recommendedValue": [
-              "aws",
-              "aws-cn"
-            ],
+            "recommendedValue": ["aws", "aws-cn"],
             "explanation": "What regions to include in lookup tables of environment agnostic stacks"
           },
           "@aws-cdk-containers/ecs-service-extensions:enableDefaultLogDriver": {

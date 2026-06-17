@@ -3,8 +3,8 @@ import tseslint from 'typescript-eslint'
 import jsdoc from 'eslint-plugin-jsdoc'
 import globals from 'globals'
 import sonarjs from 'eslint-plugin-sonarjs'
-import prettier from 'eslint-plugin-prettier';
-import prettierConfig from 'eslint-config-prettier';
+import prettier from 'eslint-plugin-prettier'
+import prettierConfig from 'eslint-config-prettier'
 
 export default [
   {
@@ -17,6 +17,7 @@ export default [
       'scripts/inject-version.js',
       '**/ios/**',
       '**/android/**',
+      '.amplify/**/**',
     ],
   },
 

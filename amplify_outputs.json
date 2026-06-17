@@ -5,15 +5,9 @@
     "user_pool_client_id": "6cncdp4lsrjg16881l2vk5a585",
     "identity_pool_id": "us-west-2:d5af39b0-277b-4c5a-add7-3078e1e0994b",
     "mfa_methods": [],
-    "standard_required_attributes": [
-      "email"
-    ],
-    "username_attributes": [
-      "email"
-    ],
-    "user_verification_types": [
-      "email"
-    ],
+    "standard_required_attributes": ["email"],
+    "username_attributes": ["email"],
+    "user_verification_types": ["email"],
     "groups": [],
     "mfa_configuration": "NONE",
     "password_policy": {
@@ -24,15 +18,9 @@
       "require_uppercase": true
     },
     "oauth": {
-      "identity_providers": [
-        "GOOGLE"
-      ],
-      "redirect_sign_in_uri": [
-        "http://localhost:8100/"
-      ],
-      "redirect_sign_out_uri": [
-        "http://localhost:8100/"
-      ],
+      "identity_providers": ["GOOGLE"],
+      "redirect_sign_in_uri": ["http://localhost:8100/"],
+      "redirect_sign_out_uri": ["http://localhost:8100/"],
       "response_type": "code",
       "scopes": [
         "phone",
