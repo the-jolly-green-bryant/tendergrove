@@ -1,0 +1,13 @@
+{
+  "name": "TEMP NAME - Justify",
+  "version": "1.0.0",
+  "description": "A service for making identifying distress from anecdotal evidence.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "All Rights Reserved",
+  "packageManager": "pnpm@10.14.0"
+}
