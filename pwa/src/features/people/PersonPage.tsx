@@ -24,6 +24,7 @@ import {
     documentTextOutline,
     ellipsisHorizontal,
     happyOutline,
+    repeatOutline,
     timeOutline,
     timerOutline,
 } from 'ionicons/icons';
@@ -48,7 +49,8 @@ const roleLabels: Record<PersonRole, string> = {
 
 const inputTypeLabels: Record<string, string> = {
     boolean: 'Yes / no',
-    scale: 'Scale',
+    frequency: 'Frequency',
+    scale: 'Intensity',
     count: 'Count',
     duration: 'Duration',
     text: 'Note',
@@ -56,6 +58,7 @@ const inputTypeLabels: Record<string, string> = {
 
 const inputTypeIcons: Record<string, string> = {
     boolean: checkmarkCircleOutline,
+    frequency: repeatOutline,
     scale: happyOutline,
     count: calculatorOutline,
     duration: timerOutline,
@@ -106,6 +109,10 @@ export default function PersonPage() {
 
     function editPerson() {
         router.push(`/people/${personId}/edit`, 'forward');
+    }
+
+    function manageIndicators() {
+        router.push(`/people/${personId}/indicators`, 'forward');
     }
 
     const indicators = (person?.indicators ?? []) as Indicator[];
@@ -189,7 +196,7 @@ export default function PersonPage() {
                             <IonCardContent>
                                 <div className="section-header">
                                     <h2>Distress Indicators</h2>
-                                    <IonButton fill="clear" size="small" onClick={editPerson}>
+                                    <IonButton fill="clear" size="small" onClick={manageIndicators}>
                                         Edit
                                     </IonButton>
                                 </div>
@@ -221,7 +228,7 @@ export default function PersonPage() {
                             <IonCardContent>
                                 <div className="section-header">
                                     <h2>Check-In Types</h2>
-                                    <IonButton fill="clear" size="small" onClick={editPerson}>
+                                    <IonButton fill="clear" size="small" onClick={manageIndicators}>
                                         Edit
                                     </IonButton>
                                 </div>

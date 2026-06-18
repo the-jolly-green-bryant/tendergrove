@@ -166,3 +166,126 @@ ion-item.check-in-type {
   margin: 4px 0 0;
   color: var(--app-muted-text);
 }
+
+/* Manage / add indicators */
+.indicator-segment {
+  margin-bottom: 12px;
+}
+
+.indicator-intro {
+  margin: 0 0 12px;
+  color: var(--app-muted-text);
+  font-size: 0.9rem;
+}
+
+.indicator-group {
+  margin-bottom: 18px;
+}
+
+.indicator-list {
+  background: transparent;
+}
+
+ion-item.indicator-row {
+  --min-height: 56px;
+  margin-bottom: 8px;
+}
+
+.indicator-row ion-icon[slot='start'] {
+  font-size: 1.3rem;
+  margin-right: 12px;
+}
+
+.indicator-why {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-top: 8px;
+  padding: 14px;
+  border-radius: var(--app-radius-md);
+  background: var(--ion-color-tertiary);
+}
+
+.indicator-why ion-icon {
+  font-size: 1.2rem;
+  margin-top: 2px;
+}
+
+.indicator-why p {
+  margin: 2px 0 0;
+  color: var(--app-muted-text);
+  font-size: 0.85rem;
+}
+
+/* Choose indicator type */
+.choose-type__heading {
+  margin: 4px 0 6px;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.choose-type__sub {
+  margin: 0 0 16px;
+  color: var(--app-muted-text);
+}
+
+.choose-type-card {
+  margin: 0 0 14px;
+}
+
+.choose-type-card--danger {
+  border-color: rgba(var(--ion-color-danger-rgb), 0.4);
+}
+
+.choose-type-card--success {
+  border-color: rgba(var(--ion-color-success-rgb), 0.4);
+}
+
+.choose-type-card__body {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.choose-type-card__icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.choose-type-card__text {
+  flex: 1;
+}
+
+.choose-type-card__text h2 {
+  margin: 0 0 4px;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.choose-type-card__text p {
+  margin: 0;
+  color: var(--app-muted-text);
+  font-size: 0.86rem;
+}
+
+.choose-type-card__examples {
+  margin-top: 6px !important;
+  font-style: italic;
+}
+
+/* Indicator form */
+.indicator-form__icon {
+  display: flex;
+  justify-content: center;
+  margin: 4px 0 16px;
+}
+
+.indicator-form__icon ion-icon {
+  font-size: 3rem;
+}
+
+.indicator-form__section {
+  margin: 18px 0 8px;
+  font-size: 1rem;
+  font-weight: 700;
+}

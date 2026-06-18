@@ -32,9 +32,11 @@ const schema = a.schema({
 
             owner: a.string(),
             name: a.string().required(),
+            description: a.string(),
             questionText: a.string(),
+            notes: a.string(),
             polarity: a.enum(['desired', 'undesired']),
-            inputType: a.enum(['boolean', 'scale', 'count', 'duration', 'text']),
+            inputType: a.enum(['boolean', 'frequency', 'scale', 'count', 'duration', 'text']),
             active: a.boolean().default(true),
         })
         .authorization((allow) => [allow.owner()]),

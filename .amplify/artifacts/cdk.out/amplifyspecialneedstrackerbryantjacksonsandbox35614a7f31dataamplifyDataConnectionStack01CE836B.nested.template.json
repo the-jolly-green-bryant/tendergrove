@@ -1147,7 +1147,7 @@
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/yXMwQqCQBCA4Wfpvk62QnRNoWMHfQCZ1lFGbVacXSXEdw/r9PFffgv2mkJ6wlUT1wzJyC/YnqSBmiqgGwyuWm+a1ahKQeF+YDSDPLqBQo5KBqdJP+JgK1p5RHGBvRReWu7ijEeYopWS1I8Lzftufo8qYMfS7UZ8Q9DrebEWLjdIT70yJ3OUwG+C8u8XE/DP3qcAAAA="
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/yXMQQ6CQAxA0bOwHyqCcS8kLlnAAUgdChnADqEdiCHc3aCrl7/5KaT3BJIIN4ltO8aTe8Fekii1taIdDW7S7JI1KEIq8DgxkkEe7Eiao5DBeZYPW9iLjp+BrTrPhefO9WHBM0zRcUXip5WW4zC/R63YO+4Pw74lGOSypje4ZpBEgzgXL4HVvQmqv19COIXopwAAAA=="
    },
    "Metadata": {
     "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/ConnectionStack/CDKMetadata/Default"

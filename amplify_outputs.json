@@ -351,8 +351,22 @@
               "isRequired": true,
               "attributes": []
             },
+            "description": {
+              "name": "description",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
             "questionText": {
               "name": "questionText",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "notes": {
+              "name": "notes",
               "isArray": false,
               "type": "String",
               "isRequired": false,
@@ -693,6 +707,7 @@
           "name": "IndicatorInputType",
           "values": [
             "boolean",
+            "frequency",
             "scale",
             "count",
             "duration",

@@ -24,6 +24,9 @@ import ParentCarePage from '../features/parent-care/ParentCarePage'
 import ReportsPage from '../features/reports/ReportsPage'
 import PersonFormPage from '../features/people/PersonFormPage'
 import PersonPage from '../features/people/PersonPage'
+import ManageIndicatorsPage from '../features/people/indicators/ManageIndicatorsPage'
+import ChooseIndicatorTypePage from '../features/people/indicators/ChooseIndicatorTypePage'
+import IndicatorFormPage from '../features/people/indicators/IndicatorFormPage'
 
 export default function AppShell() {
   return (
@@ -52,6 +55,30 @@ export default function AppShell() {
               exact
               path="/people/:personId/edit"
               component={PersonFormPage}
+          />
+
+          <Route
+              exact
+              path="/people/:personId/indicators"
+              component={ManageIndicatorsPage}
+          />
+
+          <Route
+              exact
+              path="/people/:personId/indicators/new"
+              component={ChooseIndicatorTypePage}
+          />
+
+          <Route
+              exact
+              path="/people/:personId/indicators/new/:polarity"
+              component={IndicatorFormPage}
+          />
+
+          <Route
+              exact
+              path="/people/:personId/indicators/:indicatorId/edit"
+              component={IndicatorFormPage}
           />
 
           <Route
