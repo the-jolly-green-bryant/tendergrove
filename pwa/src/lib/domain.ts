@@ -2,6 +2,14 @@ export type Severity = 1 | 2 | 3 | 4 | 5
 
 export type Mood = 'regulated' | 'fragile' | 'distressed' | 'shutdown' | 'agitated'
 
+export type PersonRole =
+    | 'self'
+    | 'child'
+    | 'spouse'
+    | 'parent'
+    | 'caregiver'
+    | 'other';
+
 export interface ChildCheckIn {
   id: string
   createdAt: string
