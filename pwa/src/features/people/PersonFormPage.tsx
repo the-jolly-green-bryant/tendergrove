@@ -25,11 +25,13 @@ import {
     heartOutline,
     accessibilityOutline,
 } from 'ionicons/icons';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import {PersonRole} from '../../lib/domain'
 import { client } from '../../lib/api'
 import { useAppAuth } from '../../auth/AuthContext'
+import { usePerson } from './usePerson'
 
 const roleOptions: Array<{
     value: PersonRole;
@@ -77,16 +79,29 @@ const roleOptions: Array<{
 
 export default function PersonFormPage() {
     const router = useIonRouter();
+    const queryClient = useQueryClient();
     const { user } = useAppAuth();
     const { personId } = useParams<{ personId?: string }>();
 
     const isEditing = Boolean(personId);
+    const { data: existingPerson } = usePerson(isEditing ? personId : undefined);
 
     const photoInputRef = useRef<HTMLInputElement>(null);
     const [step, setStep] = useState<1 | 2>(isEditing ? 2 : 1);
     const [role, setRole] = useState<PersonRole>('child');
     const [displayName, setDisplayName] = useState('');
     const [avatarUrl, setAvatarUrl] = useState<string | undefined>();
+
+    // Prefill the form once the person being edited has loaded.
+    useEffect(() => {
+        if (!existingPerson) {
+            return;
+        }
+
+        setDisplayName(existingPerson.displayName);
+        setRole((existingPerson.role as PersonRole | null) ?? 'child');
+        setAvatarUrl(existingPerson.avatarUrl ?? undefined);
+    }, [existingPerson]);
 
     function goBack() {
         if (step === 2 && !isEditing) {
@@ -144,7 +159,12 @@ export default function PersonFormPage() {
             throw new Error(result.errors[0].message);
         }
 
-        router.push('/dashboard', 'forward', 'replace');
+        await queryClient.invalidateQueries({ queryKey: ['people'] });
+        if (personId) {
+            await queryClient.invalidateQueries({ queryKey: ['person', personId] });
+        }
+
+        router.push('/dashboard', 'back', 'pop');
     }
 
     return (
@@ -225,7 +245,7 @@ export default function PersonFormPage() {
 
                         <IonList>
                             <IonItem>
-                                <IonInput label="Name" labelPlacement="stacked" placeholder="Enter text" onIonInput={(event) =>
+                                <IonInput label="Name" labelPlacement="stacked" placeholder="Enter text" value={displayName} onIonInput={(event) =>
                                     setDisplayName(event.detail.value ?? '')
                                 } />
                             </IonItem>

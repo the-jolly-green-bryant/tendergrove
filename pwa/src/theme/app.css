@@ -43,3 +43,126 @@ ion-tab-bar {
 ion-toolbar {
   --border-width: 0;
 }
+
+/* Person profile page */
+.person-page__center {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0;
+}
+
+.person-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 8px 0 4px;
+}
+
+.person-hero__avatar {
+  width: 84px;
+  height: 84px;
+  margin-bottom: 12px;
+}
+
+.person-hero__name {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.person-hero__subtitle {
+  margin: 2px 0 12px;
+  color: var(--app-muted-text);
+}
+
+.person-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.person-status__chip {
+  margin: 0;
+}
+
+.person-status__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  margin-right: 6px;
+  background: currentColor;
+}
+
+.person-status__caption {
+  font-size: 0.78rem;
+  color: var(--app-muted-text);
+}
+
+.person-hero__last-checkin {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  color: var(--app-muted-text);
+  font-size: 0.88rem;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.section-header h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.section-header__meta {
+  font-size: 0.82rem;
+  color: var(--app-muted-text);
+}
+
+.section-empty {
+  margin: 6px 0 0;
+  color: var(--app-muted-text);
+}
+
+.indicator-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.indicator-chip {
+  margin: 0;
+}
+
+.indicator-chip--more {
+  --background: var(--ion-color-step-100);
+  --color: var(--app-muted-text);
+}
+
+.check-in-types {
+  background: transparent;
+}
+
+ion-item.check-in-type {
+  --min-height: 52px;
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  margin-bottom: 0;
+  border: 0;
+  box-shadow: none;
+  --background: transparent;
+}
+
+.person-notes {
+  margin: 4px 0 0;
+  color: var(--app-muted-text);
+}

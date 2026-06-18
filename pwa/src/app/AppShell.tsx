@@ -23,6 +23,7 @@ import IncidentPage from '../features/incidents/IncidentPage'
 import ParentCarePage from '../features/parent-care/ParentCarePage'
 import ReportsPage from '../features/reports/ReportsPage'
 import PersonFormPage from '../features/people/PersonFormPage'
+import PersonPage from '../features/people/PersonPage'
 
 export default function AppShell() {
   return (
@@ -39,6 +40,12 @@ export default function AppShell() {
               exact
               path="/people/new"
               component={PersonFormPage}
+          />
+
+          <Route
+              exact
+              path="/people/:personId"
+              component={PersonPage}
           />
 
           <Route
