@@ -1,5 +1,4 @@
 import {
-    IonAvatar,
     IonButton,
     IonButtons,
     IonCard,
@@ -32,6 +31,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useParams } from 'react-router-dom';
 
 import { usePerson } from './usePerson';
+import { PersonAvatar } from '../../components/PersonAvatar';
 import { PersonRole } from '../../lib/domain';
 
 type Indicator = NonNullable<ReturnType<typeof usePerson>['data']>['indicators'][number];
@@ -153,15 +153,11 @@ export default function PersonPage() {
                 {person && (
                     <>
                         <section className="person-hero">
-                            <IonAvatar className="person-hero__avatar">
-                                <img
-                                    src={
-                                        person.avatarUrl ||
-                                        `https://ui-avatars.com/api/?background=random&name=${person.displayName}`
-                                    }
-                                    alt={person.displayName}
-                                />
-                            </IonAvatar>
+                            <PersonAvatar
+                                className="person-hero__avatar"
+                                name={person.displayName}
+                                src={person.avatarUrl}
+                            />
 
                             <h1 className="person-hero__name">{person.displayName}</h1>
                             <p className="person-hero__subtitle">

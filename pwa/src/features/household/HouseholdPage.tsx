@@ -1,5 +1,4 @@
 import {
-  IonAvatar,
   IonButton,
   IonCard,
   IonCardContent,
@@ -7,6 +6,7 @@ import {
   IonCardTitle, IonItem, IonLabel, IonList, IonSpinner,
 } from '@ionic/react'
 import { Page } from '../../components/Page'
+import { PersonAvatar } from '../../components/PersonAvatar'
 import { useAppAuth } from '../../auth/AuthContext'
 import {usePeople} from '../people/usePeople'
 
@@ -44,16 +44,7 @@ export default function HouseholdPage() {
                      detail
                      routerLink={`/people/${person.id}`}>
 
-              <IonAvatar slot="start">
-                {person.avatarUrl ? (
-                    <img
-                        src={person.avatarUrl}
-                        alt={person.displayName}
-                    />
-                ) : (
-                    <img src={`https://ui-avatars.com/api/?background=random&name=${person.displayName}`} />
-                )}
-              </IonAvatar>
+              <PersonAvatar slot="start" name={person.displayName} src={person.avatarUrl} />
 
               <IonLabel>
                 <h2>{person.displayName}{person.role === 'self' && ' (You)'}</h2>

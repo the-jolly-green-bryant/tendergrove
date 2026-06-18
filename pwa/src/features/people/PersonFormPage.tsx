@@ -1,5 +1,4 @@
 import {
-    IonAvatar,
     IonButton,
     IonButtons,
     IonContent,
@@ -32,6 +31,7 @@ import {PersonRole} from '../../lib/domain'
 import { client } from '../../lib/api'
 import { useAppAuth } from '../../auth/AuthContext'
 import { usePerson } from './usePerson'
+import { PersonAvatar } from '../../components/PersonAvatar'
 
 const roleOptions: Array<{
     value: PersonRole;
@@ -252,9 +252,7 @@ export default function PersonFormPage() {
                         </IonList>
 
                         <IonItem>
-                            <IonAvatar slot="start">
-                                <img alt={`avatar image for ${displayName}`} src={avatarUrl || `https://ui-avatars.com/api/?background=random&name=${displayName || role}`} />
-                            </IonAvatar>
+                            <PersonAvatar slot="start" name={displayName || role} src={avatarUrl} />
                             <IonLabel>
                                 <h2>Photo</h2>
                                 <p>Add a profile picture</p>
