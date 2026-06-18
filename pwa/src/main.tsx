@@ -13,7 +13,7 @@ import '@ionic/react/css/padding.css'
 import '@ionic/react/css/flex-utils.css'
 import './theme/variables.css'
 import './theme/app.css'
-import outputs from '../amplify_outputs.json'
+import outputs from '../../amplify_outputs.json'
 
 setupIonicReact({ mode: 'ios' })
 Amplify.configure(outputs)

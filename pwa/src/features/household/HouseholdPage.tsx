@@ -13,8 +13,11 @@ import { StatCard } from '../../components/StatCard'
 import { useTrackerStore } from '../../stores/trackerStore'
 import { useAppAuth } from '../../auth/AuthContext'
 
-export default function DashboardPage() {
+export default function HouseholdPage() {
   const { user, signOut } = useAppAuth()
+  if (!user) {
+    throw new Error("Redirect back to logoin")
+  }
 
   const { hydrate, checkIns, incidents, parentCare } = useTrackerStore()
   useIonViewWillEnter(() => {
@@ -26,11 +29,12 @@ export default function DashboardPage() {
   const recentIncidents = incidents.slice(0, 3)
   const highSeverityCount = incidents.filter((x) => x.severity >= 4).length
 
+  const getGreeting = () => `Howdy, INSERT_NAME 👋`
+
   return (
     <Page title="Today">
-      <p>Signed in as {user?.signInDetails?.loginId}</p>
-
-      <IonButton onClick={signOut}>Sign out</IonButton>
+      <h1>{getGreeting()}</h1>
+      <p>Here's how your household is doing.</p>
 
       <div className="hero-card">
         <h1>Fast checkpoint</h1>
@@ -75,6 +79,9 @@ export default function DashboardPage() {
           ))}
         </IonCardContent>
       </IonCard>
+
+      {/* Move this somewhere else. */}
+      <IonButton onClick={signOut}>Sign out</IonButton>
     </Page>
   )
 }

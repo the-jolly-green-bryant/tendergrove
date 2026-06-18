@@ -17,7 +17,7 @@ import {
   warningOutline,
 } from 'ionicons/icons'
 
-import DashboardPage from '../features/dashboard/DashboardPage'
+import HouseholdPage from '../features/household/HouseholdPage'
 import CheckInPage from '../features/checkins/CheckInPage'
 import IncidentPage from '../features/incidents/IncidentPage'
 import ParentCarePage from '../features/parent-care/ParentCarePage'
@@ -31,7 +31,7 @@ export default function AppShell() {
           <Route
             exact
             path="/dashboard"
-            component={DashboardPage}
+            component={HouseholdPage}
           />
           <Route
             exact
