@@ -1,13 +1,26 @@
 {
-  "name": "TEMP NAME - Justify",
+  "name": "special-needs-tracker",
   "version": "1.0.0",
   "description": "A service for making identifying distress from anecdotal evidence.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "sandbox": "ampx sandbox --once",
+    "sandbox:delete": "ampx sandbox delete",
+    "pwa": "pnpm --filter pwa dev",
+    "lint": "pnpm -r lint",
+    "format": "pnpm -r format"
   },
   "keywords": [],
   "author": "",
   "license": "All Rights Reserved",
-  "packageManager": "pnpm@10.14.0"
+  "packageManager": "pnpm@10.14.0",
+  "devDependencies": {
+    "@aws-amplify/backend": "^1.23.0",
+    "@aws-amplify/backend-cli": "^1.8.3",
+    "esbuild": "^0.28.1",
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "aws-amplify": "^6.18.0"
+  }
 }

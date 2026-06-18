@@ -22,7 +22,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/8ead12c5c756e0be7c8e24c0f93baebc0d7f132958a9eb235636ec954f71aae9.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/74e622676f415a369a44cf883fcde1c7db240447210eab6f2ed7eca9f5bb982e.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -110,7 +110,10 @@
             "explanation": "Enable this flag to make it impossible to accidentally use SecretValues in unsafe locations"
           },
           "@aws-cdk/core:target-partitions": {
-            "recommendedValue": ["aws", "aws-cn"],
+            "recommendedValue": [
+              "aws",
+              "aws-cn"
+            ],
             "explanation": "What regions to include in lookup tables of environment agnostic stacks"
           },
           "@aws-cdk-containers/ecs-service-extensions:enableDefaultLogDriver": {
@@ -497,5 +500,5 @@
       }
     }
   },
-  "minimumCliVersion": "2.1127.0"
+  "minimumCliVersion": "2.1128.0"
 }

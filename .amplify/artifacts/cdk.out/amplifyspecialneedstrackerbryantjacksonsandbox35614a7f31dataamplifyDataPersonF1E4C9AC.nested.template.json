@@ -1,0 +1,2221 @@
+{
+ "Parameters": {
+  "DynamoDBModelTableReadIOPS": {
+   "Type": "Number",
+   "Default": 5,
+   "Description": "The number of read IOPS the table should support."
+  },
+  "DynamoDBModelTableWriteIOPS": {
+   "Type": "Number",
+   "Default": 5,
+   "Description": "The number of write IOPS the table should support."
+  },
+  "DynamoDBBillingMode": {
+   "Type": "String",
+   "Default": "PAY_PER_REQUEST",
+   "AllowedValues": [
+    "PAY_PER_REQUEST",
+    "PROVISIONED"
+   ],
+   "Description": "Configure @model types to create DynamoDB tables with PAY_PER_REQUEST or PROVISIONED billing modes."
+  },
+  "DynamoDBEnablePointInTimeRecovery": {
+   "Type": "String",
+   "Default": "false",
+   "AllowedValues": [
+    "true",
+    "false"
+   ],
+   "Description": "Whether to enable Point in Time Recovery on the table."
+  },
+  "DynamoDBEnableServerSideEncryption": {
+   "Type": "String",
+   "Default": "true",
+   "AllowedValues": [
+    "true",
+    "false"
+   ],
+   "Description": "Enable server side encryption powered by KMS."
+  },
+  "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource6C388E7AOutputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataAmpl979FA3E1": {
+   "Type": "String"
+  },
+  "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId": {
+   "Type": "String"
+  },
+  "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPINONEDS588C7394Name": {
+   "Type": "String"
+  },
+  "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthauthenticatedUserRoleF1D5ACA5Ref": {
+   "Type": "String"
+  },
+  "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthunauthenticatedUserRoleA07FE92FRef": {
+   "Type": "String"
+  },
+  "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthIdentityPoolF2171005Ref": {
+   "Type": "String"
+  }
+ },
+ "Conditions": {
+  "HasEnvironmentParameter": {
+   "Fn::Not": [
+    {
+     "Fn::Equals": [
+      "NONE",
+      "NONE"
+     ]
+    }
+   ]
+  },
+  "ShouldUsePayPerRequestBilling": {
+   "Fn::Equals": [
+    {
+     "Ref": "DynamoDBBillingMode"
+    },
+    "PAY_PER_REQUEST"
+   ]
+  },
+  "ShouldUsePointInTimeRecovery": {
+   "Fn::Equals": [
+    {
+     "Ref": "DynamoDBEnablePointInTimeRecovery"
+    },
+    "true"
+   ]
+  },
+  "CDKMetadataAvailable": {
+   "Fn::Or": [
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "af-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-3"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-4"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-northwest-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-2"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "il-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "sa-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-west-1"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Equals": [
+      {
+       "Ref": "AWS::Region"
+      },
+      "us-west-2"
+     ]
+    }
+   ]
+  }
+ },
+ "Resources": {
+  "PersonTable": {
+   "Type": "Custom::AmplifyDynamoDBTable",
+   "Properties": {
+    "ServiceToken": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource6C388E7AOutputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataAmpl979FA3E1"
+    },
+    "tableName": {
+     "Fn::Join": [
+      "",
+      [
+       "Person-",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+       },
+       "-NONE"
+      ]
+     ]
+    },
+    "attributeDefinitions": [
+     {
+      "attributeName": "id",
+      "attributeType": "S"
+     },
+     {
+      "attributeName": "householdId",
+      "attributeType": "S"
+     }
+    ],
+    "keySchema": [
+     {
+      "attributeName": "id",
+      "keyType": "HASH"
+     }
+    ],
+    "globalSecondaryIndexes": [
+     {
+      "indexName": "gsi-Household.people",
+      "keySchema": [
+       {
+        "attributeName": "householdId",
+        "keyType": "HASH"
+       }
+      ],
+      "projection": {
+       "projectionType": "ALL"
+      },
+      "provisionedThroughput": {
+       "Fn::If": [
+        "ShouldUsePayPerRequestBilling",
+        {
+         "Ref": "AWS::NoValue"
+        },
+        {
+         "ReadCapacityUnits": {
+          "Ref": "DynamoDBModelTableReadIOPS"
+         },
+         "WriteCapacityUnits": {
+          "Ref": "DynamoDBModelTableWriteIOPS"
+         }
+        }
+       ]
+      }
+     }
+    ],
+    "provisionedThroughput": {
+     "Fn::If": [
+      "ShouldUsePayPerRequestBilling",
+      {
+       "Ref": "AWS::NoValue"
+      },
+      {
+       "ReadCapacityUnits": {
+        "Ref": "DynamoDBModelTableReadIOPS"
+       },
+       "WriteCapacityUnits": {
+        "Ref": "DynamoDBModelTableWriteIOPS"
+       }
+      }
+     ]
+    },
+    "sseSpecification": {
+     "sseEnabled": false
+    },
+    "streamSpecification": {
+     "streamViewType": "NEW_AND_OLD_IMAGES"
+    },
+    "deletionProtectionEnabled": false,
+    "allowDestructiveGraphqlSchemaUpdates": true,
+    "replaceTableUponGsiUpdate": true,
+    "pointInTimeRecoverySpecification": {
+     "Fn::If": [
+      "ShouldUsePointInTimeRecovery",
+      {
+       "PointInTimeRecoveryEnabled": true
+      },
+      {
+       "Ref": "AWS::NoValue"
+      }
+     ]
+    },
+    "billingMode": {
+     "Fn::If": [
+      "ShouldUsePayPerRequestBilling",
+      "PAY_PER_REQUEST",
+      {
+       "Ref": "AWS::NoValue"
+      }
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/PersonTable/Default/Default"
+   }
+  },
+  "PersonIAMRole325FD7BD": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "appsync.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Policies": [
+     {
+      "PolicyDocument": {
+       "Statement": [
+        {
+         "Action": [
+          "dynamodb:BatchGetItem",
+          "dynamodb:BatchWriteItem",
+          "dynamodb:PutItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:GetItem",
+          "dynamodb:Scan",
+          "dynamodb:Query",
+          "dynamodb:UpdateItem",
+          "dynamodb:ConditionCheckItem",
+          "dynamodb:DescribeTable",
+          "dynamodb:GetRecords",
+          "dynamodb:GetShardIterator"
+         ],
+         "Effect": "Allow",
+         "Resource": [
+          {
+           "Fn::Sub": [
+            "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${tablename}",
+            {
+             "tablename": {
+              "Fn::Join": [
+               "",
+               [
+                "Person-",
+                {
+                 "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+                },
+                "-NONE"
+               ]
+              ]
+             }
+            }
+           ]
+          },
+          {
+           "Fn::Sub": [
+            "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${tablename}/*",
+            {
+             "tablename": {
+              "Fn::Join": [
+               "",
+               [
+                "Person-",
+                {
+                 "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+                },
+                "-NONE"
+               ]
+              ]
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "Version": "2012-10-17"
+      },
+      "PolicyName": "DynamoDBAccess"
+     }
+    ],
+    "RoleName": {
+     "Fn::Join": [
+      "",
+      [
+       "PersonIAMRole2af744-",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+       },
+       "-NONE"
+      ]
+     ]
+    },
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "amplifyData"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/PersonIAMRole/Resource"
+   }
+  },
+  "PersonDataSource": {
+   "Type": "AWS::AppSync::DataSource",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "DynamoDBConfig": {
+     "AwsRegion": {
+      "Ref": "AWS::Region"
+     },
+     "TableName": {
+      "Fn::Select": [
+       1,
+       {
+        "Fn::Split": [
+         "/",
+         {
+          "Fn::Select": [
+           5,
+           {
+            "Fn::Split": [
+             ":",
+             {
+              "Fn::GetAtt": [
+               "PersonTable",
+               "TableArn"
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    "Name": "PersonTable",
+    "ServiceRoleArn": {
+     "Fn::GetAtt": [
+      "PersonIAMRole325FD7BD",
+      "Arn"
+     ]
+    },
+    "Type": "AMAZON_DYNAMODB"
+   },
+   "DependsOn": [
+    "PersonIAMRole325FD7BD"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/PersonDataSource/Resource"
+   }
+  },
+  "QuerygetPersonauth0FunctionQuerygetPersonauth0FunctionAppSyncFunction6DF9D0C4": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPINONEDS588C7394Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerygetPersonauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/6b25c9b572c67e0f7ad41cb8019a90825f3db4b02a0a15b837c7a82dcb302060.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/QuerygetPersonauth0Function/QuerygetPersonauth0Function.AppSyncFunction"
+   }
+  },
+  "QuerygetPersonpostAuth0FunctionQuerygetPersonpostAuth0FunctionAppSyncFunctionF5352000": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPINONEDS588C7394Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerygetPersonpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/QuerygetPersonpostAuth0Function/QuerygetPersonpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "QueryGetPersonDataResolverFnQueryGetPersonDataResolverFnAppSyncFunction9DC39353": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "PersonDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QueryGetPersonDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/08f4d557693d96c1a4efba0f9dc91330e4b19772fd5477c156468843e3d9cb5e.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4c6a2d29f01c6091bd1d9afe16e5849d456c96f17c3b215938c8067399532719.vtl"
+    }
+   },
+   "DependsOn": [
+    "PersonDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/QueryGetPersonDataResolverFn/QueryGetPersonDataResolverFn.AppSyncFunction"
+   }
+  },
+  "GetPersonResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "FieldName": "getPerson",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "QuerygetPersonauth0FunctionQuerygetPersonauth0FunctionAppSyncFunction6DF9D0C4",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerygetPersonpostAuth0FunctionQuerygetPersonpostAuth0FunctionAppSyncFunctionF5352000",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QueryGetPersonDataResolverFnQueryGetPersonDataResolverFnAppSyncFunction9DC39353",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"getPerson\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "PersonTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthauthenticatedUserRoleF1D5ACA5Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthunauthenticatedUserRoleA07FE92FRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthIdentityPoolF2171005Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Query"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/queryGetPersonResolver"
+   }
+  },
+  "QuerylistPeopleauth0FunctionQuerylistPeopleauth0FunctionAppSyncFunction54C0D154": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPINONEDS588C7394Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistPeopleauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/6b25c9b572c67e0f7ad41cb8019a90825f3db4b02a0a15b837c7a82dcb302060.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/QuerylistPeopleauth0Function/QuerylistPeopleauth0Function.AppSyncFunction"
+   }
+  },
+  "QuerylistPeoplepostAuth0FunctionQuerylistPeoplepostAuth0FunctionAppSyncFunction1786EC37": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPINONEDS588C7394Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistPeoplepostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/QuerylistPeoplepostAuth0Function/QuerylistPeoplepostAuth0Function.AppSyncFunction"
+   }
+  },
+  "QueryListPeopleDataResolverFnQueryListPeopleDataResolverFnAppSyncFunction7527A154": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "PersonDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QueryListPeopleDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/9fcbe070ecd3023c5bf5b966fa9584757db9762eef123bad0820bd87591b2174.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/cc01911d0269d4080ea57505dc445dfc315ef7ad85d3d9d4ea1357858bff451d.vtl"
+    }
+   },
+   "DependsOn": [
+    "PersonDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/QueryListPeopleDataResolverFn/QueryListPeopleDataResolverFn.AppSyncFunction"
+   }
+  },
+  "ListPersonResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "FieldName": "listPeople",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "QuerylistPeopleauth0FunctionQuerylistPeopleauth0FunctionAppSyncFunction54C0D154",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerylistPeoplepostAuth0FunctionQuerylistPeoplepostAuth0FunctionAppSyncFunction1786EC37",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QueryListPeopleDataResolverFnQueryListPeopleDataResolverFnAppSyncFunction7527A154",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"listPeople\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "PersonTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthauthenticatedUserRoleF1D5ACA5Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthunauthenticatedUserRoleA07FE92FRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthIdentityPoolF2171005Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Query"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/queryListPeopleResolver"
+   }
+  },
+  "MutationcreatePersoninit0FunctionMutationcreatePersoninit0FunctionAppSyncFunctionD4A94967": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPINONEDS588C7394Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreatePersoninit0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/a183ddccbd956316c38ef97177b8f088ef0826f62023323f5ae6053d348ccffc.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/MutationcreatePersoninit0Function/MutationcreatePersoninit0Function.AppSyncFunction"
+   }
+  },
+  "MutationcreatePersonauth0FunctionMutationcreatePersonauth0FunctionAppSyncFunctionEAFBF427": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPINONEDS588C7394Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreatePersonauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/2c055921267726d338556f5ee9fefaad37a67a4430b05d78096fad1650add826.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/MutationcreatePersonauth0Function/MutationcreatePersonauth0Function.AppSyncFunction"
+   }
+  },
+  "MutationcreatePersonpostAuth0FunctionMutationcreatePersonpostAuth0FunctionAppSyncFunction04EFC40F": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPINONEDS588C7394Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreatePersonpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/MutationcreatePersonpostAuth0Function/MutationcreatePersonpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationCreatePersonDataResolverFnMutationCreatePersonDataResolverFnAppSyncFunctionD6255519": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "PersonDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationCreatePersonDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/725b7ed3971927a1e99c853643b4ca575c3d612fff9b50d3f616c4feeb79a7d7.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f4a52b72209a9dfa197b5e7367a5c378c5bb86de6e29ddd9e48b49a3fe54b249.vtl"
+    }
+   },
+   "DependsOn": [
+    "PersonDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/MutationCreatePersonDataResolverFn/MutationCreatePersonDataResolverFn.AppSyncFunction"
+   }
+  },
+  "CreatePersonResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "FieldName": "createPerson",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationcreatePersoninit0FunctionMutationcreatePersoninit0FunctionAppSyncFunctionD4A94967",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationcreatePersonauth0FunctionMutationcreatePersonauth0FunctionAppSyncFunctionEAFBF427",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationcreatePersonpostAuth0FunctionMutationcreatePersonpostAuth0FunctionAppSyncFunction04EFC40F",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationCreatePersonDataResolverFnMutationCreatePersonDataResolverFnAppSyncFunctionD6255519",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"createPerson\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "PersonTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthauthenticatedUserRoleF1D5ACA5Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthunauthenticatedUserRoleA07FE92FRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthIdentityPoolF2171005Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Mutation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/mutationCreatePersonResolver"
+   }
+  },
+  "MutationupdatePersoninit0FunctionMutationupdatePersoninit0FunctionAppSyncFunction1245D23B": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPINONEDS588C7394Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdatePersoninit0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/06db846fd14e6fc371f22b12b5545ba8e2dbfeda85d8c8d586c71c282166657b.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/MutationupdatePersoninit0Function/MutationupdatePersoninit0Function.AppSyncFunction"
+   }
+  },
+  "MutationupdatePersonauth0FunctionMutationupdatePersonauth0FunctionAppSyncFunction36E326CF": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "PersonDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdatePersonauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/1f5fed297da9c32ae3af922bf3a38ccf23b956078887d16891ec06c20c64722c.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/acb3c762f5413df3e55fb538e2b27bf5cb7049c7f731433e6d9f310a3104deaf.vtl"
+    }
+   },
+   "DependsOn": [
+    "PersonDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/MutationupdatePersonauth0Function/MutationupdatePersonauth0Function.AppSyncFunction"
+   }
+  },
+  "MutationupdatePersonpostAuth0FunctionMutationupdatePersonpostAuth0FunctionAppSyncFunctionB321A1F7": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPINONEDS588C7394Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdatePersonpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/MutationupdatePersonpostAuth0Function/MutationupdatePersonpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationUpdatePersonDataResolverFnMutationUpdatePersonDataResolverFnAppSyncFunctionA221542D": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "PersonDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationUpdatePersonDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/474bf0776ec2164a13191d1a0a9e057154931e4918fea5086f49850d02a5371b.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f4a52b72209a9dfa197b5e7367a5c378c5bb86de6e29ddd9e48b49a3fe54b249.vtl"
+    }
+   },
+   "DependsOn": [
+    "PersonDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/MutationUpdatePersonDataResolverFn/MutationUpdatePersonDataResolverFn.AppSyncFunction"
+   }
+  },
+  "UpdatePersonResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "FieldName": "updatePerson",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationupdatePersoninit0FunctionMutationupdatePersoninit0FunctionAppSyncFunction1245D23B",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationupdatePersonauth0FunctionMutationupdatePersonauth0FunctionAppSyncFunction36E326CF",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationupdatePersonpostAuth0FunctionMutationupdatePersonpostAuth0FunctionAppSyncFunctionB321A1F7",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationUpdatePersonDataResolverFnMutationUpdatePersonDataResolverFnAppSyncFunctionA221542D",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"updatePerson\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "PersonTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthauthenticatedUserRoleF1D5ACA5Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthunauthenticatedUserRoleA07FE92FRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthIdentityPoolF2171005Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Mutation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/mutationUpdatePersonResolver"
+   }
+  },
+  "MutationdeletePersonauth0FunctionMutationdeletePersonauth0FunctionAppSyncFunction226CC37B": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "PersonDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationdeletePersonauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/1f5fed297da9c32ae3af922bf3a38ccf23b956078887d16891ec06c20c64722c.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/867fb7d7eb8e4127b6d0136b82c5c3f74a52eb410297086859986f8e7e4b02aa.vtl"
+    }
+   },
+   "DependsOn": [
+    "PersonDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/MutationdeletePersonauth0Function/MutationdeletePersonauth0Function.AppSyncFunction"
+   }
+  },
+  "MutationdeletePersonpostAuth0FunctionMutationdeletePersonpostAuth0FunctionAppSyncFunction178DC157": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPINONEDS588C7394Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationdeletePersonpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/MutationdeletePersonpostAuth0Function/MutationdeletePersonpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationDeletePersonDataResolverFnMutationDeletePersonDataResolverFnAppSyncFunctionB6FC28BE": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "PersonDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationDeletePersonDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4f7907d1209a2c9953a0c053df402c634e359546d70c7cc5c2e8e21ea734880f.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f4a52b72209a9dfa197b5e7367a5c378c5bb86de6e29ddd9e48b49a3fe54b249.vtl"
+    }
+   },
+   "DependsOn": [
+    "PersonDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/MutationDeletePersonDataResolverFn/MutationDeletePersonDataResolverFn.AppSyncFunction"
+   }
+  },
+  "DeletePersonResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "FieldName": "deletePerson",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationdeletePersonauth0FunctionMutationdeletePersonauth0FunctionAppSyncFunction226CC37B",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationdeletePersonpostAuth0FunctionMutationdeletePersonpostAuth0FunctionAppSyncFunction178DC157",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationDeletePersonDataResolverFnMutationDeletePersonDataResolverFnAppSyncFunctionB6FC28BE",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"deletePerson\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "PersonTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthauthenticatedUserRoleF1D5ACA5Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthunauthenticatedUserRoleA07FE92FRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthIdentityPoolF2171005Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Mutation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/mutationDeletePersonResolver"
+   }
+  },
+  "SubscriptiononCreatePersonauth0FunctionSubscriptiononCreatePersonauth0FunctionAppSyncFunctionF5035C7D": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPINONEDS588C7394Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononCreatePersonauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/3b6d810ef43cdbd93ef462c40b0df0328b89e04f1473a4f82f1178da1f1d5aa0.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/SubscriptiononCreatePersonauth0Function/SubscriptiononCreatePersonauth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptiononCreatePersonpostAuth0FunctionSubscriptiononCreatePersonpostAuth0FunctionAppSyncFunction5919295E": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPINONEDS588C7394Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononCreatePersonpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/SubscriptiononCreatePersonpostAuth0Function/SubscriptiononCreatePersonpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptionOnCreatePersonDataResolverFnSubscriptionOnCreatePersonDataResolverFnAppSyncFunctionCDDD5891": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPINONEDS588C7394Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptionOnCreatePersonDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fe3c43ada4b9d681a5e2312663ef7a73386424d73b73e51f8e2e9d4b50f7c502.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e0cff47fb007f0bbf2a4e43ca256d6aa7ec109821769fd79fa7c5e83f0e7f9fc.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/SubscriptionOnCreatePersonDataResolverFn/SubscriptionOnCreatePersonDataResolverFn.AppSyncFunction"
+   }
+  },
+  "SubscriptiononCreatePersonResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "FieldName": "onCreatePerson",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononCreatePersonauth0FunctionSubscriptiononCreatePersonauth0FunctionAppSyncFunctionF5035C7D",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononCreatePersonpostAuth0FunctionSubscriptiononCreatePersonpostAuth0FunctionAppSyncFunction5919295E",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptionOnCreatePersonDataResolverFnSubscriptionOnCreatePersonDataResolverFnAppSyncFunctionCDDD5891",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onCreatePerson\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthauthenticatedUserRoleF1D5ACA5Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthunauthenticatedUserRoleA07FE92FRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthIdentityPoolF2171005Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Subscription"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/subscriptionOnCreatePersonResolver"
+   }
+  },
+  "SubscriptiononUpdatePersonauth0FunctionSubscriptiononUpdatePersonauth0FunctionAppSyncFunction353AC226": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPINONEDS588C7394Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononUpdatePersonauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/3b6d810ef43cdbd93ef462c40b0df0328b89e04f1473a4f82f1178da1f1d5aa0.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/SubscriptiononUpdatePersonauth0Function/SubscriptiononUpdatePersonauth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptiononUpdatePersonpostAuth0FunctionSubscriptiononUpdatePersonpostAuth0FunctionAppSyncFunction8A075045": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPINONEDS588C7394Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononUpdatePersonpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/SubscriptiononUpdatePersonpostAuth0Function/SubscriptiononUpdatePersonpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptionOnUpdatePersonDataResolverFnSubscriptionOnUpdatePersonDataResolverFnAppSyncFunction531174D3": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPINONEDS588C7394Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptionOnUpdatePersonDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fe3c43ada4b9d681a5e2312663ef7a73386424d73b73e51f8e2e9d4b50f7c502.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e0cff47fb007f0bbf2a4e43ca256d6aa7ec109821769fd79fa7c5e83f0e7f9fc.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/SubscriptionOnUpdatePersonDataResolverFn/SubscriptionOnUpdatePersonDataResolverFn.AppSyncFunction"
+   }
+  },
+  "SubscriptiononUpdatePersonResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "FieldName": "onUpdatePerson",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononUpdatePersonauth0FunctionSubscriptiononUpdatePersonauth0FunctionAppSyncFunction353AC226",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononUpdatePersonpostAuth0FunctionSubscriptiononUpdatePersonpostAuth0FunctionAppSyncFunction8A075045",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptionOnUpdatePersonDataResolverFnSubscriptionOnUpdatePersonDataResolverFnAppSyncFunction531174D3",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onUpdatePerson\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthauthenticatedUserRoleF1D5ACA5Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthunauthenticatedUserRoleA07FE92FRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthIdentityPoolF2171005Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Subscription"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/subscriptionOnUpdatePersonResolver"
+   }
+  },
+  "SubscriptiononDeletePersonauth0FunctionSubscriptiononDeletePersonauth0FunctionAppSyncFunctionABDD4455": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPINONEDS588C7394Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononDeletePersonauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/3b6d810ef43cdbd93ef462c40b0df0328b89e04f1473a4f82f1178da1f1d5aa0.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/SubscriptiononDeletePersonauth0Function/SubscriptiononDeletePersonauth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptiononDeletePersonpostAuth0FunctionSubscriptiononDeletePersonpostAuth0FunctionAppSyncFunctionA71D2E0E": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPINONEDS588C7394Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononDeletePersonpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/SubscriptiononDeletePersonpostAuth0Function/SubscriptiononDeletePersonpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptionOnDeletePersonDataResolverFnSubscriptionOnDeletePersonDataResolverFnAppSyncFunction10D6A6CE": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPINONEDS588C7394Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptionOnDeletePersonDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fe3c43ada4b9d681a5e2312663ef7a73386424d73b73e51f8e2e9d4b50f7c502.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e0cff47fb007f0bbf2a4e43ca256d6aa7ec109821769fd79fa7c5e83f0e7f9fc.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/SubscriptionOnDeletePersonDataResolverFn/SubscriptionOnDeletePersonDataResolverFn.AppSyncFunction"
+   }
+  },
+  "SubscriptiononDeletePersonResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "FieldName": "onDeletePerson",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononDeletePersonauth0FunctionSubscriptiononDeletePersonauth0FunctionAppSyncFunctionABDD4455",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononDeletePersonpostAuth0FunctionSubscriptiononDeletePersonpostAuth0FunctionAppSyncFunctionA71D2E0E",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptionOnDeletePersonDataResolverFnSubscriptionOnDeletePersonDataResolverFnAppSyncFunction10D6A6CE",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onDeletePerson\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthauthenticatedUserRoleF1D5ACA5Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthunauthenticatedUserRoleA07FE92FRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthIdentityPoolF2171005Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Subscription"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/subscriptionOnDeletePersonResolver"
+   }
+  },
+  "PersonOwnerDataResolverFnPersonOwnerDataResolverFnAppSyncFunctionFDBE0368": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPINONEDS588C7394Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "PersonOwnerDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/041534e5fd916595f752318f161512d7c7f83b9f2cf32d0f0be381c12253ff68.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/064303962e481067b44300212516363b99aaee539b6bafaf756fdd83ff0b60f0.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/PersonOwnerDataResolverFn/PersonOwnerDataResolverFn.AppSyncFunction"
+   }
+  },
+  "PersonownerResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+    },
+    "FieldName": "owner",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "PersonOwnerDataResolverFnPersonOwnerDataResolverFnAppSyncFunctionFDBE0368",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Person\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"owner\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthauthenticatedUserRoleF1D5ACA5Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthunauthenticatedUserRoleA07FE92FRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authNestedStackauthNestedStackResourceF50FD386Outputsamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31authamplifyAuthIdentityPoolF2171005Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Person"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/personOwnerResolver"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/1WOwW6DMAyGn6X31GNUmnZdQTtuE+xemcSgFHBQ7LSqEO8+QadOO/3+5E/2n0P+kkG2w6vsrev3g29g/iBRcrWi7U3R8hdGHEkprlAEdl59YFORhBQtmSKJhvEPW37MeJXT7G6MY3ANfGMz0BGFjMcR5ioMdzsMtBicJrmxhbnc9LIpUbF+nPxP74ntWqII3PouRdwa/X4eLhQXI4cTipAKvK1h5ADHZHvStcCyup9Jp6RmW9eKneduMRwcwVmeLnkOz6+Q7c7i/T4mVj8SVPf8AQ4bV8I2AQAA"
+   },
+   "Metadata": {
+    "aws:cdk:path": "amplify-specialneedstracker-bryantjackson-sandbox-35614a7f31/data/amplifyData/Person/CDKMetadata/Default"
+   },
+   "Condition": "CDKMetadataAvailable"
+  }
+ },
+ "Outputs": {
+  "GetAttPersonTableStreamArn": {
+   "Description": "Your DynamoDB table StreamArn.",
+   "Value": {
+    "Fn::GetAtt": [
+     "PersonTable",
+     "TableStreamArn"
+    ]
+   },
+   "Export": {
+    "Name": {
+     "Fn::Join": [
+      ":",
+      [
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+       },
+       "GetAtt:PersonTable:StreamArn"
+      ]
+     ]
+    }
+   }
+  },
+  "GetAttPersonTableName": {
+   "Description": "Your DynamoDB table name.",
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "Person-",
+      {
+       "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+      },
+      "-NONE"
+     ]
+    ]
+   },
+   "Export": {
+    "Name": {
+     "Fn::Join": [
+      ":",
+      [
+       {
+        "Ref": "referencetoamplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataGraphQLAPIF6EBD13AApiId"
+       },
+       "GetAtt:PersonTable:Name"
+      ]
+     ]
+    }
+   }
+  },
+  "amplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataPersonPersonDataSourceF7E51044Name": {
+   "Value": {
+    "Fn::GetAtt": [
+     "PersonDataSource",
+     "Name"
+    ]
+   }
+  },
+  "amplifyspecialneedstrackerbryantjacksonsandbox35614a7f31dataamplifyDataPersonPersonTable3D245202TableArn": {
+   "Value": {
+    "Fn::GetAtt": [
+     "PersonTable",
+     "TableArn"
+    ]
+   }
+  }
+ }
+}
