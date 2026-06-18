@@ -14,6 +14,7 @@ const personSelectionSet = [
     'indicators.active',
     'checkIns.id',
     'checkIns.occurredAt',
+    'checkIns.answersJson',
     'checkIns.note',
 ] as const;
 

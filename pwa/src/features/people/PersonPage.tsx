@@ -10,7 +10,6 @@ import {
     IonItem,
     IonLabel,
     IonList,
-    IonNote,
     IonPage,
     IonSpinner,
     IonTitle,
@@ -19,19 +18,18 @@ import {
 } from '@ionic/react';
 import {
     arrowBackOutline,
-    calculatorOutline,
-    checkmarkCircleOutline,
-    documentTextOutline,
+    checkmarkCircle,
+    ellipseOutline,
     ellipsisHorizontal,
-    happyOutline,
-    repeatOutline,
+    removeCircle,
     timeOutline,
-    timerOutline,
 } from 'ionicons/icons';
 import { formatDistanceToNow } from 'date-fns';
+import { useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { usePerson } from './usePerson';
+import { findTodaysCheckIn, parseAnswers } from './checkin/checkInUtils';
 import { PersonAvatar } from '../../components/PersonAvatar';
 import { PersonRole } from '../../lib/domain';
 
@@ -45,24 +43,6 @@ const roleLabels: Record<PersonRole, string> = {
     parent: 'Parent',
     caregiver: 'Caregiver',
     other: 'Other',
-};
-
-const inputTypeLabels: Record<string, string> = {
-    boolean: 'Yes / no',
-    frequency: 'Frequency',
-    scale: 'Intensity',
-    count: 'Count',
-    duration: 'Duration',
-    text: 'Note',
-};
-
-const inputTypeIcons: Record<string, string> = {
-    boolean: checkmarkCircleOutline,
-    frequency: repeatOutline,
-    scale: happyOutline,
-    count: calculatorOutline,
-    duration: timerOutline,
-    text: documentTextOutline,
 };
 
 const MAX_VISIBLE_INDICATORS = 4;
@@ -97,6 +77,36 @@ export default function PersonPage() {
     const router = useIonRouter();
     const { personId } = useParams<{ personId: string }>();
     const { data: person, isLoading, error } = usePerson(personId);
+    const hasRedirected = useRef(false);
+
+    const indicators = (person?.indicators ?? []) as Indicator[];
+    const checkIns = (person?.checkIns ?? []) as CheckIn[];
+    const activeIndicators = indicators.filter((indicator) => indicator.active !== false);
+
+    const distressIndicators = activeIndicators.filter(
+        (indicator) => indicator.polarity === 'undesired',
+    );
+
+    const visibleDistress = distressIndicators.slice(0, MAX_VISIBLE_INDICATORS);
+    const hiddenDistressCount = distressIndicators.length - visibleDistress.length;
+
+    const recentCheckIn = latestCheckIn(checkIns);
+    const status = deriveStatus(recentCheckIn);
+    const todaysCheckIn = findTodaysCheckIn(checkIns);
+    const noteCheckIn = checkIns.find((checkIn) => Boolean(checkIn.note));
+
+    const checkInPath = `/people/${personId}/check-in`;
+
+    // No check-in yet today → drop the caregiver straight into the check-in flow.
+    useEffect(() => {
+        if (isLoading || !person || hasRedirected.current) {
+            return;
+        }
+        if (activeIndicators.length > 0 && !todaysCheckIn) {
+            hasRedirected.current = true;
+            router.push(checkInPath, 'forward', 'replace');
+        }
+    }, [isLoading, person, activeIndicators.length, todaysCheckIn, router, checkInPath]);
 
     function goBack() {
         if (router.canGoBack()) {
@@ -115,18 +125,11 @@ export default function PersonPage() {
         router.push(`/people/${personId}/indicators`, 'forward');
     }
 
-    const indicators = (person?.indicators ?? []) as Indicator[];
-    const checkIns = (person?.checkIns ?? []) as CheckIn[];
+    function startCheckIn() {
+        router.push(checkInPath, 'forward');
+    }
 
-    const distressIndicators = indicators.filter((indicator) => indicator.polarity === 'undesired');
-    const checkInTypes = indicators.filter((indicator) => indicator.polarity !== 'undesired');
-
-    const visibleDistress = distressIndicators.slice(0, MAX_VISIBLE_INDICATORS);
-    const hiddenDistressCount = distressIndicators.length - visibleDistress.length;
-
-    const recentCheckIn = latestCheckIn(checkIns);
-    const status = deriveStatus(recentCheckIn);
-    const noteCheckIn = checkIns.find((checkIn) => Boolean(checkIn.note));
+    const checkedToday = todaysCheckIn ? new Set(parseAnswers(todaysCheckIn.answersJson).checked) : null;
 
     return (
         <IonPage>
@@ -224,39 +227,57 @@ export default function PersonPage() {
                             </IonCardContent>
                         </IonCard>
 
-                        <IonCard>
-                            <IonCardContent>
-                                <div className="section-header">
-                                    <h2>Check-In Types</h2>
-                                    <IonButton fill="clear" size="small" onClick={manageIndicators}>
-                                        Edit
-                                    </IonButton>
-                                </div>
+                        {checkedToday && (
+                            <IonCard>
+                                <IonCardContent>
+                                    <div className="section-header">
+                                        <h2>Today’s Check-In</h2>
+                                        <IonButton fill="clear" size="small" onClick={startCheckIn}>
+                                            Edit
+                                        </IonButton>
+                                    </div>
 
-                                {checkInTypes.length === 0 ? (
-                                    <p className="section-empty">No check-in types yet.</p>
-                                ) : (
-                                    <IonList lines="none" className="check-in-types">
-                                        {checkInTypes.map((indicator) => (
-                                            <IonItem key={indicator.id} className="check-in-type">
-                                                <IonIcon
-                                                    slot="start"
-                                                    icon={
-                                                        inputTypeIcons[indicator.inputType ?? 'text'] ??
-                                                        documentTextOutline
-                                                    }
-                                                    color="primary"
-                                                />
-                                                <IonLabel>{indicator.name}</IonLabel>
-                                                <IonNote slot="end">
-                                                    {inputTypeLabels[indicator.inputType ?? 'text'] ?? 'Note'}
-                                                </IonNote>
-                                            </IonItem>
-                                        ))}
-                                    </IonList>
-                                )}
-                            </IonCardContent>
-                        </IonCard>
+                                    {activeIndicators.length === 0 ? (
+                                        <p className="section-empty">No indicators tracked.</p>
+                                    ) : (
+                                        <IonList lines="none" className="check-in-summary">
+                                            {activeIndicators.map((indicator) => {
+                                                const seen = checkedToday.has(indicator.id);
+                                                const isDesired = indicator.polarity === 'desired';
+                                                return (
+                                                    <IonItem key={indicator.id} className="check-in-summary__item">
+                                                        <IonIcon
+                                                            slot="start"
+                                                            icon={
+                                                                seen
+                                                                    ? isDesired
+                                                                        ? checkmarkCircle
+                                                                        : removeCircle
+                                                                    : ellipseOutline
+                                                            }
+                                                            color={
+                                                                seen
+                                                                    ? isDesired
+                                                                        ? 'success'
+                                                                        : 'danger'
+                                                                    : 'medium'
+                                                            }
+                                                        />
+                                                        <IonLabel
+                                                            className={
+                                                                seen ? '' : 'check-in-summary__muted'
+                                                            }
+                                                        >
+                                                            {indicator.name}
+                                                        </IonLabel>
+                                                    </IonItem>
+                                                );
+                                            })}
+                                        </IonList>
+                                    )}
+                                </IonCardContent>
+                            </IonCard>
+                        )}
 
                         <IonCard>
                             <IonCardContent>

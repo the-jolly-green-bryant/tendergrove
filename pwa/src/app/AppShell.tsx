@@ -24,6 +24,7 @@ import ParentCarePage from '../features/parent-care/ParentCarePage'
 import ReportsPage from '../features/reports/ReportsPage'
 import PersonFormPage from '../features/people/PersonFormPage'
 import PersonPage from '../features/people/PersonPage'
+import PersonCheckInPage from '../features/people/checkin/PersonCheckInPage'
 import ManageIndicatorsPage from '../features/people/indicators/ManageIndicatorsPage'
 import ChooseIndicatorTypePage from '../features/people/indicators/ChooseIndicatorTypePage'
 import IndicatorFormPage from '../features/people/indicators/IndicatorFormPage'
@@ -55,6 +56,12 @@ export default function AppShell() {
               exact
               path="/people/:personId/edit"
               component={PersonFormPage}
+          />
+
+          <Route
+              exact
+              path="/people/:personId/check-in"
+              component={PersonCheckInPage}
           />
 
           <Route

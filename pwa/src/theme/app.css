@@ -148,18 +148,39 @@ ion-toolbar {
   --color: var(--app-muted-text);
 }
 
-.check-in-types {
+.check-in-summary {
   background: transparent;
 }
 
-ion-item.check-in-type {
-  --min-height: 52px;
+ion-item.check-in-summary__item {
+  --min-height: 44px;
   --padding-start: 0;
   --inner-padding-end: 0;
-  margin-bottom: 0;
   border: 0;
   box-shadow: none;
   --background: transparent;
+}
+
+.check-in-summary__muted {
+  color: var(--app-muted-text);
+}
+
+/* Check-in flow */
+.check-in__intro {
+  margin: 0 0 12px;
+  color: var(--app-muted-text);
+}
+
+.check-in__group-title {
+  margin: 18px 4px 6px;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.check-in__hint {
+  display: block;
+  margin: 8px 4px 16px;
+  font-size: 0.82rem;
 }
 
 .person-notes {
