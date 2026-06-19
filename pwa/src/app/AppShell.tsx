@@ -25,6 +25,7 @@ import PersonFormPage from '../features/people/PersonFormPage'
 import PersonPage from '../features/people/PersonPage'
 import PersonCheckInPage from '../features/people/checkin/PersonCheckInPage'
 import ManageIndicatorsPage from '../features/people/indicators/ManageIndicatorsPage'
+import IndicatorChecklistPage from '../features/people/indicators/IndicatorChecklistPage'
 import ChooseIndicatorTypePage from '../features/people/indicators/ChooseIndicatorTypePage'
 import IndicatorFormPage from '../features/people/indicators/IndicatorFormPage'
 import ArchivedPeoplePage from '../features/people/ArchivedPeoplePage'
@@ -69,6 +70,12 @@ export default function AppShell() {
               exact
               path="/person/:personId/indicators"
               component={ManageIndicatorsPage}
+          />
+
+          <Route
+              exact
+              path="/person/:personId/indicators/checklist"
+              component={IndicatorChecklistPage}
           />
 
           <Route

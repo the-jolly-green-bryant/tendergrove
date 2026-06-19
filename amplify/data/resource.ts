@@ -54,6 +54,15 @@ const schema = a.schema({
         })
         .authorization((allow) => [allow.owner()]),
 
+    RoleTemplate: a
+        .model({
+            role: a.enum(['child', 'parent', 'spouse', 'self', 'caregiver', 'other']),
+            label: a.string().required(),
+            version: a.integer().required(),
+            indicatorsJson: a.json().required(),
+        })
+        .authorization((allow) => [allow.authenticated().to(['read']), allow.groups(['Admin'])]),
+
     Event: a
         .model({
             personId: a.id().required(),

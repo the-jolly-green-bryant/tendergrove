@@ -165,7 +165,14 @@ export default function PersonFormPage() {
         }
 
         const newId = isEditing ? personId : result.data?.id;
-        if (newId) {
+        if (newId && !isEditing) {
+            const params = new URLSearchParams({
+                role,
+                name: trimmedDisplayName,
+                setup: '1',
+            });
+            router.push(`/person/${newId}/indicators/checklist?${params}`, 'forward');
+        } else if (newId) {
             router.push(`/person/${newId}`, 'forward');
         } else {
             router.push('/dashboard', 'back');
