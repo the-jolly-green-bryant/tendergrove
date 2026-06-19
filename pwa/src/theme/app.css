@@ -499,6 +499,23 @@ ion-item.indicator-row {
   height: fit-content;
 }
 
+/* Person hero date label */
+.person-hero__date-label {
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ion-color-primary);
+  margin: 4px 0 12px;
+}
+
+/* Wizard date badge in header */
+.wizard-date-badge {
+  font-size: 0.8rem;
+  font-weight: 600;
+  --color: var(--ion-color-primary) !important;
+  opacity: 1 !important;
+}
+
 /* Check-in wizard */
 .wizard-step__hero {
   display: flex;

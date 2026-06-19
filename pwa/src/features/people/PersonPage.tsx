@@ -5,11 +5,13 @@ import {
     IonCardContent,
     IonChip,
     IonContent,
+    IonDatetime,
     IonHeader,
     IonIcon,
     IonItem,
     IonLabel,
     IonList,
+    IonModal,
     IonPage,
     IonSpinner,
     IonTitle,
@@ -21,6 +23,7 @@ import {
 import {
     archiveOutline,
     arrowBackOutline,
+    calendarOutline,
     checkmarkCircle,
     closeCircle,
     createOutline,
@@ -31,12 +34,14 @@ import {
     timeOutline,
 } from 'ionicons/icons';
 import { formatDistanceToNow } from 'date-fns';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
+
+import { useSelectedDate } from '../../context/SelectedDateContext';
 
 import { usePerson } from './usePerson';
 import { useArchivePerson } from './useArchivePerson';
-import { findTodaysCheckIn, parseAnswers } from './checkin/checkInUtils';
+import { parseAnswers } from './checkin/checkInUtils';
 import { PersonAvatar } from '../../components/PersonAvatar';
 import { PersonRole } from '../../lib/domain';
 
@@ -80,6 +85,35 @@ function deriveStatus(checkIn: CheckIn | undefined): {
     return { label: 'Needs attention', color: 'danger' };
 }
 
+/** Return YYYY-MM-DD for a Date. */
+function toISODate(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+}
+
+function isSameDay(occurredAt: string, date: Date): boolean {
+    const d = new Date(occurredAt);
+    return (
+        d.getFullYear() === date.getFullYear() &&
+        d.getMonth() === date.getMonth() &&
+        d.getDate() === date.getDate()
+    );
+}
+
+function formatDateLabel(date: Date): string {
+    const today = new Date();
+    if (
+        date.getFullYear() === today.getFullYear() &&
+        date.getMonth() === today.getMonth() &&
+        date.getDate() === today.getDate()
+    ) {
+        return 'Today';
+    }
+    return date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
 export default function PersonPage() {
     const router = useIonRouter();
     const { personId } = useParams<{ personId: string }>();
@@ -88,6 +122,8 @@ export default function PersonPage() {
     const hasRedirected = useRef(false);
     const [presentActionSheet] = useIonActionSheet();
     const [presentAlert] = useIonAlert();
+    const { selectedDate, setSelectedDate } = useSelectedDate();
+    const [datePickerOpen, setDatePickerOpen] = useState(false);
 
     const indicators = (person?.indicators ?? []) as Indicator[];
     const checkIns = (person?.checkIns ?? []) as CheckIn[];
@@ -102,21 +138,21 @@ export default function PersonPage() {
 
     const recentCheckIn = latestCheckIn(checkIns);
     const status = deriveStatus(recentCheckIn);
-    const todaysCheckIn = findTodaysCheckIn(checkIns);
+    const selectedDateCheckIn = checkIns.find((ci) => isSameDay(ci.occurredAt, selectedDate));
     const noteCheckIn = checkIns.find((checkIn) => Boolean(checkIn.note));
 
     const checkInPath = `/person/${personId}/check-in`;
 
-    // No check-in yet today → drop the caregiver straight into the check-in flow.
+    // No check-in yet for the selected date → drop the caregiver straight into the check-in flow.
     useEffect(() => {
         if (!isRealPerson || isLoading || !person || hasRedirected.current) {
             return;
         }
-        if (activeIndicators.length > 0 && !todaysCheckIn) {
+        if (activeIndicators.length > 0 && !selectedDateCheckIn) {
             hasRedirected.current = true;
             router.push(checkInPath, 'forward', 'replace');
         }
-    }, [isRealPerson, isLoading, person, activeIndicators.length, todaysCheckIn, router, checkInPath]);
+    }, [isRealPerson, isLoading, person, activeIndicators.length, selectedDateCheckIn, router, checkInPath]);
 
     // When Ionic matches /people/new against /people/:personId, bail out so
     // PersonFormPage is the only visible page.
@@ -209,7 +245,7 @@ export default function PersonPage() {
         router.push(checkInPath, 'forward');
     }
 
-    const checkedToday = todaysCheckIn ? new Set(parseAnswers(todaysCheckIn.answersJson).checked) : null;
+    const checkedForDate = selectedDateCheckIn ? new Set(parseAnswers(selectedDateCheckIn.answersJson).checked) : null;
 
     return (
         <IonPage>
@@ -224,12 +260,35 @@ export default function PersonPage() {
                     <IonTitle>{person?.displayName ?? ''}</IonTitle>
 
                     <IonButtons slot="end">
+                        <IonButton fill="clear" onClick={() => setDatePickerOpen(true)} aria-label="Pick date">
+                            <IonIcon slot="icon-only" icon={calendarOutline} />
+                        </IonButton>
                         <IonButton fill="clear" onClick={showMoreOptions} aria-label="More options">
                             <IonIcon slot="icon-only" icon={ellipsisHorizontal} />
                         </IonButton>
                     </IonButtons>
                 </IonToolbar>
             </IonHeader>
+
+            <IonModal
+                isOpen={datePickerOpen}
+                onDidDismiss={() => setDatePickerOpen(false)}
+                className="household-date-modal"
+            >
+                <IonDatetime
+                    presentation="date"
+                    value={toISODate(selectedDate)}
+                    max={toISODate(new Date())}
+                    onIonChange={(e) => {
+                        const val = e.detail.value;
+                        if (typeof val === 'string') {
+                            const [y, m, d] = val.split('-').map(Number);
+                            setSelectedDate(new Date(y, m - 1, d));
+                        }
+                        setDatePickerOpen(false);
+                    }}
+                />
+            </IonModal>
 
             <IonContent fullscreen className="ion-padding safe-content">
                 {isLoading && (
@@ -275,11 +334,15 @@ export default function PersonPage() {
                             </div>
                         </section>
 
-                        {checkedToday && (
+                        <p className="person-hero__date-label">
+                            Viewing: {formatDateLabel(selectedDate)}
+                        </p>
+
+                        {checkedForDate && (
                             <IonCard>
                                 <IonCardContent>
                                     <div className="section-header">
-                                        <h2>Today’s Check-In</h2>
+                                        <h2>{formatDateLabel(selectedDate)} Check-In</h2>
                                         <IonButton fill="clear" size="small" onClick={startCheckIn}>
                                             Edit
                                         </IonButton>
@@ -290,7 +353,7 @@ export default function PersonPage() {
                                     ) : (
                                         <IonList lines="none" className="check-in-summary">
                                             {activeIndicators.map((indicator) => {
-                                                const seen = checkedToday.has(indicator.id);
+                                                const seen = checkedForDate.has(indicator.id);
                                                 const isDesired = indicator.polarity === 'desired';
                                                 return (
                                                     <IonItem key={indicator.id} className="check-in-summary__item">

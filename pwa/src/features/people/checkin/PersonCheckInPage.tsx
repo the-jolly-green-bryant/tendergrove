@@ -19,15 +19,38 @@ import { arrowBackOutline, checkmarkCircle, removeCircle } from 'ionicons/icons'
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
+import { useSelectedDate } from '../../../context/SelectedDateContext';
 import { usePerson } from '../usePerson';
-import { findTodaysCheckIn, parseAnswers } from './checkInUtils';
+import { parseAnswers } from './checkInUtils';
 import { useCheckInMutations } from './useCheckInMutations';
+
+function isSameDay(occurredAt: string, date: Date): boolean {
+    const d = new Date(occurredAt);
+    return (
+        d.getFullYear() === date.getFullYear() &&
+        d.getMonth() === date.getMonth() &&
+        d.getDate() === date.getDate()
+    );
+}
+
+function formatDateLabel(date: Date): string {
+    const today = new Date();
+    if (
+        date.getFullYear() === today.getFullYear() &&
+        date.getMonth() === today.getMonth() &&
+        date.getDate() === today.getDate()
+    ) {
+        return 'Today';
+    }
+    return date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+}
 
 type Indicator = NonNullable<ReturnType<typeof usePerson>['data']>['indicators'][number];
 
 export default function PersonCheckInPage() {
     const router = useIonRouter();
     const { personId } = useParams<{ personId: string }>();
+    const { selectedDate } = useSelectedDate();
     const { data: person, isLoading } = usePerson(personId);
     const { create, update } = useCheckInMutations(personId);
 
@@ -39,8 +62,8 @@ export default function PersonCheckInPage() {
     const undesired = indicators.filter((indicator) => indicator.polarity === 'undesired');
 
     const existing = useMemo(
-        () => findTodaysCheckIn(person?.checkIns ?? []),
-        [person],
+        () => (person?.checkIns ?? []).find((ci) => isSameDay(ci.occurredAt, selectedDate)),
+        [person, selectedDate],
     );
 
     const [checked, setChecked] = useState<Record<string, boolean>>({});
@@ -77,8 +100,11 @@ export default function PersonCheckInPage() {
             return;
         }
 
+        const occurDate = new Date(selectedDate);
+        occurDate.setHours(12, 0, 0, 0);
+
         const payload = {
-            occurredAt: new Date().toISOString(),
+            occurredAt: occurDate.toISOString(),
             answers: { checked: indicators.filter((i) => checked[i.id]).map((i) => i.id) },
             note: note.trim() || undefined,
         };
@@ -130,7 +156,7 @@ export default function PersonCheckInPage() {
                             <IonIcon slot="icon-only" icon={arrowBackOutline} />
                         </IonButton>
                     </IonButtons>
-                    <IonTitle>{person ? `${person.displayName} Check-In` : 'Check-In'}</IonTitle>
+                    <IonTitle>{person ? `${person.displayName} — ${formatDateLabel(selectedDate)}` : 'Check-In'}</IonTitle>
                 </IonToolbar>
             </IonHeader>
 
@@ -143,7 +169,7 @@ export default function PersonCheckInPage() {
 
                 {person && (
                     <>
-                        <p className="check-in__intro">Check off everything you saw today.</p>
+                        <p className="check-in__intro">Check off everything you saw {formatDateLabel(selectedDate).toLowerCase() === 'today' ? 'today' : `on ${formatDateLabel(selectedDate)}`}.</p>
 
                         {indicators.length === 0 ? (
                             <p className="section-empty">

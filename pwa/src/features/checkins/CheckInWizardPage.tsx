@@ -19,10 +19,32 @@ import { arrowBackOutline, checkmarkCircle, removeCircle } from 'ionicons/icons'
 import { useEffect, useMemo, useState } from 'react'
 
 import { PersonAvatar } from '../../components/PersonAvatar'
+import { useSelectedDate } from '../../context/SelectedDateContext'
 import { usePeople } from '../people/usePeople'
 import { usePerson } from '../people/usePerson'
-import { findTodaysCheckIn, parseAnswers } from '../people/checkin/checkInUtils'
+import { parseAnswers } from '../people/checkin/checkInUtils'
 import { useCheckInMutations } from '../people/checkin/useCheckInMutations'
+
+function isSameDay(occurredAt: string, date: Date): boolean {
+    const d = new Date(occurredAt)
+    return (
+        d.getFullYear() === date.getFullYear() &&
+        d.getMonth() === date.getMonth() &&
+        d.getDate() === date.getDate()
+    )
+}
+
+function formatDateLabel(date: Date): string {
+    const today = new Date()
+    if (
+        date.getFullYear() === today.getFullYear() &&
+        date.getMonth() === today.getMonth() &&
+        date.getDate() === today.getDate()
+    ) {
+        return 'Today'
+    }
+    return date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
+}
 
 type Indicator = NonNullable<ReturnType<typeof usePerson>['data']>['indicators'][number]
 
@@ -32,10 +54,12 @@ type Indicator = NonNullable<ReturnType<typeof usePerson>['data']>['indicators']
  */
 function WizardStep({
     personId,
+    selectedDate,
     onDone,
     onSkip,
 }: {
     personId: string
+    selectedDate: Date
     onDone: () => void
     onSkip: () => void
 }) {
@@ -51,8 +75,8 @@ function WizardStep({
     const undesired = indicators.filter((i) => i.polarity === 'undesired')
 
     const existing = useMemo(
-        () => findTodaysCheckIn(person?.checkIns ?? []),
-        [person],
+        () => (person?.checkIns ?? []).find((ci) => isSameDay(ci.occurredAt, selectedDate)),
+        [person, selectedDate],
     )
 
     const [checked, setChecked] = useState<Record<string, boolean>>({})
@@ -84,8 +108,12 @@ function WizardStep({
     async function save() {
         if (saving) return
 
+        // Use noon on the selected date so the timestamp clearly belongs to that day.
+        const occurDate = new Date(selectedDate)
+        occurDate.setHours(12, 0, 0, 0)
+
         const payload = {
-            occurredAt: new Date().toISOString(),
+            occurredAt: occurDate.toISOString(),
             answers: { checked: indicators.filter((i) => checked[i.id]).map((i) => i.id) },
             note: note.trim() || undefined,
         }
@@ -188,6 +216,7 @@ function WizardStep({
 
 export default function CheckInWizardPage() {
     const router = useIonRouter()
+    const { selectedDate } = useSelectedDate()
     const people = usePeople()
 
     const activePeople = useMemo(
@@ -223,6 +252,11 @@ export default function CheckInWizardPage() {
                             ? `Check-In (${currentIndex + 1} of ${total})`
                             : 'Check-In'}
                     </IonTitle>
+                    <IonButtons slot="end">
+                        <IonButton fill="clear" disabled className="wizard-date-badge">
+                            {formatDateLabel(selectedDate)}
+                        </IonButton>
+                    </IonButtons>
                 </IonToolbar>
             </IonHeader>
 
@@ -241,6 +275,7 @@ export default function CheckInWizardPage() {
                     <WizardStep
                         key={currentPerson.id}
                         personId={currentPerson.id}
+                        selectedDate={selectedDate}
                         onDone={advance}
                         onSkip={advance}
                     />

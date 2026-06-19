@@ -13,6 +13,7 @@ import { Page } from '../../components/Page'
 import { PersonAvatar } from '../../components/PersonAvatar'
 import { Greeting } from '../../components/Greeting'
 import { useAppAuth } from '../../auth/AuthContext'
+import { useSelectedDate } from '../../context/SelectedDateContext'
 import { usePeople } from '../people/usePeople'
 
 type StatusColor = 'success' | 'warning' | 'danger' | 'medium'
@@ -61,7 +62,7 @@ export default function HouseholdPage() {
   const people = usePeople()
   const history = useHistory()
 
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+  const { selectedDate, setSelectedDate } = useSelectedDate()
   const [datePickerOpen, setDatePickerOpen] = useState(false)
   const modalRef = useRef<HTMLIonModalElement>(null)
 

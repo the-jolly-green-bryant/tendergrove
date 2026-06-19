@@ -4,6 +4,7 @@ import { Authenticator } from '@aws-amplify/ui-react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { AuthProvider } from '../auth/AuthContext'
+import { SelectedDateProvider } from '../context/SelectedDateContext'
 import AppShell from './AppShell'
 
 function handleGlobalError(error: unknown) {
@@ -37,9 +38,11 @@ export default function App() {
           signOut={signOut}
         >
           <QueryClientProvider client={queryClient}>
+          <SelectedDateProvider>
           <IonApp>
             <AppShell />
           </IonApp>
+          </SelectedDateProvider>
           </QueryClientProvider>
         </AuthProvider>
       )}
