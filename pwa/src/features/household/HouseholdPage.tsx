@@ -7,6 +7,7 @@ import {
 } from '@ionic/react'
 import { Page } from '../../components/Page'
 import { PersonAvatar } from '../../components/PersonAvatar'
+import { Greeting } from '../../components/Greeting'
 import { useAppAuth } from '../../auth/AuthContext'
 import {usePeople} from '../people/usePeople'
 
@@ -25,16 +26,9 @@ export default function HouseholdPage() {
 
   const people = usePeople();
 
-  const getGreeting = () => {
-    const hour = new Date().getHours()
-    const period = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening'
-    return `Good ${period}, ${user.username ?? 'there'} 👋`
-  }
-
   return (
     <Page title="Home">
-      <h1 className="household-greeting">{getGreeting()}</h1>
-      <p className="household-subtitle">Here's how your household is doing.</p>
+      <Greeting />
 
       <IonCard>
         <IonCardHeader>
