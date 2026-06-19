@@ -18,6 +18,7 @@ const schema = a.schema({
             displayName: a.string().required(),
             role: a.enum(['child', 'parent', 'spouse', 'self', 'caregiver', 'other']),
             avatarUrl: a.string(),
+            archived: a.boolean().default(false),
 
             indicators: a.hasMany('Indicator', 'personId'),
             checkIns: a.hasMany('CheckIn', 'personId'),

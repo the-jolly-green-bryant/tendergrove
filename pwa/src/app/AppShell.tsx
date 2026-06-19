@@ -13,7 +13,6 @@ import {
   addOutline,
   homeOutline,
   statsChartOutline,
-  settingsOutline,
   timeOutline,
 } from 'ionicons/icons'
 
@@ -28,6 +27,7 @@ import PersonCheckInPage from '../features/people/checkin/PersonCheckInPage'
 import ManageIndicatorsPage from '../features/people/indicators/ManageIndicatorsPage'
 import ChooseIndicatorTypePage from '../features/people/indicators/ChooseIndicatorTypePage'
 import IndicatorFormPage from '../features/people/indicators/IndicatorFormPage'
+import ArchivedPeoplePage from '../features/people/ArchivedPeoplePage'
 
 export default function AppShell() {
   return (
@@ -89,6 +89,12 @@ export default function AppShell() {
           />
 
           <Route
+              exact
+              path="/archived"
+              component={ArchivedPeoplePage}
+          />
+
+          <Route
             exact
             path="/check-in"
             component={CheckInPage}
@@ -123,7 +129,7 @@ export default function AppShell() {
             href="/dashboard"
           >
             <IonIcon icon={homeOutline} />
-            <IonLabel>Home</IonLabel>
+            <IonLabel>Household</IonLabel>
           </IonTabButton>
 
           <IonTabButton
@@ -135,14 +141,6 @@ export default function AppShell() {
           </IonTabButton>
 
           <IonTabButton
-            tab="add"
-            href="/people/new"
-            className="tab-bar__fab"
-          >
-            <IonIcon icon={addOutline} />
-          </IonTabButton>
-
-          <IonTabButton
             tab="reports"
             href="/reports"
           >
@@ -151,12 +149,13 @@ export default function AppShell() {
           </IonTabButton>
 
           <IonTabButton
-            tab="settings"
-            href="/parent-care"
+            tab="add"
+            href="/people/new"
+            className="tab-bar__fab"
           >
-            <IonIcon icon={settingsOutline} />
-            <IonLabel>Settings</IonLabel>
+            <IonIcon icon={addOutline} />
           </IonTabButton>
+
         </IonTabBar>
       </IonTabs>
     </IonReactRouter>

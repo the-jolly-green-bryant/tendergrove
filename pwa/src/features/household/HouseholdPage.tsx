@@ -1,5 +1,4 @@
 import {
-  IonButton,
   IonCard,
   IonCardContent,
   IonCardHeader, IonCardSubtitle,
@@ -19,7 +18,7 @@ function personStatus(_person: { id: string }): { label: string; color: StatusCo
 }
 
 export default function HouseholdPage() {
-  const { user, signOut } = useAppAuth()
+  const { user } = useAppAuth()
   if (!user) {
     throw new Error("Redirect back to logoin")
   }
@@ -44,7 +43,7 @@ export default function HouseholdPage() {
       {people.error && <p>Failed to load people.</p>}
 
       <IonList>
-        {people.data?.map((person) => {
+        {people.data?.filter((p) => !p.archived).map((person) => {
             const status = personStatus(person)
             return (
               <IonItem key={person.id} button
@@ -74,9 +73,6 @@ export default function HouseholdPage() {
           </IonLabel>
         </IonItem>
       </IonList>
-
-      {/* Move this somewhere else. */}
-      <IonButton onClick={signOut}>Sign out</IonButton>
     </Page>
   )
 }

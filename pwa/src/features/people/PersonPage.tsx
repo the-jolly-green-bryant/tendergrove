@@ -15,9 +15,11 @@ import {
     IonTitle,
     IonToolbar,
     useIonActionSheet,
+    useIonAlert,
     useIonRouter,
 } from '@ionic/react';
 import {
+    archiveOutline,
     arrowBackOutline,
     checkmarkCircle,
     closeCircle,
@@ -33,6 +35,7 @@ import { useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { usePerson } from './usePerson';
+import { useArchivePerson } from './useArchivePerson';
 import { findTodaysCheckIn, parseAnswers } from './checkin/checkInUtils';
 import { PersonAvatar } from '../../components/PersonAvatar';
 import { PersonRole } from '../../lib/domain';
@@ -84,6 +87,7 @@ export default function PersonPage() {
     const { data: person, isLoading, error } = usePerson(isRealPerson ? personId : undefined);
     const hasRedirected = useRef(false);
     const [presentActionSheet] = useIonActionSheet();
+    const [presentAlert] = useIonAlert();
 
     const indicators = (person?.indicators ?? []) as Indicator[];
     const checkIns = (person?.checkIns ?? []) as CheckIn[];
@@ -137,7 +141,44 @@ export default function PersonPage() {
         router.push(`/person/${personId}/indicators`, 'forward');
     }
 
+    const archiveMutation = useArchivePerson();
+
+    function doArchive(archive: boolean) {
+        if (!person) return;
+        archiveMutation.mutate(
+            { id: person.id, archived: archive },
+            {
+                onSuccess: () => {
+                    if (archive) {
+                        router.push('/dashboard', 'back', 'pop');
+                    }
+                },
+            },
+        );
+    }
+
+    function toggleArchive() {
+        if (!person) return;
+        if (person.archived) {
+            doArchive(false);
+            return;
+        }
+        presentAlert({
+            header: 'Archive this person?',
+            message: 'Are you sure? You can unarchive people in the Settings section of the app.',
+            buttons: [
+                { text: 'Cancel', role: 'cancel' },
+                {
+                    text: 'Archive',
+                    role: 'destructive',
+                    handler: () => doArchive(true),
+                },
+            ],
+        });
+    }
+
     function showMoreOptions() {
+        const isArchived = person?.archived;
         presentActionSheet({
             buttons: [
                 {
@@ -149,6 +190,12 @@ export default function PersonPage() {
                     text: 'Edit Indicators',
                     icon: listOutline,
                     handler: manageIndicators,
+                },
+                {
+                    text: isArchived ? 'Unarchive' : 'Archive',
+                    icon: archiveOutline,
+                    role: isArchived ? undefined : 'destructive',
+                    handler: toggleArchive,
                 },
                 {
                     text: 'Cancel',
