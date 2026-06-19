@@ -370,12 +370,48 @@ ion-item.indicator-row {
   font-weight: 600;
 }
 
-.household-person-btn__status {
+.household-person-btn__chips {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.82rem;
-  color: var(--app-muted-text);
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.household-chip {
+  height: 24px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0 8px;
+  margin: 0;
+}
+
+.household-chip--success {
+  --background: transparent;
+  --color: var(--ion-color-success-shade);
+  border: 1px solid var(--ion-color-success-shade);
+}
+
+.household-chip--warning {
+  --background: transparent;
+  --color: var(--ion-color-warning-shade);
+  border: 1px solid var(--ion-color-warning-shade);
+}
+
+.household-chip--danger {
+  --background: transparent;
+  --color: var(--ion-color-danger-shade);
+  border: 1px solid var(--ion-color-danger-shade);
+}
+
+.household-chip--medium {
+  --background: transparent;
+  --color: var(--ion-color-medium-shade);
+  border: 1px solid var(--ion-color-medium-shade);
+}
+
+.household-chip--needs-checkin {
+  --background: rgba(var(--ion-color-warning-rgb), 0.15);
+  --color: var(--ion-color-warning-shade);
 }
 
 .household-person-btn__dot {
@@ -383,6 +419,7 @@ ion-item.indicator-row {
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
+  margin-right: 4px;
 }
 
 .household-person-btn__dot--success { background: var(--ion-color-success); }
@@ -426,6 +463,40 @@ ion-item.indicator-row {
   margin: 0 0 16px;
   color: var(--app-muted-text);
   font-size: 0.95rem;
+}
+
+/* Household date picker */
+.household-date-picker-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid var(--app-border-color);
+  border-radius: var(--app-radius-md);
+  background: #ffffff;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ion-color-primary);
+  cursor: pointer;
+  margin-bottom: 12px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.household-date-picker-btn:active {
+  background: var(--ion-color-light);
+}
+
+.household-date-modal {
+  --width: fit-content;
+  --height: fit-content;
+  --border-radius: 16px;
+}
+
+.household-date-modal::part(content) {
+  width: fit-content;
+  height: fit-content;
 }
 
 /* Check-in wizard */

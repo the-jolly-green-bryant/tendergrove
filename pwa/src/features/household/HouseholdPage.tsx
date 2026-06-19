@@ -1,20 +1,55 @@
 import {
+  IonChip,
+  IonDatetime,
+  IonIcon,
+  IonModal,
   IonSpinner,
 } from '@ionic/react'
-import { chevronForwardOutline } from 'ionicons/icons'
-import { IonIcon } from '@ionic/react'
+import { calendarOutline, chevronForwardOutline } from 'ionicons/icons'
+import { useMemo, useRef, useState } from 'react'
+import { useHistory } from 'react-router-dom'
+
 import { Page } from '../../components/Page'
 import { PersonAvatar } from '../../components/PersonAvatar'
 import { Greeting } from '../../components/Greeting'
 import { useAppAuth } from '../../auth/AuthContext'
 import { usePeople } from '../people/usePeople'
-import { useHistory } from 'react-router-dom'
 
 type StatusColor = 'success' | 'warning' | 'danger' | 'medium'
 
 function personStatus(_person: { id: string }): { label: string; color: StatusColor } {
   // TODO: derive from latest check-in data
   return { label: 'Stable', color: 'success' }
+}
+
+/** True when an ISO datetime string falls on the given local calendar date. */
+function isSameDay(occurredAt: string, date: Date): boolean {
+  const d = new Date(occurredAt)
+  return (
+    d.getFullYear() === date.getFullYear() &&
+    d.getMonth() === date.getMonth() &&
+    d.getDate() === date.getDate()
+  )
+}
+
+function formatDateLabel(date: Date): string {
+  const today = new Date()
+  if (
+    date.getFullYear() === today.getFullYear() &&
+    date.getMonth() === today.getMonth() &&
+    date.getDate() === today.getDate()
+  ) {
+    return 'Today'
+  }
+  return date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
+}
+
+/** Return YYYY-MM-DD for a Date. */
+function toISODate(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
 }
 
 export default function HouseholdPage() {
@@ -26,17 +61,77 @@ export default function HouseholdPage() {
   const people = usePeople()
   const history = useHistory()
 
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+  const [datePickerOpen, setDatePickerOpen] = useState(false)
+  const modalRef = useRef<HTMLIonModalElement>(null)
+
+  const activePeople = useMemo(
+    () => (people.data ?? []).filter((p) => !p.archived),
+    [people.data],
+  )
+
+  // Collect all unique dates (YYYY-MM-DD) that have any check-in across all people.
+  const highlightedDates = useMemo(() => {
+    const dateSet = new Set<string>()
+    for (const person of people.data ?? []) {
+      for (const ci of person.checkIns ?? []) {
+        const d = new Date(ci.occurredAt)
+        dateSet.add(toISODate(d))
+      }
+    }
+    return Array.from(dateSet).map((date) => ({
+      date,
+      textColor: 'var(--ion-color-primary)',
+      backgroundColor: 'var(--ion-color-primary-tint)',
+    }))
+  }, [people.data])
+
   return (
     <Page title="Home">
       <Greeting />
+
+      {/* Date picker trigger */}
+      <button
+        className="household-date-picker-btn"
+        onClick={() => setDatePickerOpen(true)}
+      >
+        <IonIcon icon={calendarOutline} />
+        <span>{formatDateLabel(selectedDate)}</span>
+      </button>
+
+      <IonModal
+        ref={modalRef}
+        isOpen={datePickerOpen}
+        onDidDismiss={() => setDatePickerOpen(false)}
+        className="household-date-modal"
+      >
+        <IonDatetime
+          presentation="date"
+          value={toISODate(selectedDate)}
+          highlightedDates={highlightedDates}
+          max={toISODate(new Date())}
+          onIonChange={(e) => {
+            const val = e.detail.value
+            if (typeof val === 'string') {
+              // val is YYYY-MM-DD — parse as local date
+              const [y, m, d] = val.split('-').map(Number)
+              setSelectedDate(new Date(y, m - 1, d))
+            }
+            setDatePickerOpen(false)
+          }}
+        />
+      </IonModal>
 
       {people.isLoading && <IonSpinner />}
 
       {people.error && <p>Failed to load people.</p>}
 
       <div className="household-list">
-        {people.data?.filter((p) => !p.archived).map((person) => {
+        {activePeople.map((person) => {
           const status = personStatus(person)
+          const hasCheckIn = (person.checkIns ?? []).some((ci) =>
+            isSameDay(ci.occurredAt, selectedDate),
+          )
           return (
             <button
               key={person.id}
@@ -48,10 +143,17 @@ export default function HouseholdPage() {
                 <span className="household-person-btn__name">
                   {person.displayName}{person.role === 'self' && ' (You)'}
                 </span>
-                <span className="household-person-btn__status">
-                  <span className={`household-person-btn__dot household-person-btn__dot--${status.color}`} />
-                  {status.label}
-                </span>
+                <div className="household-person-btn__chips">
+                  <IonChip className={`household-chip household-chip--${status.color}`}>
+                    <span className={`household-person-btn__dot household-person-btn__dot--${status.color}`} />
+                    {status.label}
+                  </IonChip>
+                  {!hasCheckIn && (
+                    <IonChip className="household-chip household-chip--needs-checkin">
+                      Needs Check-In
+                    </IonChip>
+                  )}
+                </div>
               </div>
               <IonIcon icon={chevronForwardOutline} className="household-person-btn__chevron" />
             </button>
