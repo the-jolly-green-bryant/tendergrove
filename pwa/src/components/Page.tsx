@@ -1,4 +1,5 @@
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/react'
+import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonPage, IonTitle, IonToolbar } from '@ionic/react'
+import { menuOutline } from 'ionicons/icons'
 import { ReactNode } from 'react'
 
 export function Page({ title, children }: { title: string; children: ReactNode }) {
@@ -6,6 +7,11 @@ export function Page({ title, children }: { title: string; children: ReactNode }
     <IonPage>
       <IonHeader translucent>
         <IonToolbar>
+          <IonButtons slot="start">
+            <IonButton fill="clear" aria-label="Menu">
+              <IonIcon slot="icon-only" icon={menuOutline} />
+            </IonButton>
+          </IonButtons>
           <IonTitle>{title}</IonTitle>
         </IonToolbar>
       </IonHeader>
@@ -13,11 +19,6 @@ export function Page({ title, children }: { title: string; children: ReactNode }
         fullscreen
         className="ion-padding safe-content"
       >
-        <IonHeader collapse="condense">
-          <IonToolbar>
-            <IonTitle size="large">{title}</IonTitle>
-          </IonToolbar>
-        </IonHeader>
         {children}
       </IonContent>
     </IonPage>

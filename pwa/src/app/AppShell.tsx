@@ -10,11 +10,11 @@ import {
 import { IonReactRouter } from '@ionic/react-router'
 import { Redirect, Route } from 'react-router-dom'
 import {
-  analyticsOutline,
-  documentTextOutline,
-  heartOutline,
+  addOutline,
   homeOutline,
-  warningOutline,
+  statsChartOutline,
+  settingsOutline,
+  timeOutline,
 } from 'ionicons/icons'
 
 import HouseholdPage from '../features/household/HouseholdPage'
@@ -123,39 +123,39 @@ export default function AppShell() {
             href="/dashboard"
           >
             <IonIcon icon={homeOutline} />
-            <IonLabel>Today</IonLabel>
+            <IonLabel>Home</IonLabel>
           </IonTabButton>
 
           <IonTabButton
             tab="checkin"
             href="/check-in"
           >
-            <IonIcon icon={analyticsOutline} />
-            <IonLabel>Check-in</IonLabel>
+            <IonIcon icon={timeOutline} />
+            <IonLabel>Timeline</IonLabel>
           </IonTabButton>
 
           <IonTabButton
-            tab="incident"
-            href="/incident"
+            tab="add"
+            href="/people/new"
+            className="tab-bar__fab"
           >
-            <IonIcon icon={warningOutline} />
-            <IonLabel>Incident</IonLabel>
-          </IonTabButton>
-
-          <IonTabButton
-            tab="care"
-            href="/parent-care"
-          >
-            <IonIcon icon={heartOutline} />
-            <IonLabel>Care</IonLabel>
+            <IonIcon icon={addOutline} />
           </IonTabButton>
 
           <IonTabButton
             tab="reports"
             href="/reports"
           >
-            <IonIcon icon={documentTextOutline} />
-            <IonLabel>Reports</IonLabel>
+            <IonIcon icon={statsChartOutline} />
+            <IonLabel>Insights</IonLabel>
+          </IonTabButton>
+
+          <IonTabButton
+            tab="settings"
+            href="/parent-care"
+          >
+            <IonIcon icon={settingsOutline} />
+            <IonLabel>Settings</IonLabel>
           </IonTabButton>
         </IonTabBar>
       </IonTabs>

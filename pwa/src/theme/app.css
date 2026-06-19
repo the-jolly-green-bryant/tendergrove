@@ -38,6 +38,35 @@ ion-chip {
 ion-tab-bar {
   border-top: 1px solid #eee8fb;
   box-shadow: 0 -8px 22px rgba(88, 66, 160, 0.06);
+  --background: #ffffff;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* Centered FAB-style tab button */
+.tab-bar__fab {
+  --color: #ffffff;
+  position: relative;
+}
+
+.tab-bar__fab::before {
+  content: '';
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--ion-color-primary);
+  box-shadow: 0 4px 14px rgba(111, 73, 232, 0.35);
+  z-index: 0;
+}
+
+.tab-bar__fab ion-icon {
+  position: relative;
+  z-index: 1;
+  font-size: 28px;
+  color: #ffffff;
 }
 
 ion-toolbar {
@@ -292,6 +321,62 @@ ion-item.indicator-row {
 .choose-type-card__examples {
   margin-top: 6px !important;
   font-style: italic;
+}
+
+/* Add Person item */
+ion-item.add-person-item {
+  --background: transparent;
+  border: 2px dashed var(--ion-color-primary);
+  border-radius: var(--app-radius-md);
+  box-shadow: none;
+  color: var(--ion-color-primary);
+  font-weight: 600;
+  --min-height: 52px;
+}
+
+/* Person list item status */
+.person-item__status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  font-size: 0.82rem;
+}
+
+.person-item__status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.person-item__status-dot--success { background: var(--ion-color-success); }
+.person-item__status-dot--warning { background: var(--ion-color-warning); }
+.person-item__status-dot--danger  { background: var(--ion-color-danger); }
+.person-item__status-dot--medium  { background: var(--ion-color-step-400); }
+
+.person-item__status-label {
+  color: var(--app-muted-text);
+}
+
+/* Person avatar in list — subtle ring */
+ion-item ion-avatar {
+  width: 44px;
+  height: 44px;
+  --border-radius: 50%;
+}
+
+/* Household greeting */
+.household-greeting {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 8px 0 4px;
+}
+
+.household-subtitle {
+  margin: 0 0 16px;
+  color: var(--app-muted-text);
+  font-size: 0.95rem;
 }
 
 /* Indicator form */

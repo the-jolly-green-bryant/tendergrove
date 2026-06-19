@@ -10,6 +10,13 @@ import { PersonAvatar } from '../../components/PersonAvatar'
 import { useAppAuth } from '../../auth/AuthContext'
 import {usePeople} from '../people/usePeople'
 
+type StatusColor = 'success' | 'warning' | 'danger' | 'medium'
+
+function personStatus(_person: { id: string }): { label: string; color: StatusColor } {
+  // TODO: derive from latest check-in data
+  return { label: 'Stable', color: 'success' }
+}
+
 export default function HouseholdPage() {
   const { user, signOut } = useAppAuth()
   if (!user) {
@@ -18,12 +25,16 @@ export default function HouseholdPage() {
 
   const people = usePeople();
 
-  const getGreeting = () => `Howdy, INSERT_NAME 👋`
+  const getGreeting = () => {
+    const hour = new Date().getHours()
+    const period = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening'
+    return `Good ${period}, ${user.username ?? 'there'} 👋`
+  }
 
   return (
-    <Page title="Today">
-      <h1>{getGreeting()}</h1>
-      <p>Here's how your household is doing.</p>
+    <Page title="Home">
+      <h1 className="household-greeting">{getGreeting()}</h1>
+      <p className="household-subtitle">Here's how your household is doing.</p>
 
       <IonCard>
         <IonCardHeader>
@@ -39,19 +50,25 @@ export default function HouseholdPage() {
       {people.error && <p>Failed to load people.</p>}
 
       <IonList>
-        {people.data?.map((person) => (
-            <IonItem key={person.id} button
-                     detail
-                     routerLink={`/people/${person.id}`}>
+        {people.data?.map((person) => {
+            const status = personStatus(person)
+            return (
+              <IonItem key={person.id} button
+                       detail
+                       routerLink={`/people/${person.id}`}>
 
-              <PersonAvatar slot="start" name={person.displayName} src={person.avatarUrl} />
+                <PersonAvatar slot="start" name={person.displayName} src={person.avatarUrl} />
 
-              <IonLabel>
-                <h2>{person.displayName}{person.role === 'self' && ' (You)'}</h2>
-                <p>STATUS</p>
-              </IonLabel>
-            </IonItem>
-        ))}
+                <IonLabel>
+                  <h2>{person.displayName}{person.role === 'self' && ' (You)'}</h2>
+                  <div className="person-item__status">
+                    <span className={`person-item__status-dot person-item__status-dot--${status.color}`} />
+                    <span className="person-item__status-label">{status.label}</span>
+                  </div>
+                </IonLabel>
+              </IonItem>
+            )
+        })}
         <IonItem
             button
             detail={false}
