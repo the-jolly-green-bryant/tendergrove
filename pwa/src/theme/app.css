@@ -428,6 +428,37 @@ ion-item.indicator-row {
   font-size: 0.95rem;
 }
 
+/* Check-in wizard */
+.wizard-step__hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 8px 0 16px;
+}
+
+.wizard-step__avatar {
+  width: 72px;
+  height: 72px;
+  margin-bottom: 8px;
+}
+
+.wizard-step__name {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.wizard-step__actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.wizard-step__actions ion-button {
+  flex: 1;
+}
+
 /* Indicator form */
 .indicator-form__icon {
   display: flex;

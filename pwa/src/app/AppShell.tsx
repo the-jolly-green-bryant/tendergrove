@@ -10,7 +10,7 @@ import {
 import { IonReactRouter } from '@ionic/react-router'
 import { Redirect, Route } from 'react-router-dom'
 import {
-  addOutline,
+  clipboardOutline,
   homeOutline,
   statsChartOutline,
   timeOutline,
@@ -28,6 +28,7 @@ import ManageIndicatorsPage from '../features/people/indicators/ManageIndicators
 import ChooseIndicatorTypePage from '../features/people/indicators/ChooseIndicatorTypePage'
 import IndicatorFormPage from '../features/people/indicators/IndicatorFormPage'
 import ArchivedPeoplePage from '../features/people/ArchivedPeoplePage'
+import CheckInWizardPage from '../features/checkins/CheckInWizardPage'
 
 export default function AppShell() {
   return (
@@ -101,6 +102,11 @@ export default function AppShell() {
           />
           <Route
             exact
+            path="/check-in/wizard"
+            component={CheckInWizardPage}
+          />
+          <Route
+            exact
             path="/incident"
             component={IncidentPage}
           />
@@ -150,10 +156,10 @@ export default function AppShell() {
 
           <IonTabButton
             tab="add"
-            href="/people/new"
+            href="/check-in/wizard"
             className="tab-bar__fab"
           >
-            <IonIcon icon={addOutline} />
+            <IonIcon icon={clipboardOutline} />
           </IonTabButton>
 
         </IonTabBar>
