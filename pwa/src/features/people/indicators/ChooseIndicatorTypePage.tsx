@@ -27,11 +27,11 @@ export default function ChooseIndicatorTypePage() {
             router.goBack();
             return;
         }
-        router.push(`/people/${personId}/indicators`, 'back', 'pop');
+        router.push(`/person/${personId}/indicators`, 'back', 'pop');
     }
 
     function choose(polarity: Polarity) {
-        router.push(`/people/${personId}/indicators/new/${polarity}`, 'forward');
+        router.push(`/person/${personId}/indicators/new/${polarity}`, 'forward');
     }
 
     return (

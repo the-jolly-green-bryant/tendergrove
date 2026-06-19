@@ -14,13 +14,17 @@ import {
     IonSpinner,
     IonTitle,
     IonToolbar,
+    useIonActionSheet,
     useIonRouter,
 } from '@ionic/react';
 import {
     arrowBackOutline,
     checkmarkCircle,
+    closeCircle,
+    createOutline,
     ellipseOutline,
     ellipsisHorizontal,
+    listOutline,
     removeCircle,
     timeOutline,
 } from 'ionicons/icons';
@@ -76,8 +80,10 @@ function deriveStatus(checkIn: CheckIn | undefined): {
 export default function PersonPage() {
     const router = useIonRouter();
     const { personId } = useParams<{ personId: string }>();
-    const { data: person, isLoading, error } = usePerson(personId);
+    const isRealPerson = Boolean(personId && personId !== 'new');
+    const { data: person, isLoading, error } = usePerson(isRealPerson ? personId : undefined);
     const hasRedirected = useRef(false);
+    const [presentActionSheet] = useIonActionSheet();
 
     const indicators = (person?.indicators ?? []) as Indicator[];
     const checkIns = (person?.checkIns ?? []) as CheckIn[];
@@ -95,18 +101,24 @@ export default function PersonPage() {
     const todaysCheckIn = findTodaysCheckIn(checkIns);
     const noteCheckIn = checkIns.find((checkIn) => Boolean(checkIn.note));
 
-    const checkInPath = `/people/${personId}/check-in`;
+    const checkInPath = `/person/${personId}/check-in`;
 
     // No check-in yet today → drop the caregiver straight into the check-in flow.
     useEffect(() => {
-        if (isLoading || !person || hasRedirected.current) {
+        if (!isRealPerson || isLoading || !person || hasRedirected.current) {
             return;
         }
         if (activeIndicators.length > 0 && !todaysCheckIn) {
             hasRedirected.current = true;
             router.push(checkInPath, 'forward', 'replace');
         }
-    }, [isLoading, person, activeIndicators.length, todaysCheckIn, router, checkInPath]);
+    }, [isRealPerson, isLoading, person, activeIndicators.length, todaysCheckIn, router, checkInPath]);
+
+    // When Ionic matches /people/new against /people/:personId, bail out so
+    // PersonFormPage is the only visible page.
+    if (!isRealPerson) {
+        return null;
+    }
 
     function goBack() {
         if (router.canGoBack()) {
@@ -118,11 +130,32 @@ export default function PersonPage() {
     }
 
     function editPerson() {
-        router.push(`/people/${personId}/edit`, 'forward');
+        router.push(`/person/${personId}/edit`, 'forward');
     }
 
     function manageIndicators() {
-        router.push(`/people/${personId}/indicators`, 'forward');
+        router.push(`/person/${personId}/indicators`, 'forward');
+    }
+
+    function showMoreOptions() {
+        presentActionSheet({
+            buttons: [
+                {
+                    text: 'Edit Person',
+                    icon: createOutline,
+                    handler: editPerson,
+                },
+                {
+                    text: 'Edit Indicators',
+                    icon: listOutline,
+                    handler: manageIndicators,
+                },
+                {
+                    text: 'Cancel',
+                    role: 'cancel',
+                },
+            ],
+        });
     }
 
     function startCheckIn() {
@@ -144,7 +177,7 @@ export default function PersonPage() {
                     <IonTitle>{person?.displayName ?? ''}</IonTitle>
 
                     <IonButtons slot="end">
-                        <IonButton fill="clear" onClick={editPerson} aria-label="More options">
+                        <IonButton fill="clear" onClick={showMoreOptions} aria-label="More options">
                             <IonIcon slot="icon-only" icon={ellipsisHorizontal} />
                         </IonButton>
                     </IonButtons>
@@ -195,38 +228,6 @@ export default function PersonPage() {
                             </div>
                         </section>
 
-                        <IonCard>
-                            <IonCardContent>
-                                <div className="section-header">
-                                    <h2>Distress Indicators</h2>
-                                    <IonButton fill="clear" size="small" onClick={manageIndicators}>
-                                        Edit
-                                    </IonButton>
-                                </div>
-
-                                {distressIndicators.length === 0 ? (
-                                    <p className="section-empty">No distress indicators yet.</p>
-                                ) : (
-                                    <div className="indicator-chips">
-                                        {visibleDistress.map((indicator) => (
-                                            <IonChip
-                                                key={indicator.id}
-                                                color="warning"
-                                                className="indicator-chip"
-                                            >
-                                                <IonLabel>{indicator.name}</IonLabel>
-                                            </IonChip>
-                                        ))}
-                                        {hiddenDistressCount > 0 && (
-                                            <IonChip className="indicator-chip indicator-chip--more">
-                                                <IonLabel>+{hiddenDistressCount} more</IonLabel>
-                                            </IonChip>
-                                        )}
-                                    </div>
-                                )}
-                            </IonCardContent>
-                        </IonCard>
-
                         {checkedToday && (
                             <IonCard>
                                 <IonCardContent>
@@ -253,19 +254,26 @@ export default function PersonPage() {
                                                                     ? isDesired
                                                                         ? checkmarkCircle
                                                                         : removeCircle
-                                                                    : ellipseOutline
+                                                                    : isDesired
+                                                                        ? closeCircle
+                                                                        : checkmarkCircle
                                                             }
                                                             color={
                                                                 seen
                                                                     ? isDesired
                                                                         ? 'success'
                                                                         : 'danger'
-                                                                    : 'medium'
+                                                                    : isDesired
+                                                                        ? 'danger'
+                                                                        : 'success'
                                                             }
                                                         />
                                                         <IonLabel
                                                             className={
                                                                 seen ? '' : 'check-in-summary__muted'
+                                                            }
+                                                            style={
+                                                                !seen ? { textDecoration: 'line-through' } : undefined
                                                             }
                                                         >
                                                             {indicator.name}

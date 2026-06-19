@@ -48,43 +48,43 @@ export default function AppShell() {
 
           <Route
               exact
-              path="/people/:personId"
+              path="/person/:personId"
               component={PersonPage}
           />
 
           <Route
               exact
-              path="/people/:personId/edit"
+              path="/person/:personId/edit"
               component={PersonFormPage}
           />
 
           <Route
               exact
-              path="/people/:personId/check-in"
+              path="/person/:personId/check-in"
               component={PersonCheckInPage}
           />
 
           <Route
               exact
-              path="/people/:personId/indicators"
+              path="/person/:personId/indicators"
               component={ManageIndicatorsPage}
           />
 
           <Route
               exact
-              path="/people/:personId/indicators/new"
+              path="/person/:personId/indicators/new"
               component={ChooseIndicatorTypePage}
           />
 
           <Route
               exact
-              path="/people/:personId/indicators/new/:polarity"
+              path="/person/:personId/indicators/new/:polarity"
               component={IndicatorFormPage}
           />
 
           <Route
               exact
-              path="/people/:personId/indicators/:indicatorId/edit"
+              path="/person/:personId/indicators/:indicatorId/edit"
               component={IndicatorFormPage}
           />
 

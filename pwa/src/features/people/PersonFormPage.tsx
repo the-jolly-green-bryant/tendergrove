@@ -164,7 +164,12 @@ export default function PersonFormPage() {
             await queryClient.invalidateQueries({ queryKey: ['person', personId] });
         }
 
-        router.push('/dashboard', 'back', 'pop');
+        const newId = isEditing ? personId : result.data?.id;
+        if (newId) {
+            router.push(`/person/${newId}`, 'forward');
+        } else {
+            router.push('/dashboard', 'back');
+        }
     }
 
     return (

@@ -49,7 +49,7 @@ export default function HouseholdPage() {
             return (
               <IonItem key={person.id} button
                        detail
-                       routerLink={`/people/${person.id}`}>
+                       routerLink={`/person/${person.id}`}>
 
                 <PersonAvatar slot="start" name={person.displayName} src={person.avatarUrl} />
 

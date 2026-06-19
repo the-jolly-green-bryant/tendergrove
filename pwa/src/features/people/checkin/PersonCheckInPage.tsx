@@ -60,7 +60,7 @@ export default function PersonCheckInPage() {
     }, [existing, prefilled]);
 
     function personPath() {
-        return `/people/${personId}`;
+        return `/person/${personId}`;
     }
 
     function goBack() {

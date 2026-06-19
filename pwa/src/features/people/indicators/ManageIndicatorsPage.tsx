@@ -41,15 +41,15 @@ export default function ManageIndicatorsPage() {
             router.goBack();
             return;
         }
-        router.push(`/people/${personId}`, 'back', 'pop');
+        router.push(`/person/${personId}`, 'back', 'pop');
     }
 
     function addIndicator(polarity: Polarity) {
-        router.push(`/people/${personId}/indicators/new/${polarity}`, 'forward');
+        router.push(`/person/${personId}/indicators/new/${polarity}`, 'forward');
     }
 
     function editIndicator(indicatorId: string) {
-        router.push(`/people/${personId}/indicators/${indicatorId}/edit`, 'forward');
+        router.push(`/person/${personId}/indicators/${indicatorId}/edit`, 'forward');
     }
 
     const all = indicators ?? [];

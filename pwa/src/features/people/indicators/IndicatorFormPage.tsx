@@ -70,7 +70,7 @@ export default function IndicatorFormPage() {
             router.goBack();
             return;
         }
-        router.push(`/people/${personId}/indicators`, 'back', 'pop');
+        router.push(`/person/${personId}/indicators`, 'back', 'pop');
     }
 
     async function save() {
@@ -94,7 +94,7 @@ export default function IndicatorFormPage() {
             } else {
                 await create(payload);
             }
-            router.push(`/people/${personId}/indicators`, 'back', 'pop');
+            router.push(`/person/${personId}/indicators`, 'back', 'pop');
         } finally {
             setSaving(false);
         }
@@ -107,7 +107,7 @@ export default function IndicatorFormPage() {
         setSaving(true);
         try {
             await remove(indicatorId);
-            router.push(`/people/${personId}/indicators`, 'back', 'pop');
+            router.push(`/person/${personId}/indicators`, 'back', 'pop');
         } finally {
             setSaving(false);
         }
