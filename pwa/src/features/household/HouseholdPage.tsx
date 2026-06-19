@@ -1,14 +1,14 @@
 import {
-  IonCard,
-  IonCardContent,
-  IonCardHeader, IonCardSubtitle,
-  IonCardTitle, IonItem, IonLabel, IonList, IonSpinner,
+  IonSpinner,
 } from '@ionic/react'
+import { chevronForwardOutline } from 'ionicons/icons'
+import { IonIcon } from '@ionic/react'
 import { Page } from '../../components/Page'
 import { PersonAvatar } from '../../components/PersonAvatar'
 import { Greeting } from '../../components/Greeting'
 import { useAppAuth } from '../../auth/AuthContext'
-import {usePeople} from '../people/usePeople'
+import { usePeople } from '../people/usePeople'
+import { useHistory } from 'react-router-dom'
 
 type StatusColor = 'success' | 'warning' | 'danger' | 'medium'
 
@@ -23,56 +23,48 @@ export default function HouseholdPage() {
     throw new Error("Redirect back to logoin")
   }
 
-  const people = usePeople();
+  const people = usePeople()
+  const history = useHistory()
 
   return (
     <Page title="Home">
       <Greeting />
 
-      <IonCard>
-        <IonCardHeader>
-          <IonCardTitle>Household Distress Radar</IonCardTitle>
-          <IonCardSubtitle>Tap a person to check in</IonCardSubtitle>
-        </IonCardHeader>
-
-        <IonCardContent>RADAR HERE, but to the right</IonCardContent>
-      </IonCard>
-
       {people.isLoading && <IonSpinner />}
 
       {people.error && <p>Failed to load people.</p>}
 
-      <IonList>
+      <div className="household-list">
         {people.data?.filter((p) => !p.archived).map((person) => {
-            const status = personStatus(person)
-            return (
-              <IonItem key={person.id} button
-                       detail
-                       routerLink={`/person/${person.id}`}>
-
-                <PersonAvatar slot="start" name={person.displayName} src={person.avatarUrl} />
-
-                <IonLabel>
-                  <h2>{person.displayName}{person.role === 'self' && ' (You)'}</h2>
-                  <div className="person-item__status">
-                    <span className={`person-item__status-dot person-item__status-dot--${status.color}`} />
-                    <span className="person-item__status-label">{status.label}</span>
-                  </div>
-                </IonLabel>
-              </IonItem>
-            )
+          const status = personStatus(person)
+          return (
+            <button
+              key={person.id}
+              className="household-person-btn"
+              onClick={() => history.push(`/person/${person.id}`)}
+            >
+              <PersonAvatar name={person.displayName} src={person.avatarUrl} className="household-person-btn__avatar" />
+              <div className="household-person-btn__info">
+                <span className="household-person-btn__name">
+                  {person.displayName}{person.role === 'self' && ' (You)'}
+                </span>
+                <span className="household-person-btn__status">
+                  <span className={`household-person-btn__dot household-person-btn__dot--${status.color}`} />
+                  {status.label}
+                </span>
+              </div>
+              <IonIcon icon={chevronForwardOutline} className="household-person-btn__chevron" />
+            </button>
+          )
         })}
-        <IonItem
-            button
-            detail={false}
-            routerLink="/people/new"
-            className="add-person-item"
+
+        <button
+          className="household-add-btn"
+          onClick={() => history.push('/people/new')}
         >
-          <IonLabel className="ion-text-center">
-            + Add Person
-          </IonLabel>
-        </IonItem>
-      </IonList>
+          + Add Person
+        </button>
+      </div>
     </Page>
   )
 }

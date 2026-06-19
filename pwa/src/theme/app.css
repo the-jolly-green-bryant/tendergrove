@@ -10,20 +10,6 @@ ion-card {
   margin-right: 0;
 }
 
-ion-item {
-  --border-radius: var(--app-radius-md);
-  --background: #ffffff;
-  --inner-border-width: 0;
-  --padding-start: 14px;
-  --padding-end: 10px;
-  --min-height: 64px;
-
-  margin-bottom: 10px;
-  border: 1px solid var(--app-border-color);
-  border-radius: var(--app-radius-md);
-  box-shadow: 0 3px 10px rgba(88, 66, 160, 0.04);
-}
-
 ion-button {
   --border-radius: 14px;
   font-weight: 650;
@@ -336,47 +322,97 @@ ion-item.indicator-row {
   font-style: italic;
 }
 
-/* Add Person item */
-ion-item.add-person-item {
-  --background: transparent;
-  border: 2px dashed var(--ion-color-primary);
-  border-radius: var(--app-radius-md);
-  box-shadow: none;
-  color: var(--ion-color-primary);
-  font-weight: 600;
-  --min-height: 52px;
+/* Household person list */
+.household-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-/* Person list item status */
-.person-item__status {
+.household-person-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--app-border-color);
+  border-radius: var(--app-radius-md);
+  background: #ffffff;
+  box-shadow: 0 3px 10px rgba(88, 66, 160, 0.04);
+  cursor: pointer;
+  text-align: left;
+  -webkit-appearance: none;
+  appearance: none;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.household-person-btn:active {
+  background: var(--ion-color-light);
+}
+
+.household-person-btn__avatar {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.household-person-btn__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.household-person-btn__name {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.household-person-btn__status {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 2px;
   font-size: 0.82rem;
+  color: var(--app-muted-text);
 }
 
-.person-item__status-dot {
+.household-person-btn__dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-.person-item__status-dot--success { background: var(--ion-color-success); }
-.person-item__status-dot--warning { background: var(--ion-color-warning); }
-.person-item__status-dot--danger  { background: var(--ion-color-danger); }
-.person-item__status-dot--medium  { background: var(--ion-color-step-400); }
+.household-person-btn__dot--success { background: var(--ion-color-success); }
+.household-person-btn__dot--warning { background: var(--ion-color-warning); }
+.household-person-btn__dot--danger  { background: var(--ion-color-danger); }
+.household-person-btn__dot--medium  { background: var(--ion-color-step-400); }
 
-.person-item__status-label {
-  color: var(--app-muted-text);
+.household-person-btn__chevron {
+  font-size: 1.2rem;
+  color: var(--ion-color-step-400);
+  flex-shrink: 0;
 }
 
-/* Person avatar in list — subtle ring */
-ion-item ion-avatar {
-  width: 44px;
-  height: 44px;
-  --border-radius: 50%;
+.household-add-btn {
+  width: 100%;
+  padding: 14px;
+  border: 2px dashed var(--ion-color-primary);
+  border-radius: var(--app-radius-md);
+  background: transparent;
+  color: var(--ion-color-primary);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.household-add-btn:active {
+  background: rgba(var(--ion-color-primary-rgb), 0.06);
 }
 
 /* Household greeting */
