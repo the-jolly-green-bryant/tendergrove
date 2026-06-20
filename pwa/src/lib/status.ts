@@ -1,8 +1,11 @@
 import { parseAnswers } from '../features/people/checkin/checkInUtils'
 
 /* ------------------------------------------------------------------ */
-/*  Thresholds — single place to tune; nothing is hard-coded elsewhere */
+/*  Configuration                                                      */
 /* ------------------------------------------------------------------ */
+
+/** Number of days to look back when computing weighted status. */
+export const STATUS_LOOKBACK_DAYS = 30
 
 export const STATUS_THRESHOLDS = {
     good: 80,
@@ -16,7 +19,7 @@ export const STATUS_THRESHOLDS = {
 export type StatusLevel = 'good' | 'trouble' | 'at-risk' | 'unknown'
 
 export interface Status {
-    /** 0 – 100 score (100 = perfect day). `null` when we can't compute. */
+    /** 0 – 100 weighted score. `null` when we can't compute. */
     score: number | null
     level: StatusLevel
     label: string
@@ -30,6 +33,7 @@ interface IndicatorLike {
 }
 
 interface CheckInLike {
+    occurredAt: string
     answersJson?: unknown
 }
 
@@ -71,6 +75,50 @@ export function computeScore(
 }
 
 /* ------------------------------------------------------------------ */
+/*  Weighted average over a lookback window                            */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Compute a weighted average score over the past `lookbackDays` days.
+ *
+ * Weight scheme: today = 1, yesterday = (n-1)/n, … , `lookbackDays` ago = 1/n.
+ * Days without a check-in are simply skipped (they don't count against or for).
+ *
+ * Returns `null` when there are no scoreable check-ins in the window.
+ */
+export function computeWeightedScore(
+    indicators: IndicatorLike[],
+    checkIns: CheckInLike[],
+    now: Date = new Date(),
+    lookbackDays: number = STATUS_LOOKBACK_DAYS,
+): number | null {
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+
+    let weightedSum = 0
+    let totalWeight = 0
+
+    for (const ci of checkIns) {
+        const ciDate = new Date(ci.occurredAt)
+        const ciDay = new Date(ciDate.getFullYear(), ciDate.getMonth(), ciDate.getDate())
+        const daysAgo = Math.round((startOfToday.getTime() - ciDay.getTime()) / (1000 * 60 * 60 * 24))
+
+        if (daysAgo < 0 || daysAgo >= lookbackDays) continue
+
+        const score = computeScore(indicators, ci)
+        if (score === null) continue
+
+        // weight: today (daysAgo=0) → 1, oldest day → 1/lookbackDays
+        const weight = (lookbackDays - daysAgo) / lookbackDays
+
+        weightedSum += score * weight
+        totalWeight += weight
+    }
+
+    if (totalWeight === 0) return null
+    return Math.round(weightedSum / totalWeight)
+}
+
+/* ------------------------------------------------------------------ */
 /*  Level / label derivation                                           */
 /* ------------------------------------------------------------------ */
 
@@ -81,10 +129,10 @@ export function levelFromScore(score: number): StatusLevel {
 }
 
 const levelMeta: Record<StatusLevel, { label: string; color: Status['color'] }> = {
-    good: { label: 'Good Day', color: 'success' },
-    trouble: { label: 'Trouble', color: 'warning' },
-    'at-risk': { label: 'At Risk', color: 'danger' },
-    unknown: { label: 'No data', color: 'medium' },
+    good: { label: 'Doing Well', color: 'success' },
+    trouble: { label: 'Moderate Risk', color: 'warning' },
+    'at-risk': { label: 'Crisis', color: 'danger' },
+    unknown: { label: 'No Data', color: 'medium' },
 }
 
 export function statusFromScore(score: number | null): Status {
@@ -101,10 +149,8 @@ export function statusFromScore(score: number | null): Status {
 
 export function derivePersonStatus(
     indicators: IndicatorLike[],
-    checkIn: CheckInLike | undefined,
+    checkIns: CheckInLike[],
+    now?: Date,
 ): Status {
-    if (!checkIn) {
-        return { score: null, level: 'unknown', ...levelMeta.unknown }
-    }
-    return statusFromScore(computeScore(indicators, checkIn))
+    return statusFromScore(computeWeightedScore(indicators, checkIns, now))
 }

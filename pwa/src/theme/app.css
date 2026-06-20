@@ -388,25 +388,21 @@ ion-item.indicator-row {
 .household-chip--success {
   --background: transparent;
   --color: var(--ion-color-success-shade);
-  border: 1px solid var(--ion-color-success-shade);
 }
 
 .household-chip--warning {
   --background: transparent;
   --color: var(--ion-color-warning-shade);
-  border: 1px solid var(--ion-color-warning-shade);
 }
 
 .household-chip--danger {
   --background: transparent;
   --color: var(--ion-color-danger-shade);
-  border: 1px solid var(--ion-color-danger-shade);
 }
 
 .household-chip--medium {
   --background: transparent;
   --color: var(--ion-color-medium-shade);
-  border: 1px solid var(--ion-color-medium-shade);
 }
 
 .household-chip--needs-checkin {

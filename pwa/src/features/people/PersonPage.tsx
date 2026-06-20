@@ -118,8 +118,7 @@ export default function PersonPage() {
 
     const recentCheckIn = latestCheckIn(checkIns);
     const selectedCheckIn = checkIns.find((ci) => isSameDay(ci.occurredAt, selectedDate));
-    const statusCheckIn = selectedCheckIn ?? recentCheckIn;
-    const status = derivePersonStatus(activeIndicators, statusCheckIn);
+    const status = derivePersonStatus(activeIndicators, checkIns);
     const selectedDateCheckIn = checkIns.find((ci) => isSameDay(ci.occurredAt, selectedDate));
     const noteCheckIn = checkIns.find((checkIn) => Boolean(checkIn.note));
 

@@ -51,7 +51,7 @@ function toISODate(d: Date): string {
 export default function HouseholdPage() {
   const { user } = useAppAuth()
   if (!user) {
-    throw new Error("Redirect back to logoin")
+    throw new Error("Redirect back to login")
   }
 
   const people = usePeople()
@@ -126,14 +126,11 @@ export default function HouseholdPage() {
       {activePeople.length > 0 && (
         <HouseholdRadar
           people={activePeople.map((person) => {
-            const checkIns = person.checkIns ?? []
-            const todayCi = checkIns.find((c) => isSameDay(c.occurredAt, selectedDate))
-            const latestCi = todayCi ?? [...checkIns].sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))[0]
             return {
               id: person.id,
               displayName: person.displayName,
               avatarUrl: person.avatarUrl,
-              status: derivePersonStatus(person.indicators ?? [], latestCi),
+              status: derivePersonStatus(person.indicators ?? [], person.checkIns ?? []),
             }
           })}
         />
@@ -141,10 +138,7 @@ export default function HouseholdPage() {
 
       <div className="household-list">
         {activePeople.map((person) => {
-          const checkIns = person.checkIns ?? []
-          const todayCi = checkIns.find((c) => isSameDay(c.occurredAt, selectedDate))
-          const latestCi = todayCi ?? [...checkIns].sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))[0]
-          const status = derivePersonStatus(person.indicators ?? [], latestCi)
+          const status = derivePersonStatus(person.indicators ?? [], person.checkIns ?? [])
           const hasCheckIn = (person.checkIns ?? []).some((ci) =>
             isSameDay(ci.occurredAt, selectedDate),
           )
