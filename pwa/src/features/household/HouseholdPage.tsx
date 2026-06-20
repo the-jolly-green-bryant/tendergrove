@@ -16,7 +16,7 @@ import { Greeting } from '../../components/Greeting'
 import { useAppAuth } from '../../auth/AuthContext'
 import { useSelectedDate } from '../../context/SelectedDateContext'
 import { usePeople } from '../people/usePeople'
-import { derivePersonStatus } from '../../lib/status'
+import { derivePersonStatus, todayEmoji } from '../../lib/status'
 
 /** True when an ISO datetime string falls on the given local calendar date. */
 function isSameDay(occurredAt: string, date: Date): boolean {
@@ -139,6 +139,7 @@ export default function HouseholdPage() {
       <div className="household-list">
         {activePeople.map((person) => {
           const status = derivePersonStatus(person.indicators ?? [], person.checkIns ?? [])
+          const emoji = todayEmoji(person.indicators ?? [], person.checkIns ?? [], new Date(), person.id)
           const hasCheckIn = (person.checkIns ?? []).some((ci) =>
             isSameDay(ci.occurredAt, selectedDate),
           )
@@ -148,7 +149,10 @@ export default function HouseholdPage() {
               className="household-person-btn"
               onClick={() => history.push(`/person/${person.id}`)}
             >
-              <PersonAvatar name={person.displayName} src={person.avatarUrl} className="household-person-btn__avatar" />
+              <div className="avatar-emoji-wrapper">
+                <PersonAvatar name={person.displayName} src={person.avatarUrl} className="household-person-btn__avatar" />
+                {emoji && <span className="avatar-emoji-badge">{emoji}</span>}
+              </div>
               <div className="household-person-btn__info">
                 <span className="household-person-btn__name">
                   {person.displayName}{person.role === 'self' && ' (You)'}

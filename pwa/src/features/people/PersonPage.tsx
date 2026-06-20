@@ -44,7 +44,7 @@ import { useArchivePerson } from './useArchivePerson';
 import { parseAnswers } from './checkin/checkInUtils';
 import { PersonAvatar } from '../../components/PersonAvatar';
 import { PersonRole } from '../../lib/domain';
-import { derivePersonStatus } from '../../lib/status';
+import { derivePersonStatus, todayEmoji } from '../../lib/status';
 
 type Indicator = NonNullable<ReturnType<typeof usePerson>['data']>['indicators'][number];
 type CheckIn = NonNullable<ReturnType<typeof usePerson>['data']>['checkIns'][number];
@@ -119,6 +119,7 @@ export default function PersonPage() {
     const recentCheckIn = latestCheckIn(checkIns);
     const selectedCheckIn = checkIns.find((ci) => isSameDay(ci.occurredAt, selectedDate));
     const status = derivePersonStatus(activeIndicators, checkIns);
+    const emoji = todayEmoji(activeIndicators, checkIns, new Date(), personId);
     const selectedDateCheckIn = checkIns.find((ci) => isSameDay(ci.occurredAt, selectedDate));
     const noteCheckIn = checkIns.find((checkIn) => Boolean(checkIn.note));
 
@@ -283,11 +284,14 @@ export default function PersonPage() {
                 {person && (
                     <>
                         <section className="person-hero">
-                            <PersonAvatar
-                                className="person-hero__avatar"
-                                name={person.displayName}
-                                src={person.avatarUrl}
-                            />
+                            <div className="avatar-emoji-wrapper avatar-emoji-wrapper--hero">
+                                <PersonAvatar
+                                    className="person-hero__avatar"
+                                    name={person.displayName}
+                                    src={person.avatarUrl}
+                                />
+                                {emoji && <span className="avatar-emoji-badge">{emoji}</span>}
+                            </div>
 
                             <h1 className="person-hero__name">{person.displayName}</h1>
                             <p className="person-hero__subtitle">

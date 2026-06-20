@@ -90,13 +90,36 @@ ion-toolbar {
 .person-hero__avatar {
   width: 84px;
   height: 84px;
-  margin-bottom: 12px;
+  margin-bottom: 0;
 }
 
 .person-hero__name {
   margin: 0;
   font-size: 1.5rem;
   font-weight: 700;
+}
+
+/* Emoji badge overlay — sits on the bottom-right of an avatar like a status indicator */
+.avatar-emoji-wrapper {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.avatar-emoji-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -4px;
+  font-size: 1.725em;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.avatar-emoji-wrapper--hero .avatar-emoji-badge {
+  font-size: 2.4em;
+  bottom: -4px;
+  right: -10px;
 }
 
 .person-hero__subtitle {

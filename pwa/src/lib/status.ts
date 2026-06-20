@@ -144,6 +144,69 @@ export function statusFromScore(score: number | null): Status {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Today's mood emoji                                                 */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Return an emoji reflecting *only* today's check-in data.
+ *
+ * • good   → positive emoji
+ * • trouble → neutral/concerned emoji
+ * • at-risk → negative emoji
+ * • no data → null (don't show anything)
+ */
+/**
+ * Simple string hash (djb2) → deterministic non-negative integer.
+ */
+function hashCode(str: string): number {
+    let hash = 5381
+    for (let i = 0; i < str.length; i++) {
+        hash = ((hash << 5) + hash + str.charCodeAt(i)) | 0
+    }
+    return Math.abs(hash)
+}
+
+export function todayEmoji(
+    indicators: IndicatorLike[],
+    checkIns: CheckInLike[],
+    now: Date = new Date(),
+    personId: string = '',
+): string | null {
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+
+    const todayCheckIns = checkIns.filter((ci) => {
+        const d = new Date(ci.occurredAt)
+        return (
+            d.getFullYear() === startOfToday.getFullYear() &&
+            d.getMonth() === startOfToday.getMonth() &&
+            d.getDate() === startOfToday.getDate()
+        )
+    })
+
+    if (todayCheckIns.length === 0) return null
+
+    // Use the simple (unweighted) score for just today's check-ins
+    const scores = todayCheckIns
+        .map((ci) => computeScore(indicators, ci))
+        .filter((s): s is number => s !== null)
+
+    if (scores.length === 0) return null
+
+    const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+    const level = levelFromScore(avg)
+
+    // Deterministic pick based on personId + date + level so the emoji
+    // stays stable across re-renders / page navigations within the same day.
+    const dateKey = `${startOfToday.getFullYear()}-${startOfToday.getMonth()}-${startOfToday.getDate()}`
+    const seed = hashCode(`${personId}:${dateKey}:${level}`)
+    const pick = (arr: string[]) => arr[seed % arr.length]
+
+    if (level === 'good') return pick(['😎', '😄', '🤩', '😁', '🥳', '😊', '🌟', '😃', '🙌', '💪'])
+    if (level === 'trouble') return pick(['😕', '😟', '🤔', '😐', '😶', '🫤', '😬', '🥺', '😮‍💨', '😣'])
+    return pick(['😰', '😢', '😤', '😩', '🥵', '😖', '😫', '😭', '😡', '🤯'])
+}
+
+/* ------------------------------------------------------------------ */
 /*  Convenience: derive status for a person given their data           */
 /* ------------------------------------------------------------------ */
 
