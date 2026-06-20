@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Tendergrove</string>
+    <string name="title_activity_main">Tendergrove</string>
+    <string name="package_name">com.tendergrove.app</string>
+    <string name="custom_url_scheme">com.tendergrove.app</string>
+</resources>

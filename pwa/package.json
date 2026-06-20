@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@aws-amplify/ui-react": "^6.15.4",
+    "@capacitor/android": "^8.4.1",
     "@capacitor/app": "latest",
     "@capacitor/core": "latest",
     "@capacitor/haptics": "latest",
@@ -36,8 +37,8 @@
   },
   "devDependencies": {
     "@aws-amplify/backend": "^1.23.0",
-    "@capacitor/cli": "latest",
     "@aws-amplify/backend-cli": "^1.8.3",
+    "@capacitor/cli": "latest",
     "@eslint/js": "^9.39.4",
     "@testing-library/jest-dom": "latest",
     "@testing-library/react": "latest",
