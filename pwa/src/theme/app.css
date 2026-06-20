@@ -465,6 +465,49 @@ ion-item.indicator-row {
   font-size: 0.95rem;
 }
 
+/* Household Radar */
+.household-radar {
+  background: #ffffff;
+  border: 1px solid var(--app-border-color);
+  border-radius: var(--app-radius-lg);
+  box-shadow: var(--app-shadow-card);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.household-radar__layout {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 100%;
+}
+
+.household-radar__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.household-radar__title {
+  margin: 0 0 4px;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.household-radar__subtitle {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--ion-color-medium);
+}
+
+.household-radar__svg--full {
+  width: 222px;
+  height: 222px;
+  flex-shrink: 0;
+  margin-top: -16px;
+  margin-bottom: -16px;
+  margin-right: -16px;
+}
+
 /* Household date picker */
 .household-date-picker-btn {
   display: inline-flex;

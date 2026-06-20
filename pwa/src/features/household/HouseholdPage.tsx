@@ -11,17 +11,12 @@ import { useHistory } from 'react-router-dom'
 
 import { Page } from '../../components/Page'
 import { PersonAvatar } from '../../components/PersonAvatar'
+import { HouseholdRadar } from '../../components/HouseholdRadar'
 import { Greeting } from '../../components/Greeting'
 import { useAppAuth } from '../../auth/AuthContext'
 import { useSelectedDate } from '../../context/SelectedDateContext'
 import { usePeople } from '../people/usePeople'
-
-type StatusColor = 'success' | 'warning' | 'danger' | 'medium'
-
-function personStatus(_person: { id: string }): { label: string; color: StatusColor } {
-  // TODO: derive from latest check-in data
-  return { label: 'Stable', color: 'success' }
-}
+import { derivePersonStatus } from '../../lib/status'
 
 /** True when an ISO datetime string falls on the given local calendar date. */
 function isSameDay(occurredAt: string, date: Date): boolean {
@@ -127,9 +122,29 @@ export default function HouseholdPage() {
 
       {people.error && <p>Failed to load people.</p>}
 
+      {/* Household Radar */}
+      {activePeople.length > 0 && (
+        <HouseholdRadar
+          people={activePeople.map((person) => {
+            const checkIns = person.checkIns ?? []
+            const todayCi = checkIns.find((c) => isSameDay(c.occurredAt, selectedDate))
+            const latestCi = todayCi ?? [...checkIns].sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))[0]
+            return {
+              id: person.id,
+              displayName: person.displayName,
+              avatarUrl: person.avatarUrl,
+              status: derivePersonStatus(person.indicators ?? [], latestCi),
+            }
+          })}
+        />
+      )}
+
       <div className="household-list">
         {activePeople.map((person) => {
-          const status = personStatus(person)
+          const checkIns = person.checkIns ?? []
+          const todayCi = checkIns.find((c) => isSameDay(c.occurredAt, selectedDate))
+          const latestCi = todayCi ?? [...checkIns].sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))[0]
+          const status = derivePersonStatus(person.indicators ?? [], latestCi)
           const hasCheckIn = (person.checkIns ?? []).some((ci) =>
             isSameDay(ci.occurredAt, selectedDate),
           )

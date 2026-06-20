@@ -10,6 +10,10 @@ const peopleSelectionSet = [
     'archived',
     'checkIns.id',
     'checkIns.occurredAt',
+    'checkIns.answersJson',
+    'indicators.id',
+    'indicators.polarity',
+    'indicators.active',
 ] as const;
 
 export function usePeople() {

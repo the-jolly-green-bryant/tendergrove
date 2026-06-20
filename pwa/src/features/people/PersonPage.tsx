@@ -44,6 +44,7 @@ import { useArchivePerson } from './useArchivePerson';
 import { parseAnswers } from './checkin/checkInUtils';
 import { PersonAvatar } from '../../components/PersonAvatar';
 import { PersonRole } from '../../lib/domain';
+import { derivePersonStatus } from '../../lib/status';
 
 type Indicator = NonNullable<ReturnType<typeof usePerson>['data']>['indicators'][number];
 type CheckIn = NonNullable<ReturnType<typeof usePerson>['data']>['checkIns'][number];
@@ -63,27 +64,6 @@ function latestCheckIn(checkIns: CheckIn[]): CheckIn | undefined {
     return [...checkIns].sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))[0];
 }
 
-function deriveStatus(checkIn: CheckIn | undefined): {
-    label: string;
-    color: 'success' | 'warning' | 'danger' | 'medium';
-} {
-    if (!checkIn) {
-        return { label: 'No check-ins', color: 'medium' };
-    }
-
-    const ageMs = Date.now() - new Date(checkIn.occurredAt).getTime();
-    const oneDay = 24 * 60 * 60 * 1000;
-
-    if (ageMs <= oneDay) {
-        return { label: 'Up to date', color: 'success' };
-    }
-
-    if (ageMs <= 3 * oneDay) {
-        return { label: 'Moderate', color: 'warning' };
-    }
-
-    return { label: 'Needs attention', color: 'danger' };
-}
 
 /** Return YYYY-MM-DD for a Date. */
 function toISODate(d: Date): string {
@@ -137,7 +117,9 @@ export default function PersonPage() {
     const hiddenDistressCount = distressIndicators.length - visibleDistress.length;
 
     const recentCheckIn = latestCheckIn(checkIns);
-    const status = deriveStatus(recentCheckIn);
+    const selectedCheckIn = checkIns.find((ci) => isSameDay(ci.occurredAt, selectedDate));
+    const statusCheckIn = selectedCheckIn ?? recentCheckIn;
+    const status = derivePersonStatus(activeIndicators, statusCheckIn);
     const selectedDateCheckIn = checkIns.find((ci) => isSameDay(ci.occurredAt, selectedDate));
     const noteCheckIn = checkIns.find((checkIn) => Boolean(checkIn.note));
 
