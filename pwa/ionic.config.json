@@ -1,5 +1,5 @@
 {
-  "name": "Special Needs Tracker",
+  "name": "Tendergrove",
   "integrations": { "capacitor": {} },
   "type": "react-vite"
 }

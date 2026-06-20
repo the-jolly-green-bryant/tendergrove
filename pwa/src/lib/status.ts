@@ -28,7 +28,7 @@ export interface Status {
 
 interface IndicatorLike {
     id: string
-    polarity: string
+    polarity: string | null
     active?: boolean | null
 }
 

@@ -35,8 +35,8 @@ ion-chip {
 }
 
 ion-tab-bar {
-  border-top: 1px solid #eee8fb;
-  box-shadow: 0 -8px 22px rgba(88, 66, 160, 0.06);
+  border-top: 1px solid #E0DDD5;
+  box-shadow: 0 -8px 22px rgba(92, 122, 94, 0.06);
   --background: #ffffff;
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
@@ -57,7 +57,7 @@ ion-tab-bar {
   height: 52px;
   border-radius: 50%;
   background: var(--ion-color-primary);
-  box-shadow: 0 4px 14px rgba(111, 73, 232, 0.35);
+  box-shadow: 0 4px 14px rgba(92, 122, 94, 0.35);
   z-index: 0;
 }
 
@@ -361,7 +361,7 @@ ion-item.indicator-row {
   border: 1px solid var(--app-border-color);
   border-radius: var(--app-radius-md);
   background: #ffffff;
-  box-shadow: 0 3px 10px rgba(88, 66, 160, 0.04);
+  box-shadow: 0 3px 10px rgba(92, 122, 94, 0.04);
   cursor: pointer;
   text-align: left;
   -webkit-appearance: none;

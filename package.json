@@ -1,5 +1,5 @@
 {
-  "name": "special-needs-tracker",
+  "name": "tendergrove",
   "version": "1.0.0",
   "description": "A service for making identifying distress from anecdotal evidence.",
   "main": "index.js",
@@ -8,7 +8,8 @@
     "sandbox:delete": "ampx sandbox delete",
     "pwa": "pnpm --filter pwa dev",
     "lint": "pnpm -r lint",
-    "format": "pnpm -r format"
+    "format": "pnpm -r format",
+    "mobile:build:debug": "pnpm --filter pwa build && cd pwa && npx cap sync && npx cap build android --debug"
   },
   "keywords": [],
   "author": "",

@@ -11,7 +11,7 @@ export function buildPlainTextReport(
   const avg = (nums: number[]) =>
     nums.length ? (nums.reduce((a, b) => a + b, 0) / nums.length).toFixed(1) : 'n/a'
   const lines = [
-    'Special Needs Tracker Report',
+    'Tendergrove Report',
     `Generated: ${new Date().toLocaleString()}`,
     '',
     'Summary',

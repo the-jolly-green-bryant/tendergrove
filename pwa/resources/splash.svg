@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2732 2732">
+  <defs>
+    <linearGradient id="sbg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F0EDE4"/>
+      <stop offset="60%" stop-color="#E8E5DC"/>
+      <stop offset="100%" stop-color="#D5E0D0"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="40%" r="30%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="2732" height="2732" fill="url(#sbg)"/>
+  <!-- Soft glow behind logo -->
+  <circle cx="1366" cy="1100" r="500" fill="url(#glow)"/>
+  <!-- Corner leaves - top left -->
+  <ellipse cx="120" cy="180" rx="80" ry="30" transform="rotate(-30 120 180)" fill="#8BAF8D" opacity="0.4"/>
+  <ellipse cx="200" cy="120" rx="60" ry="22" transform="rotate(-20 200 120)" fill="#7A9A7E" opacity="0.35"/>
+  <ellipse cx="80" cy="280" rx="55" ry="20" transform="rotate(-45 80 280)" fill="#A8C5A0" opacity="0.3"/>
+  <!-- Corner leaves - top right -->
+  <ellipse cx="2612" cy="180" rx="80" ry="30" transform="rotate(30 2612 180)" fill="#8BAF8D" opacity="0.4"/>
+  <ellipse cx="2532" cy="120" rx="60" ry="22" transform="rotate(20 2532 120)" fill="#7A9A7E" opacity="0.35"/>
+  <ellipse cx="2652" cy="280" rx="55" ry="20" transform="rotate(45 2652 280)" fill="#A8C5A0" opacity="0.3"/>
+  <!-- Circle frame -->
+  <circle cx="1366" cy="1050" r="380" fill="none" stroke="#6B8F6B" stroke-width="16" opacity="0.7"/>
+  <!-- Cross/plus at top -->
+  <rect x="1346" y="610" width="40" height="72" rx="5" fill="#8BAF8D" opacity="0.7"/>
+  <rect x="1330" y="630" width="72" height="32" rx="5" fill="#8BAF8D" opacity="0.7"/>
+  <!-- Tree trunk - intertwined -->
+  <path d="M1336,1200 C1336,1120 1310,1070 1324,1020 C1330,996 1342,972 1348,948 C1354,924 1348,900 1366,848
+           C1384,900 1378,924 1384,948 C1390,972 1402,996 1408,1020 C1422,1070 1396,1120 1396,1200 L1396,1320
+           C1396,1332 1388,1340 1376,1340 L1356,1340 C1344,1340 1336,1332 1336,1320 Z" fill="#5C7A5E"/>
+  <path d="M1348,1180 C1348,1120 1330,1080 1340,1040 C1345,1016 1355,992 1360,968 C1363,956 1360,936 1366,900
+           C1372,936 1369,956 1372,968 C1377,992 1387,1016 1392,1040 C1402,1080 1384,1120 1384,1180" fill="none" stroke="#4A6B4A" stroke-width="5" opacity="0.5"/>
+  <!-- Leaves - left -->
+  <ellipse cx="1256" cy="960" rx="48" ry="18" transform="rotate(-40 1256 960)" fill="#7A9A7E"/>
+  <ellipse cx="1230" cy="1010" rx="40" ry="16" transform="rotate(-50 1230 1010)" fill="#8BAF8D"/>
+  <ellipse cx="1270" cy="910" rx="38" ry="15" transform="rotate(-30 1270 910)" fill="#6B8F6B"/>
+  <ellipse cx="1296" cy="860" rx="34" ry="13" transform="rotate(-25 1296 860)" fill="#8BAF8D" opacity="0.8"/>
+  <ellipse cx="1240" cy="1060" rx="38" ry="15" transform="rotate(-55 1240 1060)" fill="#A8C5A0"/>
+  <ellipse cx="1310" cy="810" rx="30" ry="12" transform="rotate(-20 1310 810)" fill="#7A9A7E" opacity="0.7"/>
+  <!-- Leaves - right -->
+  <ellipse cx="1476" cy="960" rx="48" ry="18" transform="rotate(40 1476 960)" fill="#7A9A7E"/>
+  <ellipse cx="1502" cy="1010" rx="40" ry="16" transform="rotate(50 1502 1010)" fill="#8BAF8D"/>
+  <ellipse cx="1462" cy="910" rx="38" ry="15" transform="rotate(30 1462 910)" fill="#6B8F6B"/>
+  <ellipse cx="1436" cy="860" rx="34" ry="13" transform="rotate(25 1436 860)" fill="#8BAF8D" opacity="0.8"/>
+  <ellipse cx="1492" cy="1060" rx="38" ry="15" transform="rotate(55 1492 1060)" fill="#A8C5A0"/>
+  <ellipse cx="1422" cy="810" rx="30" ry="12" transform="rotate(20 1422 810)" fill="#7A9A7E" opacity="0.7"/>
+  <!-- Top leaves -->
+  <ellipse cx="1336" cy="790" rx="26" ry="12" transform="rotate(-10 1336 790)" fill="#6B8F6B"/>
+  <ellipse cx="1396" cy="790" rx="26" ry="12" transform="rotate(10 1396 790)" fill="#6B8F6B"/>
+  <!-- Heart at base -->
+  <path d="M1366,1380 C1366,1380 1326,1354 1326,1328 C1326,1312 1338,1302 1350,1302 C1358,1302 1362,1306 1366,1312
+           C1370,1306 1374,1302 1382,1302 C1394,1302 1406,1312 1406,1328 C1406,1354 1366,1380 1366,1380 Z" fill="#8BAF8D" opacity="0.6"/>
+  <!-- App name -->
+  <text x="1366" y="1520" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="120" font-weight="600" fill="#4A6B4A" letter-spacing="4">TenderGrove</text>
+  <!-- Heart separator -->
+  <path d="M1366,1570 C1366,1570 1352,1560 1352,1552 C1352,1547 1356,1544 1360,1544 C1362,1544 1364,1545 1366,1548
+           C1368,1545 1370,1544 1372,1544 C1376,1544 1380,1547 1380,1552 C1380,1560 1366,1570 1366,1570 Z" fill="#8BAF8D" opacity="0.7"/>
+  <!-- Tagline -->
+  <text x="1366" y="1640" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="56" font-weight="400" fill="#7A9A7E" letter-spacing="6">NURTURING GROWTH.</text>
+  <text x="1366" y="1710" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="56" font-weight="400" fill="#7A9A7E" letter-spacing="6">SUPPORTING EVERY JOURNEY.</text>
+  <!-- Rolling hills -->
+  <path d="M0,2200 Q683,2080 1366,2160 Q2049,2240 2732,2120 L2732,2732 L0,2732 Z" fill="#A8C5A0" opacity="0.4"/>
+  <path d="M0,2350 Q683,2250 1366,2320 Q2049,2390 2732,2280 L2732,2732 L0,2732 Z" fill="#8BAF8D" opacity="0.35"/>
+  <path d="M0,2480 Q683,2400 1366,2460 Q2049,2520 2732,2430 L2732,2732 L0,2732 Z" fill="#6B8F6B" opacity="0.3"/>
+  <!-- Bottom corner leaves -->
+  <ellipse cx="180" cy="2400" rx="70" ry="26" transform="rotate(30 180 2400)" fill="#8BAF8D" opacity="0.3"/>
+  <ellipse cx="2552" cy="2400" rx="70" ry="26" transform="rotate(-30 2552 2400)" fill="#8BAF8D" opacity="0.3"/>
+</svg>

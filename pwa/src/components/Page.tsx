@@ -27,7 +27,7 @@ export function Page({ title, children }: { title: string; children: ReactNode }
       <IonMenu contentId="main-content">
         <IonContent>
           <div className="menu-logo-area">
-            <h2 className="menu-logo-text">Justify</h2>
+            <h2 className="menu-logo-text">Tendergrove</h2>
           </div>
 
           <IonList lines="none">

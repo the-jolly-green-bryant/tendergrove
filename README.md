@@ -1,4 +1,4 @@
-# Special Needs Tracker
+# Tendergrove
 
 Startup-quality Ionic React starter for fast parent observations, child distress tracking, incident logging, parent-care checks, and plain-text reporting.
 

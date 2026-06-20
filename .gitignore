@@ -8,7 +8,7 @@ node_modules/
 
 # Production Build Output
 /build
-/dist
+pwa/dist/
 /www
 
 # Ionic & Capacitor Files

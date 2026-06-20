@@ -7,6 +7,7 @@ const personSelectionSet = [
     'displayName',
     'role',
     'avatarUrl',
+    'archived',
     'indicators.id',
     'indicators.name',
     'indicators.polarity',
