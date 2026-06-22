@@ -625,3 +625,9 @@ ion-item.indicator-row {
   font-size: 1rem;
   font-weight: 700;
 }
+
+
+/* Prevent visited links from changing to browser default purple */
+a:visited {
+  color: inherit;
+}

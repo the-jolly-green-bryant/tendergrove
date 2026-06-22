@@ -52,10 +52,31 @@
 }
 
 .timeline-chip__avatar {
-  width: 24px;
-  height: 24px;
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px;
   font-size: 0.6rem;
   margin-right: 4px;
+}
+
+.timeline-chip__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.timeline-chip--avatar-only {
+  --padding-start: 4px;
+  --padding-end: 4px;
+}
+
+.timeline-chip--avatar-only .timeline-chip__avatar {
+  margin-right: 0;
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px;
+  font-size: 0.65rem;
 }
 
 /* ------------------------------------------------------------------ */
