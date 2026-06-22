@@ -16,12 +16,16 @@ import {
 import {
   archiveOutline,
   homeOutline,
+  logOutOutline,
   menuOutline,
   settingsOutline,
 } from 'ionicons/icons'
 import { ReactNode } from 'react'
 
+import { useAppAuth } from '../auth/AuthContext'
+
 export function Page({ title, children }: { title: string; children: ReactNode }) {
+  const { signOut } = useAppAuth()
   return (
     <>
       <IonMenu contentId="main-content">
@@ -47,6 +51,12 @@ export function Page({ title, children }: { title: string; children: ReactNode }
               <IonItem button routerLink="/parent-care" routerDirection="forward">
                 <IonIcon slot="start" icon={settingsOutline} />
                 <IonLabel>Settings</IonLabel>
+              </IonItem>
+            </IonMenuToggle>
+            <IonMenuToggle autoHide={false}>
+              <IonItem button onClick={() => signOut?.()}>
+                <IonIcon slot="start" icon={logOutOutline} />
+                <IonLabel>Sign Out</IonLabel>
               </IonItem>
             </IonMenuToggle>
           </IonList>

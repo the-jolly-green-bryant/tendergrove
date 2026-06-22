@@ -15,6 +15,7 @@
     "@aws-amplify/ui-react": "^6.15.4",
     "@capacitor/android": "^8.4.1",
     "@capacitor/app": "latest",
+    "@capacitor/browser": "^8.0.3",
     "@capacitor/core": "latest",
     "@capacitor/haptics": "latest",
     "@capacitor/keyboard": "latest",

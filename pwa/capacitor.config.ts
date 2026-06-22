@@ -7,6 +7,9 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https',
   },
+  android: {
+    appendUrlToDeepLink: false,
+  },
 };
 
 export default config;

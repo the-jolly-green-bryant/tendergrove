@@ -1,9 +1,9 @@
 {
   "auth": {
-    "user_pool_id": "us-west-2_Nqiy50Yla",
+    "user_pool_id": "us-west-2_EpMD1XUW5",
     "aws_region": "us-west-2",
-    "user_pool_client_id": "6cncdp4lsrjg16881l2vk5a585",
-    "identity_pool_id": "us-west-2:d5af39b0-277b-4c5a-add7-3078e1e0994b",
+    "user_pool_client_id": "50jocru41m13ob4m68khau5tlk",
+    "identity_pool_id": "us-west-2:0e4a0904-1bf3-482f-901c-cb54765b7e4f",
     "mfa_methods": [],
     "standard_required_attributes": [
       "email"
@@ -28,10 +28,14 @@
         "GOOGLE"
       ],
       "redirect_sign_in_uri": [
-        "http://localhost:8100/"
+        "http://localhost:8100/",
+        "https://localhost/",
+        "com.tendergrove.app://callback/"
       ],
       "redirect_sign_out_uri": [
-        "http://localhost:8100/"
+        "http://localhost:8100/",
+        "https://localhost/",
+        "com.tendergrove.app://callback/"
       ],
       "response_type": "code",
       "scopes": [
@@ -41,12 +45,12 @@
         "profile",
         "aws.cognito.signin.user.admin"
       ],
-      "domain": "650dd17b7e1c8d4463c7.auth.us-west-2.amazoncognito.com"
+      "domain": "7b747c0f316a7a9fbed2.auth.us-west-2.amazoncognito.com"
     },
     "unauthenticated_identities_enabled": true
   },
   "data": {
-    "url": "https://2isnvwrzpfh5bhddmw7lyg2nau.appsync-api.us-west-2.amazonaws.com/graphql",
+    "url": "https://v3tb7qyk5fbtpam6ofgellgiba.appsync-api.us-west-2.amazonaws.com/graphql",
     "aws_region": "us-west-2",
     "default_authorization_type": "AMAZON_COGNITO_USER_POOLS",
     "authorization_types": [
@@ -564,6 +568,104 @@
             "sortKeyFieldNames": []
           }
         },
+        "RoleTemplate": {
+          "name": "RoleTemplate",
+          "fields": {
+            "id": {
+              "name": "id",
+              "isArray": false,
+              "type": "ID",
+              "isRequired": true,
+              "attributes": []
+            },
+            "role": {
+              "name": "role",
+              "isArray": false,
+              "type": {
+                "enum": "RoleTemplateRole"
+              },
+              "isRequired": false,
+              "attributes": []
+            },
+            "label": {
+              "name": "label",
+              "isArray": false,
+              "type": "String",
+              "isRequired": true,
+              "attributes": []
+            },
+            "version": {
+              "name": "version",
+              "isArray": false,
+              "type": "Int",
+              "isRequired": true,
+              "attributes": []
+            },
+            "indicatorsJson": {
+              "name": "indicatorsJson",
+              "isArray": false,
+              "type": "AWSJSON",
+              "isRequired": true,
+              "attributes": []
+            },
+            "createdAt": {
+              "name": "createdAt",
+              "isArray": false,
+              "type": "AWSDateTime",
+              "isRequired": false,
+              "attributes": [],
+              "isReadOnly": true
+            },
+            "updatedAt": {
+              "name": "updatedAt",
+              "isArray": false,
+              "type": "AWSDateTime",
+              "isRequired": false,
+              "attributes": [],
+              "isReadOnly": true
+            }
+          },
+          "syncable": true,
+          "pluralName": "RoleTemplates",
+          "attributes": [
+            {
+              "type": "model",
+              "properties": {}
+            },
+            {
+              "type": "auth",
+              "properties": {
+                "rules": [
+                  {
+                    "allow": "private",
+                    "operations": [
+                      "read"
+                    ]
+                  },
+                  {
+                    "groupClaim": "cognito:groups",
+                    "provider": "userPools",
+                    "allow": "groups",
+                    "groups": [
+                      "Admin"
+                    ],
+                    "operations": [
+                      "create",
+                      "update",
+                      "delete",
+                      "read"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "primaryKeyInfo": {
+            "isCustomPrimaryKey": false,
+            "primaryKeyFieldName": "id",
+            "sortKeyFieldNames": []
+          }
+        },
         "Event": {
           "name": "Event",
           "fields": {
@@ -719,6 +821,17 @@
             "count",
             "duration",
             "text"
+          ]
+        },
+        "RoleTemplateRole": {
+          "name": "RoleTemplateRole",
+          "values": [
+            "child",
+            "parent",
+            "spouse",
+            "self",
+            "caregiver",
+            "other"
           ]
         },
         "EventType": {

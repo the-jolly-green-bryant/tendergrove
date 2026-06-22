@@ -9,8 +9,16 @@ export const auth = defineAuth({
         clientSecret: secret('GOOGLE_CLIENT_SECRET'),
         scopes: ['openid', 'email', 'profile'],
       },
-      callbackUrls: ['http://localhost:8100/'],
-      logoutUrls: ['http://localhost:8100/'],
+      callbackUrls: [
+        'http://localhost:8100/',
+        'https://localhost/',
+        'com.tendergrove.app://callback/',
+      ],
+      logoutUrls: [
+        'http://localhost:8100/',
+        'https://localhost/',
+        'com.tendergrove.app://callback/',
+      ],
     },
   },
 })
