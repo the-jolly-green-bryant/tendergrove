@@ -34,8 +34,8 @@ import {
     timeOutline,
 } from 'ionicons/icons';
 import { formatDistanceToNow } from 'date-fns';
-import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation, useParams } from 'react-router-dom';
 
 import { useSelectedDate } from '../../context/SelectedDateContext';
 
@@ -103,7 +103,22 @@ export default function PersonPage() {
     const [presentActionSheet] = useIonActionSheet();
     const [presentAlert] = useIonAlert();
     const { selectedDate, setSelectedDate } = useSelectedDate();
+    const location = useLocation();
     const [datePickerOpen, setDatePickerOpen] = useState(false);
+
+    // If navigated from timeline with ?viewDate=YYYY-MM-DD, use that date
+    // for display without changing the app's master selectedDate.
+    const viewDate = useMemo(() => {
+        const params = new URLSearchParams(location.search);
+        const vd = params.get('viewDate');
+        if (vd) {
+            const [y, m, d] = vd.split('-').map(Number);
+            if (y && m && d) return new Date(y, m - 1, d);
+        }
+        return selectedDate;
+    }, [location.search, selectedDate]);
+
+    const isTimelineView = new URLSearchParams(location.search).has('viewDate');
 
     const indicators = (person?.indicators ?? []) as Indicator[];
     const checkIns = (person?.checkIns ?? []) as CheckIn[];
@@ -117,24 +132,25 @@ export default function PersonPage() {
     const hiddenDistressCount = distressIndicators.length - visibleDistress.length;
 
     const recentCheckIn = latestCheckIn(checkIns);
-    const selectedCheckIn = checkIns.find((ci) => isSameDay(ci.occurredAt, selectedDate));
+    const selectedCheckIn = checkIns.find((ci) => isSameDay(ci.occurredAt, viewDate));
     const status = derivePersonStatus(activeIndicators, checkIns);
     const emoji = todayEmoji(activeIndicators, checkIns, new Date(), personId);
-    const selectedDateCheckIn = checkIns.find((ci) => isSameDay(ci.occurredAt, selectedDate));
+    const selectedDateCheckIn = checkIns.find((ci) => isSameDay(ci.occurredAt, viewDate));
     const noteCheckIn = checkIns.find((checkIn) => Boolean(checkIn.note));
 
     const checkInPath = `/person/${personId}/check-in`;
 
     // No check-in yet for the selected date → drop the caregiver straight into the check-in flow.
+    // Skip auto-redirect when viewing a specific date from the timeline.
     useEffect(() => {
-        if (!isRealPerson || isLoading || !person || hasRedirected.current) {
+        if (!isRealPerson || isLoading || !person || hasRedirected.current || isTimelineView) {
             return;
         }
         if (activeIndicators.length > 0 && !selectedDateCheckIn) {
             hasRedirected.current = true;
             router.push(checkInPath, 'forward', 'replace');
         }
-    }, [isRealPerson, isLoading, person, activeIndicators.length, selectedDateCheckIn, router, checkInPath]);
+    }, [isRealPerson, isLoading, person, activeIndicators.length, selectedDateCheckIn, router, checkInPath, isTimelineView]);
 
     // When Ionic matches /people/new against /people/:personId, bail out so
     // PersonFormPage is the only visible page.
@@ -259,7 +275,7 @@ export default function PersonPage() {
             >
                 <IonDatetime
                     presentation="date"
-                    value={toISODate(selectedDate)}
+                    value={toISODate(viewDate)}
                     max={toISODate(new Date())}
                     onIonChange={(e) => {
                         const val = e.detail.value;
@@ -320,14 +336,14 @@ export default function PersonPage() {
                         </section>
 
                         <p className="person-hero__date-label">
-                            Viewing: {formatDateLabel(selectedDate)}
+                            Viewing: {formatDateLabel(viewDate)}
                         </p>
 
                         {checkedForDate && (
                             <IonCard>
                                 <IonCardContent>
                                     <div className="section-header">
-                                        <h2>{formatDateLabel(selectedDate)} Check-In</h2>
+                                        <h2>{formatDateLabel(viewDate)} Check-In</h2>
                                         <IonButton fill="clear" size="small" onClick={startCheckIn}>
                                             Edit
                                         </IonButton>

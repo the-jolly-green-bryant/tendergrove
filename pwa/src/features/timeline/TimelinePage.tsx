@@ -219,7 +219,7 @@ export default function TimelinePage() {
                       <button
                         key={event.id}
                         className="timeline-event"
-                        onClick={() => history.push(`/person/${event.personId}`)}
+                        onClick={() => history.push(`/person/${event.personId}?viewDate=${toDateKey(event.occurredAt)}`)}
                       >
                         <div className="timeline-event__time">
                           {formatTime(event.occurredAt)}
