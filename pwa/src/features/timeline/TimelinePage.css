@@ -1,0 +1,247 @@
+/* ------------------------------------------------------------------ */
+/*  Timeline filters                                                   */
+/* ------------------------------------------------------------------ */
+
+.timeline-loading {
+  display: flex;
+  justify-content: center;
+  padding: 3rem 0;
+}
+
+.timeline-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.timeline-person-chips {
+  display: flex;
+  gap: 0.25rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.timeline-person-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.timeline-type-chips {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.timeline-filter-icon {
+  font-size: 1.1rem;
+  color: var(--ion-color-medium);
+  margin-left: 0.25rem;
+}
+
+.timeline-chip {
+  --background: var(--ion-color-light);
+  --color: var(--ion-text-color);
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.timeline-chip--active {
+  --background: var(--ion-color-primary);
+  --color: #fff;
+}
+
+.timeline-chip__avatar {
+  width: 24px;
+  height: 24px;
+  font-size: 0.6rem;
+  margin-right: 4px;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Empty state                                                        */
+/* ------------------------------------------------------------------ */
+
+.timeline-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--ion-color-medium);
+}
+
+.timeline-empty__hint {
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Day groups                                                         */
+/* ------------------------------------------------------------------ */
+
+.timeline-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.timeline-day__heading {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ion-color-medium);
+  margin: 0 0 0.5rem 0;
+}
+
+.timeline-day__events {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Individual event row                                               */
+/* ------------------------------------------------------------------ */
+
+.timeline-event {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  padding: 0.5rem 0;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.timeline-event:active {
+  opacity: 0.7;
+}
+
+.timeline-event__time {
+  flex-shrink: 0;
+  width: 4.5rem;
+  font-size: 0.78rem;
+  color: var(--ion-color-medium);
+  padding-top: 0.6rem;
+  text-align: right;
+}
+
+/* Vertical line + dot */
+.timeline-event__line {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 1.5rem;
+  position: relative;
+  padding-top: 0.6rem;
+}
+
+.timeline-event__line::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: -0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  background: var(--ion-color-light-shade);
+}
+
+.timeline-day__events .timeline-event:first-child .timeline-event__line::before {
+  top: 0.6rem;
+}
+
+.timeline-day__events .timeline-event:last-child .timeline-event__line::before {
+  bottom: 50%;
+}
+
+.timeline-event__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  z-index: 1;
+  background: var(--ion-color-medium);
+  flex-shrink: 0;
+}
+
+.timeline-event__dot--success {
+  background: var(--ion-color-success);
+}
+
+.timeline-event__dot--warning {
+  background: var(--ion-color-warning);
+}
+
+.timeline-event__dot--danger {
+  background: var(--ion-color-danger);
+}
+
+/* Card */
+.timeline-event__card {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--ion-card-background, #fff);
+  border-radius: 12px;
+  padding: 0.65rem 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.timeline-event__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.timeline-event__avatar {
+  width: 36px;
+  height: 36px;
+  font-size: 0.8rem;
+}
+
+.timeline-event__info {
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-event__name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ion-text-color);
+}
+
+.timeline-event__type {
+  font-size: 0.75rem;
+  color: var(--ion-color-medium);
+}
+
+/* Status chip */
+.timeline-status-chip {
+  font-size: 0.72rem;
+  height: 1.6rem;
+  flex-shrink: 0;
+}
+
+.timeline-status-chip--success {
+  --background: var(--ion-color-success-tint);
+  --color: var(--ion-color-success-shade);
+}
+
+.timeline-status-chip--warning {
+  --background: var(--ion-color-warning-tint);
+  --color: var(--ion-color-warning-shade);
+}
+
+.timeline-status-chip--danger {
+  --background: var(--ion-color-danger-tint);
+  --color: var(--ion-color-danger-shade);
+}
+
+.timeline-status-chip--medium {
+  --background: var(--ion-color-medium-tint);
+  --color: var(--ion-color-medium-shade);
+}

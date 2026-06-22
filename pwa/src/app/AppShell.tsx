@@ -18,6 +18,7 @@ import {
 
 import HouseholdPage from '../features/household/HouseholdPage'
 import CheckInPage from '../features/checkins/CheckInPage'
+import TimelinePage from '../features/timeline/TimelinePage'
 import IncidentPage from '../features/incidents/IncidentPage'
 import ParentCarePage from '../features/parent-care/ParentCarePage'
 import ReportsPage from '../features/reports/ReportsPage'
@@ -105,7 +106,7 @@ export default function AppShell() {
           <Route
             exact
             path="/check-in"
-            component={CheckInPage}
+            component={TimelinePage}
           />
           <Route
             exact

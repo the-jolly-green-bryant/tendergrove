@@ -163,22 +163,6 @@ export default function IndicatorFormPage() {
                     </IonItem>
                 </IonList>
 
-                <h2 className="indicator-form__section">How would you like to track this?</h2>
-                <IonRadioGroup
-                    value={inputType}
-                    onIonChange={(event) => setInputType(event.detail.value as InputType)}
-                >
-                    {trackOptions.map((option) => (
-                        <IonItem key={option.value} button detail={false} onClick={() => setInputType(option.value)}>
-                            <IonRadio slot="start" value={option.value} />
-                            <IonLabel>
-                                <h3>{option.label}</h3>
-                                <p>{option.helper}</p>
-                            </IonLabel>
-                        </IonItem>
-                    ))}
-                </IonRadioGroup>
-
                 <IonList lines="none">
                     <IonItem>
                         <IonTextarea
