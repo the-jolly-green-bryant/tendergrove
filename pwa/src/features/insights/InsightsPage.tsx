@@ -201,10 +201,6 @@ export default function InsightsPage() {
                             />
                           )}
                         </div>
-
-                        <span className="insights-day__count">
-                          {day.good}/{total}
-                        </span>
                       </div>
                     )
                   })}
