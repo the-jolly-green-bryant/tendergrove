@@ -82,6 +82,35 @@ function isSameDay(occurredAt: string, date: Date): boolean {
     );
 }
 
+function formatUpdatedLabel(checkIn: CheckIn): string | null {
+    const updatedAt = checkIn.updatedAt;
+    const createdAt = checkIn.createdAt;
+    if (!updatedAt || !createdAt || updatedAt === createdAt) return null;
+
+    const created = new Date(createdAt);
+    const updated = new Date(updatedAt);
+
+    const sameDay =
+        created.getFullYear() === updated.getFullYear() &&
+        created.getMonth() === updated.getMonth() &&
+        created.getDate() === updated.getDate();
+
+    const time = updated.toLocaleTimeString(undefined, {
+        hour: 'numeric',
+        minute: '2-digit',
+    });
+
+    if (sameDay) {
+        return `Updated: ${time}`;
+    }
+
+    const date = updated.toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+    });
+    return `Updated: ${date} - ${time}`;
+}
+
 function formatDateLabel(date: Date): string {
     const today = new Date();
     if (
@@ -348,6 +377,12 @@ export default function PersonPage() {
                                             Edit
                                         </IonButton>
                                     </div>
+
+                                    {selectedCheckIn && formatUpdatedLabel(selectedCheckIn) && (
+                                        <p className="check-in-updated">
+                                            {formatUpdatedLabel(selectedCheckIn)}
+                                        </p>
+                                    )}
 
                                     {activeIndicators.length === 0 ? (
                                         <p className="section-empty">No indicators tracked.</p>

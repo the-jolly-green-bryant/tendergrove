@@ -9,6 +9,8 @@ const peopleSelectionSet = [
     'avatarUrl',
     'archived',
     'checkIns.id',
+    'checkIns.createdAt',
+    'checkIns.updatedAt',
     'checkIns.occurredAt',
     'checkIns.answersJson',
     'indicators.id',

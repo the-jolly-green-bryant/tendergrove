@@ -14,6 +14,8 @@ const personSelectionSet = [
     'indicators.inputType',
     'indicators.active',
     'checkIns.id',
+    'checkIns.createdAt',
+    'checkIns.updatedAt',
     'checkIns.occurredAt',
     'checkIns.answersJson',
     'checkIns.note',

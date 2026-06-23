@@ -24,6 +24,7 @@ interface TimelineEvent {
   personAvatar: string | null
   personRole: string | null
   occurredAt: string
+  timestamp: string
   type: EventType
   statusLabel: string
   statusColor: 'success' | 'warning' | 'danger' | 'medium'
@@ -102,6 +103,7 @@ export default function TimelinePage() {
           personAvatar: person.avatarUrl,
           personRole: person.role,
           occurredAt: ci.occurredAt,
+          timestamp: ci.updatedAt ?? ci.createdAt ?? ci.occurredAt,
           type: 'check-in',
           statusLabel: status.label,
           statusColor: status.color,
@@ -222,7 +224,7 @@ export default function TimelinePage() {
                         onClick={() => history.push(`/person/${event.personId}?viewDate=${toDateKey(event.occurredAt)}`)}
                       >
                         <div className="timeline-event__time">
-                          {formatTime(event.occurredAt)}
+                          {formatTime(event.timestamp)}
                         </div>
 
                         <div className="timeline-event__line">

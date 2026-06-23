@@ -41,6 +41,15 @@ ion-tab-bar {
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
+ion-tab-button.tab-selected {
+  font-weight: 600;
+  border-top: 2px solid var(--ion-color-primary);
+}
+
+ion-tab-button:not(.tab-selected) {
+  border-top: 2px solid transparent;
+}
+
 /* Centered FAB-style tab button */
 .tab-bar__fab {
   --color: #ffffff;
@@ -213,6 +222,12 @@ ion-item.check-in-summary__item {
 }
 
 .check-in-summary__muted {
+  color: var(--app-muted-text);
+}
+
+.check-in-updated {
+  margin: 2px 0 8px;
+  font-size: 0.82rem;
   color: var(--app-muted-text);
 }
 
