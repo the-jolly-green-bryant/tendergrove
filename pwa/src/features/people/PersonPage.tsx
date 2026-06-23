@@ -173,7 +173,13 @@ export default function PersonPage() {
     const status = derivePersonStatus(activeIndicators, checkIns);
     const emoji = todayEmoji(activeIndicators, checkIns, new Date(), personId);
     const selectedDateCheckIn = checkIns.find((ci) => isSameDay(ci.occurredAt, viewDate));
-    const noteCheckIn = checkIns.find((checkIn) => Boolean(checkIn.note));
+    /** Note for the currently viewed date. */
+    const selectedDateNote = selectedDateCheckIn?.note || null;
+
+    /** Most recent check-in with a note on a *different* day (for "Last notes" fallback). */
+    const lastNoteCheckIn = [...checkIns]
+        .filter((ci) => Boolean(ci.note) && !isSameDay(ci.occurredAt, viewDate))
+        .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))[0] ?? null;
 
     const checkInPath = `/person/${personId}/check-in`;
 
@@ -318,8 +324,8 @@ export default function PersonPage() {
 
                 {person && (
                     <>
-                        <section className="person-hero">
-                            <div className="avatar-emoji-wrapper avatar-emoji-wrapper--hero">
+                        <section className="person-hero person-hero--compact">
+                            <div className="avatar-emoji-wrapper">
                                 <PersonAvatar
                                     className="person-hero__avatar"
                                     name={person.displayName}
@@ -328,29 +334,30 @@ export default function PersonPage() {
                                 {emoji && <span className="avatar-emoji-badge">{emoji}</span>}
                             </div>
 
-                            <h1 className="person-hero__name">{person.displayName}</h1>
-                            <p className="person-hero__subtitle">
-                                {roleLabels[person.role as PersonRole] ?? 'Person'}
-                            </p>
+                            <div className="person-hero__info">
+                                <div className="person-hero__name-row">
+                                    <h1 className="person-hero__name">{person.displayName}</h1>
+                                    <span className="person-hero__role">
+                                        {roleLabels[person.role as PersonRole] ?? 'Person'}
+                                    </span>
+                                </div>
 
-                            <div className="person-status">
-                                <IonChip color={status.color} className="person-status__chip">
-                                    <span className="person-status__dot" />
-                                    <IonLabel>{status.label}</IonLabel>
-                                </IonChip>
-                                <span className="person-status__caption">Current Status</span>
-                            </div>
+                                <div className="person-hero__meta">
+                                    <IonChip color={status.color} className="person-status__chip person-status__chip--sm">
+                                        <span className="person-status__dot" />
+                                        <IonLabel>{status.label}</IonLabel>
+                                    </IonChip>
 
-                            <div className="person-hero__last-checkin">
-                                <IonIcon icon={timeOutline} />
-                                <span>
-                                    {recentCheckIn
-                                        ? `Last check-in ${formatDistanceToNow(
-                                              new Date(recentCheckIn.occurredAt),
-                                              { addSuffix: true },
-                                          )}`
-                                        : 'No check-ins yet'}
-                                </span>
+                                    <span className="person-hero__timestamp">
+                                        <IonIcon icon={timeOutline} />
+                                        {recentCheckIn
+                                            ? formatDistanceToNow(
+                                                  new Date(recentCheckIn.occurredAt),
+                                                  { addSuffix: true },
+                                              )
+                                            : 'No check-ins yet'}
+                                    </span>
+                                </div>
                             </div>
                         </section>
 
@@ -358,6 +365,19 @@ export default function PersonPage() {
                             <p className="person-hero__date-label">
                                 Viewing: {formatDateLabel(viewDate)}
                             </p>
+                        )}
+
+                        {!checkedForDate && (
+                            <IonCard className="no-checkin-card">
+                                <IonCardContent className="no-checkin-card__body">
+                                    <p className="no-checkin-card__message">
+                                        No check-in recorded for {formatDateLabel(viewDate).toLowerCase()}.
+                                    </p>
+                                    <IonButton expand="block" onClick={startCheckIn}>
+                                        Start Check-In
+                                    </IonButton>
+                                </IonCardContent>
+                            </IonCard>
                         )}
 
                         {checkedForDate && (
@@ -428,19 +448,35 @@ export default function PersonPage() {
                         <IonCard>
                             <IonCardContent>
                                 <div className="section-header">
-                                    <h2>Notes</h2>
-                                    {noteCheckIn && (
-                                        <span className="section-header__meta">
-                                            {formatDistanceToNow(new Date(noteCheckIn.occurredAt), {
-                                                addSuffix: true,
-                                            })}
-                                        </span>
-                                    )}
+                                    <h2>{formatDateLabel(viewDate)} Notes</h2>
                                 </div>
 
-                                <p className="person-notes">
-                                    {noteCheckIn?.note ?? 'No notes yet.'}
-                                </p>
+                                {selectedDateNote ? (
+                                    <p className="person-notes">{selectedDateNote}</p>
+                                ) : (
+                                    <>
+                                        <p className="person-notes person-notes--empty">
+                                            No notes for {formatDateLabel(viewDate).toLowerCase()}.
+                                        </p>
+
+                                        {lastNoteCheckIn && (
+                                            <div className="person-notes__last">
+                                                <div className="section-header">
+                                                    <h3>Last Notes</h3>
+                                                    <span className="section-header__meta">
+                                                        {formatDistanceToNow(
+                                                            new Date(lastNoteCheckIn.occurredAt),
+                                                            { addSuffix: true },
+                                                        )}
+                                                    </span>
+                                                </div>
+                                                <p className="person-notes">
+                                                    {lastNoteCheckIn.note}
+                                                </p>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
                             </IonCardContent>
                         </IonCard>
                     </>

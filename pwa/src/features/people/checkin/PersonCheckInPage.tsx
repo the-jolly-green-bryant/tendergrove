@@ -87,8 +87,7 @@ export default function PersonCheckInPage() {
     }
 
     function goBack() {
-        // Avoid bouncing back to PersonPage (which would redirect here again).
-        router.push('/dashboard', 'back', 'pop');
+        router.push(personPath(), 'back', 'pop');
     }
 
     function toggle(id: string) {
