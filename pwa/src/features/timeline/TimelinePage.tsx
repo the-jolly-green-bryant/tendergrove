@@ -1,15 +1,16 @@
 import {
   IonChip,
-  IonIcon,
-  IonLabel,
   IonSpinner,
 } from '@ionic/react'
-import { filterOutline, peopleOutline } from 'ionicons/icons'
 import { useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 
 import { Page } from '../../components/Page'
 import { PersonAvatar } from '../../components/PersonAvatar'
+import {
+  PersonFilterChips,
+  usePersonFilter,
+} from '../../components/PersonFilterChips'
 import { usePeople } from '../people/usePeople'
 import { computeScore, statusFromScore } from '../../lib/status'
 
@@ -76,7 +77,7 @@ export default function TimelinePage() {
   const people = usePeople()
   const history = useHistory()
 
-  const [selectedPeople, setSelectedPeople] = useState<Set<string>>(new Set())
+  const { selectedPeople, togglePerson, clearSelection } = usePersonFilter()
   const [selectedTypes, setSelectedTypes] = useState<Set<EventType>>(
     new Set(['check-in']),
   )
@@ -133,18 +134,6 @@ export default function TimelinePage() {
     return groups
   }, [filteredEvents])
 
-  const togglePerson = (personId: string) => {
-    setSelectedPeople((prev) => {
-      const next = new Set(prev)
-      if (next.has(personId)) {
-        next.delete(personId)
-      } else {
-        next.add(personId)
-      }
-      return next
-    })
-  }
-
   const toggleType = (type: EventType) => {
     setSelectedTypes((prev) => {
       const next = new Set(prev)
@@ -156,8 +145,6 @@ export default function TimelinePage() {
       return next
     })
   }
-
-  const showAll = selectedPeople.size === 0
 
   return (
     <Page title="Timeline">
@@ -173,33 +160,13 @@ export default function TimelinePage() {
         <>
           {/* Person filter chips */}
           <div className="timeline-filters">
-            <div className="timeline-person-chips">
-              <IonChip
-                className={`timeline-chip ${showAll ? 'timeline-chip--active' : ''}`}
-                onClick={() => setSelectedPeople(new Set())}
-              >
-                <IonIcon icon={peopleOutline} />
-                <IonLabel>All People</IonLabel>
-              </IonChip>
-
-              {activePeople.map((person) => {
-                const isSelected = selectedPeople.has(person.id)
-                return (
-                  <IonChip
-                    key={person.id}
-                    className={`timeline-chip ${isSelected ? 'timeline-chip--active' : ''}`}
-                    onClick={() => togglePerson(person.id)}
-                  >
-                    <PersonAvatar
-                      name={person.displayName}
-                      src={person.avatarUrl}
-                      className="timeline-chip__avatar"
-                    />
-                    <IonLabel>{person.displayName}</IonLabel>
-                  </IonChip>
-                )
-              })}
-            </div>
+            <PersonFilterChips
+              people={activePeople}
+              selectedPeople={selectedPeople}
+              onToggle={togglePerson}
+              onClear={clearSelection}
+              className="timeline-person-chips"
+            />
           </div>
 
           {/* Timeline events grouped by day */}

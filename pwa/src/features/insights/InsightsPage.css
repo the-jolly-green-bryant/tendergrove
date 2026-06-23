@@ -1,0 +1,129 @@
+/* ------------------------------------------------------------------ */
+/*  Person filter chips (shared)                                       */
+/* ------------------------------------------------------------------ */
+
+.person-filter-chips {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding: 8px 0;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.person-filter-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.person-filter-chip {
+  --background: var(--ion-color-light);
+  --color: var(--ion-color-medium);
+  flex-shrink: 0;
+  height: 36px;
+  font-size: 0.85rem;
+}
+
+.person-filter-chip--active {
+  --background: var(--ion-color-primary);
+  --color: #fff;
+}
+
+.person-filter-chip__avatar {
+  width: 24px;
+  height: 24px;
+  margin-inline-end: 4px;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Insights page                                                      */
+/* ------------------------------------------------------------------ */
+
+.insights-loading {
+  display: flex;
+  justify-content: center;
+  padding: 3rem 0;
+}
+
+.insights-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--ion-color-medium);
+}
+
+.insights-empty__hint {
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Month groups                                                       */
+/* ------------------------------------------------------------------ */
+
+.insights-months {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.insights-month__heading {
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ion-color-medium-shade);
+  padding: 16px 0 8px;
+  margin: 0;
+  border-bottom: 1px solid var(--ion-color-light-shade);
+}
+
+/* ------------------------------------------------------------------ */
+/*  Day rows                                                           */
+/* ------------------------------------------------------------------ */
+
+.insights-day {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.insights-day__label {
+  width: 28px;
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ion-text-color);
+  font-variant-numeric: tabular-nums;
+}
+
+.insights-day__bar-track {
+  flex: 1;
+  display: flex;
+  height: 24px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--ion-color-light);
+}
+
+.insights-day__bar--good {
+  background: var(--ion-color-success);
+  height: 100%;
+  transition: width 0.3s ease;
+  min-width: 0;
+}
+
+.insights-day__bar--bad {
+  background: var(--ion-color-danger);
+  height: 100%;
+  transition: width 0.3s ease;
+  min-width: 0;
+}
+
+.insights-day__count {
+  width: 48px;
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: var(--ion-color-medium);
+  white-space: nowrap;
+}

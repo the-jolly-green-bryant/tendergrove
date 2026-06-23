@@ -22,6 +22,7 @@ import TimelinePage from '../features/timeline/TimelinePage'
 import IncidentPage from '../features/incidents/IncidentPage'
 import ParentCarePage from '../features/parent-care/ParentCarePage'
 import ReportsPage from '../features/reports/ReportsPage'
+import InsightsPage from '../features/insights/InsightsPage'
 import PersonFormPage from '../features/people/PersonFormPage'
 import PersonPage from '../features/people/PersonPage'
 import PersonCheckInPage from '../features/people/checkin/PersonCheckInPage'
@@ -126,6 +127,11 @@ export default function AppShell() {
           <Route
             exact
             path="/reports"
+            component={InsightsPage}
+          />
+          <Route
+            exact
+            path="/reports/export"
             component={ReportsPage}
           />
 
