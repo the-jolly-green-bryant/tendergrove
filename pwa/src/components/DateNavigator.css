@@ -1,0 +1,251 @@
+.date-navigator {
+    width: 100%;
+}
+
+/* Header row: month label + today button */
+.date-navigator__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4px;
+}
+
+.date-navigator__month-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    border: none;
+    border-radius: var(--app-radius-md, 10px);
+    background: transparent;
+    font-family: inherit;
+    font-size: 1.05rem;
+    font-weight: 650;
+    color: var(--ion-text-color);
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.date-navigator__month-btn:active {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.date-navigator__chevron {
+    font-size: 0.85rem;
+    color: var(--ion-color-step-600, #666);
+}
+
+/* Controls group: back/forward arrows + today button */
+.date-navigator__controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.date-navigator__arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    padding: 0;
+    color: var(--ion-color-step-600, #666);
+    font-size: 1.1rem;
+}
+
+.date-navigator__arrow:active {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.date-navigator__arrow:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+/* Today button — shows the date number in a bordered box */
+.date-navigator__today-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border: 2px solid var(--ion-color-primary);
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    padding: 0;
+}
+
+.date-navigator__today-btn:active {
+    background: rgba(var(--ion-color-primary-rgb), 0.1);
+}
+
+.date-navigator__today-number {
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--ion-color-primary);
+    line-height: 1;
+}
+
+/* Dropdown calendar container */
+.date-navigator__calendar {
+    padding: 4px 8px 8px;
+}
+
+/* Calendar header: ‹ Month Year › */
+.date-navigator__cal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 0 8px;
+}
+
+.date-navigator__cal-month {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--ion-text-color);
+}
+
+.date-navigator__cal-nav {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--ion-color-step-600, #666);
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    padding: 0;
+}
+
+.date-navigator__cal-nav:active {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.date-navigator__cal-nav:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+/* Weekday labels row */
+.date-navigator__weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    margin-bottom: 4px;
+}
+
+.date-navigator__weekday {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--ion-color-step-500, #888);
+    text-transform: uppercase;
+    padding: 2px 0;
+}
+
+/* Calendar grid */
+.date-navigator__grid {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.date-navigator__week {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+/* Individual day cell */
+.date-navigator__day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    width: 100%;
+    aspect-ratio: 1;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    padding: 2px;
+    font-family: inherit;
+    position: relative;
+}
+
+.date-navigator__day--empty {
+    cursor: default;
+}
+
+.date-navigator__day:active:not(.date-navigator__day--empty):not(.date-navigator__day--disabled) {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.date-navigator__day-number {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--ion-text-color);
+    line-height: 1;
+}
+
+/* Selected day */
+.date-navigator__day--selected {
+    background: var(--ion-color-primary);
+    border-radius: 50%;
+}
+
+.date-navigator__day--selected .date-navigator__day-number {
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.date-navigator__day--selected:active {
+    background: var(--ion-color-primary-shade) !important;
+}
+
+/* Today (when not selected) */
+.date-navigator__day--today .date-navigator__day-number {
+    color: var(--ion-color-primary);
+    font-weight: 700;
+}
+
+/* Disabled (future) */
+.date-navigator__day--disabled {
+    cursor: default;
+}
+
+.date-navigator__day--disabled .date-navigator__day-number {
+    opacity: 0.3;
+}
+
+/* Event dot */
+.date-navigator__day-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--ion-color-primary);
+    position: absolute;
+    bottom: 3px;
+}
+
+.date-navigator__day--selected .date-navigator__day-dot {
+    background: #ffffff;
+}

@@ -24,7 +24,14 @@ import { ReactNode } from 'react'
 
 import { useAppAuth } from '../auth/AuthContext'
 
-export function Page({ title, children }: { title: string; children: ReactNode }) {
+interface PageProps {
+  title: string
+  children: ReactNode
+  /** Optional content rendered below the toolbar (e.g. DateNavigator). */
+  headerContent?: ReactNode
+}
+
+export function Page({ title, children, headerContent }: PageProps) {
   const { signOut } = useAppAuth()
   return (
     <>
@@ -73,7 +80,7 @@ export function Page({ title, children }: { title: string; children: ReactNode }
                 </IonButton>
               </IonMenuToggle>
             </IonButtons>
-            <IonTitle>{title}</IonTitle>
+            {headerContent ?? <IonTitle>{title}</IonTitle>}
           </IonToolbar>
         </IonHeader>
         <IonContent

@@ -5,13 +5,11 @@ import {
     IonCardContent,
     IonChip,
     IonContent,
-    IonDatetime,
     IonHeader,
     IonIcon,
     IonItem,
     IonLabel,
     IonList,
-    IonModal,
     IonPage,
     IonSpinner,
     IonTitle,
@@ -23,7 +21,6 @@ import {
 import {
     archiveOutline,
     arrowBackOutline,
-    calendarOutline,
     checkmarkCircle,
     closeCircle,
     createOutline,
@@ -34,14 +31,15 @@ import {
     timeOutline,
 } from 'ionicons/icons';
 import { formatDistanceToNow } from 'date-fns';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useEffect, useMemo, useRef } from 'react';
+import { useHistory, useLocation, useParams } from 'react-router-dom';
 
 import { useSelectedDate } from '../../context/SelectedDateContext';
 
 import { usePerson } from './usePerson';
 import { useArchivePerson } from './useArchivePerson';
 import { parseAnswers } from './checkin/checkInUtils';
+import { DateNavigator } from '../../components/DateNavigator';
 import { PersonAvatar } from '../../components/PersonAvatar';
 import { PersonRole } from '../../lib/domain';
 import { derivePersonStatus, todayEmoji } from '../../lib/status';
@@ -125,6 +123,7 @@ function formatDateLabel(date: Date): string {
 
 export default function PersonPage() {
     const router = useIonRouter();
+    const history = useHistory();
     const { personId } = useParams<{ personId: string }>();
     const isRealPerson = Boolean(personId && personId !== 'new');
     const { data: person, isLoading, error } = usePerson(isRealPerson ? personId : undefined);
@@ -133,7 +132,6 @@ export default function PersonPage() {
     const [presentAlert] = useIonAlert();
     const { selectedDate, setSelectedDate } = useSelectedDate();
     const location = useLocation();
-    const [datePickerOpen, setDatePickerOpen] = useState(false);
 
     // If navigated from timeline with ?viewDate=YYYY-MM-DD, use that date
     // for display without changing the app's master selectedDate.
@@ -151,6 +149,16 @@ export default function PersonPage() {
 
     const indicators = (person?.indicators ?? []) as Indicator[];
     const checkIns = (person?.checkIns ?? []) as CheckIn[];
+
+    /** Collect YYYY-MM-DD strings for this person's check-ins (for calendar dots). */
+    const eventDates = useMemo(() => {
+        const dates = new Set<string>();
+        for (const ci of checkIns) {
+            const d = new Date(ci.occurredAt);
+            dates.add(toISODate(d));
+        }
+        return dates;
+    }, [checkIns]);
     const activeIndicators = indicators.filter((indicator) => indicator.active !== false);
 
     const distressIndicators = activeIndicators.filter(
@@ -169,17 +177,18 @@ export default function PersonPage() {
 
     const checkInPath = `/person/${personId}/check-in`;
 
-    // No check-in yet for the selected date → drop the caregiver straight into the check-in flow.
-    // Skip auto-redirect when viewing a specific date from the timeline.
+    // No check-in yet for today → drop the caregiver straight into the check-in flow.
+    // Only auto-redirect when viewing today's date (not past dates) and not from the timeline.
+    const isViewingToday = isSameDay(new Date().toISOString(), viewDate);
     useEffect(() => {
-        if (!isRealPerson || isLoading || !person || hasRedirected.current || isTimelineView) {
+        if (!isRealPerson || isLoading || !person || hasRedirected.current || isTimelineView || !isViewingToday) {
             return;
         }
         if (activeIndicators.length > 0 && !selectedDateCheckIn) {
             hasRedirected.current = true;
-            router.push(checkInPath, 'forward', 'replace');
+            history.push(checkInPath);
         }
-    }, [isRealPerson, isLoading, person, activeIndicators.length, selectedDateCheckIn, router, checkInPath, isTimelineView]);
+    }, [isRealPerson, isLoading, person, activeIndicators.length, selectedDateCheckIn, history, checkInPath, isTimelineView, isViewingToday]);
 
     // When Ionic matches /people/new against /people/:personId, bail out so
     // PersonFormPage is the only visible page.
@@ -284,38 +293,19 @@ export default function PersonPage() {
                         </IonButton>
                     </IonButtons>
 
-                    <IonTitle>{person?.displayName ?? ''}</IonTitle>
+                    {!isTimelineView ? (
+                        <DateNavigator date={viewDate} onChange={setSelectedDate} eventDates={eventDates} />
+                    ) : (
+                        <IonTitle>{person?.displayName ?? ''}</IonTitle>
+                    )}
 
                     <IonButtons slot="end">
-                        <IonButton fill="clear" onClick={() => setDatePickerOpen(true)} aria-label="Pick date">
-                            <IonIcon slot="icon-only" icon={calendarOutline} />
-                        </IonButton>
                         <IonButton fill="clear" onClick={showMoreOptions} aria-label="More options">
                             <IonIcon slot="icon-only" icon={ellipsisHorizontal} />
                         </IonButton>
                     </IonButtons>
                 </IonToolbar>
             </IonHeader>
-
-            <IonModal
-                isOpen={datePickerOpen}
-                onDidDismiss={() => setDatePickerOpen(false)}
-                className="household-date-modal"
-            >
-                <IonDatetime
-                    presentation="date"
-                    value={toISODate(viewDate)}
-                    max={toISODate(new Date())}
-                    onIonChange={(e) => {
-                        const val = e.detail.value;
-                        if (typeof val === 'string') {
-                            const [y, m, d] = val.split('-').map(Number);
-                            setSelectedDate(new Date(y, m - 1, d));
-                        }
-                        setDatePickerOpen(false);
-                    }}
-                />
-            </IonModal>
 
             <IonContent fullscreen className="ion-padding safe-content">
                 {isLoading && (
@@ -364,9 +354,11 @@ export default function PersonPage() {
                             </div>
                         </section>
 
-                        <p className="person-hero__date-label">
-                            Viewing: {formatDateLabel(viewDate)}
-                        </p>
+                        {isTimelineView && (
+                            <p className="person-hero__date-label">
+                                Viewing: {formatDateLabel(viewDate)}
+                            </p>
+                        )}
 
                         {checkedForDate && (
                             <IonCard>

@@ -1,15 +1,14 @@
 import {
   IonChip,
-  IonDatetime,
   IonIcon,
-  IonModal,
   IonSpinner,
 } from '@ionic/react'
-import { calendarOutline, chevronForwardOutline } from 'ionicons/icons'
-import { useMemo, useRef, useState } from 'react'
+import { chevronForwardOutline } from 'ionicons/icons'
+import { useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
 
 import { Page } from '../../components/Page'
+import { DateNavigator } from '../../components/DateNavigator'
 import { PersonAvatar } from '../../components/PersonAvatar'
 import { HouseholdRadar } from '../../components/HouseholdRadar'
 import { Greeting } from '../../components/Greeting'
@@ -28,25 +27,6 @@ function isSameDay(occurredAt: string, date: Date): boolean {
   )
 }
 
-function formatDateLabel(date: Date): string {
-  const today = new Date()
-  if (
-    date.getFullYear() === today.getFullYear() &&
-    date.getMonth() === today.getMonth() &&
-    date.getDate() === today.getDate()
-  ) {
-    return 'Today'
-  }
-  return date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
-}
-
-/** Return YYYY-MM-DD for a Date. */
-function toISODate(d: Date): string {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
 
 export default function HouseholdPage() {
   const { user } = useAppAuth()
@@ -58,65 +38,39 @@ export default function HouseholdPage() {
   const history = useHistory()
 
   const { selectedDate, setSelectedDate } = useSelectedDate()
-  const [datePickerOpen, setDatePickerOpen] = useState(false)
-  const modalRef = useRef<HTMLIonModalElement>(null)
 
   const activePeople = useMemo(
     () => (people.data ?? []).filter((p) => !p.archived),
     [people.data],
   )
 
-  // Collect all unique dates (YYYY-MM-DD) that have any check-in across all people.
-  const highlightedDates = useMemo(() => {
-    const dateSet = new Set<string>()
+  /** Collect all unique YYYY-MM-DD strings that have any check-in. */
+  const eventDates = useMemo(() => {
+    const dates = new Set<string>()
     for (const person of people.data ?? []) {
       for (const ci of person.checkIns ?? []) {
         const d = new Date(ci.occurredAt)
-        dateSet.add(toISODate(d))
+        const y = d.getFullYear()
+        const m = String(d.getMonth() + 1).padStart(2, '0')
+        const day = String(d.getDate()).padStart(2, '0')
+        dates.add(`${y}-${m}-${day}`)
       }
     }
-    return Array.from(dateSet).map((date) => ({
-      date,
-      textColor: 'var(--ion-color-primary)',
-      backgroundColor: 'var(--ion-color-primary-tint)',
-    }))
+    return dates
   }, [people.data])
 
   return (
-    <Page title="Home">
-      <Greeting />
-
-      {/* Date picker trigger */}
-      <button
-        className="household-date-picker-btn"
-        onClick={() => setDatePickerOpen(true)}
-      >
-        <IonIcon icon={calendarOutline} />
-        <span>{formatDateLabel(selectedDate)}</span>
-      </button>
-
-      <IonModal
-        ref={modalRef}
-        isOpen={datePickerOpen}
-        onDidDismiss={() => setDatePickerOpen(false)}
-        className="household-date-modal"
-      >
-        <IonDatetime
-          presentation="date"
-          value={toISODate(selectedDate)}
-          highlightedDates={highlightedDates}
-          max={toISODate(new Date())}
-          onIonChange={(e) => {
-            const val = e.detail.value
-            if (typeof val === 'string') {
-              // val is YYYY-MM-DD — parse as local date
-              const [y, m, d] = val.split('-').map(Number)
-              setSelectedDate(new Date(y, m - 1, d))
-            }
-            setDatePickerOpen(false)
-          }}
+    <Page
+      title="Home"
+      headerContent={
+        <DateNavigator
+          date={selectedDate}
+          onChange={setSelectedDate}
+          eventDates={eventDates}
         />
-      </IonModal>
+      }
+    >
+      <Greeting />
 
       {people.isLoading && <IonSpinner />}
 
