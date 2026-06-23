@@ -8,7 +8,7 @@ import { useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
 
 import { Page } from '../../components/Page'
-import { DateNavigator } from '../../components/DateNavigator'
+import { useDateNavigator } from '../../components/DateNavigator'
 import { PersonAvatar } from '../../components/PersonAvatar'
 import { HouseholdRadar } from '../../components/HouseholdRadar'
 import { Greeting } from '../../components/Greeting'
@@ -59,16 +59,17 @@ export default function HouseholdPage() {
     return dates
   }, [people.data])
 
+  const { headerElement, calendarElement } = useDateNavigator({
+    date: selectedDate,
+    onChange: setSelectedDate,
+    eventDates,
+  })
+
   return (
     <Page
       title="Home"
-      headerContent={
-        <DateNavigator
-          date={selectedDate}
-          onChange={setSelectedDate}
-          eventDates={eventDates}
-        />
-      }
+      headerContent={headerElement}
+      subHeaderContent={calendarElement}
     >
       <Greeting />
 

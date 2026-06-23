@@ -1,8 +1,24 @@
 import { IonAvatar } from '@ionic/react'
 import { useEffect, useState } from 'react'
 
+const AVATAR_COLORS = [
+  '4A2D8B', // primary purple
+  'E8453C', // red
+  '7B5EBF', // secondary purple
+  '2FAE60', // green
+  '3D2575', // dark purple
+  '5C3F9E', // mid purple
+]
+
+function colorForName(name: string): string {
+  let hash = 0
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length]
+}
+
 function fallbackUrl(name: string): string {
-  return `https://ui-avatars.com/api/?background=random&name=${encodeURIComponent(name || '?')}`
+  const bg = colorForName(name)
+  return `https://ui-avatars.com/api/?background=${bg}&color=fff&bold=true&name=${encodeURIComponent(name || '?')}`
 }
 
 export function PersonAvatar({

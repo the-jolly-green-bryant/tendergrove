@@ -56,7 +56,7 @@ const authComponents = {
           alt="Tendergrove"
           style={{ width: 80, height: 80, borderRadius: 16 }}
         />
-        <h2 style={{ margin: '8px 0 0', color: '#5C7A5E', fontWeight: 600 }}>
+        <h2 style={{ margin: '8px 0 0', color: '#4A2D8B', fontWeight: 600 }}>
           Tendergrove
         </h2>
       </div>

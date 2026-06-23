@@ -1,13 +1,11 @@
-.date-navigator {
-    width: 100%;
-}
-
 /* Header row: month label + today button */
 .date-navigator__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 4px;
+    padding: 4px 4px;
+    flex: 1;
+    min-width: 0;
 }
 
 .date-navigator__month-btn {
@@ -21,19 +19,19 @@
     font-family: inherit;
     font-size: 1.05rem;
     font-weight: 650;
-    color: var(--ion-text-color);
+    color: #ffffff;
     cursor: pointer;
     -webkit-appearance: none;
     appearance: none;
 }
 
 .date-navigator__month-btn:active {
-    background: rgba(0, 0, 0, 0.06);
+    background: rgba(255, 255, 255, 0.12);
 }
 
 .date-navigator__chevron {
-    font-size: 0.85rem;
-    color: var(--ion-color-step-600, #666);
+    font-size: 0.9375rem;
+    color: rgba(255, 255, 255, 0.7);
 }
 
 /* Controls group: back/forward arrows + today button */
@@ -47,8 +45,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 44px;
+    height: 44px;
     border: none;
     border-radius: 50%;
     background: transparent;
@@ -56,12 +54,12 @@
     -webkit-appearance: none;
     appearance: none;
     padding: 0;
-    color: var(--ion-color-step-600, #666);
+    color: #ffffff;
     font-size: 1.1rem;
 }
 
 .date-navigator__arrow:active {
-    background: rgba(0, 0, 0, 0.06);
+    background: rgba(255, 255, 255, 0.15);
 }
 
 .date-navigator__arrow:disabled {
@@ -69,37 +67,40 @@
     cursor: default;
 }
 
-/* Today button — shows the date number in a bordered box */
+/* Today button — Google Calendar-style outlined box with date number */
 .date-navigator__today-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 34px;
-    height: 34px;
-    border: 2px solid var(--ion-color-primary);
+    width: 44px;
+    height: 44px;
+    border: 2px solid #ffffff;
     border-radius: 6px;
     background: transparent;
     cursor: pointer;
     -webkit-appearance: none;
     appearance: none;
     padding: 0;
+    position: relative;
 }
 
 .date-navigator__today-btn:active {
-    background: rgba(var(--ion-color-primary-rgb), 0.1);
+    background: rgba(255, 255, 255, 0.15);
 }
 
 .date-navigator__today-number {
     font-family: inherit;
-    font-size: 0.82rem;
+    font-size: 0.9375rem;
     font-weight: 700;
-    color: var(--ion-color-primary);
+    color: #ffffff;
     line-height: 1;
 }
 
 /* Dropdown calendar container */
 .date-navigator__calendar {
-    padding: 4px 8px 8px;
+    padding: 8px 12px 12px;
+    background: #F0EFF4;
+    border-bottom: 1px solid var(--app-border-color);
 }
 
 /* Calendar header: ‹ Month Year › */
@@ -111,14 +112,14 @@
 }
 
 .date-navigator__cal-month {
-    font-size: 0.9rem;
+    font-size: 0.9375rem;
     font-weight: 600;
     color: var(--ion-text-color);
 }
 
 .date-navigator__cal-nav {
-    width: 32px;
-    height: 32px;
+    width: 44px;
+    height: 44px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -152,11 +153,11 @@
 }
 
 .date-navigator__weekday {
-    font-size: 0.72rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     color: var(--ion-color-step-500, #888);
     text-transform: uppercase;
-    padding: 2px 0;
+    padding: 4px 0;
 }
 
 /* Calendar grid */
@@ -200,7 +201,7 @@
 }
 
 .date-navigator__day-number {
-    font-size: 0.82rem;
+    font-size: 0.875rem;
     font-weight: 500;
     color: var(--ion-text-color);
     line-height: 1;

@@ -39,7 +39,7 @@ import { useSelectedDate } from '../../context/SelectedDateContext';
 import { usePerson } from './usePerson';
 import { useArchivePerson } from './useArchivePerson';
 import { parseAnswers } from './checkin/checkInUtils';
-import { DateNavigator } from '../../components/DateNavigator';
+import { useDateNavigator } from '../../components/DateNavigator';
 import { PersonAvatar } from '../../components/PersonAvatar';
 import { PersonRole } from '../../lib/domain';
 import { derivePersonStatus, todayEmoji } from '../../lib/status';
@@ -289,6 +289,12 @@ export default function PersonPage() {
 
     const checkedForDate = selectedDateCheckIn ? new Set(parseAnswers(selectedDateCheckIn.answersJson).checked) : null;
 
+    const { headerElement, calendarElement } = useDateNavigator({
+        date: viewDate,
+        onChange: setSelectedDate,
+        eventDates,
+    });
+
     return (
         <IonPage>
             <IonHeader translucent>
@@ -300,7 +306,7 @@ export default function PersonPage() {
                     </IonButtons>
 
                     {!isTimelineView ? (
-                        <DateNavigator date={viewDate} onChange={setSelectedDate} eventDates={eventDates} />
+                        headerElement
                     ) : (
                         <IonTitle>{person?.displayName ?? ''}</IonTitle>
                     )}
@@ -311,6 +317,7 @@ export default function PersonPage() {
                         </IonButton>
                     </IonButtons>
                 </IonToolbar>
+                {!isTimelineView && calendarElement}
             </IonHeader>
 
             <IonContent fullscreen className="ion-padding safe-content">

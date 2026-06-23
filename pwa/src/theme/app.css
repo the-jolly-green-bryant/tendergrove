@@ -35,8 +35,8 @@ ion-chip {
 }
 
 ion-tab-bar {
-  border-top: 1px solid #E0DDD5;
-  box-shadow: 0 -8px 22px rgba(92, 122, 94, 0.06);
+  border-top: 1px solid var(--app-border-color);
+  box-shadow: 0 -4px 16px rgba(74, 45, 139, 0.06);
   --background: #ffffff;
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
@@ -66,7 +66,7 @@ ion-tab-button:not(.tab-selected) {
   height: 52px;
   border-radius: 50%;
   background: var(--ion-color-primary);
-  box-shadow: 0 4px 14px rgba(92, 122, 94, 0.35);
+  box-shadow: 0 4px 14px rgba(74, 45, 139, 0.35);
   z-index: 0;
 }
 
@@ -79,6 +79,21 @@ ion-tab-button:not(.tab-selected) {
 
 ion-toolbar {
   --border-width: 0;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+  --min-height: 52px;
+}
+
+/* Left-align all toolbar titles (override iOS centering) */
+ion-title {
+  text-align: left;
+  padding-inline-start: 0;
+}
+
+/* Toolbar buttons inherit white from toolbar color */
+ion-toolbar ion-button,
+ion-toolbar ion-buttons {
+  --color: #ffffff;
 }
 
 /* Person profile page */
@@ -139,7 +154,7 @@ ion-toolbar {
 }
 
 .person-hero__role {
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   color: var(--app-muted-text);
 }
 
@@ -152,15 +167,15 @@ ion-toolbar {
 }
 
 .person-status__chip--sm {
-  height: 24px;
-  font-size: 0.78rem;
+  height: 28px;
+  font-size: 0.875rem;
 }
 
 .person-hero__timestamp {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.8rem;
+  font-size: 0.875rem;
   color: var(--app-muted-text);
 }
 
@@ -205,7 +220,7 @@ ion-toolbar {
 }
 
 .person-status__caption {
-  font-size: 0.78rem;
+  font-size: 0.875rem;
   color: var(--app-muted-text);
 }
 
@@ -224,7 +239,7 @@ ion-toolbar {
 }
 
 .section-header__meta {
-  font-size: 0.82rem;
+  font-size: 0.875rem;
   color: var(--app-muted-text);
 }
 
@@ -254,7 +269,7 @@ ion-toolbar {
 }
 
 ion-item.check-in-summary__item {
-  --min-height: 44px;
+  --min-height: 48px;
   --padding-start: 0;
   --inner-padding-end: 0;
   border: 0;
@@ -268,7 +283,7 @@ ion-item.check-in-summary__item {
 
 .check-in-updated {
   margin: 2px 0 8px;
-  font-size: 0.82rem;
+  font-size: 0.875rem;
   color: var(--app-muted-text);
 }
 
@@ -287,7 +302,7 @@ ion-item.check-in-summary__item {
 .check-in__hint {
   display: block;
   margin: 8px 4px 16px;
-  font-size: 0.82rem;
+  font-size: 0.875rem;
 }
 
 .person-notes {
@@ -330,7 +345,7 @@ ion-item.check-in-summary__item {
 .indicator-intro {
   margin: 0 0 12px;
   color: var(--app-muted-text);
-  font-size: 0.9rem;
+  font-size: 0.9375rem;
 }
 
 .indicator-group {
@@ -343,6 +358,7 @@ ion-item.check-in-summary__item {
 
 ion-item.indicator-row {
   --min-height: 56px;
+  min-height: 48px;
   margin-bottom: 8px;
 }
 
@@ -369,7 +385,7 @@ ion-item.indicator-row {
 .indicator-why p {
   margin: 2px 0 0;
   color: var(--app-muted-text);
-  font-size: 0.85rem;
+  font-size: 0.875rem;
 }
 
 /* Choose indicator type */
@@ -420,7 +436,7 @@ ion-item.indicator-row {
 .choose-type-card__text p {
   margin: 0;
   color: var(--app-muted-text);
-  font-size: 0.86rem;
+  font-size: 0.875rem;
 }
 
 .choose-type-card__examples {
@@ -441,10 +457,11 @@ ion-item.indicator-row {
   gap: 14px;
   width: 100%;
   padding: 12px 14px;
+  min-height: 48px;
   border: 1px solid var(--app-border-color);
   border-radius: var(--app-radius-md);
   background: #ffffff;
-  box-shadow: 0 3px 10px rgba(92, 122, 94, 0.04);
+  box-shadow: var(--app-shadow-card);
   cursor: pointer;
   text-align: left;
   -webkit-appearance: none;
@@ -484,10 +501,10 @@ ion-item.indicator-row {
 }
 
 .household-chip {
-  height: 24px;
-  font-size: 0.72rem;
+  height: 28px;
+  font-size: 0.8125rem;
   font-weight: 600;
-  padding: 0 8px;
+  padding: 0 10px;
   margin: 0;
 }
 
@@ -514,6 +531,7 @@ ion-item.indicator-row {
 .household-chip--needs-checkin {
   --background: rgba(var(--ion-color-warning-rgb), 0.15);
   --color: var(--ion-color-warning-shade);
+  font-weight: 600;
 }
 
 .household-person-btn__dot {
@@ -538,6 +556,7 @@ ion-item.indicator-row {
 .household-add-btn {
   width: 100%;
   padding: 14px;
+  min-height: 48px;
   border: 2px dashed var(--ion-color-primary);
   border-radius: var(--app-radius-md);
   background: transparent;
@@ -575,6 +594,7 @@ ion-item.indicator-row {
   box-shadow: var(--app-shadow-card);
   padding: 16px;
   margin-bottom: 16px;
+  overflow: hidden;
 }
 
 .household-radar__layout {
@@ -597,7 +617,7 @@ ion-item.indicator-row {
 
 .household-radar__subtitle {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   color: var(--ion-color-medium);
 }
 
@@ -615,12 +635,13 @@ ion-item.indicator-row {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 14px;
+  padding: 10px 14px;
+  min-height: 44px;
   border: 1px solid var(--app-border-color);
   border-radius: var(--app-radius-md);
   background: #ffffff;
   font-family: inherit;
-  font-size: 0.9rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: var(--ion-color-primary);
   cursor: pointer;
@@ -647,7 +668,7 @@ ion-item.indicator-row {
 /* Person hero date label */
 .person-hero__date-label {
   text-align: center;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--ion-color-primary);
   margin: 4px 0 12px;
@@ -655,7 +676,7 @@ ion-item.indicator-row {
 
 /* Wizard date badge in header */
 .wizard-date-badge {
-  font-size: 0.8rem;
+  font-size: 0.875rem;
   font-weight: 600;
   --color: var(--ion-color-primary) !important;
   opacity: 1 !important;

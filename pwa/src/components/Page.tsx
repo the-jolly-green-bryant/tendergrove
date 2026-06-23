@@ -27,11 +27,13 @@ import { useAppAuth } from '../auth/AuthContext'
 interface PageProps {
   title: string
   children: ReactNode
-  /** Optional content rendered below the toolbar (e.g. DateNavigator). */
+  /** Optional content rendered inside the toolbar next to the hamburger menu. */
   headerContent?: ReactNode
+  /** Optional content rendered below the toolbar (e.g. calendar dropdown). */
+  subHeaderContent?: ReactNode
 }
 
-export function Page({ title, children, headerContent }: PageProps) {
+export function Page({ title, children, headerContent, subHeaderContent }: PageProps) {
   const { signOut } = useAppAuth()
   return (
     <>
@@ -82,6 +84,7 @@ export function Page({ title, children, headerContent }: PageProps) {
             </IonButtons>
             {headerContent ?? <IonTitle>{title}</IonTitle>}
           </IonToolbar>
+          {subHeaderContent}
         </IonHeader>
         <IonContent
           fullscreen

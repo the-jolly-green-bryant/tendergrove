@@ -20,7 +20,7 @@
   --color: var(--ion-color-medium);
   flex-shrink: 0;
   height: 36px;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
 }
 
 .person-filter-chip--active {
@@ -51,7 +51,7 @@
 }
 
 .insights-empty__hint {
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   margin-top: 0.25rem;
 }
 
@@ -66,7 +66,7 @@
 }
 
 .insights-month__heading {
-  font-size: 0.9rem;
+  font-size: 0.9375rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -84,14 +84,15 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 0;
+  padding: 8px 0;
+  min-height: 44px;
 }
 
 .insights-day__label {
   width: 28px;
   flex-shrink: 0;
   text-align: right;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--ion-text-color);
   font-variant-numeric: tabular-nums;
@@ -123,7 +124,7 @@
 .insights-day__count {
   width: 48px;
   flex-shrink: 0;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   color: var(--ion-color-medium);
   white-space: nowrap;
 }

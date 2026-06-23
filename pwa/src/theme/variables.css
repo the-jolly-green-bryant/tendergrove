@@ -1,78 +1,79 @@
 :root {
   /** Brand **/
-  --ion-color-primary: #5C7A5E;
-  --ion-color-primary-rgb: 92, 122, 94;
+  --ion-color-primary: #4A2D8B;
+  --ion-color-primary-rgb: 74, 45, 139;
   --ion-color-primary-contrast: #ffffff;
   --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #4E6950;
-  --ion-color-primary-tint: #6B876D;
+  --ion-color-primary-shade: #3D2575;
+  --ion-color-primary-tint: #5C3F9E;
 
-  --ion-color-secondary: #8BAF8D;
-  --ion-color-secondary-rgb: 139, 175, 141;
+  --ion-color-secondary: #7B5EBF;
+  --ion-color-secondary-rgb: 123, 94, 191;
   --ion-color-secondary-contrast: #ffffff;
-  --ion-color-secondary-shade: #7A9A7C;
-  --ion-color-secondary-tint: #97B899;
+  --ion-color-secondary-shade: #6A50A8;
+  --ion-color-secondary-tint: #8A6FC8;
 
-  --ion-color-tertiary: #EFF5EF;
-  --ion-color-tertiary-rgb: 239, 245, 239;
-  --ion-color-tertiary-contrast: #1E2E1F;
-  --ion-color-tertiary-shade: #D4DDD4;
-  --ion-color-tertiary-tint: #F2F7F2;
+  --ion-color-tertiary: #F0ECF7;
+  --ion-color-tertiary-rgb: 240, 236, 247;
+  --ion-color-tertiary-contrast: #2A1B4A;
+  --ion-color-tertiary-shade: #D8D2E5;
+  --ion-color-tertiary-tint: #F4F1F9;
 
   /** Status **/
-  --ion-color-success: #5fad56;
-  --ion-color-success-rgb: 95, 173, 86;
+  --ion-color-success: #2FAE60;
+  --ion-color-success-rgb: 47, 174, 96;
   --ion-color-success-contrast: #ffffff;
-  --ion-color-success-shade: #54984c;
-  --ion-color-success-tint: #6fb567;
+  --ion-color-success-shade: #289954;
+  --ion-color-success-tint: #44B870;
 
-  --ion-color-warning: #f6a640;
-  --ion-color-warning-rgb: 246, 166, 64;
+  --ion-color-warning: #F5A623;
+  --ion-color-warning-rgb: 245, 166, 35;
   --ion-color-warning-contrast: #2a1800;
-  --ion-color-warning-shade: #d89238;
-  --ion-color-warning-tint: #f7af53;
+  --ion-color-warning-shade: #D8921F;
+  --ion-color-warning-tint: #F6B03F;
 
-  --ion-color-danger: #ee5b5b;
-  --ion-color-danger-rgb: 238, 91, 91;
+  --ion-color-danger: #E8453C;
+  --ion-color-danger-rgb: 232, 69, 60;
   --ion-color-danger-contrast: #ffffff;
-  --ion-color-danger-shade: #d15050;
-  --ion-color-danger-tint: #f06b6b;
+  --ion-color-danger-shade: #CC3D35;
+  --ion-color-danger-tint: #EB584F;
 
   /** Base **/
-  --ion-background-color: #F5F2EB;
-  --ion-background-color-rgb: 245, 242, 235;
+  --ion-background-color: #F6F5FA;
+  --ion-background-color-rgb: 246, 245, 250;
 
-  --ion-text-color: #1E2E1F;
-  --ion-text-color-rgb: 30, 46, 31;
+  --ion-text-color: #1E1833;
+  --ion-text-color-rgb: 30, 24, 51;
 
-  --ion-color-step-50: #F0EDE6;
-  --ion-color-step-100: #E6E3DB;
-  --ion-color-step-150: #DCD9D1;
-  --ion-color-step-200: #D2CFC7;
-  --ion-color-step-300: #BDB9B0;
-  --ion-color-step-400: #A8A49A;
-  --ion-color-step-500: #8E8B82;
-  --ion-color-step-600: #706D65;
-  --ion-color-step-700: #53514A;
-  --ion-color-step-800: #363430;
-  --ion-color-step-900: #1F1E1B;
+  --ion-color-step-50: #EFEDF5;
+  --ion-color-step-100: #E5E3ED;
+  --ion-color-step-150: #DBDAE5;
+  --ion-color-step-200: #D1D0DD;
+  --ion-color-step-300: #BDBCCC;
+  --ion-color-step-400: #A09EB2;
+  --ion-color-step-500: #84829A;
+  --ion-color-step-600: #686680;
+  --ion-color-step-700: #4E4C63;
+  --ion-color-step-800: #343247;
+  --ion-color-step-900: #1E1C2E;
 
   /** Components **/
   --ion-card-background: #ffffff;
   --ion-item-background: #ffffff;
-  --ion-toolbar-background: #F5F2EB;
+  --ion-toolbar-background: #4A2D8B;
+  --ion-toolbar-color: #ffffff;
   --ion-tab-bar-background: #ffffff;
-  --ion-tab-bar-color: #8A8578;
+  --ion-tab-bar-color: #8A86A0;
   --ion-tab-bar-color-selected: var(--ion-color-primary);
 
   /** App tokens **/
-  --app-radius-sm: 12px;
-  --app-radius-md: 12px;
-  --app-radius-lg: 12px;
+  --app-radius-sm: 10px;
+  --app-radius-md: 14px;
+  --app-radius-lg: 16px;
 
-  --app-border-color: #D6D3CA;
-  --app-muted-text: #6B6960;
+  --app-border-color: #E0DDE8;
+  --app-muted-text: #6E6B82;
 
-  --app-shadow-soft: 0 10px 30px rgba(92, 122, 94, 0.1);
-  --app-shadow-card: 0 6px 18px rgba(92, 122, 94, 0.08);
+  --app-shadow-soft: 0 8px 24px rgba(74, 45, 139, 0.08);
+  --app-shadow-card: 0 2px 8px rgba(74, 45, 139, 0.06);
 }

@@ -42,7 +42,8 @@
 .timeline-chip {
   --background: var(--ion-color-light);
   --color: var(--ion-text-color);
-  font-size: 0.8rem;
+  font-size: 0.875rem;
+  min-height: 36px;
   flex-shrink: 0;
 }
 
@@ -90,7 +91,7 @@
 }
 
 .timeline-empty__hint {
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   margin-top: 0.25rem;
 }
 
@@ -105,7 +106,7 @@
 }
 
 .timeline-day__heading {
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -130,6 +131,7 @@
   background: none;
   border: none;
   padding: 0.5rem 0;
+  min-height: 48px;
   width: 100%;
   text-align: left;
   cursor: pointer;
@@ -143,7 +145,7 @@
 .timeline-event__time {
   flex-shrink: 0;
   width: 4.5rem;
-  font-size: 0.78rem;
+  font-size: 0.875rem;
   color: var(--ion-color-medium);
   padding-top: 0.6rem;
   text-align: right;
@@ -230,39 +232,39 @@
 }
 
 .timeline-event__name {
-  font-size: 0.9rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: var(--ion-text-color);
 }
 
 .timeline-event__type {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   color: var(--ion-color-medium);
 }
 
 /* Status chip */
 .timeline-status-chip {
-  font-size: 0.72rem;
-  height: 1.6rem;
+  font-size: 0.8125rem;
+  height: 1.75rem;
   flex-shrink: 0;
 }
 
 .timeline-status-chip--success {
-  --background: var(--ion-color-success-tint);
-  --color: var(--ion-color-success-shade);
+  --background: var(--ion-color-success);
+  --color: #ffffff;
 }
 
 .timeline-status-chip--warning {
-  --background: var(--ion-color-warning-tint);
-  --color: var(--ion-color-warning-shade);
+  --background: var(--ion-color-warning);
+  --color: #ffffff;
 }
 
 .timeline-status-chip--danger {
-  --background: var(--ion-color-danger-tint);
-  --color: var(--ion-color-danger-shade);
+  --background: var(--ion-color-danger);
+  --color: #ffffff;
 }
 
 .timeline-status-chip--medium {
-  --background: var(--ion-color-medium-tint);
-  --color: var(--ion-color-medium-shade);
+  --background: var(--ion-color-step-400);
+  --color: #ffffff;
 }

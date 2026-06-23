@@ -62,7 +62,7 @@ interface DateNavigatorProps {
     eventDates?: Set<string>
 }
 
-export function DateNavigator({ date, onChange, eventDates }: DateNavigatorProps) {
+export function useDateNavigator({ date, onChange, eventDates }: DateNavigatorProps) {
     const [calendarOpen, setCalendarOpen] = useState(false)
     const today = new Date()
 
@@ -192,121 +192,119 @@ export function DateNavigator({ date, onChange, eventDates }: DateNavigatorProps
         [onChange, today],
     )
 
-    return (
+    const headerElement = (
+        <div className="date-navigator__header">
+            <button
+                className="date-navigator__month-btn"
+                onClick={toggleCalendar}
+                aria-label="Toggle calendar"
+            >
+                <span className="date-navigator__month-label">{headerLabel}</span>
+                <IonIcon
+                    icon={calendarOpen ? chevronUpOutline : chevronDownOutline}
+                    className="date-navigator__chevron"
+                />
+            </button>
+
+            <div className="date-navigator__controls">
+                <button
+                    className="date-navigator__arrow"
+                    onClick={goBack}
+                    aria-label="Previous day"
+                >
+                    <IonIcon icon={chevronBackOutline} />
+                </button>
+                <button
+                    className="date-navigator__arrow"
+                    onClick={goForward}
+                    disabled={isToday}
+                    aria-label="Next day"
+                >
+                    <IonIcon icon={chevronForwardOutline} />
+                </button>
+                <button
+                    className="date-navigator__today-btn"
+                    onClick={goToToday}
+                    aria-label="Go to today"
+                >
+                    <span className="date-navigator__today-number">{today.getDate()}</span>
+                </button>
+            </div>
+        </div>
+    )
+
+    const calendarElement = calendarOpen ? (
         <div
-            className="date-navigator"
+            className="date-navigator__calendar"
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
         >
-            {/* Header row */}
-            <div className="date-navigator__header">
+            {/* Calendar month navigation */}
+            <div className="date-navigator__cal-header">
                 <button
-                    className="date-navigator__month-btn"
-                    onClick={toggleCalendar}
-                    aria-label="Toggle calendar"
+                    className="date-navigator__cal-nav"
+                    onClick={prevMonth}
+                    aria-label="Previous month"
                 >
-                    <span className="date-navigator__month-label">{headerLabel}</span>
-                    <IonIcon
-                        icon={calendarOpen ? chevronUpOutline : chevronDownOutline}
-                        className="date-navigator__chevron"
-                    />
+                    ‹
                 </button>
-
-                <div className="date-navigator__controls">
-                    <button
-                        className="date-navigator__arrow"
-                        onClick={goBack}
-                        aria-label="Previous day"
-                    >
-                        <IonIcon icon={chevronBackOutline} />
-                    </button>
-                    <button
-                        className="date-navigator__arrow"
-                        onClick={goForward}
-                        disabled={isToday}
-                        aria-label="Next day"
-                    >
-                        <IonIcon icon={chevronForwardOutline} />
-                    </button>
-                    <button
-                        className="date-navigator__today-btn"
-                        onClick={goToToday}
-                        aria-label="Go to today"
-                    >
-                        <span className="date-navigator__today-number">{today.getDate()}</span>
-                    </button>
-                </div>
+                <span className="date-navigator__cal-month">{monthLabel}</span>
+                <button
+                    className="date-navigator__cal-nav"
+                    onClick={nextMonth}
+                    disabled={isFutureBlocked}
+                    aria-label="Next month"
+                >
+                    ›
+                </button>
             </div>
 
-            {/* Dropdown calendar */}
-            {calendarOpen && (
-                <div className="date-navigator__calendar">
-                    {/* Calendar month navigation */}
-                    <div className="date-navigator__cal-header">
-                        <button
-                            className="date-navigator__cal-nav"
-                            onClick={prevMonth}
-                            aria-label="Previous month"
-                        >
-                            ‹
-                        </button>
-                        <span className="date-navigator__cal-month">{monthLabel}</span>
-                        <button
-                            className="date-navigator__cal-nav"
-                            onClick={nextMonth}
-                            disabled={isFutureBlocked}
-                            aria-label="Next month"
-                        >
-                            ›
-                        </button>
+            {/* Day-of-week headers */}
+            <div className="date-navigator__weekdays">
+                {DAY_LABELS.map((label, i) => (
+                    <span key={i} className="date-navigator__weekday">
+                        {label}
+                    </span>
+                ))}
+            </div>
+
+            {/* Calendar grid */}
+            <div className="date-navigator__grid">
+                {calendarWeeks.map((week, wi) => (
+                    <div key={wi} className="date-navigator__week">
+                        {week.map((day, di) => {
+                            if (!day) {
+                                return <span key={di} className="date-navigator__day date-navigator__day--empty" />
+                            }
+
+                            const iso = toISODate(day)
+                            const isSelected = isSameLocalDay(day, date)
+                            const isTodayCell = isSameLocalDay(day, today)
+                            const isFuture = day > today
+                            const hasEvent = eventDates?.has(iso) ?? false
+
+                            let cellClass = 'date-navigator__day'
+                            if (isSelected) cellClass += ' date-navigator__day--selected'
+                            if (isTodayCell && !isSelected) cellClass += ' date-navigator__day--today'
+                            if (isFuture) cellClass += ' date-navigator__day--disabled'
+
+                            return (
+                                <button
+                                    key={di}
+                                    className={cellClass}
+                                    onClick={() => handleDayClick(day)}
+                                    disabled={isFuture}
+                                >
+                                    <span className="date-navigator__day-number">{day.getDate()}</span>
+                                    {hasEvent && <span className="date-navigator__day-dot" />}
+                                </button>
+                            )
+                        })}
                     </div>
-
-                    {/* Day-of-week headers */}
-                    <div className="date-navigator__weekdays">
-                        {DAY_LABELS.map((label, i) => (
-                            <span key={i} className="date-navigator__weekday">
-                                {label}
-                            </span>
-                        ))}
-                    </div>
-
-                    {/* Calendar grid */}
-                    <div className="date-navigator__grid">
-                        {calendarWeeks.map((week, wi) => (
-                            <div key={wi} className="date-navigator__week">
-                                {week.map((day, di) => {
-                                    if (!day) {
-                                        return <span key={di} className="date-navigator__day date-navigator__day--empty" />
-                                    }
-
-                                    const iso = toISODate(day)
-                                    const isSelected = isSameLocalDay(day, date)
-                                    const isTodayCell = isSameLocalDay(day, today)
-                                    const isFuture = day > today
-                                    const hasEvent = eventDates?.has(iso) ?? false
-
-                                    let cellClass = 'date-navigator__day'
-                                    if (isSelected) cellClass += ' date-navigator__day--selected'
-                                    if (isTodayCell && !isSelected) cellClass += ' date-navigator__day--today'
-                                    if (isFuture) cellClass += ' date-navigator__day--disabled'
-
-                                    return (
-                                        <button
-                                            key={di}
-                                            className={cellClass}
-                                            onClick={() => handleDayClick(day)}
-                                            disabled={isFuture}
-                                        >
-                                            <span className="date-navigator__day-number">{day.getDate()}</span>
-                                            {hasEvent && <span className="date-navigator__day-dot" />}
-                                        </button>
-                                    )
-                                })}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
+                ))}
+            </div>
         </div>
-    )
+    ) : null
+
+    return { headerElement, calendarElement }
 }

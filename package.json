@@ -19,7 +19,9 @@
   "devDependencies": {
     "@aws-amplify/backend": "^1.23.0",
     "@aws-amplify/backend-cli": "^1.8.3",
+    "@playwright/test": "^1.61.1",
     "esbuild": "^0.28.1",
+    "playwright": "^1.61.1",
     "typescript": "^6.0.3"
   },
   "dependencies": {
