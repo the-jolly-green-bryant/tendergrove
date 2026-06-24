@@ -128,7 +128,7 @@
     background: transparent;
     font-size: 1.3rem;
     font-weight: 600;
-    color: var(--ion-color-step-600, #666);
+    color: var(--ion-color-primary);
     cursor: pointer;
     -webkit-appearance: none;
     appearance: none;

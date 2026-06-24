@@ -186,18 +186,18 @@ export default function InsightsPage() {
                         <span className="insights-day__label">{day.day}</span>
 
                         <div className="insights-day__bar-track">
+                          {day.bad > 0 && (
+                              <div
+                                  className="insights-day__bar--bad"
+                                  style={{ width: `${badPct}%` }}
+                                  title={`${day.bad} bad`}
+                              />
+                          )}
                           {day.good > 0 && (
                             <div
                               className="insights-day__bar--good"
                               style={{ width: `${goodPct}%` }}
                               title={`${day.good} good`}
-                            />
-                          )}
-                          {day.bad > 0 && (
-                            <div
-                              className="insights-day__bar--bad"
-                              style={{ width: `${badPct}%` }}
-                              title={`${day.bad} bad`}
                             />
                           )}
                         </div>

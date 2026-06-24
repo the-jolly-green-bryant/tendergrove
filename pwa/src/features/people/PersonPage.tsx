@@ -310,12 +310,6 @@ export default function PersonPage() {
                     ) : (
                         <IonTitle>{person?.displayName ?? ''}</IonTitle>
                     )}
-
-                    <IonButtons slot="end">
-                        <IonButton fill="clear" onClick={showMoreOptions} aria-label="More options">
-                            <IonIcon slot="icon-only" icon={ellipsisHorizontal} />
-                        </IonButton>
-                    </IonButtons>
                 </IonToolbar>
                 {!isTimelineView && calendarElement}
             </IonHeader>
@@ -486,6 +480,13 @@ export default function PersonPage() {
                                 )}
                             </IonCardContent>
                         </IonCard>
+
+                        <div className="person-page__footer-actions">
+                            <IonButton expand="block" fill="outline" onClick={showMoreOptions}>
+                                <IonIcon slot="start" icon={createOutline} />
+                                Edit Person
+                            </IonButton>
+                        </div>
                     </>
                 )}
             </IonContent>
