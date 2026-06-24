@@ -33,6 +33,9 @@ interface ChecklistItem extends TemplateIndicator {
 
 let nextCustomId = 0
 
+/**
+ *
+ */
 export default function IndicatorChecklistPage() {
   const router = useIonRouter()
   const { personId } = useParams<{ personId: string }>()
@@ -91,7 +94,7 @@ export default function IndicatorChecklistPage() {
     setShowCustomInput(false)
   }
 
-  async function saveIndicators() {
+  const saveIndicators = async () => {
     const selected = items.filter((item) => item.selected)
     if (selected.length === 0) return
 
@@ -115,9 +118,7 @@ export default function IndicatorChecklistPage() {
     }
   }
 
-  function skip() {
-    router.push(`/person/${personId}`, 'forward', 'replace')
-  }
+  const skip = () => router.push(`/person/${personId}`, 'forward', 'replace')
 
   const undesired = items.filter((i) => i.polarity === 'undesired')
   const desired = items.filter((i) => i.polarity === 'desired')
@@ -147,15 +148,17 @@ export default function IndicatorChecklistPage() {
         fullscreen
         className="ion-padding safe-content"
       >
-        {isLoading ? (
+        {isLoading && (
           <div className="ion-text-center ion-padding">
             <IonSpinner />
           </div>
-        ) : (
+        )}
+
+        {!isLoading && (
           <>
             <h1>What should we watch for?</h1>
             <p className="checklist-sub">
-              Select all that apply{displayName ? ` for ${displayName}` : ''}.
+              Select all that apply{displayName && ` for ${displayName}`}.
             </p>
 
             {undesired.length > 0 && (

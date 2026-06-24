@@ -10,7 +10,6 @@ import {
 import { useMemo } from 'react'
 import { Page } from '../../components/Page'
 import { useTrackerStore } from '../../stores/trackerStore'
-import { buildPlainTextReport } from './reportBuilder'
 
 /**
  * Users can view a list of relevant reports with ability to export and share reports
@@ -24,10 +23,7 @@ export default function ReportsPage() {
   useIonViewWillEnter(() => {
     void hydrate()
   })
-  const report = useMemo(
-    () => buildPlainTextReport(checkIns, incidents, parentCare),
-    [checkIns, incidents, parentCare],
-  )
+  const report = useMemo(() => 'blah', [checkIns, incidents, parentCare])
 
   const copy = async () => navigator.clipboard.writeText(report)
 

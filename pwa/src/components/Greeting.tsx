@@ -1,5 +1,8 @@
 import { usePeople } from '../features/people/usePeople'
 
+/**
+ *
+ */
 export function Greeting() {
   const people = usePeople()
 

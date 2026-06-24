@@ -6,6 +6,9 @@ import {
   IonCardTitle,
 } from '@ionic/react'
 
+/**
+ *
+ */
 export function StatCard({
   title,
   value,

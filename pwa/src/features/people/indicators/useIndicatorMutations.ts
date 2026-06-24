@@ -6,6 +6,9 @@ import type { Schema } from '../../../../../amplify/data/resource'
 type Polarity = NonNullable<Schema['Indicator']['type']['polarity']>
 type InputType = NonNullable<Schema['Indicator']['type']['inputType']>
 
+/**
+ *
+ */
 export interface IndicatorInput {
   name: string
   description?: string
@@ -14,6 +17,9 @@ export interface IndicatorInput {
   inputType: InputType
 }
 
+/**
+ *
+ */
 export function useIndicatorMutations(personId: string | undefined) {
   const queryClient = useQueryClient()
 

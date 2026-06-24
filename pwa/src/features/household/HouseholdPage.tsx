@@ -23,6 +23,12 @@ function isSameDay(occurredAt: string, date: Date): boolean {
   )
 }
 
+/**
+ * Depicts an overview of the status of all household members. Also indicates to users
+ *  if a check-in is required for certain household members.
+ * @returns {React.JSX.Element}
+ * @constructor
+ */
 export default function HouseholdPage() {
   const { user } = useAppAuth()
   if (!user) {
@@ -75,17 +81,12 @@ export default function HouseholdPage() {
       {/* Household Radar */}
       {activePeople.length > 0 && (
         <HouseholdRadar
-          people={activePeople.map((person) => {
-            return {
-              id: person.id,
-              displayName: person.displayName,
-              avatarUrl: person.avatarUrl,
-              status: derivePersonStatus(
-                person.indicators ?? [],
-                person.checkIns ?? [],
-              ),
-            }
-          })}
+          people={activePeople.map((person) => ({
+            id: person.id,
+            displayName: person.displayName,
+            avatarUrl: person.avatarUrl,
+            status: derivePersonStatus(person.indicators ?? [], person.checkIns ?? []),
+          }))}
         />
       )}
 

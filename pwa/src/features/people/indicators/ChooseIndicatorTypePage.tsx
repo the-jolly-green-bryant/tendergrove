@@ -26,13 +26,10 @@ export default function ChooseIndicatorTypePage() {
   const router = useIonRouter()
   const { personId } = useParams<{ personId: string }>()
 
-  function goBack() {
-    if (router.canGoBack()) {
-      router.goBack()
-      return
-    }
-    router.push(`/person/${personId}/indicators`, 'back', 'pop')
-  }
+  const goBack = () =>
+    router.canGoBack()
+      ? router.goBack()
+      : router.push(`/person/${personId}/indicators`, 'back', 'pop')
 
   function choose(polarity: Polarity) {
     router.push(`/person/${personId}/indicators/new/${polarity}`, 'forward')

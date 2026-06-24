@@ -7,6 +7,9 @@ interface SelectedDateContextValue {
 
 const SelectedDateContext = createContext<SelectedDateContextValue | null>(null)
 
+/**
+ *
+ */
 export function SelectedDateProvider({ children }: { children: ReactNode }) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
 
@@ -17,6 +20,9 @@ export function SelectedDateProvider({ children }: { children: ReactNode }) {
   )
 }
 
+/**
+ *
+ */
 export function useSelectedDate(): SelectedDateContextValue {
   const ctx = useContext(SelectedDateContext)
   if (!ctx) {

@@ -25,7 +25,7 @@ function isSameLocalDay(a: Date, b: Date): boolean {
   )
 }
 
-function addDays(d: Date, n: number): Date {
+const addDays = (d: Date, n: number): Date => {
   const result = new Date(d)
   result.setDate(result.getDate() + n)
   return result
@@ -43,11 +43,11 @@ function buildCalendarGrid(year: number, month: number): (Date | null)[][] {
   for (let w = 0; w < 6; w++) {
     const week: (Date | null)[] = []
     for (let d = 0; d < 7; d++) {
-      if (currentDay < 1 || currentDay > daysInMonth) {
-        week.push(null)
-      } else {
-        week.push(new Date(year, month, currentDay))
-      }
+      week.push(
+        currentDay < 1 || currentDay > daysInMonth
+          ? null
+          : new Date(year, month, currentDay),
+      )
       currentDay++
     }
     // Skip entirely empty trailing weeks
@@ -85,15 +85,12 @@ export function useDateNavigator({ date, onChange, eventDates }: DateNavigatorPr
   }, [date, onChange])
 
   const goForward = useCallback(() => {
-    const isToday = isSameLocalDay(date, today)
-    if (!isToday) {
-      const next = addDays(date, 1)
-      if (next <= today) {
-        onChange(next)
-      } else {
-        onChange(today)
-      }
+    if (isSameLocalDay(date, today)) {
+      return
     }
+
+    const next = addDays(date, 1)
+    onChange(next <= today ? next : today)
   }, [date, onChange, today])
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -174,9 +171,8 @@ export function useDateNavigator({ date, onChange, eventDates }: DateNavigatorPr
     [viewYear, viewMonth],
   )
 
-  const isCurrentMonth =
+  const isFutureBlocked =
     viewYear === today.getFullYear() && viewMonth === today.getMonth()
-  const isFutureBlocked = isCurrentMonth
 
   const monthLabel = new Date(viewYear, viewMonth).toLocaleDateString(undefined, {
     month: 'long',

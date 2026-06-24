@@ -3,12 +3,18 @@ import { useQueryClient } from '@tanstack/react-query'
 import { client } from '../../../lib/api'
 import type { CheckInAnswers } from './checkInUtils'
 
+/**
+ *
+ */
 export interface CheckInInput {
   occurredAt: string
   answers: CheckInAnswers
   note?: string
 }
 
+/**
+ *
+ */
 export function useCheckInMutations(personId: string | undefined) {
   const queryClient = useQueryClient()
 

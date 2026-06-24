@@ -2,6 +2,9 @@ import { useQuery } from '@tanstack/react-query'
 
 import { client } from '../../../lib/api'
 
+/**
+ *
+ */
 export function useIndicators(personId: string | undefined) {
   return useQuery({
     enabled: Boolean(personId),
@@ -20,4 +23,7 @@ export function useIndicators(personId: string | undefined) {
   })
 }
 
+/**
+ *
+ */
 export type Indicator = NonNullable<ReturnType<typeof useIndicators>['data']>[number]

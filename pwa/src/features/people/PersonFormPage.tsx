@@ -11,7 +11,6 @@ import {
   IonPage,
   IonRadio,
   IonRadioGroup,
-  IonText,
   IonTitle,
   IonToolbar,
   useIonRouter,
@@ -25,7 +24,7 @@ import {
   heartOutline,
   accessibilityOutline,
 } from 'ionicons/icons'
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { PersonRole } from '../../lib/domain'
@@ -78,6 +77,9 @@ const roleOptions: Array<{
   },
 ]
 
+/**
+ *
+ */
 export default function PersonFormPage() {
   const router = useIonRouter()
   const queryClient = useQueryClient()
@@ -104,31 +106,14 @@ export default function PersonFormPage() {
     setAvatarUrl(existingPerson.avatarUrl ?? undefined)
   }, [existingPerson])
 
-  function goBack() {
-    if (step === 2 && !isEditing) {
-      setStep(1)
-      return
-    }
+  const goBack = () => (step === 2 && !isEditing ? setStep(1) : router.goBack())
 
-    router.goBack()
-  }
+  const close = () => router.push('/people', 'back', 'replace')
+  const choosePhoto = () => photoInputRef.current?.click()
 
-  function close() {
-    router.push('/people', 'back', 'replace')
-  }
-
-  function choosePhoto() {
-    photoInputRef.current?.click()
-  }
-
-  function handlePhotoChange(event: React.ChangeEvent<HTMLInputElement>) {
+  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
-
-    if (!file) {
-      return
-    }
-
-    setAvatarUrl(URL.createObjectURL(file))
+    file && setAvatarUrl(URL.createObjectURL(file))
   }
 
   async function save() {
@@ -173,12 +158,12 @@ export default function PersonFormPage() {
         name: trimmedDisplayName,
         setup: '1',
       })
-      router.push(`/person/${newId}/indicators/checklist?${params}`, 'forward')
-    } else if (newId) {
-      router.push(`/person/${newId}`, 'forward')
-    } else {
-      router.push('/dashboard', 'back')
+      return router.push(`/person/${newId}/indicators/checklist?${params}`, 'forward')
     }
+
+    return newId
+      ? router.push(`/person/${newId}`, 'forward')
+      : router.push('/dashboard', 'back')
   }
 
   return (
@@ -316,13 +301,4 @@ export default function PersonFormPage() {
       </IonContent>
     </IonPage>
   )
-}
-
-function getInitials(value: string): string {
-  return value
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join('')
 }

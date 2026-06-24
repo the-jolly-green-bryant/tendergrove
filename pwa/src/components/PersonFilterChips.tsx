@@ -4,6 +4,9 @@ import { useState } from 'react'
 
 import { PersonAvatar } from './PersonAvatar'
 
+/**
+ *
+ */
 export interface FilterablePerson {
   id: string
   displayName: string
@@ -11,11 +14,11 @@ export interface FilterablePerson {
 }
 
 interface PersonFilterChipsProps {
-  people: FilterablePerson[]
-  selectedPeople: Set<string>
-  onToggle: (personId: string) => void
-  onClear: () => void
-  className?: string
+  readonly people: FilterablePerson[]
+  readonly selectedPeople: Set<string>
+  readonly onToggle: (personId: string) => void
+  readonly onClear: () => void
+  readonly className?: string
 }
 
 export function PersonFilterChips({
@@ -58,6 +61,9 @@ export function PersonFilterChips({
   )
 }
 
+/**
+ *
+ */
 export function usePersonFilter() {
   const [selectedPeople, setSelectedPeople] = useState<Set<string>>(new Set())
 

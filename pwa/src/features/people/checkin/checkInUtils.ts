@@ -1,6 +1,9 @@
 import type { usePerson } from '../usePerson'
 
 type Person = NonNullable<ReturnType<typeof usePerson>['data']>
+/**
+ *
+ */
 export type CheckIn = Person['checkIns'][number]
 
 /** Shape persisted in CheckIn.answersJson. `checked` holds the ids of the

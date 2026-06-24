@@ -88,6 +88,9 @@ const queryClient = new QueryClient({
 queryClient.getQueryCache().config.onError = handleGlobalError
 queryClient.getMutationCache().config.onError = handleGlobalError
 
+/**
+ *
+ */
 export default function App() {
   return (
     <Authenticator

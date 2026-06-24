@@ -1,4 +1,4 @@
-import { IonChip, IonSpinner } from '@ionic/react'
+import { IonSpinner } from '@ionic/react'
 import { useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 
@@ -9,6 +9,7 @@ import { usePeople } from '../people/usePeople'
 import { computeScore, statusFromScore } from '../../lib/status'
 
 import './TimelinePage.css'
+import { StatusChip } from '../../components/StatusChip'
 
 type EventType = 'check-in'
 
@@ -67,14 +68,64 @@ function toDateKey(isoString: string): string {
   return `${y}-${m}-${day}`
 }
 
+const EMPTY_TIMELINE_STATE = (
+  <div className="timeline-empty">
+    <p>No events to show.</p>
+    <p className="timeline-empty__hint">Check-ins will appear here once recorded.</p>
+  </div>
+)
+
+const renderEventButton = (event: TimelineEvent) => {
+  const history = useHistory()
+  return (
+    <button
+      key={event.id}
+      className="timeline-event"
+      onClick={() =>
+        history.push(
+          `/person/${event.personId}?viewDate=${toDateKey(event.occurredAt)}`,
+        )
+      }
+    >
+      <div className="timeline-event__time">{formatTime(event.timestamp)}</div>
+
+      <div className="timeline-event__line">
+        <span
+          className={`timeline-event__dot timeline-event__dot--${event.statusColor}`}
+        />
+      </div>
+
+      <div className="timeline-event__card">
+        <div className="timeline-event__header">
+          <PersonAvatar
+            name={event.personName}
+            src={event.personAvatar}
+            className="timeline-event__avatar"
+          />
+          <div className="timeline-event__info">
+            <span className="timeline-event__name">
+              {event.personName}
+              {event.personRole === 'self' && ' (You)'}
+            </span>
+            <span className="timeline-event__type">Daily Check-In</span>
+          </div>
+        </div>
+        <StatusChip label={event.statusLabel} />
+      </div>
+    </button>
+  )
+}
+
+/**
+ * Depicts check-ins as a timeseries bar chart to help users visualize distress over
+ * time.
+ * @returns {React.JSX.Element}
+ * @constructor
+ */
 export default function TimelinePage() {
   const people = usePeople()
-  const history = useHistory()
-
   const { selectedPeople, togglePerson, clearSelection } = usePersonFilter()
-  const [selectedTypes, setSelectedTypes] = useState<Set<EventType>>(
-    new Set(['check-in']),
-  )
+  const [selectedTypes] = useState<Set<EventType>>(new Set(['check-in']))
 
   const activePeople = useMemo(
     () => (people.data ?? []).filter((p) => !p.archived),
@@ -82,16 +133,12 @@ export default function TimelinePage() {
   )
 
   const allEvents: TimelineEvent[] = useMemo(() => {
-    const events: TimelineEvent[] = []
-
-    for (const person of activePeople) {
-      const indicators = person.indicators ?? []
-
-      for (const ci of person.checkIns ?? []) {
-        const score = computeScore(indicators, ci)
+    const events: TimelineEvent[] = activePeople.flatMap((person) =>
+      (person.checkIns ?? []).map((ci) => {
+        const score = computeScore(person.indicators ?? [], ci)
         const status = statusFromScore(score)
 
-        events.push({
+        return {
           id: ci.id,
           personId: person.id,
           personName: person.displayName,
@@ -102,21 +149,22 @@ export default function TimelinePage() {
           type: 'check-in',
           statusLabel: status.label,
           statusColor: status.color,
-        })
-      }
-    }
+        }
+      }),
+    )
 
     events.sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))
     return events
   }, [activePeople])
 
-  const filteredEvents = useMemo(() => {
-    return allEvents.filter((e) => {
-      if (selectedPeople.size > 0 && !selectedPeople.has(e.personId)) return false
-      if (selectedTypes.size > 0 && !selectedTypes.has(e.type)) return false
-      return true
-    })
-  }, [allEvents, selectedPeople, selectedTypes])
+  const filteredEvents = useMemo(
+    () =>
+      allEvents.filter((e) => {
+        if (selectedPeople.size > 0 && !selectedPeople.has(e.personId)) return false
+        return !(selectedTypes.size > 0 && !selectedTypes.has(e.type))
+      }),
+    [allEvents, selectedPeople, selectedTypes],
+  )
 
   const groupedEvents = useMemo(() => {
     const groups: Map<string, TimelineEvent[]> = new Map()
@@ -127,18 +175,6 @@ export default function TimelinePage() {
     }
     return groups
   }, [filteredEvents])
-
-  const toggleType = (type: EventType) => {
-    setSelectedTypes((prev) => {
-      const next = new Set(prev)
-      if (next.has(type)) {
-        next.delete(type)
-      } else {
-        next.add(type)
-      }
-      return next
-    })
-  }
 
   return (
     <Page title="Timeline">
@@ -165,12 +201,7 @@ export default function TimelinePage() {
 
           {/* Timeline events grouped by day */}
           {filteredEvents.length === 0 ? (
-            <div className="timeline-empty">
-              <p>No events to show.</p>
-              <p className="timeline-empty__hint">
-                Check-ins will appear here once recorded.
-              </p>
-            </div>
+            EMPTY_TIMELINE_STATE
           ) : (
             <div className="timeline-groups">
               {Array.from(groupedEvents.entries()).map(([dateKey, events]) => (
@@ -181,51 +212,7 @@ export default function TimelinePage() {
                   <h3 className="timeline-day__heading">{formatDayHeading(dateKey)}</h3>
 
                   <div className="timeline-day__events">
-                    {events.map((event) => (
-                      <button
-                        key={event.id}
-                        className="timeline-event"
-                        onClick={() =>
-                          history.push(
-                            `/person/${event.personId}?viewDate=${toDateKey(event.occurredAt)}`,
-                          )
-                        }
-                      >
-                        <div className="timeline-event__time">
-                          {formatTime(event.timestamp)}
-                        </div>
-
-                        <div className="timeline-event__line">
-                          <span
-                            className={`timeline-event__dot timeline-event__dot--${event.statusColor}`}
-                          />
-                        </div>
-
-                        <div className="timeline-event__card">
-                          <div className="timeline-event__header">
-                            <PersonAvatar
-                              name={event.personName}
-                              src={event.personAvatar}
-                              className="timeline-event__avatar"
-                            />
-                            <div className="timeline-event__info">
-                              <span className="timeline-event__name">
-                                {event.personName}
-                                {event.personRole === 'self' && ' (You)'}
-                              </span>
-                              <span className="timeline-event__type">
-                                Daily Check-In
-                              </span>
-                            </div>
-                          </div>
-                          <IonChip
-                            className={`timeline-status-chip timeline-status-chip--${event.statusColor}`}
-                          >
-                            {event.statusLabel}
-                          </IonChip>
-                        </div>
-                      </button>
-                    ))}
+                    {events.map(renderEventButton)}
                   </div>
                 </div>
               ))}

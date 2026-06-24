@@ -7,6 +7,7 @@ import { usePeople } from '../people/usePeople'
 import { parseAnswers } from '../people/checkin/checkInUtils'
 
 import './InsightsPage.css'
+import { not } from '../../lib/helpers'
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -76,19 +77,14 @@ export default function InsightsPage() {
         const checked = new Set(parseAnswers(ci.answersJson).checked)
         const key = toDateKey(ci.occurredAt)
 
-        let good = 0
-        let bad = 0
-        for (const ind of indicators) {
-          const wasChecked = checked.has(ind.id)
-          const isDesired = ind.polarity === 'desired'
-
-          if ((isDesired && wasChecked) || (!isDesired && !wasChecked)) {
-            good++
-          } else {
-            bad++
-          }
+        const isGood = (indicator) => {
+          const wasChecked = checked.has(indicator.id)
+          const isDesired = indicator.polarity === 'desired'
+          return (isDesired && wasChecked) || (!isDesired && !wasChecked)
         }
 
+        const good = indicators.filter(isGood).length
+        const bad = indicators.filter(not(isGood)).length
         const existing = buckets.get(key) ?? { good: 0, bad: 0 }
         buckets.set(key, {
           good: existing.good + good,
@@ -172,7 +168,6 @@ export default function InsightsPage() {
                   <h3 className="insights-month__heading">{month.label}</h3>
 
                   {month.days.map((day) => {
-                    const total = day.good + day.bad
                     const goodPct = (day.good / maxTotal) * 100
                     const badPct = (day.bad / maxTotal) * 100
 

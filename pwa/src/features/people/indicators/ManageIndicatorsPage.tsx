@@ -34,6 +34,9 @@ import { polarityMeta, type Polarity } from './indicatorMeta'
 
 type Filter = 'all' | Polarity
 
+/**
+ *
+ */
 export default function ManageIndicatorsPage() {
   const router = useIonRouter()
   const { personId } = useParams<{ personId: string }>()

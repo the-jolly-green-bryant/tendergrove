@@ -2,6 +2,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { client } from '../../lib/api'
 
+/**
+ *
+ */
 export function useArchivePerson() {
   const queryClient = useQueryClient()
 
@@ -16,8 +19,8 @@ export function useArchivePerson() {
       return result.data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['people'] })
-      queryClient.invalidateQueries({ queryKey: ['person'] })
+      void queryClient.invalidateQueries({ queryKey: ['people'] })
+      void queryClient.invalidateQueries({ queryKey: ['person'] })
     },
   })
 }

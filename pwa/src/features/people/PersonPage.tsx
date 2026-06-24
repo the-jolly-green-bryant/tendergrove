@@ -24,8 +24,6 @@ import {
   checkmarkCircle,
   closeCircle,
   createOutline,
-  ellipseOutline,
-  ellipsisHorizontal,
   listOutline,
   removeCircle,
   timeOutline,
@@ -124,6 +122,11 @@ function formatDateLabel(date: Date): string {
   })
 }
 
+/**
+ * Displays check-in status of a given person.
+ * @returns {React.JSX.Element | null}
+ * @constructor
+ */
 export default function PersonPage() {
   const router = useIonRouter()
   const history = useHistory()
@@ -173,7 +176,6 @@ export default function PersonPage() {
   )
 
   const visibleDistress = distressIndicators.slice(0, MAX_VISIBLE_INDICATORS)
-  const hiddenDistressCount = distressIndicators.length - visibleDistress.length
 
   const recentCheckIn = latestCheckIn(checkIns)
   const selectedCheckIn = checkIns.find((ci) => isSameDay(ci.occurredAt, viewDate))
@@ -227,22 +229,13 @@ export default function PersonPage() {
     return null
   }
 
-  function goBack() {
-    if (router.canGoBack()) {
-      router.goBack()
-      return
-    }
+  const goBack = () =>
+    router.canGoBack() ? router.goBack() : router.push('/dashboard', 'back', 'pop')
 
-    router.push('/dashboard', 'back', 'pop')
-  }
+  const editPerson = () => router.push(`/person/${personId}/edit`, 'forward')
 
-  function editPerson() {
-    router.push(`/person/${personId}/edit`, 'forward')
-  }
-
-  function manageIndicators() {
+  const manageIndicators = () =>
     router.push(`/person/${personId}/indicators`, 'forward')
-  }
 
   const archiveMutation = useArchivePerson()
 
@@ -251,22 +244,19 @@ export default function PersonPage() {
     archiveMutation.mutate(
       { id: person.id, archived: archive },
       {
-        onSuccess: () => {
-          if (archive) {
-            router.push('/dashboard', 'back', 'pop')
-          }
-        },
+        onSuccess: () => archive && router.push('/dashboard', 'back', 'pop'),
       },
     )
   }
 
-  function toggleArchive() {
+  const toggleArchive = () => {
     if (!person) return
     if (person.archived) {
       doArchive(false)
       return
     }
-    presentAlert({
+
+    void presentAlert({
       header: 'Archive this person?',
       message:
         'Are you sure? You can unarchive people in the Settings section of the app.',
@@ -281,9 +271,9 @@ export default function PersonPage() {
     })
   }
 
-  function showMoreOptions() {
+  const showMoreOptions = () => {
     const isArchived = person?.archived
-    presentActionSheet({
+    void presentActionSheet({
       buttons: [
         {
           text: 'Edit Person',
@@ -309,13 +299,11 @@ export default function PersonPage() {
     })
   }
 
-  function startCheckIn() {
-    router.push(checkInPath, 'forward')
-  }
+  const startCheckIn = () => router.push(checkInPath, 'forward')
 
-  const checkedForDate = selectedDateCheckIn
-    ? new Set(parseAnswers(selectedDateCheckIn.answersJson).checked)
-    : null
+  const checkedForDate =
+    selectedDateCheckIn &&
+    new Set(parseAnswers(selectedDateCheckIn.answersJson).checked)
 
   const { headerElement, calendarElement } = useDateNavigator({
     date: viewDate,
@@ -454,6 +442,7 @@ export default function PersonPage() {
                       {activeIndicators.map((indicator) => {
                         const seen = checkedForDate.has(indicator.id)
                         const isDesired = indicator.polarity === 'desired'
+                        const markGood = seen == isDesired
                         return (
                           <IonItem
                             key={indicator.id}
@@ -470,15 +459,7 @@ export default function PersonPage() {
                                     ? closeCircle
                                     : checkmarkCircle
                               }
-                              color={
-                                seen
-                                  ? isDesired
-                                    ? 'success'
-                                    : 'danger'
-                                  : isDesired
-                                    ? 'danger'
-                                    : 'success'
-                              }
+                              color={markGood ? 'success' : 'danger'}
                             />
                             <IonLabel
                               className={seen ? '' : 'check-in-summary__muted'}

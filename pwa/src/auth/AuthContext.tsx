@@ -8,6 +8,9 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
+/**
+ *
+ */
 export function AuthProvider({
   user,
   signOut,
@@ -18,6 +21,9 @@ export function AuthProvider({
   )
 }
 
+/**
+ *
+ */
 export function useAppAuth() {
   const context = useContext(AuthContext)
 

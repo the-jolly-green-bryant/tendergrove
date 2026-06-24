@@ -5,6 +5,9 @@ import { PersonAvatar } from '../../components/PersonAvatar'
 import { usePeople } from './usePeople'
 import { useArchivePerson } from './useArchivePerson'
 
+/**
+ *
+ */
 export default function ArchivedPeoplePage() {
   const people = usePeople()
   const archiveMutation = useArchivePerson()

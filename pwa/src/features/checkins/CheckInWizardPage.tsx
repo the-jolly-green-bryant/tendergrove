@@ -135,9 +135,13 @@ function WizardStep({
     }
   }
 
-  function renderGroup(title: string, items: Indicator[], icon: string, color: string) {
-    if (items.length === 0) return null
-    return (
+  const renderGroup = (
+    title: string,
+    items: Indicator[],
+    icon: string,
+    color: string,
+  ) =>
+    items.length > 0 && (
       <>
         <h2 className="check-in__group-title">{title}</h2>
         <IonList inset>
@@ -160,7 +164,6 @@ function WizardStep({
         </IonList>
       </>
     )
-  }
 
   if (isLoading) {
     return (
@@ -170,78 +173,78 @@ function WizardStep({
     )
   }
 
-  if (!person) return null
-
   return (
-    <>
-      <div className="wizard-step__hero">
-        <PersonAvatar
-          name={person.displayName}
-          src={person.avatarUrl}
-          className="wizard-step__avatar"
-        />
-        <h2 className="wizard-step__name">{person.displayName}</h2>
-      </div>
+    person && (
+      <>
+        <div className="wizard-step__hero">
+          <PersonAvatar
+            name={person.displayName}
+            src={person.avatarUrl}
+            className="wizard-step__avatar"
+          />
+          <h2 className="wizard-step__name">{person.displayName}</h2>
+        </div>
 
-      {indicators.length === 0 ? (
-        <p className="section-empty">
-          No indicators yet — skip or{' '}
-          <a
-            href={`/person/${personId}/indicators/new`}
-            onClick={(e) => {
-              e.preventDefault()
-              router.push(`/person/${personId}/indicators/new`, 'forward', 'push')
-            }}
+        {indicators.length === 0 ? (
+          <p className="section-empty">
+            No indicators yet — skip or{' '}
+            <a
+              href={`/person/${personId}/indicators/new`}
+              onClick={(e) => {
+                e.preventDefault()
+                router.push(`/person/${personId}/indicators/new`, 'forward', 'push')
+              }}
+            >
+              add some first
+            </a>
+            .
+          </p>
+        ) : (
+          <>
+            {renderGroup('What went well', desired, checkmarkCircle, 'success')}
+            {renderGroup('What we watched for', undesired, removeCircle, 'danger')}
+
+            <h2 className="check-in__group-title">Notes</h2>
+            <IonList inset>
+              <IonItem lines="none">
+                <IonTextarea
+                  label="Anything else worth remembering?"
+                  labelPlacement="stacked"
+                  autoGrow
+                  value={note}
+                  onIonInput={(e) => setNote(e.detail.value ?? '')}
+                />
+              </IonItem>
+            </IonList>
+
+            <IonNote className="check-in__hint">
+              {existing
+                ? "You're updating today's check-in."
+                : "Saving records today's check-in."}
+            </IonNote>
+          </>
+        )}
+
+        <div className="wizard-step__actions">
+          <IonButton
+            fill="outline"
+            onClick={onSkip}
           >
-            add some first
-          </a>
-          .
-        </p>
-      ) : (
-        <>
-          {renderGroup('What went well', desired, checkmarkCircle, 'success')}
-          {renderGroup('What we watched for', undesired, removeCircle, 'danger')}
-
-          <h2 className="check-in__group-title">Notes</h2>
-          <IonList inset>
-            <IonItem lines="none">
-              <IonTextarea
-                label="Anything else worth remembering?"
-                labelPlacement="stacked"
-                autoGrow
-                value={note}
-                onIonInput={(e) => setNote(e.detail.value ?? '')}
-              />
-            </IonItem>
-          </IonList>
-
-          <IonNote className="check-in__hint">
-            {existing
-              ? "You're updating today's check-in."
-              : "Saving records today's check-in."}
-          </IonNote>
-        </>
-      )}
-
-      <div className="wizard-step__actions">
-        <IonButton
-          fill="outline"
-          onClick={onSkip}
-        >
-          Skip
-        </IonButton>
-        <IonButton
-          disabled={saving || indicators.length === 0}
-          onClick={save}
-        >
-          {existing ? 'Update' : 'Save'} &amp; Next
-        </IonButton>
-      </div>
-    </>
+            Skip
+          </IonButton>
+          <IonButton
+            disabled={saving || indicators.length === 0}
+            onClick={save}
+          >
+            {existing ? 'Update' : 'Save'} &amp; Next
+          </IonButton>
+        </div>
+      </>
+    )
   )
 }
 
-export default function CheckInWizardPage() {
+export function CheckInWizardPage() {
   const router = useIonRouter()
   const { selectedDate } = useSelectedDate()
   const people = usePeople()
@@ -255,11 +258,9 @@ export default function CheckInWizardPage() {
 
   function advance() {
     const next = currentIndex + 1
-    if (next >= activePeople.length) {
-      router.push('/dashboard', 'back', 'pop')
-    } else {
-      setCurrentIndex(next)
-    }
+    return next >= activePeople.length
+      ? router.push('/dashboard', 'back', 'pop')
+      : setCurrentIndex(next)
   }
 
   const currentPerson = activePeople[currentIndex]

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import type { Status } from '../lib/status'
 
@@ -34,17 +34,17 @@ function fallbackAvatarUrl(name: string): string {
   return `https://ui-avatars.com/api/?background=${bg}&color=fff&bold=true&name=${encodeURIComponent(name || '?')}`
 }
 
-function RadarAvatar({
+const RadarAvatar = ({
   href,
   fallback,
   clipPath,
   r,
 }: {
-  href: string
-  fallback: string
-  clipPath: string
-  r: number
-}) {
+  readonly href: string
+  readonly fallback: string
+  readonly clipPath: string
+  readonly r: number
+}) => {
   const [src, setSrc] = useState(href)
   return (
     <image
@@ -70,7 +70,18 @@ function RadarAvatar({
  */
 const INNER_RING = MAX_RADIUS * 0.33 // first ring = 100% score
 
-export function HouseholdRadar({ people }: { people: RadarPerson[] }) {
+/**
+ * Displays a household's distress in a visual format to aid quicker processing.
+ * @param {{people: RadarPerson[]}} param0
+ * @param {RadarPerson[]} param0.people
+ * @returns {React.JSX.Element}
+ * @constructor
+ */
+export const HouseholdRadar = ({
+  people,
+}: {
+  people: RadarPerson[]
+}): React.JSX.Element => {
   const history = useHistory()
   const withScores = people.filter((p) => p.status.score !== null)
 

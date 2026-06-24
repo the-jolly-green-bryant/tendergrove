@@ -18,6 +18,9 @@ const peopleSelectionSet = [
   'indicators.active',
 ] as const
 
+/**
+ *
+ */
 export function usePeople() {
   return useQuery({
     queryKey: ['people'],

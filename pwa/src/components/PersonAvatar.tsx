@@ -21,6 +21,9 @@ function fallbackUrl(name: string): string {
   return `https://ui-avatars.com/api/?background=${bg}&color=fff&bold=true&name=${encodeURIComponent(name || '?')}`
 }
 
+/**
+ *
+ */
 export function PersonAvatar({
   name,
   src,

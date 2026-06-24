@@ -16,8 +16,14 @@ export const STATUS_THRESHOLDS = {
 /*  Types                                                              */
 /* ------------------------------------------------------------------ */
 
+/**
+ *
+ */
 export type StatusLevel = 'good' | 'trouble' | 'at-risk' | 'unknown'
 
+/**
+ *
+ */
 export interface Status {
   /** 0 – 100 weighted score. `null` when we can't compute. */
   score: number | null
@@ -124,6 +130,9 @@ export function computeWeightedScore(
 /*  Level / label derivation                                           */
 /* ------------------------------------------------------------------ */
 
+/**
+ *
+ */
 export function levelFromScore(score: number): StatusLevel {
   if (score >= STATUS_THRESHOLDS.good) return 'good'
   if (score >= STATUS_THRESHOLDS.trouble) return 'trouble'
@@ -137,6 +146,9 @@ const levelMeta: Record<StatusLevel, { label: string; color: Status['color'] }> 
   unknown: { label: 'No Data', color: 'medium' },
 }
 
+/**
+ *
+ */
 export function statusFromScore(score: number | null): Status {
   if (score === null) {
     return { score: null, level: 'unknown', ...levelMeta.unknown }
@@ -168,11 +180,14 @@ function hashCode(str: string): number {
   return Math.abs(hash)
 }
 
+/**
+ *
+ */
 export function todayEmoji(
   indicators: IndicatorLike[],
   checkIns: CheckInLike[],
   now: Date = new Date(),
-  personId: string = '',
+  personId = '',
 ): string | null {
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
@@ -214,6 +229,9 @@ export function todayEmoji(
 /*  Convenience: derive status for a person given their data           */
 /* ------------------------------------------------------------------ */
 
+/**
+ *
+ */
 export function derivePersonStatus(
   indicators: IndicatorLike[],
   checkIns: CheckInLike[],

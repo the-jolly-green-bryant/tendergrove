@@ -21,6 +21,9 @@ const personSelectionSet = [
   'checkIns.note',
 ] as const
 
+/**
+ *
+ */
 export function usePerson(personId: string | undefined) {
   return useQuery({
     enabled: Boolean(personId),

@@ -51,6 +51,9 @@ function formatDateLabel(date: Date): string {
 
 type Indicator = NonNullable<ReturnType<typeof usePerson>['data']>['indicators'][number]
 
+/**
+ *
+ */
 export default function PersonCheckInPage() {
   const router = useIonRouter()
   const { personId } = useParams<{ personId: string }>()

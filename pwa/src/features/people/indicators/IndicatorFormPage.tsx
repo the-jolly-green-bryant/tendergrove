@@ -6,10 +6,7 @@ import {
   IonIcon,
   IonInput,
   IonItem,
-  IonLabel,
   IonList,
-  IonRadio,
-  IonRadioGroup,
   IonTextarea,
   IonTitle,
   IonToolbar,
@@ -22,12 +19,7 @@ import { useParams } from 'react-router-dom'
 
 import { useIndicators } from './useIndicators'
 import { useIndicatorMutations } from './useIndicatorMutations'
-import {
-  polarityMeta,
-  trackOptionsFor,
-  type InputType,
-  type Polarity,
-} from './indicatorMeta'
+import { polarityMeta, type InputType, type Polarity } from './indicatorMeta'
 
 function isPolarity(value: string | undefined): value is Polarity {
   return value === 'undesired' || value === 'desired'
@@ -57,7 +49,6 @@ export default function IndicatorFormPage() {
     : ((existing?.polarity as Polarity | undefined) ?? 'undesired')
 
   const meta = polarityMeta[polarity]
-  const trackOptions = trackOptionsFor(polarity)
 
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')

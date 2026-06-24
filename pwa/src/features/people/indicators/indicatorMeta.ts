@@ -10,7 +10,13 @@ import {
 
 import type { IndicatorInput } from './useIndicatorMutations'
 
+/**
+ *
+ */
 export type Polarity = IndicatorInput['polarity']
+/**
+ *
+ */
 export type InputType = IndicatorInput['inputType']
 
 export const polarityMeta: Record<
@@ -51,6 +57,9 @@ const commonTrackOptions: TrackOption[] = [
   { value: 'scale', label: 'Intensity', helper: 'Rate severity (1–5)' },
 ]
 
+/**
+ *
+ */
 export function trackOptionsFor(polarity: Polarity): TrackOption[] {
   if (polarity === 'desired') {
     return [

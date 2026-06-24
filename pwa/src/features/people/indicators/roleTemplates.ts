@@ -1,6 +1,9 @@
 import type { PersonRole } from '../../../lib/domain'
 import type { Polarity, InputType } from './indicatorMeta'
 
+/**
+ *
+ */
 export interface TemplateIndicator {
   name: string
   polarity: Polarity
@@ -10,6 +13,9 @@ export interface TemplateIndicator {
   defaultSelected: boolean
 }
 
+/**
+ *
+ */
 export interface RoleTemplate {
   role: PersonRole
   label: string

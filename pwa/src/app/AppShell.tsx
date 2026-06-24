@@ -17,7 +17,6 @@ import {
 } from 'ionicons/icons'
 
 import HouseholdPage from '../features/household/HouseholdPage'
-import CheckInPage from '../features/checkins/CheckInPage'
 import TimelinePage from '../features/timeline/TimelinePage'
 import IncidentPage from '../features/incidents/IncidentPage'
 import ParentCarePage from '../features/parent-care/ParentCarePage'
@@ -31,8 +30,11 @@ import IndicatorChecklistPage from '../features/people/indicators/IndicatorCheck
 import ChooseIndicatorTypePage from '../features/people/indicators/ChooseIndicatorTypePage'
 import IndicatorFormPage from '../features/people/indicators/IndicatorFormPage'
 import ArchivedPeoplePage from '../features/people/ArchivedPeoplePage'
-import CheckInWizardPage from '../features/checkins/CheckInWizardPage'
+import { CheckInWizardPage } from '../features/checkins/CheckInWizardPage'
 
+/**
+ *
+ */
 export default function AppShell() {
   return (
     <IonReactRouter>
@@ -43,19 +45,16 @@ export default function AppShell() {
             path="/dashboard"
             component={HouseholdPage}
           />
-
           <Route
             exact
             path="/people/new"
             component={PersonFormPage}
           />
-
           <Route
             exact
             path="/person/:personId"
             component={PersonPage}
           />
-
           <Route
             exact
             path="/person/:personId/edit"
@@ -103,7 +102,6 @@ export default function AppShell() {
             path="/archived"
             component={ArchivedPeoplePage}
           />
-
           <Route
             exact
             path="/check-in"
@@ -121,11 +119,6 @@ export default function AppShell() {
           />
           <Route
             exact
-            path="/parent-care"
-            component={ParentCarePage}
-          />
-          <Route
-            exact
             path="/reports"
             component={InsightsPage}
           />
@@ -134,7 +127,6 @@ export default function AppShell() {
             path="/reports/export"
             component={ReportsPage}
           />
-
           <Route
             exact
             path="/"
