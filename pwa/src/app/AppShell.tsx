@@ -45,63 +45,63 @@ export default function AppShell() {
           />
 
           <Route
-              exact
-              path="/people/new"
-              component={PersonFormPage}
+            exact
+            path="/people/new"
+            component={PersonFormPage}
           />
 
           <Route
-              exact
-              path="/person/:personId"
-              component={PersonPage}
+            exact
+            path="/person/:personId"
+            component={PersonPage}
           />
 
           <Route
-              exact
-              path="/person/:personId/edit"
-              component={PersonFormPage}
+            exact
+            path="/person/:personId/edit"
+            component={PersonFormPage}
           />
 
           <Route
-              exact
-              path="/person/:personId/check-in"
-              component={PersonCheckInPage}
+            exact
+            path="/person/:personId/check-in"
+            component={PersonCheckInPage}
           />
 
           <Route
-              exact
-              path="/person/:personId/indicators"
-              component={ManageIndicatorsPage}
+            exact
+            path="/person/:personId/indicators"
+            component={ManageIndicatorsPage}
           />
 
           <Route
-              exact
-              path="/person/:personId/indicators/checklist"
-              component={IndicatorChecklistPage}
+            exact
+            path="/person/:personId/indicators/checklist"
+            component={IndicatorChecklistPage}
           />
 
           <Route
-              exact
-              path="/person/:personId/indicators/new"
-              component={ChooseIndicatorTypePage}
+            exact
+            path="/person/:personId/indicators/new"
+            component={ChooseIndicatorTypePage}
           />
 
           <Route
-              exact
-              path="/person/:personId/indicators/new/:polarity"
-              component={IndicatorFormPage}
+            exact
+            path="/person/:personId/indicators/new/:polarity"
+            component={IndicatorFormPage}
           />
 
           <Route
-              exact
-              path="/person/:personId/indicators/:indicatorId/edit"
-              component={IndicatorFormPage}
+            exact
+            path="/person/:personId/indicators/:indicatorId/edit"
+            component={IndicatorFormPage}
           />
 
           <Route
-              exact
-              path="/archived"
-              component={ArchivedPeoplePage}
+            exact
+            path="/archived"
+            component={ArchivedPeoplePage}
           />
 
           <Route
@@ -175,7 +175,6 @@ export default function AppShell() {
           >
             <IonIcon icon={clipboardOutline} />
           </IonTabButton>
-
         </IonTabBar>
       </IonTabs>
     </IonReactRouter>

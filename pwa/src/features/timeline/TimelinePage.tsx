@@ -1,16 +1,10 @@
-import {
-  IonChip,
-  IonSpinner,
-} from '@ionic/react'
+import { IonChip, IonSpinner } from '@ionic/react'
 import { useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 
 import { Page } from '../../components/Page'
 import { PersonAvatar } from '../../components/PersonAvatar'
-import {
-  PersonFilterChips,
-  usePersonFilter,
-} from '../../components/PersonFilterChips'
+import { PersonFilterChips, usePersonFilter } from '../../components/PersonFilterChips'
 import { usePeople } from '../people/usePeople'
 import { computeScore, statusFromScore } from '../../lib/status'
 
@@ -180,7 +174,10 @@ export default function TimelinePage() {
           ) : (
             <div className="timeline-groups">
               {Array.from(groupedEvents.entries()).map(([dateKey, events]) => (
-                <div key={dateKey} className="timeline-day">
+                <div
+                  key={dateKey}
+                  className="timeline-day"
+                >
                   <h3 className="timeline-day__heading">{formatDayHeading(dateKey)}</h3>
 
                   <div className="timeline-day__events">
@@ -188,14 +185,20 @@ export default function TimelinePage() {
                       <button
                         key={event.id}
                         className="timeline-event"
-                        onClick={() => history.push(`/person/${event.personId}?viewDate=${toDateKey(event.occurredAt)}`)}
+                        onClick={() =>
+                          history.push(
+                            `/person/${event.personId}?viewDate=${toDateKey(event.occurredAt)}`,
+                          )
+                        }
                       >
                         <div className="timeline-event__time">
                           {formatTime(event.timestamp)}
                         </div>
 
                         <div className="timeline-event__line">
-                          <span className={`timeline-event__dot timeline-event__dot--${event.statusColor}`} />
+                          <span
+                            className={`timeline-event__dot timeline-event__dot--${event.statusColor}`}
+                          />
                         </div>
 
                         <div className="timeline-event__card">
@@ -210,10 +213,14 @@ export default function TimelinePage() {
                                 {event.personName}
                                 {event.personRole === 'self' && ' (You)'}
                               </span>
-                              <span className="timeline-event__type">Daily Check-In</span>
+                              <span className="timeline-event__type">
+                                Daily Check-In
+                              </span>
                             </div>
                           </div>
-                          <IonChip className={`timeline-status-chip timeline-status-chip--${event.statusColor}`}>
+                          <IonChip
+                            className={`timeline-status-chip timeline-status-chip--${event.statusColor}`}
+                          >
                             {event.statusLabel}
                           </IonChip>
                         </div>

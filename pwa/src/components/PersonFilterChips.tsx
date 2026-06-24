@@ -1,8 +1,4 @@
-import {
-  IonChip,
-  IonIcon,
-  IonLabel,
-} from '@ionic/react'
+import { IonChip, IonIcon, IonLabel } from '@ionic/react'
 import { peopleOutline } from 'ionicons/icons'
 import { useState } from 'react'
 

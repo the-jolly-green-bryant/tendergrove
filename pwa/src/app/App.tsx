@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { IonApp } from '@ionic/react'
 import { Authenticator } from '@aws-amplify/ui-react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Capacitor } from '@capacitor/core'
 
 import { AuthProvider } from '../auth/AuthContext'
@@ -63,15 +63,13 @@ const authComponents = {
     )
   },
   // On native, render our own Google button under the sign-in form.
-  ...(isNative
-    ? { SignIn: { Footer: NativeGoogleButton } }
-    : {}),
+  ...(isNative ? { SignIn: { Footer: NativeGoogleButton } } : {}),
 }
 
 function handleGlobalError(error: unknown) {
   const message =
-    error instanceof Error ? error.message : JSON.stringify(error, null, 2);
-  alert(`Request failed:\n\n${message}`);
+    error instanceof Error ? error.message : JSON.stringify(error, null, 2)
+  alert(`Request failed:\n\n${message}`)
 }
 
 const queryClient = new QueryClient({
@@ -85,10 +83,10 @@ const queryClient = new QueryClient({
       onError: handleGlobalError,
     },
   },
-});
+})
 
-queryClient.getQueryCache().config.onError = handleGlobalError;
-queryClient.getMutationCache().config.onError = handleGlobalError;
+queryClient.getQueryCache().config.onError = handleGlobalError
+queryClient.getMutationCache().config.onError = handleGlobalError
 
 export default function App() {
   return (
@@ -102,11 +100,11 @@ export default function App() {
           signOut={signOut}
         >
           <QueryClientProvider client={queryClient}>
-          <SelectedDateProvider>
-          <IonApp>
-            <AppShell />
-          </IonApp>
-          </SelectedDateProvider>
+            <SelectedDateProvider>
+              <IonApp>
+                <AppShell />
+              </IonApp>
+            </SelectedDateProvider>
           </QueryClientProvider>
         </AuthProvider>
       )}

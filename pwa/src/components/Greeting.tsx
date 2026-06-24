@@ -11,7 +11,10 @@ export function Greeting() {
 
   return (
     <>
-      <h1 className="household-greeting">Good {period}{name} 👋</h1>
+      <h1 className="household-greeting">
+        Good {period}
+        {name} 👋
+      </h1>
       <p className="household-subtitle">Here's how your household is doing.</p>
     </>
   )

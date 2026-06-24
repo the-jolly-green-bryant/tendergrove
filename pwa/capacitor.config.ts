@@ -1,4 +1,4 @@
-import type { CapacitorConfig } from '@capacitor/cli';
+import type { CapacitorConfig } from '@capacitor/cli'
 
 const config: CapacitorConfig = {
   appId: 'com.tendergrove.app',
@@ -10,6 +10,6 @@ const config: CapacitorConfig = {
   android: {
     appendUrlToDeepLink: false,
   },
-};
+}
 
-export default config;
+export default config

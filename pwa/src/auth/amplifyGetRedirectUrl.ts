@@ -19,8 +19,7 @@ export function getRedirectUrl(
 ): string {
   if (Capacitor.isNativePlatform()) {
     const appScheme = redirects?.find(
-      redirect =>
-        !redirect.startsWith('http://') && !redirect.startsWith('https://'),
+      (redirect) => !redirect.startsWith('http://') && !redirect.startsWith('https://'),
     )
     if (appScheme) {
       if (
@@ -37,7 +36,7 @@ export function getRedirectUrl(
 
   // --- mirrors @aws-amplify/auth getRedirectUrl.ts (web) ---
   if (preferredRedirectUrl) {
-    const match = redirects?.find(redirect => redirect === preferredRedirectUrl)
+    const match = redirects?.find((redirect) => redirect === preferredRedirectUrl)
     if (!match) {
       throw new Error('Preferred redirect URL is not in the configured list')
     }
@@ -48,17 +47,15 @@ export function getRedirectUrl(
     window.location.origin + (window.location.pathname || '/'),
   )
   const sameOrigin =
-    redirects?.find(redirect => redirect.startsWith(originAndPath)) ??
-    redirects?.find(redirect =>
-      redirect.includes(String(window.location.hostname)),
-    )
+    redirects?.find((redirect) => redirect.startsWith(originAndPath)) ??
+    redirects?.find((redirect) => redirect.includes(String(window.location.hostname)))
   if (sameOrigin) {
     return sameOrigin
   }
 
   const differentOrigin =
-    redirects?.find(redirect => redirect.startsWith('https://')) ??
-    redirects?.find(redirect => redirect.startsWith('http://'))
+    redirects?.find((redirect) => redirect.startsWith('https://')) ??
+    redirects?.find((redirect) => redirect.startsWith('http://'))
   if (differentOrigin) {
     throw new Error('Redirect URL did not match the current origin')
   }

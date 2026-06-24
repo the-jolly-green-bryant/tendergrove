@@ -45,26 +45,53 @@ export function Page({ title, children, headerContent, subHeaderContent }: PageP
 
           <IonList lines="none">
             <IonMenuToggle autoHide={false}>
-              <IonItem button routerLink="/dashboard" routerDirection="root">
-                <IonIcon slot="start" icon={homeOutline} />
+              <IonItem
+                button
+                routerLink="/dashboard"
+                routerDirection="root"
+              >
+                <IonIcon
+                  slot="start"
+                  icon={homeOutline}
+                />
                 <IonLabel>Household</IonLabel>
               </IonItem>
             </IonMenuToggle>
             <IonMenuToggle autoHide={false}>
-              <IonItem button routerLink="/archived" routerDirection="forward">
-                <IonIcon slot="start" icon={archiveOutline} />
+              <IonItem
+                button
+                routerLink="/archived"
+                routerDirection="forward"
+              >
+                <IonIcon
+                  slot="start"
+                  icon={archiveOutline}
+                />
                 <IonLabel>Archived</IonLabel>
               </IonItem>
             </IonMenuToggle>
             <IonMenuToggle autoHide={false}>
-              <IonItem button routerLink="/parent-care" routerDirection="forward">
-                <IonIcon slot="start" icon={settingsOutline} />
+              <IonItem
+                button
+                routerLink="/parent-care"
+                routerDirection="forward"
+              >
+                <IonIcon
+                  slot="start"
+                  icon={settingsOutline}
+                />
                 <IonLabel>Settings</IonLabel>
               </IonItem>
             </IonMenuToggle>
             <IonMenuToggle autoHide={false}>
-              <IonItem button onClick={() => signOut?.()}>
-                <IonIcon slot="start" icon={logOutOutline} />
+              <IonItem
+                button
+                onClick={() => signOut?.()}
+              >
+                <IonIcon
+                  slot="start"
+                  icon={logOutOutline}
+                />
                 <IonLabel>Sign Out</IonLabel>
               </IonItem>
             </IonMenuToggle>
@@ -77,8 +104,14 @@ export function Page({ title, children, headerContent, subHeaderContent }: PageP
           <IonToolbar>
             <IonButtons slot="start">
               <IonMenuToggle autoHide={false}>
-                <IonButton fill="clear" aria-label="Menu">
-                  <IonIcon slot="icon-only" icon={menuOutline} />
+                <IonButton
+                  fill="clear"
+                  aria-label="Menu"
+                >
+                  <IonIcon
+                    slot="icon-only"
+                    icon={menuOutline}
+                  />
                 </IonButton>
               </IonMenuToggle>
             </IonButtons>

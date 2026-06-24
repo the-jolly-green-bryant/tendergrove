@@ -24,17 +24,15 @@ interface OpenAuthSessionResult {
  * completeOAuthFlow() with that URL — doing the PKCE exchange, storing the
  * session, and firing the `signedIn` Hub event.
  */
-const capacitorAuthSessionOpener = (
-  url: string,
-): Promise<OpenAuthSessionResult> =>
-  new Promise(resolve => {
+const capacitorAuthSessionOpener = (url: string): Promise<OpenAuthSessionResult> =>
+  new Promise((resolve) => {
     let settled = false
 
     const finish = (result: OpenAuthSessionResult) => {
       if (settled) return
       settled = true
-      void urlSub.then(s => s.remove())
-      void finishedSub.then(s => s.remove())
+      void urlSub.then((s) => s.remove())
+      void finishedSub.then((s) => s.remove())
       resolve(result)
     }
 
@@ -53,7 +51,7 @@ const capacitorAuthSessionOpener = (
       setTimeout(() => finish({ type: 'canceled' }), 1200)
     })
 
-    Browser.open({ url }).catch(error => {
+    Browser.open({ url }).catch((error) => {
       finish({ type: 'error', error })
     })
   })

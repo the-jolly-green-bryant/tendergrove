@@ -233,7 +233,6 @@ ion-toolbar ion-buttons {
   color: var(--app-muted-text);
 }
 
-
 .section-header {
   display: flex;
   align-items: center;
@@ -551,10 +550,18 @@ ion-item.indicator-row {
   margin-right: 4px;
 }
 
-.household-person-btn__dot--success { background: var(--ion-color-success); }
-.household-person-btn__dot--warning { background: var(--ion-color-warning); }
-.household-person-btn__dot--danger  { background: var(--ion-color-danger); }
-.household-person-btn__dot--medium  { background: var(--ion-color-step-400); }
+.household-person-btn__dot--success {
+  background: var(--ion-color-success);
+}
+.household-person-btn__dot--warning {
+  background: var(--ion-color-warning);
+}
+.household-person-btn__dot--danger {
+  background: var(--ion-color-danger);
+}
+.household-person-btn__dot--medium {
+  background: var(--ion-color-step-400);
+}
 
 .household-person-btn__chevron {
   font-size: 1.2rem;
@@ -738,7 +745,6 @@ ion-item.indicator-row {
   font-size: 1rem;
   font-weight: 700;
 }
-
 
 /* Prevent visited links from changing to browser default purple */
 a:visited {

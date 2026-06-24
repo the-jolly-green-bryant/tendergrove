@@ -2,10 +2,7 @@ import { IonSpinner } from '@ionic/react'
 import { useMemo } from 'react'
 
 import { Page } from '../../components/Page'
-import {
-  PersonFilterChips,
-  usePersonFilter,
-} from '../../components/PersonFilterChips'
+import { PersonFilterChips, usePersonFilter } from '../../components/PersonFilterChips'
 import { usePeople } from '../people/usePeople'
 import { parseAnswers } from '../people/checkin/checkInUtils'
 
@@ -72,9 +69,7 @@ export default function InsightsPage() {
         : activePeople
 
     for (const person of filtered) {
-      const indicators = (person.indicators ?? []).filter(
-        (i) => i.active !== false,
-      )
+      const indicators = (person.indicators ?? []).filter((i) => i.active !== false)
       if (indicators.length === 0) continue
 
       for (const ci of person.checkIns ?? []) {
@@ -182,16 +177,19 @@ export default function InsightsPage() {
                     const badPct = (day.bad / maxTotal) * 100
 
                     return (
-                      <div key={day.dateKey} className="insights-day">
+                      <div
+                        key={day.dateKey}
+                        className="insights-day"
+                      >
                         <span className="insights-day__label">{day.day}</span>
 
                         <div className="insights-day__bar-track">
                           {day.bad > 0 && (
-                              <div
-                                  className="insights-day__bar--bad"
-                                  style={{ width: `${badPct}%` }}
-                                  title={`${day.bad} bad`}
-                              />
+                            <div
+                              className="insights-day__bar--bad"
+                              style={{ width: `${badPct}%` }}
+                              title={`${day.bad} bad`}
+                            />
                           )}
                           {day.good > 0 && (
                             <div

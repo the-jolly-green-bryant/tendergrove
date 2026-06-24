@@ -1,8 +1,4 @@
-import {
-  IonChip,
-  IonIcon,
-  IonSpinner,
-} from '@ionic/react'
+import { IonChip, IonIcon, IonSpinner } from '@ionic/react'
 import { chevronForwardOutline } from 'ionicons/icons'
 import { useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
@@ -27,11 +23,10 @@ function isSameDay(occurredAt: string, date: Date): boolean {
   )
 }
 
-
 export default function HouseholdPage() {
   const { user } = useAppAuth()
   if (!user) {
-    throw new Error("Redirect back to login")
+    throw new Error('Redirect back to login')
   }
 
   const people = usePeople()
@@ -85,7 +80,10 @@ export default function HouseholdPage() {
               id: person.id,
               displayName: person.displayName,
               avatarUrl: person.avatarUrl,
-              status: derivePersonStatus(person.indicators ?? [], person.checkIns ?? []),
+              status: derivePersonStatus(
+                person.indicators ?? [],
+                person.checkIns ?? [],
+              ),
             }
           })}
         />
@@ -93,8 +91,16 @@ export default function HouseholdPage() {
 
       <div className="household-list">
         {activePeople.map((person) => {
-          const status = derivePersonStatus(person.indicators ?? [], person.checkIns ?? [])
-          const emoji = todayEmoji(person.indicators ?? [], person.checkIns ?? [], new Date(), person.id)
+          const status = derivePersonStatus(
+            person.indicators ?? [],
+            person.checkIns ?? [],
+          )
+          const emoji = todayEmoji(
+            person.indicators ?? [],
+            person.checkIns ?? [],
+            new Date(),
+            person.id,
+          )
           const hasCheckIn = (person.checkIns ?? []).some((ci) =>
             isSameDay(ci.occurredAt, selectedDate),
           )
@@ -105,16 +111,23 @@ export default function HouseholdPage() {
               onClick={() => history.push(`/person/${person.id}`)}
             >
               <div className="avatar-emoji-wrapper">
-                <PersonAvatar name={person.displayName} src={person.avatarUrl} className="household-person-btn__avatar" />
+                <PersonAvatar
+                  name={person.displayName}
+                  src={person.avatarUrl}
+                  className="household-person-btn__avatar"
+                />
                 {emoji && <span className="avatar-emoji-badge">{emoji}</span>}
               </div>
               <div className="household-person-btn__info">
                 <span className="household-person-btn__name">
-                  {person.displayName}{person.role === 'self' && ' (You)'}
+                  {person.displayName}
+                  {person.role === 'self' && ' (You)'}
                 </span>
                 <div className="household-person-btn__chips">
                   <IonChip className={`household-chip household-chip--${status.color}`}>
-                    <span className={`household-person-btn__dot household-person-btn__dot--${status.color}`} />
+                    <span
+                      className={`household-person-btn__dot household-person-btn__dot--${status.color}`}
+                    />
                     {status.label}
                   </IonChip>
                   {!hasCheckIn && (
@@ -124,7 +137,10 @@ export default function HouseholdPage() {
                   )}
                 </div>
               </div>
-              <IonIcon icon={chevronForwardOutline} className="household-person-btn__chevron" />
+              <IonIcon
+                icon={chevronForwardOutline}
+                className="household-person-btn__chevron"
+              />
             </button>
           )
         })}

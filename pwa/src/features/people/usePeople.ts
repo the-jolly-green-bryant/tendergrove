@@ -1,36 +1,36 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query'
 
-import { client } from '../../lib/api';
+import { client } from '../../lib/api'
 
 const peopleSelectionSet = [
-    'id',
-    'displayName',
-    'role',
-    'avatarUrl',
-    'archived',
-    'checkIns.id',
-    'checkIns.createdAt',
-    'checkIns.updatedAt',
-    'checkIns.occurredAt',
-    'checkIns.answersJson',
-    'indicators.id',
-    'indicators.polarity',
-    'indicators.active',
-] as const;
+  'id',
+  'displayName',
+  'role',
+  'avatarUrl',
+  'archived',
+  'checkIns.id',
+  'checkIns.createdAt',
+  'checkIns.updatedAt',
+  'checkIns.occurredAt',
+  'checkIns.answersJson',
+  'indicators.id',
+  'indicators.polarity',
+  'indicators.active',
+] as const
 
 export function usePeople() {
-    return useQuery({
-        queryKey: ['people'],
-        queryFn: async () => {
-            const result = await client.models.Person.list({
-                selectionSet: peopleSelectionSet,
-            });
+  return useQuery({
+    queryKey: ['people'],
+    queryFn: async () => {
+      const result = await client.models.Person.list({
+        selectionSet: peopleSelectionSet,
+      })
 
-            if (result.errors?.length) {
-                throw new Error(result.errors[0].message);
-            }
+      if (result.errors?.length) {
+        throw new Error(result.errors[0].message)
+      }
 
-            return result.data;
-        },
-    });
+      return result.data
+    },
+  })
 }

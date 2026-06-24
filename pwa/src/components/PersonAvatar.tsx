@@ -41,7 +41,10 @@ export function PersonAvatar({
   }, [src, fallback])
 
   return (
-    <IonAvatar slot={slot} className={className}>
+    <IonAvatar
+      slot={slot}
+      className={className}
+    >
       <img
         src={imgSrc}
         alt={name}
