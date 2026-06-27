@@ -33,9 +33,12 @@ interface ChecklistItem extends TemplateIndicator {
 
 let nextCustomId = 0
 
-/**
- *
- */
+const LOADING_STATE = (
+  <div className="ion-text-center ion-padding">
+    <IonSpinner />
+  </div>
+)
+
 export default function IndicatorChecklistPage() {
   const router = useIonRouter()
   const { personId } = useParams<{ personId: string }>()
@@ -102,13 +105,12 @@ export default function IndicatorChecklistPage() {
 
     try {
       for (const item of selected) {
-        const input: IndicatorInput = {
+        await create({
           name: item.name,
           polarity: item.polarity,
           inputType: item.inputType,
           description: item.description,
-        }
-        await create(input)
+        })
       }
 
       router.push(`/person/${personId}`, 'forward', 'replace')
@@ -119,7 +121,6 @@ export default function IndicatorChecklistPage() {
   }
 
   const skip = () => router.push(`/person/${personId}`, 'forward', 'replace')
-
   const undesired = items.filter((i) => i.polarity === 'undesired')
   const desired = items.filter((i) => i.polarity === 'desired')
   const selectedCount = items.filter((i) => i.selected).length
@@ -148,11 +149,7 @@ export default function IndicatorChecklistPage() {
         fullscreen
         className="ion-padding safe-content"
       >
-        {isLoading && (
-          <div className="ion-text-center ion-padding">
-            <IonSpinner />
-          </div>
-        )}
+        {isLoading && LOADING_STATE}
 
         {!isLoading && (
           <>
@@ -281,9 +278,9 @@ function PolaritySection({
   items,
   onToggle,
 }: {
-  polarity: Polarity
-  items: ChecklistItem[]
-  onToggle: (id: string) => void
+  readonly polarity: Polarity
+  readonly items: ChecklistItem[]
+  readonly onToggle: (id: string) => void
 }) {
   const meta = polarityMeta[polarity]
 

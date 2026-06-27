@@ -52,7 +52,9 @@ function formatDateLabel(date: Date): string {
 type Indicator = NonNullable<ReturnType<typeof usePerson>['data']>['indicators'][number]
 
 /**
- *
+ * Allows a single person to be checked on.
+ * @returns {React.JSX.Element}
+ * @constructor
  */
 export default function PersonCheckInPage() {
   const router = useIonRouter()
@@ -120,22 +122,20 @@ export default function PersonCheckInPage() {
 
     setSaving(true)
     try {
-      if (existing) {
-        await update(existing.id, payload)
-      } else {
-        await create(payload)
-      }
+      existing ? await update(existing.id, payload) : await create(payload)
       router.push(personPath(), 'back', 'pop')
     } finally {
       setSaving(false)
     }
   }
 
-  function renderGroup(title: string, items: Indicator[], icon: string, color: string) {
-    if (items.length === 0) {
-      return null
-    }
-    return (
+  const renderGroup = (
+    title: string,
+    items: Indicator[],
+    icon: string,
+    color: string,
+  ) =>
+    items.length && (
       <>
         <h2 className="check-in__group-title">{title}</h2>
         <IonList inset>
@@ -158,7 +158,6 @@ export default function PersonCheckInPage() {
         </IonList>
       </>
     )
-  }
 
   return (
     <IonPage>

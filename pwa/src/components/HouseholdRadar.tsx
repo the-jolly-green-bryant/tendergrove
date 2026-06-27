@@ -34,6 +34,41 @@ function fallbackAvatarUrl(name: string): string {
   return `https://ui-avatars.com/api/?background=${bg}&color=fff&bold=true&name=${encodeURIComponent(name || '?')}`
 }
 
+const renderGrid = () => (
+  <>
+    {/* Concentric rings */}
+    {[0.33, 0.66, 1].map((pct) => (
+      <circle
+        key={pct}
+        cx={CENTER}
+        cy={CENTER}
+        r={MAX_RADIUS * pct}
+        fill="none"
+        stroke="var(--ion-color-light-shade)"
+        strokeWidth={1}
+      />
+    ))}
+
+    {/* Cross-hairs */}
+    <line
+      x1={CENTER}
+      y1={CENTER - MAX_RADIUS}
+      x2={CENTER}
+      y2={CENTER + MAX_RADIUS}
+      stroke="var(--ion-color-light-shade)"
+      strokeWidth={1}
+    />
+    <line
+      x1={CENTER - MAX_RADIUS}
+      y1={CENTER}
+      x2={CENTER + MAX_RADIUS}
+      y2={CENTER}
+      stroke="var(--ion-color-light-shade)"
+      strokeWidth={1}
+    />
+  </>
+)
+
 const RadarAvatar = ({
   href,
   fallback,
@@ -112,36 +147,7 @@ export const HouseholdRadar = ({
             ))}
           </defs>
 
-          {/* Concentric rings */}
-          {[0.33, 0.66, 1].map((pct) => (
-            <circle
-              key={pct}
-              cx={CENTER}
-              cy={CENTER}
-              r={MAX_RADIUS * pct}
-              fill="none"
-              stroke="var(--ion-color-light-shade)"
-              strokeWidth={1}
-            />
-          ))}
-
-          {/* Cross-hairs */}
-          <line
-            x1={CENTER}
-            y1={CENTER - MAX_RADIUS}
-            x2={CENTER}
-            y2={CENTER + MAX_RADIUS}
-            stroke="var(--ion-color-light-shade)"
-            strokeWidth={1}
-          />
-          <line
-            x1={CENTER - MAX_RADIUS}
-            y1={CENTER}
-            x2={CENTER + MAX_RADIUS}
-            y2={CENTER}
-            stroke="var(--ion-color-light-shade)"
-            strokeWidth={1}
-          />
+          {renderGrid()}
 
           {/* Person avatars */}
           {withScores.map((person, i) => {

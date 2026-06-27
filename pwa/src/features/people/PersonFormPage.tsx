@@ -147,9 +147,8 @@ export default function PersonFormPage() {
     }
 
     await queryClient.invalidateQueries({ queryKey: ['people'] })
-    if (personId) {
-      await queryClient.invalidateQueries({ queryKey: ['person', personId] })
-    }
+    personId &&
+      (await queryClient.invalidateQueries({ queryKey: ['person', personId] }))
 
     const newId = isEditing ? personId : result.data?.id
     if (newId && !isEditing) {

@@ -45,25 +45,19 @@ export default function ManageIndicatorsPage() {
 
   const [filter, setFilter] = useState<Filter>('all')
 
-  function goBack() {
-    if (router.canGoBack()) {
-      router.goBack()
-      return
-    }
-    router.push(`/person/${personId}`, 'back', 'pop')
-  }
+  const goBack = () =>
+    router.canGoBack()
+      ? router.goBack()
+      : router.push(`/person/${personId}`, 'back', 'pop')
 
-  function addIndicator(polarity: Polarity) {
+  const addIndicator = (polarity: Polarity) =>
     router.push(`/person/${personId}/indicators/new/${polarity}`, 'forward')
-  }
 
-  function editIndicator(indicatorId: string) {
+  const editIndicator = (indicatorId: string) =>
     router.push(`/person/${personId}/indicators/${indicatorId}/edit`, 'forward')
-  }
 
-  const all = indicators ?? []
   const byPolarity = (polarity: Polarity) =>
-    all.filter((indicator) => indicator.polarity === polarity)
+    (indicators ?? []).filter((indicator) => indicator.polarity === polarity)
 
   return (
     <IonPage>
@@ -151,19 +145,19 @@ export default function ManageIndicatorsPage() {
   )
 }
 
-function IndicatorSection({
+const IndicatorSection = ({
   polarity,
   indicators,
   onAdd,
   onEdit,
   onDelete,
 }: {
-  polarity: Polarity
-  indicators: Indicator[]
-  onAdd: () => void
-  onEdit: (id: string) => void
-  onDelete: (id: string) => void
-}) {
+  readonly polarity: Polarity
+  readonly indicators: Indicator[]
+  readonly onAdd: () => void
+  readonly onEdit: (id: string) => void
+  readonly onDelete: (id: string) => void
+}) => {
   const meta = polarityMeta[polarity]
 
   return (

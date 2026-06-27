@@ -25,6 +25,11 @@ function isPolarity(value: string | undefined): value is Polarity {
   return value === 'undesired' || value === 'desired'
 }
 
+/**
+ * Allows users to create bespoke indicators for people.
+ * @returns {React.JSX.Element}
+ * @constructor
+ */
 export default function IndicatorFormPage() {
   const router = useIonRouter()
   const {
@@ -91,11 +96,9 @@ export default function IndicatorFormPage() {
 
     setSaving(true)
     try {
-      if (isEditing && indicatorId) {
-        await update(indicatorId, payload)
-      } else {
-        await create(payload)
-      }
+      isEditing && indicatorId
+        ? await update(indicatorId, payload)
+        : await create(payload)
       router.push(`/person/${personId}/indicators`, 'back', 'pop')
     } finally {
       setSaving(false)
@@ -163,38 +166,16 @@ export default function IndicatorFormPage() {
           />
         </div>
 
+        <p>{meta.blurb}</p>
+
         <IonList lines="none">
           <IonItem>
             <IonInput
-              label="Indicator Name"
+              label="Behavior"
               labelPlacement="stacked"
-              placeholder="e.g. Aggression"
+              placeholder={`e.g. ${meta.examples}`}
               value={name}
               onIonInput={(event) => setName(event.detail.value ?? '')}
-            />
-          </IonItem>
-
-          <IonItem>
-            <IonTextarea
-              label="Description (optional)"
-              labelPlacement="stacked"
-              autoGrow
-              placeholder="What does this indicator describe?"
-              value={description}
-              onIonInput={(event) => setDescription(event.detail.value ?? '')}
-            />
-          </IonItem>
-        </IonList>
-
-        <IonList lines="none">
-          <IonItem>
-            <IonTextarea
-              label="Notes (optional)"
-              labelPlacement="stacked"
-              autoGrow
-              placeholder="Anything else worth remembering"
-              value={notes}
-              onIonInput={(event) => setNotes(event.detail.value ?? '')}
             />
           </IonItem>
         </IonList>

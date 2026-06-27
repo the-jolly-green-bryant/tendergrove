@@ -46,19 +46,17 @@ export default function HouseholdPage() {
   )
 
   /** Collect all unique YYYY-MM-DD strings that have any check-in. */
-  const eventDates = useMemo(() => {
-    const dates = new Set<string>()
-    for (const person of people.data ?? []) {
-      for (const ci of person.checkIns ?? []) {
-        const d = new Date(ci.occurredAt)
-        const y = d.getFullYear()
-        const m = String(d.getMonth() + 1).padStart(2, '0')
-        const day = String(d.getDate()).padStart(2, '0')
-        dates.add(`${y}-${m}-${day}`)
-      }
-    }
-    return dates
-  }, [people.data])
+  const eventDates = useMemo(
+    () =>
+      new Set<string>(
+        ...(people.data ?? []).map((person) =>
+          (person.checkIns ?? []).map((ci) =>
+            new Date(ci.occurredAt).toISOString().slice(0, 10),
+          ),
+        ),
+      ),
+    [people.data],
+  )
 
   const { headerElement, calendarElement } = useDateNavigator({
     date: selectedDate,
@@ -131,6 +129,7 @@ export default function HouseholdPage() {
                     />
                     {status.label}
                   </IonChip>
+
                   {!hasCheckIn && (
                     <IonChip className="household-chip household-chip--needs-checkin">
                       Needs Check-In

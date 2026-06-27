@@ -18,8 +18,6 @@ import {
 
 import HouseholdPage from '../features/household/HouseholdPage'
 import TimelinePage from '../features/timeline/TimelinePage'
-import IncidentPage from '../features/incidents/IncidentPage'
-import ParentCarePage from '../features/parent-care/ParentCarePage'
 import ReportsPage from '../features/reports/ReportsPage'
 import InsightsPage from '../features/insights/InsightsPage'
 import PersonFormPage from '../features/people/PersonFormPage'
@@ -111,11 +109,6 @@ export default function AppShell() {
             exact
             path="/check-in/wizard"
             component={CheckInWizardPage}
-          />
-          <Route
-            exact
-            path="/incident"
-            component={IncidentPage}
           />
           <Route
             exact

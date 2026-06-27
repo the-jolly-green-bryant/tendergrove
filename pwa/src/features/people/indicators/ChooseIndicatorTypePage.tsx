@@ -22,7 +22,31 @@ import { polarityMeta, type Polarity } from './indicatorMeta'
 
 const order: Polarity[] = ['undesired', 'desired']
 
-export default function ChooseIndicatorTypePage() {
+const INTRO_TEXT = (
+  <>
+    <h1 className="choose-type__heading">
+      What type of indicator would you like to add?
+    </h1>
+    <p className="choose-type__sub">
+      You can add either a challenge to watch for or a positive goal to support.
+    </p>
+  </>
+)
+
+const HELP_TEXT = (
+  <div className="indicator-why">
+    <IonIcon
+      icon={informationCircleOutline}
+      color="primary"
+    />
+    <div>
+      <strong>You can always edit this later</strong>
+      <p>Indicators can be updated or moved between desired and undesired.</p>
+    </div>
+  </div>
+)
+
+const ChooseIndicatorTypePage = () => {
   const router = useIonRouter()
   const { personId } = useParams<{ personId: string }>()
 
@@ -59,12 +83,7 @@ export default function ChooseIndicatorTypePage() {
         fullscreen
         className="ion-padding safe-content"
       >
-        <h1 className="choose-type__heading">
-          What type of indicator would you like to add?
-        </h1>
-        <p className="choose-type__sub">
-          You can add either a challenge to watch for or a positive goal to support.
-        </p>
+        {INTRO_TEXT}
 
         {order.map((polarity) => {
           const meta = polarityMeta[polarity]
@@ -97,17 +116,10 @@ export default function ChooseIndicatorTypePage() {
           )
         })}
 
-        <div className="indicator-why">
-          <IonIcon
-            icon={informationCircleOutline}
-            color="primary"
-          />
-          <div>
-            <strong>You can always edit this later</strong>
-            <p>Indicators can be updated or moved between desired and undesired.</p>
-          </div>
-        </div>
+        {HELP_TEXT}
       </IonContent>
     </IonPage>
   )
 }
+
+export default ChooseIndicatorTypePage

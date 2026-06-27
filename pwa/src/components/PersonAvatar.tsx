@@ -30,10 +30,10 @@ export function PersonAvatar({
   slot,
   className,
 }: {
-  name: string
-  src?: string | null
-  slot?: string
-  className?: string
+  readonly name: string
+  readonly src?: string | null
+  readonly slot?: string
+  readonly className?: string
 }) {
   const fallback = fallbackUrl(name)
   const [imgSrc, setImgSrc] = useState(src || fallback)

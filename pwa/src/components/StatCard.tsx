@@ -14,9 +14,9 @@ export function StatCard({
   value,
   note,
 }: {
-  title: string
-  value: string | number
-  note?: string
+  readonly title: string
+  readonly value: string | number
+  readonly note?: string
 }) {
   return (
     <IonCard className="stat-card">

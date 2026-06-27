@@ -54,8 +54,6 @@ const roleLabels: Record<PersonRole, string> = {
   other: 'Other',
 }
 
-const MAX_VISIBLE_INDICATORS = 4
-
 function latestCheckIn(checkIns: CheckIn[]): CheckIn | undefined {
   return [...checkIns].sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))[0]
 }
@@ -161,21 +159,11 @@ export default function PersonPage() {
   const checkIns = (person?.checkIns ?? []) as CheckIn[]
 
   /** Collect YYYY-MM-DD strings for this person's check-ins (for calendar dots). */
-  const eventDates = useMemo(() => {
-    const dates = new Set<string>()
-    for (const ci of checkIns) {
-      const d = new Date(ci.occurredAt)
-      dates.add(toISODate(d))
-    }
-    return dates
-  }, [checkIns])
-  const activeIndicators = indicators.filter((indicator) => indicator.active !== false)
-
-  const distressIndicators = activeIndicators.filter(
-    (indicator) => indicator.polarity === 'undesired',
+  const eventDates = useMemo(
+    () => new Set<string>(checkIns.map((ci) => toISODate(new Date(ci.occurredAt)))),
+    [checkIns],
   )
-
-  const visibleDistress = distressIndicators.slice(0, MAX_VISIBLE_INDICATORS)
+  const activeIndicators = indicators.filter((indicator) => indicator.active !== false)
 
   const recentCheckIn = latestCheckIn(checkIns)
   const selectedCheckIn = checkIns.find((ci) => isSameDay(ci.occurredAt, viewDate))

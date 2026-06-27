@@ -47,10 +47,27 @@ function formatMonthLabel(monthKey: string): string {
   return date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
 }
 
-/* ------------------------------------------------------------------ */
-/*  Component                                                          */
-/* ------------------------------------------------------------------ */
+const LOADING_STATE = (
+  <div className="insights-loading">
+    <IonSpinner />
+  </div>
+)
 
+const EMPTY_STATE = (
+  <div className="insights-empty">
+    <p>No check-in data yet.</p>
+    <p className="insights-empty__hint">
+      Daily check-ins will appear here as a bar chart once recorded.
+    </p>
+  </div>
+)
+
+/**
+ * Renders insights for selected people in a format that lends itself to pattern
+ *  recognition.
+ * @returns {React.JSX.Element}
+ * @constructor
+ */
 export default function InsightsPage() {
   const people = usePeople()
   const { selectedPeople, togglePerson, clearSelection } = usePersonFilter()
@@ -126,22 +143,16 @@ export default function InsightsPage() {
   }, [dayBuckets])
 
   /* Find the max total (good + bad) across all days to scale bars */
-  const maxTotal = useMemo(() => {
-    let max = 0
-    for (const { good, bad } of dayBuckets.values()) {
-      max = Math.max(max, good + bad)
-    }
-    return max || 1
-  }, [dayBuckets])
+  const maxTotal = useMemo(
+    () =>
+      Math.max(...Array.from(dayBuckets.values()).map(({ good, bad }) => good + bad)) ||
+      1,
+    [dayBuckets],
+  )
 
   return (
     <Page title="Insights">
-      {people.isLoading && (
-        <div className="insights-loading">
-          <IonSpinner />
-        </div>
-      )}
-
+      {people.isLoading && LOADING_STATE}
       {people.error && <p>Failed to load data.</p>}
 
       {!people.isLoading && !people.error && (
@@ -155,48 +166,38 @@ export default function InsightsPage() {
           />
 
           {monthGroups.length === 0 ? (
-            <div className="insights-empty">
-              <p>No check-in data yet.</p>
-              <p className="insights-empty__hint">
-                Daily check-ins will appear here as a bar chart once recorded.
-              </p>
-            </div>
+            EMPTY_STATE
           ) : (
             <div className="insights-months">
               {monthGroups.map((month) => (
                 <div key={month.label}>
                   <h3 className="insights-month__heading">{month.label}</h3>
 
-                  {month.days.map((day) => {
-                    const goodPct = (day.good / maxTotal) * 100
-                    const badPct = (day.bad / maxTotal) * 100
+                  {month.days.map((day) => (
+                    <div
+                      key={day.dateKey}
+                      className="insights-day"
+                    >
+                      <span className="insights-day__label">{day.day}</span>
 
-                    return (
-                      <div
-                        key={day.dateKey}
-                        className="insights-day"
-                      >
-                        <span className="insights-day__label">{day.day}</span>
-
-                        <div className="insights-day__bar-track">
-                          {day.bad > 0 && (
-                            <div
-                              className="insights-day__bar--bad"
-                              style={{ width: `${badPct}%` }}
-                              title={`${day.bad} bad`}
-                            />
-                          )}
-                          {day.good > 0 && (
-                            <div
-                              className="insights-day__bar--good"
-                              style={{ width: `${goodPct}%` }}
-                              title={`${day.good} good`}
-                            />
-                          )}
-                        </div>
+                      <div className="insights-day__bar-track">
+                        {(['bad', 'good'] as const).map((k) => {
+                          const val = day[k]
+                          console.log('maxTotal', maxTotal)
+                          return (
+                            val > 0 && (
+                              <div
+                                key={k}
+                                className={`insights-day__bar--${k}`}
+                                style={{ width: `${(val / maxTotal) * 100}%` }}
+                                title={`${val} bad`}
+                              />
+                            )
+                          )
+                        })}
                       </div>
-                    )
-                  })}
+                    </div>
+                  ))}
                 </div>
               ))}
             </div>

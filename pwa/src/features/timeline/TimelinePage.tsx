@@ -75,6 +75,12 @@ const EMPTY_TIMELINE_STATE = (
   </div>
 )
 
+const LOADING_STATE = (
+  <div className="timeline-loading">
+    <IonSpinner />
+  </div>
+)
+
 const renderEventButton = (event: TimelineEvent) => {
   const history = useHistory()
   return (
@@ -116,6 +122,24 @@ const renderEventButton = (event: TimelineEvent) => {
   )
 }
 
+const checkInToEvent = (person, ci): TimelineEvent => {
+  const score = computeScore(person.indicators ?? [], ci)
+  const status = statusFromScore(score)
+
+  return {
+    id: ci.id,
+    personId: person.id,
+    personName: person.displayName,
+    personAvatar: person.avatarUrl,
+    personRole: person.role,
+    occurredAt: ci.occurredAt,
+    timestamp: ci.updatedAt ?? ci.createdAt ?? ci.occurredAt,
+    type: 'check-in',
+    statusLabel: status.label,
+    statusColor: status.color,
+  }
+}
+
 /**
  * Depicts check-ins as a timeseries bar chart to help users visualize distress over
  * time.
@@ -134,23 +158,7 @@ export default function TimelinePage() {
 
   const allEvents: TimelineEvent[] = useMemo(() => {
     const events: TimelineEvent[] = activePeople.flatMap((person) =>
-      (person.checkIns ?? []).map((ci) => {
-        const score = computeScore(person.indicators ?? [], ci)
-        const status = statusFromScore(score)
-
-        return {
-          id: ci.id,
-          personId: person.id,
-          personName: person.displayName,
-          personAvatar: person.avatarUrl,
-          personRole: person.role,
-          occurredAt: ci.occurredAt,
-          timestamp: ci.updatedAt ?? ci.createdAt ?? ci.occurredAt,
-          type: 'check-in',
-          statusLabel: status.label,
-          statusColor: status.color,
-        }
-      }),
+      (person.checkIns ?? []).map((ci) => checkInToEvent(person, ci)),
     )
 
     events.sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))
@@ -178,14 +186,8 @@ export default function TimelinePage() {
 
   return (
     <Page title="Timeline">
-      {people.isLoading && (
-        <div className="timeline-loading">
-          <IonSpinner />
-        </div>
-      )}
-
+      {people.isLoading && LOADING_STATE}
       {people.error && <p>Failed to load timeline.</p>}
-
       {!people.isLoading && !people.error && (
         <>
           {/* Person filter chips */}

@@ -62,10 +62,10 @@ function WizardStep({
   onDone,
   onSkip,
 }: {
-  personId: string
-  selectedDate: Date
-  onDone: () => void
-  onSkip: () => void
+  readonly personId: string
+  readonly selectedDate: Date
+  readonly onDone: () => void
+  readonly onSkip: () => void
 }) {
   const router = useIonRouter()
   const { data: person, isLoading } = usePerson(personId)
@@ -244,6 +244,11 @@ function WizardStep({
   )
 }
 
+/**
+ * Allows users to create a check-in for a person.
+ * @returns {React.JSX.Element}
+ * @constructor
+ */
 export function CheckInWizardPage() {
   const router = useIonRouter()
   const { selectedDate } = useSelectedDate()

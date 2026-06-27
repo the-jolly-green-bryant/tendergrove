@@ -67,6 +67,14 @@ interface DateNavigatorProps {
   eventDates?: Set<string>
 }
 
+/**
+ * Provides access to a reusable calendar navigation widget.
+ * @param {DateNavigatorProps} param0
+ * @param {Date} param0.date
+ * @param {(date: Date) => void} param0.onChange
+ * @param {Set<string> | undefined} param0.eventDates
+ * @returns {{headerElement: React.JSX.Element, calendarElement: React.JSX.Element | null}}
+ */
 export function useDateNavigator({ date, onChange, eventDates }: DateNavigatorProps) {
   const [calendarOpen, setCalendarOpen] = useState(false)
   const today = new Date()
@@ -80,9 +88,7 @@ export function useDateNavigator({ date, onChange, eventDates }: DateNavigatorPr
   const touchStartY = useRef<number | null>(null)
   const swiped = useRef(false)
 
-  const goBack = useCallback(() => {
-    onChange(addDays(date, -1))
-  }, [date, onChange])
+  const goBack = useCallback(() => onChange(addDays(date, -1)), [date, onChange])
 
   const goForward = useCallback(() => {
     if (isSameLocalDay(date, today)) {
@@ -162,6 +168,7 @@ export function useDateNavigator({ date, onChange, eventDates }: DateNavigatorPr
     ) {
       return
     }
+
     setViewMonth(nextM)
     setViewYear(nextY)
   }, [viewMonth, viewYear, today])

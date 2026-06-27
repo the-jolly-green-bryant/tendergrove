@@ -21,6 +21,17 @@ interface PersonFilterChipsProps {
   readonly className?: string
 }
 
+/**
+ * Allows users to filter a view of people.
+ * @param {PersonFilterChipsProps} param0
+ * @param {FilterablePerson[]} param0.people
+ * @param {Set<string>} param0.selectedPeople
+ * @param {(personId: string) => void} param0.onToggle
+ * @param {() => void} param0.onClear
+ * @param {string | undefined} param0.className
+ * @returns {React.JSX.Element}
+ * @constructor
+ */
 export function PersonFilterChips({
   people,
   selectedPeople,

@@ -7,7 +7,11 @@ export function Greeting() {
   const people = usePeople()
 
   const hour = new Date().getHours()
-  const period = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening'
+  const period = (() => {
+    if (hour < 12) return 'morning'
+    if (hour < 18) return 'afternoon'
+    return 'evening'
+  })()
 
   const selfPerson = people.data?.find((p) => p.role === 'self')
   const name = selfPerson ? `, ${selfPerson.displayName}` : ''

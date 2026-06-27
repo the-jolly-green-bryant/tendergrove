@@ -25,79 +25,95 @@ import { ReactNode } from 'react'
 import { useAppAuth } from '../auth/AuthContext'
 
 interface PageProps {
-  title: string
-  children: ReactNode
+  readonly title: string
+  readonly children: ReactNode
   /** Optional content rendered inside the toolbar next to the hamburger menu. */
-  headerContent?: ReactNode
+  readonly headerContent?: ReactNode
   /** Optional content rendered below the toolbar (e.g. calendar dropdown). */
-  subHeaderContent?: ReactNode
+  readonly subHeaderContent?: ReactNode
 }
 
-export function Page({ title, children, headerContent, subHeaderContent }: PageProps) {
+const renderMenu = () => {
   const { signOut } = useAppAuth()
   return (
-    <>
-      <IonMenu contentId="main-content">
-        <IonContent>
-          <div className="menu-logo-area">
-            <h2 className="menu-logo-text">Tendergrove</h2>
-          </div>
+    <IonMenu contentId="main-content">
+      <IonContent>
+        <div className="menu-logo-area">
+          <h2 className="menu-logo-text">Tendergrove</h2>
+        </div>
 
-          <IonList lines="none">
-            <IonMenuToggle autoHide={false}>
-              <IonItem
-                button
-                routerLink="/dashboard"
-                routerDirection="root"
-              >
-                <IonIcon
-                  slot="start"
-                  icon={homeOutline}
-                />
-                <IonLabel>Household</IonLabel>
-              </IonItem>
-            </IonMenuToggle>
-            <IonMenuToggle autoHide={false}>
-              <IonItem
-                button
-                routerLink="/archived"
-                routerDirection="forward"
-              >
-                <IonIcon
-                  slot="start"
-                  icon={archiveOutline}
-                />
-                <IonLabel>Archived</IonLabel>
-              </IonItem>
-            </IonMenuToggle>
-            <IonMenuToggle autoHide={false}>
-              <IonItem
-                button
-                routerLink="/parent-care"
-                routerDirection="forward"
-              >
-                <IonIcon
-                  slot="start"
-                  icon={settingsOutline}
-                />
-                <IonLabel>Settings</IonLabel>
-              </IonItem>
-            </IonMenuToggle>
-            <IonMenuToggle autoHide={false}>
-              <IonItem
-                button
-                onClick={() => signOut?.()}
-              >
-                <IonIcon
-                  slot="start"
-                  icon={logOutOutline}
-                />
-                <IonLabel>Sign Out</IonLabel>
-              </IonItem>
-            </IonMenuToggle>
-          </IonList>
-        </IonContent>
-      </IonMenu>
+        <IonList lines="none">
+          <IonMenuToggle autoHide={false}>
+            <IonItem
+              button
+              routerLink="/dashboard"
+              routerDirection="root"
+            >
+              <IonIcon
+                slot="start"
+                icon={homeOutline}
+              />
+              <IonLabel>Household</IonLabel>
+            </IonItem>
+          </IonMenuToggle>
+          <IonMenuToggle autoHide={false}>
+            <IonItem
+              button
+              routerLink="/archived"
+              routerDirection="forward"
+            >
+              <IonIcon
+                slot="start"
+                icon={archiveOutline}
+              />
+              <IonLabel>Archived</IonLabel>
+            </IonItem>
+          </IonMenuToggle>
+          <IonMenuToggle autoHide={false}>
+            <IonItem
+              button
+              routerLink="/parent-care"
+              routerDirection="forward"
+            >
+              <IonIcon
+                slot="start"
+                icon={settingsOutline}
+              />
+              <IonLabel>Settings</IonLabel>
+            </IonItem>
+          </IonMenuToggle>
+          <IonMenuToggle autoHide={false}>
+            <IonItem
+              button
+              onClick={() => signOut?.()}
+            >
+              <IonIcon
+                slot="start"
+                icon={logOutOutline}
+              />
+              <IonLabel>Sign Out</IonLabel>
+            </IonItem>
+          </IonMenuToggle>
+        </IonList>
+      </IonContent>
+    </IonMenu>
+  )
+}
+
+/**
+ * A wrapper for a page with a toolbar and content.
+ * @param {PageProps} param0
+ * @param {string} param0.title
+ * @param {React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | string | number | bigint | Iterable<React.ReactNode> | React.ReactPortal | boolean | Promise<AwaitedReactNode> | null | undefined} param0.children
+ * @param {React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | string | number | bigint | Iterable<React.ReactNode> | React.ReactPortal | boolean | Promise<AwaitedReactNode> | null | undefined} param0.headerContent
+ * @param {React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | string | number | bigint | Iterable<React.ReactNode> | React.ReactPortal | boolean | Promise<AwaitedReactNode> | null | undefined} param0.subHeaderContent
+ * @returns {React.JSX.Element}
+ * @constructor
+ */
+export function Page({ title, children, headerContent, subHeaderContent }: PageProps) {
+  return (
+    <>
+      {renderMenu()}
 
       <IonPage id="main-content">
         <IonHeader translucent>

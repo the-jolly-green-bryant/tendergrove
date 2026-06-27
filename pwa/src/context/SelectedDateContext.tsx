@@ -10,7 +10,7 @@ const SelectedDateContext = createContext<SelectedDateContextValue | null>(null)
 /**
  *
  */
-export function SelectedDateProvider({ children }: { children: ReactNode }) {
+export function SelectedDateProvider({ children }: { readonly children: ReactNode }) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
 
   return (
