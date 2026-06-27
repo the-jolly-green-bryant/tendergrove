@@ -22,7 +22,6 @@ import ReportsPage from '../features/reports/ReportsPage'
 import InsightsPage from '../features/insights/InsightsPage'
 import PersonFormPage from '../features/people/PersonFormPage'
 import PersonPage from '../features/people/PersonPage'
-import PersonCheckInPage from '../features/people/checkin/PersonCheckInPage'
 import ManageIndicatorsPage from '../features/people/indicators/ManageIndicatorsPage'
 import IndicatorChecklistPage from '../features/people/indicators/IndicatorChecklistPage'
 import ChooseIndicatorTypePage from '../features/people/indicators/ChooseIndicatorTypePage'
@@ -56,7 +55,7 @@ const renderRoutes = () => (
     <Route
       exact
       path="/person/:personId/check-in"
-      component={PersonCheckInPage}
+      component={CheckInWizardPage}
     />
 
     <Route

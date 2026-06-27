@@ -15,6 +15,7 @@ import {
 } from '@ionic/react'
 import { arrowBackOutline, checkmarkCircle, removeCircle } from 'ionicons/icons'
 import { useEffect, useMemo, useState } from 'react'
+import { useParams } from 'react-router-dom'
 
 import { LoadingState } from '../../components/LoadingState'
 import { PersonAvatar } from '../../components/PersonAvatar'
@@ -104,9 +105,7 @@ function WizardStep({
     setPrefilled(true)
   }, [existing, prefilled])
 
-  function toggle(id: string) {
-    setChecked((prev) => ({ ...prev, [id]: !prev[id] }))
-  }
+  const toggle = (id: string) => setChecked((prev) => ({ ...prev, [id]: !prev[id] }))
 
   async function save() {
     if (saving) return
@@ -246,21 +245,37 @@ function WizardStep({
  */
 export function CheckInWizardPage() {
   const router = useIonRouter()
+  const { personId } = useParams<{ personId: string }>()
   const { selectedDate } = useSelectedDate()
   const people = usePeople()
 
-  const activePeople = useMemo(
-    () => (people.data ?? []).filter((p) => !p.archived),
-    [people.data],
-  )
+  const activePeople = useMemo(() => {
+    const list = (people.data ?? []).filter((p) => !p.archived)
+    if (personId) {
+      return list.filter((p) => p.id === personId)
+    }
+    return list
+  }, [people.data, personId])
 
   const [currentIndex, setCurrentIndex] = useState(0)
 
   function advance() {
     const next = currentIndex + 1
-    return next >= activePeople.length
-      ? router.push('/dashboard', 'back', 'pop')
-      : setCurrentIndex(next)
+    if (next >= activePeople.length) {
+      if (personId) {
+        return router.push(`/person/${personId}`, 'back', 'pop')
+      }
+      return router.push('/dashboard', 'back', 'pop')
+    }
+    setCurrentIndex(next)
+  }
+
+  function goBack() {
+    if (personId) {
+      router.push(`/person/${personId}`, 'back', 'pop')
+    } else {
+      router.push('/dashboard', 'back', 'pop')
+    }
   }
 
   const currentPerson = activePeople[currentIndex]
@@ -273,7 +288,7 @@ export function CheckInWizardPage() {
           <IonButtons slot="start">
             <IonButton
               fill="clear"
-              onClick={() => router.push('/dashboard', 'back', 'pop')}
+              onClick={goBack}
               aria-label="Go back"
             >
               <IonIcon
