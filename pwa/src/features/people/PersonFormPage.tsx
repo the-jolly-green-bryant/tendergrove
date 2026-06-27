@@ -77,8 +77,39 @@ const roleOptions: Array<{
   },
 ]
 
+const renderHeader = (fnBack: () => void, fnClose: () => void) => (
+  <IonHeader translucent>
+    <IonToolbar>
+      <IonButtons slot="start">
+        <IonButton
+          fill="clear"
+          onClick={fnBack}
+        >
+          <IonIcon icon={arrowBackOutline} />
+        </IonButton>
+      </IonButtons>
+
+      <IonTitle />
+
+      <IonButtons
+        slot="end"
+        className="person-photo-upload"
+      >
+        <IonButton
+          fill="clear"
+          onClick={fnClose}
+        >
+          <IonIcon icon={closeOutline} />
+        </IonButton>
+      </IonButtons>
+    </IonToolbar>
+  </IonHeader>
+)
+
 /**
- *
+ * Allows us to create or edit a person.
+ * @returns {React.JSX.Element}
+ * @constructor
  */
 export default function PersonFormPage() {
   const router = useIonRouter()
@@ -107,8 +138,8 @@ export default function PersonFormPage() {
   }, [existingPerson])
 
   const goBack = () => (step === 2 && !isEditing ? setStep(1) : router.goBack())
-
   const close = () => router.push('/people', 'back', 'replace')
+
   const choosePhoto = () => photoInputRef.current?.click()
 
   const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -167,32 +198,7 @@ export default function PersonFormPage() {
 
   return (
     <IonPage>
-      <IonHeader translucent>
-        <IonToolbar>
-          <IonButtons slot="start">
-            <IonButton
-              fill="clear"
-              onClick={goBack}
-            >
-              <IonIcon icon={arrowBackOutline} />
-            </IonButton>
-          </IonButtons>
-
-          <IonTitle />
-
-          <IonButtons
-            slot="end"
-            className="person-photo-upload"
-          >
-            <IonButton
-              fill="clear"
-              onClick={close}
-            >
-              <IonIcon icon={closeOutline} />
-            </IonButton>
-          </IonButtons>
-        </IonToolbar>
-      </IonHeader>
+      {renderHeader(goBack, close)}
 
       <IonContent fullscreen>
         {step === 1 ? (

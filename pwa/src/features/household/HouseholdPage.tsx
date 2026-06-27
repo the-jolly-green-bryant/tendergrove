@@ -24,6 +24,18 @@ function isSameDay(occurredAt: string, date: Date): boolean {
   )
 }
 
+const renderRadar = (people) =>
+  people.length > 0 && (
+    <HouseholdRadar
+      people={people.map((person) => ({
+        id: person.id,
+        displayName: person.displayName,
+        avatarUrl: person.avatarUrl,
+        status: derivePersonStatus(person.indicators ?? [], person.checkIns ?? []),
+      }))}
+    />
+  )
+
 /**
  * Depicts an overview of the status of all household members. Also indicates to users
  *  if a check-in is required for certain household members.
@@ -74,20 +86,10 @@ export default function HouseholdPage() {
       <Greeting />
 
       {people.isLoading && <LoadingState />}
-
       {people.error && <p>Failed to load people.</p>}
 
       {/* Household Radar */}
-      {activePeople.length > 0 && (
-        <HouseholdRadar
-          people={activePeople.map((person) => ({
-            id: person.id,
-            displayName: person.displayName,
-            avatarUrl: person.avatarUrl,
-            status: derivePersonStatus(person.indicators ?? [], person.checkIns ?? []),
-          }))}
-        />
-      )}
+      {renderRadar(activePeople)}
 
       <div className="household-list">
         {activePeople.map((person) => {

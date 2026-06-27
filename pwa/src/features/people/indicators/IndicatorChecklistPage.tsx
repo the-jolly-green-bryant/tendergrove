@@ -59,25 +59,25 @@ export default function IndicatorChecklistPage() {
   const [showCustomInput, setShowCustomInput] = useState(false)
   const [saving, setSaving] = useState(false)
 
-  useEffect(() => {
-    if (!template) return
+  useEffect(
+    () =>
+      template &&
+      setItems(
+        template.indicators.map((indicator, index) => ({
+          ...indicator,
+          id: `template-${index}`,
+          selected: indicator.defaultSelected,
+        })),
+      ),
+    [template],
+  )
 
-    setItems(
-      template.indicators.map((indicator, index) => ({
-        ...indicator,
-        id: `template-${index}`,
-        selected: indicator.defaultSelected,
-      })),
-    )
-  }, [template])
-
-  function toggleItem(id: string) {
+  const toggleItem = (id: string) =>
     setItems((prev) =>
       prev.map((item) =>
         item.id === id ? { ...item, selected: !item.selected } : item,
       ),
     )
-  }
 
   function addCustomIndicator() {
     const trimmed = customName.trim()

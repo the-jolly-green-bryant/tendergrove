@@ -9,6 +9,7 @@ import {
   IonList,
   IonNote,
   IonPage,
+  IonTextarea,
   IonTitle,
   IonToolbar,
   useIonRouter,
