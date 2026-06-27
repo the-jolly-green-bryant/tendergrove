@@ -19,7 +19,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useLocation } from 'react-router-dom'
 
 import { LoadingState } from '../../../components/LoadingState'
-import { useIndicatorMutations, type IndicatorInput } from './useIndicatorMutations'
+import { useIndicatorMutations } from './useIndicatorMutations'
 import { useRoleTemplate } from './useRoleTemplates'
 import { polarityMeta, type Polarity } from './indicatorMeta'
 import type { PersonRole } from '../../../lib/domain'
@@ -35,6 +35,11 @@ let nextCustomId = 0
 
 const LOADING_STATE = <LoadingState className="ion-text-center ion-padding" />
 
+/**
+ * Allows users to create a list of indicators to watch for.
+ * @returns {React.JSX.Element}
+ * @constructor
+ */
 export default function IndicatorChecklistPage() {
   const router = useIonRouter()
   const { personId } = useParams<{ personId: string }>()

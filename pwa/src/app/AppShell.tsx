@@ -30,137 +30,141 @@ import IndicatorFormPage from '../features/people/indicators/IndicatorFormPage'
 import ArchivedPeoplePage from '../features/people/ArchivedPeoplePage'
 import { CheckInWizardPage } from '../features/checkins/CheckInWizardPage'
 
-/**
- *
- */
+const renderRoutes = () => (
+  <IonRouterOutlet>
+    <Route
+      exact
+      path="/dashboard"
+      component={HouseholdPage}
+    />
+    <Route
+      exact
+      path="/people/new"
+      component={PersonFormPage}
+    />
+    <Route
+      exact
+      path="/person/:personId"
+      component={PersonPage}
+    />
+    <Route
+      exact
+      path="/person/:personId/edit"
+      component={PersonFormPage}
+    />
+
+    <Route
+      exact
+      path="/person/:personId/check-in"
+      component={PersonCheckInPage}
+    />
+
+    <Route
+      exact
+      path="/person/:personId/indicators"
+      component={ManageIndicatorsPage}
+    />
+
+    <Route
+      exact
+      path="/person/:personId/indicators/checklist"
+      component={IndicatorChecklistPage}
+    />
+
+    <Route
+      exact
+      path="/person/:personId/indicators/new"
+      component={ChooseIndicatorTypePage}
+    />
+
+    <Route
+      exact
+      path="/person/:personId/indicators/new/:polarity"
+      component={IndicatorFormPage}
+    />
+
+    <Route
+      exact
+      path="/person/:personId/indicators/:indicatorId/edit"
+      component={IndicatorFormPage}
+    />
+
+    <Route
+      exact
+      path="/archived"
+      component={ArchivedPeoplePage}
+    />
+    <Route
+      exact
+      path="/check-in"
+      component={TimelinePage}
+    />
+    <Route
+      exact
+      path="/check-in/wizard"
+      component={CheckInWizardPage}
+    />
+    <Route
+      exact
+      path="/reports"
+      component={InsightsPage}
+    />
+    <Route
+      exact
+      path="/reports/export"
+      component={ReportsPage}
+    />
+    <Route
+      exact
+      path="/"
+    >
+      <Redirect to="/dashboard" />
+    </Route>
+  </IonRouterOutlet>
+)
+
+const renderTabBar = () => (
+  <IonTabBar slot="bottom">
+    <IonTabButton
+      tab="dashboard"
+      href="/dashboard"
+    >
+      <IonIcon icon={homeOutline} />
+      <IonLabel>Household</IonLabel>
+    </IonTabButton>
+
+    <IonTabButton
+      tab="checkin"
+      href="/check-in"
+    >
+      <IonIcon icon={timeOutline} />
+      <IonLabel>Timeline</IonLabel>
+    </IonTabButton>
+
+    <IonTabButton
+      tab="reports"
+      href="/reports"
+    >
+      <IonIcon icon={statsChartOutline} />
+      <IonLabel>Insights</IonLabel>
+    </IonTabButton>
+
+    <IonTabButton
+      tab="add"
+      href="/check-in/wizard"
+      className="tab-bar__fab"
+    >
+      <IonIcon icon={clipboardOutline} />
+    </IonTabButton>
+  </IonTabBar>
+)
+
 export default function AppShell() {
   return (
     <IonReactRouter>
       <IonTabs>
-        <IonRouterOutlet>
-          <Route
-            exact
-            path="/dashboard"
-            component={HouseholdPage}
-          />
-          <Route
-            exact
-            path="/people/new"
-            component={PersonFormPage}
-          />
-          <Route
-            exact
-            path="/person/:personId"
-            component={PersonPage}
-          />
-          <Route
-            exact
-            path="/person/:personId/edit"
-            component={PersonFormPage}
-          />
-
-          <Route
-            exact
-            path="/person/:personId/check-in"
-            component={PersonCheckInPage}
-          />
-
-          <Route
-            exact
-            path="/person/:personId/indicators"
-            component={ManageIndicatorsPage}
-          />
-
-          <Route
-            exact
-            path="/person/:personId/indicators/checklist"
-            component={IndicatorChecklistPage}
-          />
-
-          <Route
-            exact
-            path="/person/:personId/indicators/new"
-            component={ChooseIndicatorTypePage}
-          />
-
-          <Route
-            exact
-            path="/person/:personId/indicators/new/:polarity"
-            component={IndicatorFormPage}
-          />
-
-          <Route
-            exact
-            path="/person/:personId/indicators/:indicatorId/edit"
-            component={IndicatorFormPage}
-          />
-
-          <Route
-            exact
-            path="/archived"
-            component={ArchivedPeoplePage}
-          />
-          <Route
-            exact
-            path="/check-in"
-            component={TimelinePage}
-          />
-          <Route
-            exact
-            path="/check-in/wizard"
-            component={CheckInWizardPage}
-          />
-          <Route
-            exact
-            path="/reports"
-            component={InsightsPage}
-          />
-          <Route
-            exact
-            path="/reports/export"
-            component={ReportsPage}
-          />
-          <Route
-            exact
-            path="/"
-          >
-            <Redirect to="/dashboard" />
-          </Route>
-        </IonRouterOutlet>
-
-        <IonTabBar slot="bottom">
-          <IonTabButton
-            tab="dashboard"
-            href="/dashboard"
-          >
-            <IonIcon icon={homeOutline} />
-            <IonLabel>Household</IonLabel>
-          </IonTabButton>
-
-          <IonTabButton
-            tab="checkin"
-            href="/check-in"
-          >
-            <IonIcon icon={timeOutline} />
-            <IonLabel>Timeline</IonLabel>
-          </IonTabButton>
-
-          <IonTabButton
-            tab="reports"
-            href="/reports"
-          >
-            <IonIcon icon={statsChartOutline} />
-            <IonLabel>Insights</IonLabel>
-          </IonTabButton>
-
-          <IonTabButton
-            tab="add"
-            href="/check-in/wizard"
-            className="tab-bar__fab"
-          >
-            <IonIcon icon={clipboardOutline} />
-          </IonTabButton>
-        </IonTabBar>
+        {renderRoutes()}
+        {renderTabBar()}
       </IonTabs>
     </IonReactRouter>
   )

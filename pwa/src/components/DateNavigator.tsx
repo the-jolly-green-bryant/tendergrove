@@ -67,6 +67,8 @@ interface DateNavigatorProps {
   eventDates?: Set<string>
 }
 
+const isYesterday = (date: Date) => isSameLocalDay(date, addDays(new Date(), -1))
+
 /**
  * Provides access to a reusable calendar navigation widget.
  * @param {DateNavigatorProps} param0
@@ -142,10 +144,9 @@ export function useDateNavigator({ date, onChange, eventDates }: DateNavigatorPr
   }, [calendarOpen, date])
 
   const goToToday = useCallback(() => {
-    const t = new Date()
-    onChange(t)
-    setViewYear(t.getFullYear())
-    setViewMonth(t.getMonth())
+    onChange(today)
+    setViewYear(today.getFullYear())
+    setViewMonth(today.getMonth())
   }, [onChange])
 
   const prevMonth = useCallback(() => {
@@ -188,16 +189,15 @@ export function useDateNavigator({ date, onChange, eventDates }: DateNavigatorPr
 
   // Header label: show "Today", "Yesterday", or formatted date
   const isToday = isSameLocalDay(date, today)
-  const isYesterday = isSameLocalDay(date, addDays(today, -1))
-  const headerLabel = isToday
-    ? 'Today'
-    : isYesterday
-      ? 'Yesterday'
-      : date.toLocaleDateString(undefined, {
-          weekday: 'short',
-          month: 'short',
-          day: 'numeric',
-        })
+  const headerLabel = (() => {
+    if (isToday) return 'Today'
+    if (isYesterday(date)) return 'Yesterday'
+    return date.toLocaleDateString(undefined, {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+    })
+  })()
 
   const handleDayClick = useCallback(
     (day: Date) => {

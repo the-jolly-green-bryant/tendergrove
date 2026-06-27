@@ -159,8 +159,6 @@ export const HouseholdRadar = ({
             const cx = CENTER + dist * Math.cos(angle)
             const cy = CENTER + dist * Math.sin(angle)
             const imgSrc = person.avatarUrl || fallbackAvatarUrl(person.displayName)
-            const borderColor = levelColors[person.status.color]
-
             return (
               <g
                 key={person.id}
@@ -173,7 +171,7 @@ export const HouseholdRadar = ({
                   cx={0}
                   cy={0}
                   r={AVATAR_R}
-                  fill={borderColor}
+                  fill={levelColors[person.status.color]}
                 />
                 {/* Avatar image clipped to circle */}
                 <RadarAvatar

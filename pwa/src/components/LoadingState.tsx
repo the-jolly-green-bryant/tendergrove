@@ -18,10 +18,8 @@ interface LoadingStateProps {
 export const LoadingState: React.FC<LoadingStateProps> = ({
   className = 'person-page__center',
   name,
-}) => {
-  return (
-    <div className={className}>
-      <IonSpinner name={name} />
-    </div>
-  )
-}
+}) => (
+  <div className={className}>
+    <IonSpinner name={name} />
+  </div>
+)
