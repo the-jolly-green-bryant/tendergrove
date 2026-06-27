@@ -1,4 +1,5 @@
 import {
+  IonBackButton,
   IonButton,
   IonButtons,
   IonContent,
@@ -19,7 +20,6 @@ import {
 } from '@ionic/react'
 import {
   add,
-  arrowBackOutline,
   chevronForwardOutline,
   informationCircleOutline,
   trash,
@@ -45,11 +45,6 @@ export default function ManageIndicatorsPage() {
 
   const [filter, setFilter] = useState<Filter>('all')
 
-  const goBack = () =>
-    router.canGoBack()
-      ? router.goBack()
-      : router.push(`/person/${personId}`, 'back', 'pop')
-
   const addIndicator = (polarity: Polarity) =>
     router.push(`/person/${personId}/indicators/new/${polarity}`, 'forward')
 
@@ -64,16 +59,10 @@ export default function ManageIndicatorsPage() {
       <IonHeader translucent>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonButton
-              fill="clear"
-              onClick={goBack}
-              aria-label="Go back"
-            >
-              <IonIcon
-                slot="icon-only"
-                icon={arrowBackOutline}
-              />
-            </IonButton>
+            <IonBackButton
+              defaultHref={`/person/${personId}`}
+              text=""
+            />
           </IonButtons>
           <IonTitle>Manage Indicators</IonTitle>
         </IonToolbar>

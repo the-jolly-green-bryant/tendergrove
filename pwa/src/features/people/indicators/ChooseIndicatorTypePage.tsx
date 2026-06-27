@@ -1,4 +1,5 @@
 import {
+  IonBackButton,
   IonButton,
   IonButtons,
   IonCard,
@@ -9,13 +10,8 @@ import {
   IonPage,
   IonTitle,
   IonToolbar,
-  useIonRouter,
 } from '@ionic/react'
-import {
-  arrowBackOutline,
-  chevronForwardOutline,
-  informationCircleOutline,
-} from 'ionicons/icons'
+import { chevronForwardOutline, informationCircleOutline } from 'ionicons/icons'
 import { useParams } from 'react-router-dom'
 
 import { polarityMeta, type Polarity } from './indicatorMeta'
@@ -50,11 +46,6 @@ const ChooseIndicatorTypePage = () => {
   const router = useIonRouter()
   const { personId } = useParams<{ personId: string }>()
 
-  const goBack = () =>
-    router.canGoBack()
-      ? router.goBack()
-      : router.push(`/person/${personId}/indicators`, 'back', 'pop')
-
   function choose(polarity: Polarity) {
     router.push(`/person/${personId}/indicators/new/${polarity}`, 'forward')
   }
@@ -64,16 +55,10 @@ const ChooseIndicatorTypePage = () => {
       <IonHeader translucent>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonButton
-              fill="clear"
-              onClick={goBack}
-              aria-label="Go back"
-            >
-              <IonIcon
-                slot="icon-only"
-                icon={arrowBackOutline}
-              />
-            </IonButton>
+            <IonBackButton
+              defaultHref={`/person/${personId}/indicators`}
+              text=""
+            />
           </IonButtons>
           <IonTitle>Add Indicator</IonTitle>
         </IonToolbar>

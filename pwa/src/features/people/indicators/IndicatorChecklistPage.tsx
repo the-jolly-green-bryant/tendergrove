@@ -1,4 +1,5 @@
 import {
+  IonBackButton,
   IonButton,
   IonButtons,
   IonCheckbox,
@@ -14,7 +15,7 @@ import {
   IonToolbar,
   useIonRouter,
 } from '@ionic/react'
-import { addOutline, arrowBackOutline } from 'ionicons/icons'
+import { addOutline } from 'ionicons/icons'
 import { useEffect, useState } from 'react'
 import { useParams, useLocation } from 'react-router-dom'
 
@@ -131,16 +132,7 @@ export default function IndicatorChecklistPage() {
       <IonHeader translucent>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonButton
-              fill="clear"
-              onClick={() => router.goBack()}
-              aria-label="Go back"
-            >
-              <IonIcon
-                slot="icon-only"
-                icon={arrowBackOutline}
-              />
-            </IonButton>
+            <IonBackButton text="" />
           </IonButtons>
           <IonTitle>Configure Indicators</IonTitle>
         </IonToolbar>

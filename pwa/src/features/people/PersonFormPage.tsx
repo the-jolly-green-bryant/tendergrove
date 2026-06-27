@@ -1,4 +1,5 @@
 import {
+  IonBackButton,
   IonButton,
   IonButtons,
   IonContent,
@@ -77,16 +78,27 @@ const roleOptions: Array<{
   },
 ]
 
-const renderHeader = (fnBack: () => void, fnClose: () => void) => (
+const renderHeader = (fnBack: () => void, fnClose: () => void, isEditing: boolean) => (
   <IonHeader translucent>
     <IonToolbar>
       <IonButtons slot="start">
-        <IonButton
-          fill="clear"
-          onClick={fnBack}
-        >
-          <IonIcon icon={arrowBackOutline} />
-        </IonButton>
+        {isEditing ? (
+          <IonBackButton
+            defaultHref="/dashboard"
+            text=""
+          />
+        ) : (
+          <IonButton
+            fill="clear"
+            onClick={fnBack}
+            aria-label="Go back"
+          >
+            <IonIcon
+              slot="icon-only"
+              icon={arrowBackOutline}
+            />
+          </IonButton>
+        )}
       </IonButtons>
 
       <IonTitle />
@@ -198,7 +210,7 @@ export default function PersonFormPage() {
 
   return (
     <IonPage>
-      {renderHeader(goBack, close)}
+      {renderHeader(goBack, close, isEditing)}
 
       <IonContent fullscreen>
         {step === 1 ? (

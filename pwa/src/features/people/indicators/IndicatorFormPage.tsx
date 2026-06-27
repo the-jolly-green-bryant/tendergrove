@@ -1,4 +1,5 @@
 import {
+  IonBackButton,
   IonButton,
   IonButtons,
   IonContent,
@@ -12,7 +13,7 @@ import {
   IonPage,
   useIonRouter,
 } from '@ionic/react'
-import { arrowBackOutline, trashOutline } from 'ionicons/icons'
+import { trashOutline } from 'ionicons/icons'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
@@ -71,14 +72,6 @@ export default function IndicatorFormPage() {
     setNotes(existing.notes ?? '')
   }, [existing])
 
-  function goBack() {
-    if (router.canGoBack()) {
-      router.goBack()
-      return
-    }
-    router.push(`/person/${personId}/indicators`, 'back', 'pop')
-  }
-
   async function save() {
     const trimmedName = name.trim()
     if (!trimmedName || saving) {
@@ -122,16 +115,10 @@ export default function IndicatorFormPage() {
       <IonHeader translucent>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonButton
-              fill="clear"
-              onClick={goBack}
-              aria-label="Go back"
-            >
-              <IonIcon
-                slot="icon-only"
-                icon={arrowBackOutline}
-              />
-            </IonButton>
+            <IonBackButton
+              defaultHref={`/person/${personId}/indicators`}
+              text=""
+            />
           </IonButtons>
           <IonTitle>
             {isEditing ? 'Edit' : 'Add'} {meta.title} Indicator

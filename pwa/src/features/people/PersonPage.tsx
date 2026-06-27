@@ -1,4 +1,5 @@
 import {
+  IonBackButton,
   IonButton,
   IonButtons,
   IonCard,
@@ -19,7 +20,6 @@ import {
 } from '@ionic/react'
 import {
   archiveOutline,
-  arrowBackOutline,
   checkmarkCircle,
   closeCircle,
   createOutline,
@@ -217,9 +217,6 @@ export default function PersonPage() {
     return null
   }
 
-  const goBack = () =>
-    router.canGoBack() ? router.goBack() : router.push('/dashboard', 'back', 'pop')
-
   const editPerson = () => router.push(`/person/${personId}/edit`, 'forward')
 
   const manageIndicators = () =>
@@ -304,16 +301,10 @@ export default function PersonPage() {
       <IonHeader translucent>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonButton
-              fill="clear"
-              onClick={goBack}
-              aria-label="Go back"
-            >
-              <IonIcon
-                slot="icon-only"
-                icon={arrowBackOutline}
-              />
-            </IonButton>
+            <IonBackButton
+              defaultHref="/dashboard"
+              text=""
+            />
           </IonButtons>
 
           {!isTimelineView ? (

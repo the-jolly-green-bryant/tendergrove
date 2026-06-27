@@ -1,4 +1,5 @@
 import {
+  IonBackButton,
   IonButton,
   IonButtons,
   IonCheckbox,
@@ -14,7 +15,7 @@ import {
   IonToolbar,
   useIonRouter,
 } from '@ionic/react'
-import { arrowBackOutline, checkmarkCircle, removeCircle } from 'ionicons/icons'
+import { checkmarkCircle, removeCircle } from 'ionicons/icons'
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
@@ -271,14 +272,6 @@ export function CheckInWizardPage() {
     setCurrentIndex(next)
   }
 
-  function goBack() {
-    if (personId) {
-      router.push(`/person/${personId}`, 'back', 'pop')
-    } else {
-      router.push('/dashboard', 'back', 'pop')
-    }
-  }
-
   const currentPerson = activePeople[currentIndex]
   const total = activePeople.length
 
@@ -287,16 +280,10 @@ export function CheckInWizardPage() {
       <IonHeader translucent>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonButton
-              fill="clear"
-              onClick={goBack}
-              aria-label="Go back"
-            >
-              <IonIcon
-                slot="icon-only"
-                icon={arrowBackOutline}
-              />
-            </IonButton>
+            <IonBackButton
+              defaultHref={personId ? `/person/${personId}` : '/dashboard'}
+              text=""
+            />
           </IonButtons>
           <IonTitle>
             {total > 0 ? `Check-In (${currentIndex + 1} of ${total})` : 'Check-In'}
