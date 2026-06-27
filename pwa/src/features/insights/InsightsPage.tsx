@@ -1,6 +1,6 @@
-import { IonSpinner } from '@ionic/react'
 import { useMemo } from 'react'
 
+import { LoadingState } from '../../components/LoadingState'
 import { Page } from '../../components/Page'
 import { PersonFilterChips, usePersonFilter } from '../../components/PersonFilterChips'
 import { usePeople } from '../people/usePeople'
@@ -47,11 +47,7 @@ function formatMonthLabel(monthKey: string): string {
   return date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
 }
 
-const LOADING_STATE = (
-  <div className="insights-loading">
-    <IonSpinner />
-  </div>
-)
+const LOADING_STATE = <LoadingState className="insights-loading" />
 
 const EMPTY_STATE = (
   <div className="insights-empty">

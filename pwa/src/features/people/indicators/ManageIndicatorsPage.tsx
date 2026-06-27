@@ -13,7 +13,6 @@ import {
   IonPage,
   IonSegment,
   IonSegmentButton,
-  IonSpinner,
   IonTitle,
   IonToolbar,
   useIonRouter,
@@ -28,6 +27,7 @@ import {
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 
+import { LoadingState } from '../../../components/LoadingState'
 import { useIndicators, type Indicator } from './useIndicators'
 import { useIndicatorMutations } from './useIndicatorMutations'
 import { polarityMeta, type Polarity } from './indicatorMeta'
@@ -104,7 +104,7 @@ export default function ManageIndicatorsPage() {
           (desired).
         </p>
 
-        {isLoading && <IonSpinner />}
+        {isLoading && <LoadingState />}
         {error && <p>Failed to load indicators.</p>}
 
         {(filter === 'all' || filter === 'undesired') && (

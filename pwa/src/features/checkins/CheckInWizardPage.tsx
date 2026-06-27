@@ -9,8 +9,6 @@ import {
   IonList,
   IonNote,
   IonPage,
-  IonSpinner,
-  IonTextarea,
   IonTitle,
   IonToolbar,
   useIonRouter,
@@ -18,6 +16,7 @@ import {
 import { arrowBackOutline, checkmarkCircle, removeCircle } from 'ionicons/icons'
 import { useEffect, useMemo, useState } from 'react'
 
+import { LoadingState } from '../../components/LoadingState'
 import { PersonAvatar } from '../../components/PersonAvatar'
 import { useSelectedDate } from '../../context/SelectedDateContext'
 import { usePeople } from '../people/usePeople'
@@ -166,11 +165,7 @@ function WizardStep({
     )
 
   if (isLoading) {
-    return (
-      <div className="person-page__center">
-        <IonSpinner />
-      </div>
-    )
+    return <LoadingState />
   }
 
   return (
@@ -306,11 +301,7 @@ export function CheckInWizardPage() {
         fullscreen
         className="ion-padding safe-content"
       >
-        {people.isLoading && (
-          <div className="person-page__center">
-            <IonSpinner />
-          </div>
-        )}
+        {people.isLoading && <LoadingState />}
 
         {!people.isLoading && activePeople.length === 0 && (
           <p className="section-empty">No household members to check in.</p>

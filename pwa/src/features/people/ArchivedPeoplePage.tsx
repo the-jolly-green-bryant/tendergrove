@@ -1,5 +1,6 @@
-import { IonItem, IonLabel, IonList, IonSpinner } from '@ionic/react'
+import { IonItem, IonLabel, IonList } from '@ionic/react'
 
+import { LoadingState } from '../../components/LoadingState'
 import { Page } from '../../components/Page'
 import { PersonAvatar } from '../../components/PersonAvatar'
 import { usePeople } from './usePeople'
@@ -20,7 +21,7 @@ export default function ArchivedPeoplePage() {
 
   return (
     <Page title="Archived">
-      {people.isLoading && <IonSpinner />}
+      {people.isLoading && <LoadingState />}
 
       {people.error && <p>Failed to load people.</p>}
 

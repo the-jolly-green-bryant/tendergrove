@@ -1,8 +1,9 @@
-import { IonChip, IonIcon, IonSpinner } from '@ionic/react'
+import { IonChip, IonIcon } from '@ionic/react'
 import { chevronForwardOutline } from 'ionicons/icons'
 import { useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
 
+import { LoadingState } from '../../components/LoadingState'
 import { Page } from '../../components/Page'
 import { useDateNavigator } from '../../components/DateNavigator'
 import { PersonAvatar } from '../../components/PersonAvatar'
@@ -72,7 +73,7 @@ export default function HouseholdPage() {
     >
       <Greeting />
 
-      {people.isLoading && <IonSpinner />}
+      {people.isLoading && <LoadingState />}
 
       {people.error && <p>Failed to load people.</p>}
 

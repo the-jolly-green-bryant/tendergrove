@@ -1,7 +1,7 @@
-import { IonSpinner } from '@ionic/react'
 import { useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 
+import { LoadingState } from '../../components/LoadingState'
 import { Page } from '../../components/Page'
 import { PersonAvatar } from '../../components/PersonAvatar'
 import { PersonFilterChips, usePersonFilter } from '../../components/PersonFilterChips'
@@ -75,11 +75,7 @@ const EMPTY_TIMELINE_STATE = (
   </div>
 )
 
-const LOADING_STATE = (
-  <div className="timeline-loading">
-    <IonSpinner />
-  </div>
-)
+const LOADING_STATE = <LoadingState className="timeline-loading" />
 
 const renderEventButton = (event: TimelineEvent) => {
   const history = useHistory()

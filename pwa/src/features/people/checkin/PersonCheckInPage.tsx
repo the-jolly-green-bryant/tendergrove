@@ -9,7 +9,6 @@ import {
   IonList,
   IonNote,
   IonPage,
-  IonSpinner,
   IonTextarea,
   IonTitle,
   IonToolbar,
@@ -20,6 +19,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
 import { useSelectedDate } from '../../../context/SelectedDateContext'
+import { LoadingState } from '../../../components/LoadingState'
 import { usePerson } from '../usePerson'
 import { parseAnswers } from './checkInUtils'
 import { useCheckInMutations } from './useCheckInMutations'
@@ -187,11 +187,7 @@ export default function PersonCheckInPage() {
         fullscreen
         className="ion-padding safe-content"
       >
-        {isLoading && (
-          <div className="person-page__center">
-            <IonSpinner />
-          </div>
-        )}
+        {isLoading && <LoadingState />}
 
         {person && (
           <>

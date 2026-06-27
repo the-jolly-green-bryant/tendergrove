@@ -11,7 +11,6 @@ import {
   IonLabel,
   IonList,
   IonPage,
-  IonSpinner,
   IonTitle,
   IonToolbar,
   useIonActionSheet,
@@ -34,6 +33,7 @@ import { useHistory, useLocation, useParams } from 'react-router-dom'
 
 import { useSelectedDate } from '../../context/SelectedDateContext'
 
+import { LoadingState } from '../../components/LoadingState'
 import { usePerson } from './usePerson'
 import { useArchivePerson } from './useArchivePerson'
 import { parseAnswers } from './checkin/checkInUtils'
@@ -329,11 +329,7 @@ export default function PersonPage() {
         fullscreen
         className="ion-padding safe-content"
       >
-        {isLoading && (
-          <div className="person-page__center">
-            <IonSpinner />
-          </div>
-        )}
+        {isLoading && <LoadingState />}
 
         {error && <p>Failed to load this person.</p>}
 

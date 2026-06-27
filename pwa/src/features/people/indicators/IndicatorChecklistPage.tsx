@@ -10,7 +10,6 @@ import {
   IonLabel,
   IonList,
   IonPage,
-  IonSpinner,
   IonTitle,
   IonToolbar,
   useIonRouter,
@@ -19,6 +18,7 @@ import { addOutline, arrowBackOutline } from 'ionicons/icons'
 import { useEffect, useState } from 'react'
 import { useParams, useLocation } from 'react-router-dom'
 
+import { LoadingState } from '../../../components/LoadingState'
 import { useIndicatorMutations, type IndicatorInput } from './useIndicatorMutations'
 import { useRoleTemplate } from './useRoleTemplates'
 import { polarityMeta, type Polarity } from './indicatorMeta'
@@ -33,11 +33,7 @@ interface ChecklistItem extends TemplateIndicator {
 
 let nextCustomId = 0
 
-const LOADING_STATE = (
-  <div className="ion-text-center ion-padding">
-    <IonSpinner />
-  </div>
-)
+const LOADING_STATE = <LoadingState className="ion-text-center ion-padding" />
 
 export default function IndicatorChecklistPage() {
   const router = useIonRouter()
@@ -250,7 +246,10 @@ export default function IndicatorChecklistPage() {
                 onClick={saveIndicators}
               >
                 {saving ? (
-                  <IonSpinner name="crescent" />
+                  <LoadingState
+                    className=""
+                    name="crescent"
+                  />
                 ) : (
                   `Save Indicators (${selectedCount})`
                 )}
