@@ -7,7 +7,7 @@ import { LoadingState } from '../../components/LoadingState'
 import { Page } from '../../components/Page'
 import { useDateNavigator } from '../../components/DateNavigator'
 import { PersonAvatar } from '../../components/PersonAvatar'
-import { HouseholdRadar } from '../../components/HouseholdRadar'
+import { HouseholdTree } from '../../components/HouseholdTree'
 import { Greeting } from '../../components/Greeting'
 import { useAppAuth } from '../../auth/AuthContext'
 import { useSelectedDate } from '../../context/SelectedDateContext'
@@ -24,14 +24,17 @@ function isSameDay(occurredAt: string, date: Date): boolean {
   )
 }
 
-const renderRadar = (people) =>
+const renderTree = (people) =>
   people.length > 0 && (
-    <HouseholdRadar
+    <HouseholdTree
       people={people.map((person) => ({
         id: person.id,
         displayName: person.displayName,
         avatarUrl: person.avatarUrl,
-        status: derivePersonStatus(person.indicators ?? [], person.checkIns ?? []),
+        energy:
+          derivePersonStatus(person.indicators ?? [], person.checkIns ?? []).score ??
+          100,
+        isSelf: person.role === 'self',
       }))}
     />
   )
@@ -82,16 +85,19 @@ export default function HouseholdPage() {
       title="Home"
       headerContent={headerElement}
       subHeaderContent={calendarElement}
+      disablePadding
     >
-      <Greeting />
+      <div className="ion-padding">
+        <Greeting />
+      </div>
 
       {people.isLoading && <LoadingState />}
-      {people.error && <p>Failed to load people.</p>}
+      {people.error && <p className="ion-padding">Failed to load people.</p>}
 
-      {/* Household Radar */}
-      {renderRadar(activePeople)}
+      {/* Household Tree */}
+      {renderTree(activePeople)}
 
-      <div className="household-list">
+      <div className="household-list ion-padding">
         {activePeople.map((person) => {
           const status = derivePersonStatus(
             person.indicators ?? [],

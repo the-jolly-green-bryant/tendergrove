@@ -1,0 +1,167 @@
+.household-tree-container {
+  width: 100%;
+  background-color: #FAF8F4; /* Cream background per spec */
+  padding: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.household-tree-card {
+  width: 100%;
+  max-width: none;
+  background-color: #FFFFFF;
+  border-top: 1px solid #E8E4DB;
+  border-bottom: 1px solid #E8E4DB;
+  border-left: none;
+  border-right: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 60px 20px 40px 20px;
+  position: relative;
+  overflow: visible;
+}
+
+.tree-visualization {
+  position: relative;
+  width: 85%; /* Leave generous whitespace */
+  margin: 0 auto;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tree-image-wrapper {
+  width: 80%; /* Tree occupies roughly 70-80% of card width */
+  height: 80%;
+  position: relative;
+}
+
+.tree-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 300ms ease-in-out; /* Crossfade per spec */
+}
+
+.tree-image.active {
+  opacity: 1;
+}
+
+.avatars-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.avatar-container {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: auto;
+  z-index: 10;
+}
+
+.avatar-ring {
+  width: 56px; /* Mobile size */
+  height: 56px;
+  border-radius: 50%;
+  border: 4px solid transparent;
+  padding: 2px;
+  background-clip: content-box;
+  overflow: hidden;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 768px) {
+  .avatar-ring {
+    width: 64px; /* Tablet size */
+    height: 64px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .avatar-ring {
+    width: 72px; /* Desktop size */
+    height: 72px;
+  }
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  background-color: #E8E4DB;
+  color: #6C746B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 20px;
+  border-radius: 50%;
+}
+
+.avatar-info {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.avatar-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #2F3A2E; /* Primary Typography */
+  margin-bottom: 2px;
+}
+
+.avatar-score {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.household-summary {
+  margin-top: 40px;
+  text-align: center;
+}
+
+.household-score-label {
+  font-size: 14px;
+  color: #6C746B; /* Secondary Typography */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.household-score-value {
+  font-size: 48px;
+  font-weight: 800;
+  color: #2F3A2E;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.household-status {
+  font-size: 18px;
+  font-weight: 600;
+  color: #5B8C4A; /* Forest/Success color */
+}

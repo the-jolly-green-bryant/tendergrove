@@ -31,6 +31,7 @@ interface PageProps {
   readonly headerContent?: ReactNode
   /** Optional content rendered below the toolbar (e.g. calendar dropdown). */
   readonly subHeaderContent?: ReactNode
+  readonly disablePadding?: boolean
 }
 
 const renderMenu = () => {
@@ -104,13 +105,20 @@ const renderMenu = () => {
  * A wrapper for a page with a toolbar and content.
  * @param {PageProps} param0
  * @param {string} param0.title
- * @param {React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | string | number | bigint | Iterable<React.ReactNode> | React.ReactPortal | boolean | Promise<AwaitedReactNode> | null | undefined} param0.children
- * @param {React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | string | number | bigint | Iterable<React.ReactNode> | React.ReactPortal | boolean | Promise<AwaitedReactNode> | null | undefined} param0.headerContent
- * @param {React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | string | number | bigint | Iterable<React.ReactNode> | React.ReactPortal | boolean | Promise<AwaitedReactNode> | null | undefined} param0.subHeaderContent
+ * @param {React.ReactNode} param0.children
+ * @param {React.ReactNode} param0.headerContent
+ * @param {React.ReactNode} param0.subHeaderContent
+ * @param {boolean} param0.disablePadding
  * @returns {React.JSX.Element}
  * @constructor
  */
-export function Page({ title, children, headerContent, subHeaderContent }: PageProps) {
+export function Page({
+  title,
+  children,
+  headerContent,
+  subHeaderContent,
+  disablePadding,
+}: PageProps) {
   return (
     <>
       {renderMenu()}
@@ -137,7 +145,7 @@ export function Page({ title, children, headerContent, subHeaderContent }: PageP
         </IonHeader>
         <IonContent
           fullscreen
-          className="ion-padding safe-content"
+          className={`${disablePadding ? '' : 'ion-padding'} safe-content`}
         >
           {children}
         </IonContent>
