@@ -32,6 +32,7 @@ interface PageProps {
   /** Optional content rendered below the toolbar (e.g. calendar dropdown). */
   readonly subHeaderContent?: ReactNode
   readonly disablePadding?: boolean
+  readonly className?: string
 }
 
 const renderMenu = () => {
@@ -118,11 +119,11 @@ export function Page({
   headerContent,
   subHeaderContent,
   disablePadding,
+  className,
 }: PageProps) {
   return (
     <>
       {renderMenu()}
-
       <IonPage id="main-content">
         <IonHeader translucent>
           <IonToolbar>
@@ -145,7 +146,7 @@ export function Page({
         </IonHeader>
         <IonContent
           fullscreen
-          className={`${disablePadding ? '' : 'ion-padding'} safe-content`}
+          className={`${disablePadding ? '' : 'ion-padding'} safe-content ${className ?? ''}`}
         >
           {children}
         </IonContent>

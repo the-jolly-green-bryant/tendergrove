@@ -319,7 +319,7 @@ export default function PersonPage() {
 
       <IonContent
         fullscreen
-        className="safe-content"
+        className="safe-content person-page-content"
       >
         {isLoading && <LoadingState />}
 
@@ -367,13 +367,14 @@ export default function PersonPage() {
             </section>
 
             <HouseholdTree
+              className="person-page-tree"
               people={[
                 {
                   id: person.id,
                   displayName: person.displayName,
                   avatarUrl: person.avatarUrl,
                   energy: status.score ?? 100,
-                  isSelf: person.role === 'self',
+                  isSelf: true,
                 },
               ]}
             />

@@ -16,15 +16,39 @@
   border-right: none;
   border-radius: 0;
   box-shadow: none;
-  padding: 60px 20px 40px 20px;
+  padding: 40px 24px; /* Balanced padding */
   position: relative;
   overflow: visible;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.household-tree-card.is-single {
+  border-top: none;
+  border-bottom: 1px solid #E8E4DB;
+  padding-top: 24px;
+}
+
+.household-tree-greeting {
+  width: 100%;
+  max-width: 500px;
+  margin-bottom: 32px; /* 8pt grid gap */
+  text-align: left;
+}
+
+.tree-composition {
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
 }
 
 .tree-visualization {
   position: relative;
-  width: 85%; /* Leave generous whitespace */
-  margin: 0 auto;
+  width: min(100%, 500px); /* Increased size */
   aspect-ratio: 1 / 1;
   display: flex;
   align-items: center;
@@ -32,9 +56,12 @@
 }
 
 .tree-image-wrapper {
-  width: 80%; /* Tree occupies roughly 70-80% of card width */
-  height: 80%;
+  width: 90%; /* Tree occupies more of the visualization */
+  height: 90%;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .tree-image {
@@ -69,6 +96,7 @@
   align-items: center;
   pointer-events: auto;
   z-index: 10;
+  gap: 8px; /* 8pt grid gap between ring and info */
 }
 
 .avatar-ring {
@@ -78,11 +106,11 @@
   border: 4px solid transparent;
   padding: 2px;
   background-clip: content-box;
-  overflow: hidden;
   background-color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative; /* For badge positioning */
 }
 
 @media (min-width: 768px) {
@@ -102,8 +130,14 @@
 .avatar-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
   border-radius: 50%;
+  overflow: hidden;
+}
+
+.avatar-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .avatar-placeholder {
@@ -119,49 +153,113 @@
   border-radius: 50%;
 }
 
-.avatar-info {
-  margin-top: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.avatar-name {
-  font-size: 13px;
-  font-weight: 500;
-  color: #2F3A2E; /* Primary Typography */
-  margin-bottom: 2px;
-}
-
-.avatar-score {
-  font-size: 14px;
+.avatar-score-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #FFFFFF;
+  color: #FFFFFF;
+  font-size: 10px;
   font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 11;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 0 1px;
+}
+
+@media (min-width: 768px) {
+  .avatar-score-badge {
+    width: 24px;
+    height: 24px;
+    font-size: 11px;
+  }
+}
+
+.avatar-info {
+  display: none;
+}
+
+.section-divider {
+  width: 100%;
+  max-width: 120px;
+  height: 1px;
+  background-color: #2F3A2E;
+  opacity: 0.08; /* Subtle divider per spec */
+  margin: 24px 0; /* 8pt grid gap */
 }
 
 .household-summary {
-  margin-top: 40px;
+  width: 100%;
+  max-width: 320px;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.household-score-label {
+.household-wellbeing-label {
   font-size: 14px;
   color: #6C746B; /* Secondary Typography */
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 4px;
+  opacity: 0.55; /* Reduce visual competition: Section title 55% */
+  margin-bottom: 8px; /* 8pt grid */
 }
 
 .household-score-value {
-  font-size: 48px;
+  font-size: 56px; /* Slightly larger for impact */
   font-weight: 800;
   color: #2F3A2E;
   line-height: 1;
-  margin-bottom: 8px;
+  margin-bottom: 8px; /* 8pt grid */
+  opacity: 0.85; /* Tree should win, score is 85% */
 }
 
-.household-status {
+.household-narrative {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* 8pt grid */
+}
+
+.household-narrative .status {
   font-size: 18px;
   font-weight: 600;
   color: #5B8C4A; /* Forest/Success color */
+}
+
+.household-narrative .insight {
+  font-size: 14px;
+  color: #6C746B;
+  line-height: 1.5;
+}
+
+.household-tree-greeting {
+  width: 100%;
+  margin-bottom: 24px; /* 8pt grid */
+  text-align: left;
+}
+
+.household-greeting {
+  font-size: 28px;
+  font-weight: 700;
+  color: #2F3A2E;
+  margin: 0 0 8px 0;
+}
+
+.household-subtitle {
+  font-size: 16px;
+  color: #6C746B;
+  margin: 0;
+}
+
+.person-page-content {
+  background-color: #FAF8F4;
+}
+
+.person-page-tree {
+  background-color: #FFFFFF;
+  margin-bottom: 16px; /* Space between card and following content */
 }

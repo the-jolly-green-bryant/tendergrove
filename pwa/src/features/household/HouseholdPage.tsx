@@ -27,6 +27,7 @@ function isSameDay(occurredAt: string, date: Date): boolean {
 const renderTree = (people) =>
   people.length > 0 && (
     <HouseholdTree
+      showGreeting
       people={people.map((person) => ({
         id: person.id,
         displayName: person.displayName,
@@ -87,10 +88,6 @@ export default function HouseholdPage() {
       subHeaderContent={calendarElement}
       disablePadding
     >
-      <div className="ion-padding">
-        <Greeting />
-      </div>
-
       {people.isLoading && <LoadingState />}
       {people.error && <p className="ion-padding">Failed to load people.</p>}
 
