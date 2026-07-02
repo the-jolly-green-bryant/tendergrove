@@ -9,6 +9,7 @@ import {
   IonItem,
   IonLabel,
   IonList,
+  IonNote,
   IonPage,
   IonRadio,
   IonRadioGroup,
@@ -78,6 +79,71 @@ const roleOptions: Array<{
   },
 ]
 
+const AVATAR_IMAGE_SIZE = 320
+const AVATAR_JPEG_QUALITY = 0.82
+const MAX_AVATAR_UPLOAD_BYTES = 8 * 1024 * 1024
+
+function loadImageFromFile(file: File): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const objectUrl = URL.createObjectURL(file)
+    const image = new Image()
+
+    image.onload = () => {
+      URL.revokeObjectURL(objectUrl)
+      resolve(image)
+    }
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl)
+      reject(new Error('Could not read that image. Try a different photo.'))
+    }
+    image.src = objectUrl
+  })
+}
+
+async function createAvatarDataUrl(file: File): Promise<string> {
+  if (!file.type.startsWith('image/')) {
+    throw new Error('Choose an image file.')
+  }
+  if (file.size > MAX_AVATAR_UPLOAD_BYTES) {
+    throw new Error('Choose an image smaller than 8 MB.')
+  }
+
+  const image = await loadImageFromFile(file)
+  const sourceSize = Math.min(image.naturalWidth, image.naturalHeight)
+
+  if (!sourceSize) {
+    throw new Error('Could not read that image. Try a different photo.')
+  }
+
+  const canvas = document.createElement('canvas')
+  canvas.width = AVATAR_IMAGE_SIZE
+  canvas.height = AVATAR_IMAGE_SIZE
+
+  const context = canvas.getContext('2d')
+  if (!context) {
+    throw new Error('Photo upload is not available on this device.')
+  }
+
+  context.drawImage(
+    image,
+    (image.naturalWidth - sourceSize) / 2,
+    (image.naturalHeight - sourceSize) / 2,
+    sourceSize,
+    sourceSize,
+    0,
+    0,
+    AVATAR_IMAGE_SIZE,
+    AVATAR_IMAGE_SIZE,
+  )
+
+  return canvas.toDataURL('image/jpeg', AVATAR_JPEG_QUALITY)
+}
+
+function getSaveButtonLabel(isProcessingPhoto: boolean, isEditing: boolean): string {
+  if (isProcessingPhoto) return 'Preparing photo...'
+  return isEditing ? 'Save Changes' : 'Next'
+}
+
 const renderHeader = (fnBack: () => void, fnClose: () => void, isEditing: boolean) => (
   <IonHeader translucent>
     <IonToolbar>
@@ -137,6 +203,9 @@ export default function PersonFormPage() {
   const [role, setRole] = useState<PersonRole>('child')
   const [displayName, setDisplayName] = useState('')
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>()
+  const [photoError, setPhotoError] = useState<string | undefined>()
+  const [isProcessingPhoto, setIsProcessingPhoto] = useState(false)
+  const saveButtonLabel = getSaveButtonLabel(isProcessingPhoto, isEditing)
 
   // Prefill the form once the person being edited has loaded.
   useEffect(() => {
@@ -154,9 +223,26 @@ export default function PersonFormPage() {
 
   const choosePhoto = () => photoInputRef.current?.click()
 
-  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
-    file && setAvatarUrl(URL.createObjectURL(file))
+    event.target.value = ''
+
+    if (!file) {
+      return
+    }
+
+    setPhotoError(undefined)
+    setIsProcessingPhoto(true)
+
+    try {
+      setAvatarUrl(await createAvatarDataUrl(file))
+    } catch (error) {
+      setPhotoError(
+        error instanceof Error ? error.message : 'Could not upload that photo.',
+      )
+    } finally {
+      setIsProcessingPhoto(false)
+    }
   }
 
   async function save() {
@@ -296,21 +382,49 @@ export default function PersonFormPage() {
                 fill="clear"
                 aria-label="Choose photo"
                 onClick={choosePhoto}
+                disabled={isProcessingPhoto}
               >
                 <IonIcon
                   slot="icon-only"
                   icon={cameraOutline}
                 />
               </IonButton>
+
+              {avatarUrl && (
+                <IonButton
+                  slot="end"
+                  fill="clear"
+                  aria-label="Remove photo"
+                  onClick={() => {
+                    setAvatarUrl(undefined)
+                    setPhotoError(undefined)
+                  }}
+                  disabled={isProcessingPhoto}
+                >
+                  <IonIcon
+                    slot="icon-only"
+                    icon={closeOutline}
+                  />
+                </IonButton>
+              )}
             </IonItem>
+
+            {photoError && (
+              <IonNote
+                color="danger"
+                className="person-form__photo-error"
+              >
+                {photoError}
+              </IonNote>
+            )}
 
             <div className="person-form__footer">
               <IonButton
                 expand="block"
-                disabled={!displayName.trim()}
+                disabled={!displayName.trim() || isProcessingPhoto}
                 onClick={save}
               >
-                {isEditing ? 'Save Changes' : 'Next'}
+                {saveButtonLabel}
               </IonButton>
             </div>
           </section>
