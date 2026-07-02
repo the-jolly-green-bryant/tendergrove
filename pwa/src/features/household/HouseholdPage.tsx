@@ -24,10 +24,11 @@ function isSameDay(occurredAt: string, date: Date): boolean {
   )
 }
 
-const renderTree = (people) =>
+const renderTree = (people, onPersonClick: (personId: string) => void) =>
   people.length > 0 && (
     <HouseholdTree
       showGreeting
+      onPersonClick={onPersonClick}
       people={people.map((person) => ({
         id: person.id,
         displayName: person.displayName,
@@ -92,7 +93,7 @@ export default function HouseholdPage() {
       {people.error && <p className="ion-padding">Failed to load people.</p>}
 
       {/* Household Tree */}
-      {renderTree(activePeople)}
+      {renderTree(activePeople, (personId) => history.push(`/person/${personId}`))}
 
       <div className="household-list ion-padding">
         {activePeople.map((person) => {

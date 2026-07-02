@@ -16,6 +16,7 @@ interface HouseholdTreeProps {
   people: Person[]
   className?: string
   showGreeting?: boolean
+  onPersonClick?: (personId: string) => void
 }
 
 const getTreeStage = (score: number): number => {
@@ -89,6 +90,7 @@ export const HouseholdTree: React.FC<HouseholdTreeProps> = ({
   people,
   className = '',
   showGreeting = false,
+  onPersonClick,
 }) => {
   const householdScore = useMemo(() => {
     if (people.length === 0) return 0
@@ -145,15 +147,30 @@ export const HouseholdTree: React.FC<HouseholdTreeProps> = ({
                 const y = 50 + radiusY * Math.sin(angle)
 
                 const color = getStatusColor(person.energy)
+                const clickable = Boolean(onPersonClick)
 
                 return (
                   <div
                     key={person.id}
-                    className="avatar-container"
+                    className={`avatar-container ${clickable ? 'is-clickable' : ''}`}
                     style={{
                       left: `${x}%`,
                       top: `${y}%`,
                     }}
+                    role={clickable ? 'button' : undefined}
+                    tabIndex={clickable ? 0 : undefined}
+                    aria-label={clickable ? `View ${person.displayName}` : undefined}
+                    onClick={clickable ? () => onPersonClick!(person.id) : undefined}
+                    onKeyDown={
+                      clickable
+                        ? (e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              onPersonClick!(person.id)
+                            }
+                          }
+                        : undefined
+                    }
                   >
                     <div
                       className="avatar-ring"
