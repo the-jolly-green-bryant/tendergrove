@@ -368,6 +368,7 @@ export default function PersonPage() {
 
             <HouseholdTree
               className="person-page-tree"
+              showSingleGreeting={false}
               people={[
                 {
                   id: person.id,

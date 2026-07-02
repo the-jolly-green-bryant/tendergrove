@@ -16,6 +16,7 @@ interface HouseholdTreeProps {
   people: Person[]
   className?: string
   showGreeting?: boolean
+  showSingleGreeting?: boolean
   onPersonClick?: (personId: string) => void
 }
 
@@ -313,6 +314,18 @@ function EmptyTree({ stage }: { readonly stage: number }) {
   )
 }
 
+function SinglePersonTree({ stage }: { readonly stage: number }) {
+  return (
+    <div className="single-person-tree">
+      <img
+        src={`/assets/tree/tree_stage_${stage}.png`}
+        alt="Wellbeing tree"
+        className="single-person-tree__image"
+      />
+    </div>
+  )
+}
+
 function AvatarMarker({
   person,
   index,
@@ -371,6 +384,33 @@ function AvatarMarker({
   )
 }
 
+function TreeArtwork({
+  people,
+  stage,
+  isSinglePerson,
+  sliceSize,
+}: {
+  readonly people: Person[]
+  readonly stage: number
+  readonly isSinglePerson: boolean
+  readonly sliceSize: number
+}) {
+  if (isSinglePerson) {
+    return <SinglePersonTree stage={stage} />
+  }
+  if (people.length === 0) {
+    return <EmptyTree stage={stage} />
+  }
+
+  return (
+    <TreePie
+      people={people}
+      isSinglePerson={isSinglePerson}
+      sliceSize={sliceSize}
+    />
+  )
+}
+
 function TreeVisual({
   people,
   stage,
@@ -386,38 +426,39 @@ function TreeVisual({
 
   return (
     <div className="tree-visualization">
-      {people.length > 0 ? (
-        <TreePie
-          people={people}
-          isSinglePerson={isSinglePerson}
-          sliceSize={sliceSize}
-        />
-      ) : (
-        <EmptyTree stage={stage} />
-      )}
+      <TreeArtwork
+        people={people}
+        stage={stage}
+        isSinglePerson={isSinglePerson}
+        sliceSize={sliceSize}
+      />
 
-      <div className="avatars-overlay">
-        {people.map((person, index) => (
-          <AvatarMarker
-            key={person.id}
-            person={person}
-            index={index}
-            isSinglePerson={isSinglePerson}
-            sliceSize={sliceSize}
-            onPersonClick={onPersonClick}
-          />
-        ))}
-      </div>
+      {!isSinglePerson && (
+        <div className="avatars-overlay">
+          {people.map((person, index) => (
+            <AvatarMarker
+              key={person.id}
+              person={person}
+              index={index}
+              isSinglePerson={isSinglePerson}
+              sliceSize={sliceSize}
+              onPersonClick={onPersonClick}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
 
 function HouseholdTreeGreeting({
   showGreeting,
+  showSingleGreeting,
   isSinglePerson,
   selfPerson,
 }: {
   readonly showGreeting: boolean
+  readonly showSingleGreeting: boolean
   readonly isSinglePerson: boolean
   readonly selfPerson?: Person
 }) {
@@ -428,7 +469,7 @@ function HouseholdTreeGreeting({
       </div>
     )
   }
-  if (!isSinglePerson || !selfPerson) return null
+  if (!showSingleGreeting || !isSinglePerson || !selfPerson) return null
 
   return (
     <div className="household-tree-greeting">
@@ -442,6 +483,7 @@ export const HouseholdTree: React.FC<HouseholdTreeProps> = ({
   people,
   className = '',
   showGreeting = false,
+  showSingleGreeting = true,
   onPersonClick,
 }) => {
   const householdScore = useMemo(() => {
@@ -459,6 +501,7 @@ export const HouseholdTree: React.FC<HouseholdTreeProps> = ({
       <div className={`household-tree-card ${isSinglePerson ? 'is-single' : ''}`}>
         <HouseholdTreeGreeting
           showGreeting={showGreeting}
+          showSingleGreeting={showSingleGreeting}
           isSinglePerson={isSinglePerson}
           selfPerson={people.find((p) => p.isSelf)}
         />

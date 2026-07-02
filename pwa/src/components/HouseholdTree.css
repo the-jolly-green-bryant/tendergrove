@@ -104,6 +104,26 @@
   stroke-linecap: round;
 }
 
+.single-person-tree {
+  width: 78%;
+  height: 78%;
+  border-radius: 50%;
+  background: #faf8f4;
+  border: 1px solid #e8e4db;
+  box-shadow: 0 10px 28px rgba(47, 58, 46, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.single-person-tree__image {
+  width: 94%;
+  height: 94%;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}
+
 .avatars-overlay {
   position: absolute;
   top: 0;
@@ -304,4 +324,28 @@
 .person-page-tree {
   background-color: #ffffff;
   margin-bottom: 16px; /* Space between card and following content */
+}
+
+.person-page-tree .household-tree-card {
+  padding: 18px 24px 24px;
+}
+
+.person-page-tree .tree-composition {
+  max-width: 360px;
+}
+
+.person-page-tree .tree-visualization {
+  width: min(100%, 320px);
+}
+
+.person-page-tree .section-divider {
+  margin: 12px 0 16px;
+}
+
+.person-page-tree .household-score-value {
+  font-size: 44px;
+}
+
+.person-page-tree .household-narrative .insight {
+  display: none;
 }
