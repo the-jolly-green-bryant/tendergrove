@@ -1,6 +1,6 @@
 .household-tree-container {
   width: 100%;
-  background-color: #FAF8F4; /* Cream background per spec */
+  background-color: #faf8f4; /* Cream background per spec */
   padding: 0;
   display: flex;
   justify-content: center;
@@ -9,9 +9,9 @@
 .household-tree-card {
   width: 100%;
   max-width: none;
-  background-color: #FFFFFF;
-  border-top: 1px solid #E8E4DB;
-  border-bottom: 1px solid #E8E4DB;
+  background-color: #ffffff;
+  border-top: 1px solid #e8e4db;
+  border-bottom: 1px solid #e8e4db;
   border-left: none;
   border-right: none;
   border-radius: 0;
@@ -26,7 +26,7 @@
 
 .household-tree-card.is-single {
   border-top: none;
-  border-bottom: 1px solid #E8E4DB;
+  border-bottom: 1px solid #e8e4db;
   padding-top: 24px;
 }
 
@@ -53,11 +53,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  isolation: isolate;
 }
 
 .tree-image-wrapper {
-  width: 90%; /* Tree occupies more of the visualization */
-  height: 90%;
+  width: 84%;
+  height: 84%;
   position: relative;
   display: flex;
   align-items: center;
@@ -77,6 +78,30 @@
 
 .tree-image.active {
   opacity: 1;
+}
+
+.tree-pie {
+  width: 90%;
+  height: 90%;
+  overflow: visible;
+  display: block;
+}
+
+.tree-pie__backing {
+  fill: #faf8f4;
+  stroke: #e8e4db;
+  stroke-width: 1;
+}
+
+.tree-pie__slice image {
+  opacity: 0.96;
+  mix-blend-mode: multiply;
+}
+
+.tree-pie__divider {
+  stroke: rgba(47, 58, 46, 0.18);
+  stroke-width: 0.75;
+  stroke-linecap: round;
 }
 
 .avatars-overlay {
@@ -127,6 +152,7 @@
   align-items: center;
   justify-content: center;
   position: relative; /* For badge positioning */
+  box-shadow: 0 8px 20px rgba(47, 58, 46, 0.16);
 }
 
 @media (min-width: 768px) {
@@ -159,8 +185,8 @@
 .avatar-placeholder {
   width: 100%;
   height: 100%;
-  background-color: #E8E4DB;
-  color: #6C746B;
+  background-color: #e8e4db;
+  color: #6c746b;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -176,15 +202,15 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  border: 2px solid #FFFFFF;
-  color: #FFFFFF;
+  border: 2px solid #ffffff;
+  color: #ffffff;
   font-size: 10px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 11;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 0 1px;
 }
 
@@ -204,7 +230,7 @@
   width: 100%;
   max-width: 120px;
   height: 1px;
-  background-color: #2F3A2E;
+  background-color: #2f3a2e;
   opacity: 0.08; /* Subtle divider per spec */
   margin: 24px 0; /* 8pt grid gap */
 }
@@ -220,7 +246,7 @@
 
 .household-wellbeing-label {
   font-size: 14px;
-  color: #6C746B; /* Secondary Typography */
+  color: #6c746b; /* Secondary Typography */
   opacity: 0.55; /* Reduce visual competition: Section title 55% */
   margin-bottom: 8px; /* 8pt grid */
 }
@@ -228,7 +254,7 @@
 .household-score-value {
   font-size: 56px; /* Slightly larger for impact */
   font-weight: 800;
-  color: #2F3A2E;
+  color: #2f3a2e;
   line-height: 1;
   margin-bottom: 8px; /* 8pt grid */
   opacity: 0.85; /* Tree should win, score is 85% */
@@ -243,12 +269,12 @@
 .household-narrative .status {
   font-size: 18px;
   font-weight: 600;
-  color: #5B8C4A; /* Forest/Success color */
+  color: #5b8c4a; /* Forest/Success color */
 }
 
 .household-narrative .insight {
   font-size: 14px;
-  color: #6C746B;
+  color: #6c746b;
   line-height: 1.5;
 }
 
@@ -261,21 +287,21 @@
 .household-greeting {
   font-size: 28px;
   font-weight: 700;
-  color: #2F3A2E;
+  color: #2f3a2e;
   margin: 0 0 8px 0;
 }
 
 .household-subtitle {
   font-size: 16px;
-  color: #6C746B;
+  color: #6c746b;
   margin: 0;
 }
 
 .person-page-content {
-  background-color: #FAF8F4;
+  background-color: #faf8f4;
 }
 
 .person-page-tree {
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   margin-bottom: 16px; /* Space between card and following content */
 }
