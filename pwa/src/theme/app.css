@@ -39,9 +39,9 @@ ion-toolbar {
   --border-color: rgba(20, 125, 126, 0.16);
   --border-width: 0;
   --color: #5f6f70;
-  --padding-top: 8px;
-  --padding-bottom: 8px;
-  --min-height: 52px;
+  --padding-top: 6px;
+  --padding-bottom: 6px;
+  --min-height: 56px;
   color: #5f6f70;
 }
 
@@ -128,8 +128,8 @@ ion-toolbar {
 .page-header--transparent .date-navigator__month-btn,
 .page-header--transparent .date-navigator__arrow,
 .page-header--transparent .date-navigator__today-btn {
-  min-width: 46px;
-  min-height: 46px;
+  min-width: 40px;
+  min-height: 40px;
   background: transparent;
   border-radius: 999px;
   box-shadow: none;
@@ -146,9 +146,6 @@ ion-header::after {
   display: none;
 }
 
-.page-header--transparent .date-navigator__today-btn {
-  border: 2px solid #6b7b7c;
-}
 
 .page-header--transparent .date-navigator__chevron,
 .page-header--transparent .date-navigator__today-number {

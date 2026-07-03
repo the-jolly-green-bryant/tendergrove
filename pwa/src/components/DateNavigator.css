@@ -3,7 +3,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 4px;
+  height: 44px;
+  padding: 0 4px;
   flex: 1;
   min-width: 0;
 }
@@ -45,8 +46,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border: none;
   border-radius: 50%;
   background: transparent;
@@ -67,15 +68,15 @@
   cursor: default;
 }
 
-/* Today button — Google Calendar-style outlined box with date number */
+/* Today button: calendar icon with the date inside */
 .date-navigator__today-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  border: 2px solid #6b7b7c;
-  border-radius: 6px;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
   background: transparent;
   cursor: pointer;
   -webkit-appearance: none;
@@ -84,16 +85,26 @@
   position: relative;
 }
 
+.date-navigator__today-icon {
+  color: #5f6f70;
+  font-size: 29px;
+}
+
 .date-navigator__today-btn:active {
   background: rgba(95, 111, 112, 0.1);
 }
 
 .date-navigator__today-number {
+  position: absolute;
+  top: 21px;
+  left: 50%;
+  transform: translate(-50%, -50%);
   font-family: inherit;
-  font-size: 0.9375rem;
-  font-weight: 700;
+  font-size: 0.6875rem;
+  font-weight: 850;
   color: #5f6f70;
   line-height: 1;
+  pointer-events: none;
 }
 
 /* Dropdown calendar container */

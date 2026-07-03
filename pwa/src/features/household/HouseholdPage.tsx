@@ -111,9 +111,6 @@ function HouseholdPersonButton({
     new Date(),
     person.id,
   )
-  const hasCheckIn = (person.checkIns ?? []).some((ci) =>
-    isSameDay(ci.occurredAt, selectedDate),
-  )
 
   return (
     <button
@@ -140,12 +137,6 @@ function HouseholdPersonButton({
             />
             {status.label}
           </IonChip>
-
-          {!hasCheckIn && (
-            <IonChip className="household-chip household-chip--needs-checkin">
-              Needs Check-In
-            </IonChip>
-          )}
         </div>
       </div>
       <IonIcon
@@ -265,7 +256,9 @@ function HouseholdDashboardBody({
           onAddPersonClick={onAddPersonClick}
         />
         <footer className="household-legal">
-          <p>Copyright 2026 Bryant James. All rights reserved.</p>
+          <p className="household-legal__copyright">
+            Copyright 2026 Bryant James. All rights reserved.
+          </p>
           <p>
             App-generated insights are informational only and do not constitute medical,
             clinical, legal, or professional advice.
@@ -331,6 +324,7 @@ export default function HouseholdPage() {
       className="household-dashboard-content"
       transparentHeaderUntilScroll
       transparentHeaderMode="snap-panel"
+      forceOverscroll={false}
     >
       {people.isLoading && <LoadingState />}
       {people.error && <p className="ion-padding">Failed to load people.</p>}

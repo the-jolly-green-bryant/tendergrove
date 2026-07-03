@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useMemo } from 'react'
 import { IonIcon } from '@ionic/react'
 import {
+  calendarClearOutline,
   chevronBackOutline,
   chevronDownOutline,
   chevronForwardOutline,
@@ -244,6 +245,10 @@ export function useDateNavigator({ date, onChange, eventDates }: DateNavigatorPr
           onClick={goToToday}
           aria-label="Go to today"
         >
+          <IonIcon
+            icon={calendarClearOutline}
+            className="date-navigator__today-icon"
+          />
           <span className="date-navigator__today-number">{today.getDate()}</span>
         </button>
       </div>

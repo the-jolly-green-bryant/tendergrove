@@ -7,6 +7,7 @@
 .household-dashboard-content::part(scroll) {
   scroll-snap-type: y mandatory;
   scroll-behavior: smooth;
+  overscroll-behavior-y: none;
   display: flex;
   flex-direction: column;
   background: transparent;
@@ -139,7 +140,9 @@
 
 .household-people-panel {
   min-height: var(--household-panel-height);
-  background: #f8f3fa;
+  background:
+    url('/assets/lower.png') center bottom / 100% auto no-repeat,
+    #f8f3fa;
   padding: max(210px, calc(env(safe-area-inset-top) + 200px)) 16px 32px;
   display: flex;
   flex-direction: column;
@@ -249,6 +252,10 @@
 
 .household-legal p {
   margin: 0 0 6px;
+}
+
+.household-legal__copyright {
+  font-weight: 800;
 }
 
 @media (max-height: 760px) {

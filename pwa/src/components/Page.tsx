@@ -40,6 +40,7 @@ interface PageProps {
   readonly backHref?: string
   readonly transparentHeaderUntilScroll?: boolean
   readonly transparentHeaderMode?: 'scroll' | 'snap-panel'
+  readonly forceOverscroll?: boolean
 }
 
 const menuItems = [
@@ -185,6 +186,31 @@ function useHeaderScrollState(
   return { contentRef, isAtTop, updateHeaderPosition }
 }
 
+function HeaderStartControl({ backHref }: { readonly backHref?: string }) {
+  return (
+    <IonButtons slot="start">
+      {backHref ? (
+        <IonBackButton
+          defaultHref={backHref}
+          text=""
+        />
+      ) : (
+        <IonMenuToggle autoHide={false}>
+          <IonButton
+            fill="clear"
+            aria-label="Menu"
+          >
+            <IonIcon
+              slot="icon-only"
+              icon={menuOutline}
+            />
+          </IonButton>
+        </IonMenuToggle>
+      )}
+    </IonButtons>
+  )
+}
+
 /**
  * A wrapper for a page with a toolbar and content.
  * @param {PageProps} param0
@@ -206,6 +232,7 @@ export function Page({
   backHref,
   transparentHeaderUntilScroll,
   transparentHeaderMode = 'scroll',
+  forceOverscroll,
 }: PageProps) {
   const { contentRef, isAtTop, updateHeaderPosition } = useHeaderScrollState(
     transparentHeaderUntilScroll,
@@ -235,26 +262,7 @@ export function Page({
             className={toolbarClassName}
             mode={'ios'}
           >
-            <IonButtons slot="start">
-              {backHref ? (
-                <IonBackButton
-                  defaultHref={backHref}
-                  text=""
-                />
-              ) : (
-                <IonMenuToggle autoHide={false}>
-                  <IonButton
-                    fill="clear"
-                    aria-label="Menu"
-                  >
-                    <IonIcon
-                      slot="icon-only"
-                      icon={menuOutline}
-                    />
-                  </IonButton>
-                </IonMenuToggle>
-              )}
-            </IonButtons>
+            <HeaderStartControl backHref={backHref} />
             {headerContent ?? <IonTitle>{title}</IonTitle>}
           </IonToolbar>
           {subHeaderContent}
@@ -262,6 +270,7 @@ export function Page({
         <IonContent
           ref={contentRef}
           fullscreen
+          forceOverscroll={forceOverscroll}
           scrollEvents={transparentHeaderUntilScroll}
           onIonScroll={(event) => {
             if (!transparentHeaderUntilScroll) return
