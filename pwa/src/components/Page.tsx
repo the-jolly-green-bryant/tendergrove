@@ -1,4 +1,5 @@
 import {
+  IonBackButton,
   IonButton,
   IonButtons,
   IonContent,
@@ -18,9 +19,11 @@ import {
   homeOutline,
   logOutOutline,
   menuOutline,
+  statsChartOutline,
   settingsOutline,
+  timeOutline,
 } from 'ionicons/icons'
-import { ReactNode } from 'react'
+import { ReactNode, useState } from 'react'
 
 import { useAppAuth } from '../auth/AuthContext'
 
@@ -33,6 +36,59 @@ interface PageProps {
   readonly subHeaderContent?: ReactNode
   readonly disablePadding?: boolean
   readonly className?: string
+  readonly backHref?: string
+  readonly transparentHeaderUntilScroll?: boolean
+}
+
+const menuItems = [
+  {
+    href: '/dashboard',
+    direction: 'root',
+    icon: homeOutline,
+    label: 'Household',
+  },
+  {
+    href: '/archived',
+    direction: 'forward',
+    icon: archiveOutline,
+    label: 'Archived',
+  },
+  {
+    href: '/check-in',
+    direction: 'forward',
+    icon: timeOutline,
+    label: 'Timeline',
+  },
+  {
+    href: '/reports',
+    direction: 'forward',
+    icon: statsChartOutline,
+    label: 'Insights',
+  },
+  {
+    href: '/parent-care',
+    direction: 'forward',
+    icon: settingsOutline,
+    label: 'Settings',
+  },
+] as const
+
+function MenuLink({ href, direction, icon, label }: (typeof menuItems)[number]) {
+  return (
+    <IonMenuToggle autoHide={false}>
+      <IonItem
+        button
+        routerLink={href}
+        routerDirection={direction}
+      >
+        <IonIcon
+          slot="start"
+          icon={icon}
+        />
+        <IonLabel>{label}</IonLabel>
+      </IonItem>
+    </IonMenuToggle>
+  )
 }
 
 const renderMenu = () => {
@@ -45,45 +101,12 @@ const renderMenu = () => {
         </div>
 
         <IonList lines="none">
-          <IonMenuToggle autoHide={false}>
-            <IonItem
-              button
-              routerLink="/dashboard"
-              routerDirection="root"
-            >
-              <IonIcon
-                slot="start"
-                icon={homeOutline}
-              />
-              <IonLabel>Household</IonLabel>
-            </IonItem>
-          </IonMenuToggle>
-          <IonMenuToggle autoHide={false}>
-            <IonItem
-              button
-              routerLink="/archived"
-              routerDirection="forward"
-            >
-              <IonIcon
-                slot="start"
-                icon={archiveOutline}
-              />
-              <IonLabel>Archived</IonLabel>
-            </IonItem>
-          </IonMenuToggle>
-          <IonMenuToggle autoHide={false}>
-            <IonItem
-              button
-              routerLink="/parent-care"
-              routerDirection="forward"
-            >
-              <IonIcon
-                slot="start"
-                icon={settingsOutline}
-              />
-              <IonLabel>Settings</IonLabel>
-            </IonItem>
-          </IonMenuToggle>
+          {menuItems.map((item) => (
+            <MenuLink
+              key={item.href}
+              {...item}
+            />
+          ))}
           <IonMenuToggle autoHide={false}>
             <IonItem
               button
@@ -120,25 +143,42 @@ export function Page({
   subHeaderContent,
   disablePadding,
   className,
+  backHref,
+  transparentHeaderUntilScroll,
 }: PageProps) {
+  const [hasScrolled, setHasScrolled] = useState(false)
+  const headerClassName =
+    transparentHeaderUntilScroll && !hasScrolled ? 'page-header--transparent' : ''
+  const toolbarClassName = headerClassName ? 'page-toolbar--transparent' : ''
+
   return (
     <>
       {renderMenu()}
       <IonPage id="main-content">
-        <IonHeader translucent>
-          <IonToolbar>
+        <IonHeader
+          translucent
+          className={headerClassName}
+        >
+          <IonToolbar className={toolbarClassName}>
             <IonButtons slot="start">
-              <IonMenuToggle autoHide={false}>
-                <IonButton
-                  fill="clear"
-                  aria-label="Menu"
-                >
-                  <IonIcon
-                    slot="icon-only"
-                    icon={menuOutline}
-                  />
-                </IonButton>
-              </IonMenuToggle>
+              {backHref ? (
+                <IonBackButton
+                  defaultHref={backHref}
+                  text=""
+                />
+              ) : (
+                <IonMenuToggle autoHide={false}>
+                  <IonButton
+                    fill="clear"
+                    aria-label="Menu"
+                  >
+                    <IonIcon
+                      slot="icon-only"
+                      icon={menuOutline}
+                    />
+                  </IonButton>
+                </IonMenuToggle>
+              )}
             </IonButtons>
             {headerContent ?? <IonTitle>{title}</IonTitle>}
           </IonToolbar>
@@ -146,6 +186,11 @@ export function Page({
         </IonHeader>
         <IonContent
           fullscreen
+          scrollEvents={transparentHeaderUntilScroll}
+          onIonScroll={(event) => {
+            if (!transparentHeaderUntilScroll) return
+            setHasScrolled(event.detail.scrollTop > 8)
+          }}
           className={`${disablePadding ? '' : 'ion-padding'} safe-content ${className ?? ''}`}
         >
           {children}

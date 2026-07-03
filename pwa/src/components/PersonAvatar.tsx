@@ -1,14 +1,7 @@
 import { IonAvatar } from '@ionic/react'
 import { useEffect, useState } from 'react'
 
-const AVATAR_COLORS = [
-  '4A2D8B', // primary purple
-  'E8453C', // red
-  '7B5EBF', // secondary purple
-  '2FAE60', // green
-  '3D2575', // dark purple
-  '5C3F9E', // mid purple
-]
+const AVATAR_COLORS = ['147D7E', '75C8C4', '2FAE60', 'E88972', '8AA39B', 'C9A66B']
 
 function colorForName(name: string): string {
   let hash = 0

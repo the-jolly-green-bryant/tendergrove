@@ -1,0 +1,229 @@
+.household-dashboard-content {
+  --background: transparent;
+  --household-panel-height: 100dvh;
+}
+
+.household-dashboard-content::part(scroll) {
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+  display: flex;
+  flex-direction: column;
+}
+
+.household-snap {
+  flex: 1 0 auto;
+  height: auto;
+  min-height: var(--household-panel-height);
+  background: transparent;
+}
+
+.household-snap-panel {
+  min-height: var(--household-panel-height);
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.household-hero-panel {
+  min-height: var(--household-panel-height);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+}
+
+.household-hero-panel .household-tree-container {
+  flex: 1;
+  min-height: 0;
+  background: transparent;
+}
+
+.household-hero-panel .household-tree-card {
+  min-height: 100dvh;
+  padding: max(118px, calc(env(safe-area-inset-top) + 108px)) 18px 58px;
+  justify-content: space-around;
+  border-bottom: 0;
+  background: url('/assets/hero.png') center / cover no-repeat;
+  border-top: 0;
+}
+
+.household-hero-panel .household-tree-greeting {
+  max-width: 500px;
+  margin-bottom: 12px;
+}
+
+.household-hero-panel .household-greeting {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.household-hero-panel .household-subtitle {
+  font-size: 14px;
+}
+
+.household-hero-panel .tree-composition {
+  max-width: min(500px, 86dvh);
+}
+
+.household-hero-panel .tree-visualization {
+  width: min(100%, 430px, 52dvh);
+}
+
+.household-hero-panel .section-divider {
+  margin: 14px 0;
+}
+
+.household-hero-panel .household-recap-teaser {
+  width: min(100%, 390px);
+}
+
+.household-scroll-cue {
+  position: absolute;
+  left: 50%;
+  bottom: max(10px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--ion-color-primary-shade);
+  box-shadow: var(--app-shadow-card);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.household-people-panel {
+  min-height: var(--household-panel-height);
+  background: transparent;
+  padding: max(118px, calc(env(safe-area-inset-top) + 108px)) 16px 32px;
+  display: flex;
+  flex-direction: column;
+}
+
+.household-people-panel .household-list {
+  max-width: 560px;
+  width: 100%;
+  margin: 0 auto;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.household-people-panel .household-person-btn {
+  position: relative;
+  background: rgba(255, 255, 255, 0.78);
+  border-color: rgba(20, 125, 126, 0.14);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+.household-people-panel .household-add-btn {
+  width: auto;
+  min-height: 0;
+  margin: 8px auto 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #147d7e;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.household-add-btn__icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #147d7e;
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(36, 63, 66, 0.16);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 0;
+  padding-bottom: 4px;
+}
+
+.household-add-btn__copy {
+  color: #244446;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.household-person-btn__score-ribbon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 52px;
+  padding: 4px 9px 5px;
+  border-bottom-left-radius: 8px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(36, 63, 66, 0.12);
+}
+
+.household-person-btn__score-ribbon--success {
+  background: var(--ion-color-success);
+}
+
+.household-person-btn__score-ribbon--warning {
+  background: var(--ion-color-warning);
+  color: #2a1800;
+}
+
+.household-person-btn__score-ribbon--danger {
+  background: var(--ion-color-danger);
+}
+
+.household-person-btn__score-ribbon--medium {
+  background: var(--ion-color-step-500);
+}
+
+.household-legal {
+  max-width: 560px;
+  width: 100%;
+  margin: auto auto 0;
+  padding: 28px 4px max(8px, env(safe-area-inset-bottom));
+  color: #244446;
+  font-size: 12px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.household-legal p {
+  margin: 0 0 6px;
+}
+
+@media (max-height: 760px) {
+  .household-hero-panel .household-tree-card {
+    padding-top: max(96px, calc(env(safe-area-inset-top) + 90px));
+    padding-bottom: 54px;
+  }
+
+  .household-people-panel {
+    padding-top: max(96px, calc(env(safe-area-inset-top) + 90px));
+  }
+
+  .household-hero-panel .household-tree-greeting {
+    margin-bottom: 8px;
+  }
+
+  .household-hero-panel .household-subtitle {
+    display: none;
+  }
+
+  .household-hero-panel .tree-visualization {
+    width: min(100%, 390px, 48dvh);
+  }
+
+  .household-hero-panel .section-divider {
+    margin: 10px 0;
+  }
+}

@@ -152,7 +152,10 @@ export default function InsightsPage() {
   )
 
   return (
-    <Page title="Insights">
+    <Page
+      title="Insights"
+      backHref="/dashboard"
+    >
       {people.isLoading && LOADING_STATE}
       {people.error && <p>Failed to load data.</p>}
 

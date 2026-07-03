@@ -1,20 +1,7 @@
 // src/AppShell.tsx
-import {
-  IonIcon,
-  IonLabel,
-  IonRouterOutlet,
-  IonTabBar,
-  IonTabButton,
-  IonTabs,
-} from '@ionic/react'
+import { IonRouterOutlet } from '@ionic/react'
 import { IonReactRouter } from '@ionic/react-router'
-import { Redirect, Route, useLocation } from 'react-router-dom'
-import {
-  clipboardOutline,
-  homeOutline,
-  statsChartOutline,
-  timeOutline,
-} from 'ionicons/icons'
+import { Redirect, Route } from 'react-router-dom'
 
 import HouseholdPage from '../features/household/HouseholdPage'
 import HouseholdRecapPage from '../features/household/HouseholdRecapPage'
@@ -80,63 +67,10 @@ const renderRoutes = () => (
   </IonRouterOutlet>
 )
 
-const renderTabBar = () => (
-  <IonTabBar slot="bottom">
-    <IonTabButton
-      tab="dashboard"
-      href="/dashboard"
-    >
-      <IonIcon icon={homeOutline} />
-      <IonLabel>Household</IonLabel>
-    </IonTabButton>
-
-    <IonTabButton
-      tab="checkin"
-      href="/check-in"
-    >
-      <IonIcon icon={timeOutline} />
-      <IonLabel>Timeline</IonLabel>
-    </IonTabButton>
-
-    <IonTabButton
-      tab="reports"
-      href="/reports"
-    >
-      <IonIcon icon={statsChartOutline} />
-      <IonLabel>Insights</IonLabel>
-    </IonTabButton>
-
-    <IonTabButton
-      tab="add"
-      href="/check-in/wizard"
-      className="tab-bar__fab"
-    >
-      <IonIcon icon={clipboardOutline} />
-    </IonTabButton>
-  </IonTabBar>
-)
-
-/** Renders the tab shell and hides the tab bar for route-level full-screen pages. */
-function AppTabs() {
-  const location = useLocation()
-  const hideTabBar = location.pathname === '/household/recap'
-
-  return (
-    <IonTabs>
-      {renderRoutes()}
-      {!hideTabBar && renderTabBar()}
-    </IonTabs>
-  )
-}
-
 /**
- * Mounts the Ionic router and tab shell.
+ * Mounts the Ionic router.
  * @returns {React.JSX.Element}
  */
 export default function AppShell() {
-  return (
-    <IonReactRouter>
-      <AppTabs />
-    </IonReactRouter>
-  )
+  return <IonReactRouter>{renderRoutes()}</IonReactRouter>
 }

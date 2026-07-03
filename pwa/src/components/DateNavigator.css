@@ -99,7 +99,7 @@
 /* Dropdown calendar container */
 .date-navigator__calendar {
   padding: 8px 12px 12px;
-  background: #f0eff4;
+  background: #f7f3ec;
   border-bottom: 1px solid var(--app-border-color);
 }
 

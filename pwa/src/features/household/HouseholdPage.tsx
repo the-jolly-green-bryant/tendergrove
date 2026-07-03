@@ -1,5 +1,5 @@
 import { IonChip, IonIcon } from '@ionic/react'
-import { chevronForwardOutline } from 'ionicons/icons'
+import { chevronDownOutline, chevronForwardOutline } from 'ionicons/icons'
 import { useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
 
@@ -17,6 +17,7 @@ import {
   type HouseholdRecap,
   type HouseholdRecapSourcePerson,
 } from '../../lib/householdRecap'
+import './HouseholdPage.css'
 
 type HouseholdPerson = HouseholdRecapSourcePerson
 
@@ -64,6 +65,7 @@ function HouseholdPersonButton({
   readonly onClick: () => void
 }) {
   const status = derivePersonStatus(person.indicators ?? [], person.checkIns ?? [])
+  const score = status.score
   const emoji = todayEmoji(
     person.indicators ?? [],
     person.checkIns ?? [],
@@ -111,6 +113,13 @@ function HouseholdPersonButton({
         icon={chevronForwardOutline}
         className="household-person-btn__chevron"
       />
+      {score !== null && (
+        <span
+          className={`household-person-btn__score-ribbon household-person-btn__score-ribbon--${status.color}`}
+        >
+          {score}%
+        </span>
+      )}
     </button>
   )
 }
@@ -127,7 +136,7 @@ function HouseholdList({
   readonly onAddPersonClick: () => void
 }) {
   return (
-    <div className="household-list ion-padding">
+    <div className="household-list">
       {people.map((person) => (
         <HouseholdPersonButton
           key={person.id}
@@ -140,9 +149,72 @@ function HouseholdList({
       <button
         className="household-add-btn"
         onClick={onAddPersonClick}
+        aria-label={people.length === 0 ? 'Add your first person' : 'Add person'}
       >
-        + Add Person
+        <span className="household-add-btn__icon">+</span>
+        {people.length === 0 && (
+          <span className="household-add-btn__copy">Add your first person</span>
+        )}
       </button>
+    </div>
+  )
+}
+
+function scrollToHouseholdList() {
+  document
+    .getElementById('household-people-panel')
+    ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+function HouseholdDashboardBody({
+  people,
+  recap,
+  selectedDate,
+  onPersonClick,
+  onRecapClick,
+  onAddPersonClick,
+}: {
+  readonly people: HouseholdPerson[]
+  readonly recap: HouseholdRecap | undefined
+  readonly selectedDate: Date
+  readonly onPersonClick: (personId: string) => void
+  readonly onRecapClick: () => void
+  readonly onAddPersonClick: () => void
+}) {
+  return (
+    <div className="household-snap">
+      <section className="household-snap-panel household-hero-panel">
+        {renderTree(people, recap, onPersonClick, onRecapClick)}
+        {people.length > 0 && (
+          <button
+            type="button"
+            className="household-scroll-cue"
+            onClick={scrollToHouseholdList}
+            aria-label="View household members"
+          >
+            <IonIcon icon={chevronDownOutline} />
+          </button>
+        )}
+      </section>
+
+      <section
+        id="household-people-panel"
+        className="household-snap-panel household-people-panel"
+      >
+        <HouseholdList
+          people={people}
+          selectedDate={selectedDate}
+          onPersonClick={onPersonClick}
+          onAddPersonClick={onAddPersonClick}
+        />
+        <footer className="household-legal">
+          <p>Copyright 2026 Bryant James. All rights reserved.</p>
+          <p>
+            App-generated insights are informational only and do not constitute medical,
+            clinical, legal, or professional advice.
+          </p>
+        </footer>
+      </section>
     </div>
   )
 }
@@ -199,21 +271,18 @@ export default function HouseholdPage() {
       headerContent={headerElement}
       subHeaderContent={calendarElement}
       disablePadding
+      className="household-dashboard-content"
+      transparentHeaderUntilScroll
     >
       {people.isLoading && <LoadingState />}
       {people.error && <p className="ion-padding">Failed to load people.</p>}
 
-      {renderTree(
-        activePeople,
-        householdRecap,
-        (personId) => history.push(`/person/${personId}`),
-        () => history.push('/household/recap'),
-      )}
-
-      <HouseholdList
+      <HouseholdDashboardBody
         people={activePeople}
+        recap={householdRecap}
         selectedDate={selectedDate}
         onPersonClick={(personId) => history.push(`/person/${personId}`)}
+        onRecapClick={() => history.push('/household/recap')}
         onAddPersonClick={() => history.push('/people/new')}
       />
     </Page>

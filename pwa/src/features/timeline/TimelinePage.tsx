@@ -181,7 +181,10 @@ export default function TimelinePage() {
   }, [filteredEvents])
 
   return (
-    <Page title="Timeline">
+    <Page
+      title="Timeline"
+      backHref="/dashboard"
+    >
       {people.isLoading && LOADING_STATE}
       {people.error && <p>Failed to load timeline.</p>}
       {!people.isLoading && !people.error && (

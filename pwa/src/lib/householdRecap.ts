@@ -167,7 +167,7 @@ export function createHouseholdRecap(
 
   return {
     eyebrow: householdGreetingText(selfPerson?.displayName),
-    title: "Today's Recap",
+    title: checkInsRequired.length > 0 ? "Today's Check-In" : "Today's Recap",
     dateLabel: 'Latest status',
     requiredDateLabel: formatRecapDateLabel(todayKey),
     summary: `${doingWell.length} doing well. ${needsCare.length} need care. ${checkInsRequired.length} check-ins required.`,
