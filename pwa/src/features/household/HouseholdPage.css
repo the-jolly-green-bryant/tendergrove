@@ -1,6 +1,7 @@
 .household-dashboard-content {
-  --background: transparent;
+  --background: url('/assets/hero.png') center top / cover no-repeat fixed;
   --household-panel-height: 100dvh;
+  background: #f7f3ec url('/assets/hero.png') center top / cover no-repeat fixed;
 }
 
 .household-dashboard-content::part(scroll) {
@@ -8,6 +9,7 @@
   scroll-behavior: smooth;
   display: flex;
   flex-direction: column;
+  background: transparent;
 }
 
 .household-snap {
@@ -42,7 +44,7 @@
   padding: max(118px, calc(env(safe-area-inset-top) + 108px)) 18px 58px;
   justify-content: space-around;
   border-bottom: 0;
-  background: url('/assets/hero.png') center / cover no-repeat;
+  background: transparent;
   border-top: 0;
 }
 
@@ -81,6 +83,7 @@
   left: 50%;
   bottom: max(10px, env(safe-area-inset-bottom));
   transform: translateX(-50%);
+  z-index: 2;
   width: 42px;
   height: 42px;
   border: 0;
@@ -96,10 +99,17 @@
 
 .household-people-panel {
   min-height: var(--household-panel-height);
-  background: transparent;
-  padding: max(118px, calc(env(safe-area-inset-top) + 108px)) 16px 32px;
+  background: #f7f3ec;
+  padding: max(210px, calc(env(safe-area-inset-top) + 200px)) 16px 32px;
   display: flex;
   flex-direction: column;
+  position: relative;
+  box-shadow: 0 -18px 40px rgba(36, 63, 66, 0.12);
+}
+
+.household-scroll-cue--up {
+  top: max(78px, calc(env(safe-area-inset-top) + 72px));
+  bottom: auto;
 }
 
 .household-people-panel .household-list {
@@ -208,7 +218,7 @@
   }
 
   .household-people-panel {
-    padding-top: max(96px, calc(env(safe-area-inset-top) + 90px));
+    padding-top: max(176px, calc(env(safe-area-inset-top) + 166px));
   }
 
   .household-hero-panel .household-tree-greeting {

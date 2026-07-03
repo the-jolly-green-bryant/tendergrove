@@ -44,12 +44,24 @@ ion-toolbar {
 .page-header--transparent {
   --background: transparent;
   --ion-toolbar-background: transparent;
+  --color: #5f6f70;
   background: transparent;
+  background-color: transparent;
   box-shadow: none;
 }
 
 .page-header--transparent::after {
   display: none;
+  background: transparent;
+  filter: none;
+}
+
+.page-header--transparent .header-background {
+  background: transparent;
+  background-color: transparent;
+  backdrop-filter: none;
+  filter: none;
+  opacity: 1;
 }
 
 .page-header--transparent ion-toolbar,
@@ -58,30 +70,34 @@ ion-toolbar {
   --ion-toolbar-background: transparent;
   --ion-background-color: transparent;
   --border-color: transparent;
-  --color: #244446;
+  --color: #5f6f70;
   background: transparent;
   background-color: transparent;
+  opacity: 1;
 }
 
 .page-header--transparent::part(background),
 .page-header--transparent::part(container),
 .page-toolbar--transparent::part(background) {
   background: transparent;
-  opacity: 0;
+  background-color: transparent;
+  opacity: 1;
 }
 
 .page-toolbar--transparent::part(container) {
   background: transparent;
+  background-color: transparent;
 }
 
 .page-header--transparent .toolbar-background {
   background: transparent;
-  opacity: 0;
+  background-color: transparent;
+  opacity: 1;
 }
 
 .page-header--transparent ion-button,
 .page-header--transparent ion-buttons {
-  --color: #244446;
+  --color: #5f6f70;
 }
 
 .page-header--transparent ion-button,
@@ -90,12 +106,12 @@ ion-toolbar {
 .page-header--transparent .date-navigator__today-btn {
   min-width: 46px;
   min-height: 46px;
-  background: rgba(255, 255, 255, 0.76);
+  background: transparent;
   border-radius: 999px;
-  box-shadow: 0 8px 20px rgba(36, 63, 66, 0.14);
-  color: #244446;
+  box-shadow: none;
+  color: #5f6f70;
   font-weight: 800;
-  backdrop-filter: blur(10px);
+  backdrop-filter: none;
 }
 
 .page-header--transparent .date-navigator__month-btn {
@@ -103,12 +119,12 @@ ion-toolbar {
 }
 
 .page-header--transparent .date-navigator__today-btn {
-  border: 2px solid rgba(36, 63, 66, 0.72);
+  border: 2px solid #6b7b7c;
 }
 
 .page-header--transparent .date-navigator__chevron,
 .page-header--transparent .date-navigator__today-number {
-  color: #244446;
+  color: #5f6f70;
   font-weight: 800;
 }
 

@@ -1,5 +1,9 @@
 import { IonChip, IonIcon } from '@ionic/react'
-import { chevronDownOutline, chevronForwardOutline } from 'ionicons/icons'
+import {
+  chevronDownOutline,
+  chevronForwardOutline,
+  chevronUpOutline,
+} from 'ionicons/icons'
 import { useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
 
@@ -166,6 +170,12 @@ function scrollToHouseholdList() {
     ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
+function scrollToHouseholdHero() {
+  document
+    .getElementById('household-hero-panel')
+    ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
 function HouseholdDashboardBody({
   people,
   recap,
@@ -183,7 +193,10 @@ function HouseholdDashboardBody({
 }) {
   return (
     <div className="household-snap">
-      <section className="household-snap-panel household-hero-panel">
+      <section
+        id="household-hero-panel"
+        className="household-snap-panel household-hero-panel"
+      >
         {renderTree(people, recap, onPersonClick, onRecapClick)}
         {people.length > 0 && (
           <button
@@ -201,6 +214,14 @@ function HouseholdDashboardBody({
         id="household-people-panel"
         className="household-snap-panel household-people-panel"
       >
+        <button
+          type="button"
+          className="household-scroll-cue household-scroll-cue--up"
+          onClick={scrollToHouseholdHero}
+          aria-label="View household overview"
+        >
+          <IonIcon icon={chevronUpOutline} />
+        </button>
         <HouseholdList
           people={people}
           selectedDate={selectedDate}

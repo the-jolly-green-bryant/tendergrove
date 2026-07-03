@@ -136,12 +136,12 @@ export function useDateNavigator({ date, onChange, eventDates }: DateNavigatorPr
 
   const toggleCalendar = useCallback(() => {
     if (!calendarOpen) {
-      // Sync calendar view to currently selected date
-      setViewYear(date.getFullYear())
-      setViewMonth(date.getMonth())
+      // Open on the current month while leaving the selected date highlighted.
+      setViewYear(today.getFullYear())
+      setViewMonth(today.getMonth())
     }
     setCalendarOpen((prev) => !prev)
-  }, [calendarOpen, date])
+  }, [calendarOpen, today])
 
   const goToToday = useCallback(() => {
     onChange(today)
@@ -263,7 +263,7 @@ export function useDateNavigator({ date, onChange, eventDates }: DateNavigatorPr
           onClick={prevMonth}
           aria-label="Previous month"
         >
-          ‹
+          <IonIcon icon={chevronBackOutline} />
         </button>
         <span className="date-navigator__cal-month">{monthLabel}</span>
         <button
@@ -272,7 +272,7 @@ export function useDateNavigator({ date, onChange, eventDates }: DateNavigatorPr
           disabled={isFutureBlocked}
           aria-label="Next month"
         >
-          ›
+          <IonIcon icon={chevronForwardOutline} />
         </button>
       </div>
 

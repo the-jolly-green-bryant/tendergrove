@@ -99,8 +99,11 @@
 /* Dropdown calendar container */
 .date-navigator__calendar {
   padding: 8px 12px 12px;
-  background: #f7f3ec;
-  border-bottom: 1px solid var(--app-border-color);
+  background: #fffaf2;
+  border-top: 1px solid rgba(36, 63, 66, 0.08);
+  border-bottom: 1px solid #d8cfc2;
+  box-shadow: 0 10px 24px rgba(36, 63, 66, 0.1);
+  color: #243f42;
 }
 
 /* Calendar header: ‹ Month Year › */
@@ -113,8 +116,8 @@
 
 .date-navigator__cal-month {
   font-size: 0.9375rem;
-  font-weight: 600;
-  color: var(--ion-text-color);
+  font-weight: 750;
+  color: #116c6d;
 }
 
 .date-navigator__cal-nav {
@@ -126,9 +129,8 @@
   border: none;
   border-radius: 50%;
   background: transparent;
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: var(--ion-color-primary);
+  font-size: 1.2rem;
+  color: #116c6d;
   cursor: pointer;
   -webkit-appearance: none;
   appearance: none;
@@ -136,11 +138,12 @@
 }
 
 .date-navigator__cal-nav:active {
-  background: rgba(0, 0, 0, 0.06);
+  background: rgba(20, 125, 126, 0.12);
 }
 
 .date-navigator__cal-nav:disabled {
-  opacity: 0.3;
+  color: #9f9a93;
+  opacity: 1;
   cursor: default;
 }
 
@@ -154,8 +157,8 @@
 
 .date-navigator__weekday {
   font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--ion-color-step-500, #888);
+  font-weight: 750;
+  color: #4d5553;
   text-transform: uppercase;
   padding: 4px 0;
 }
@@ -199,19 +202,19 @@
 .date-navigator__day:active:not(.date-navigator__day--empty):not(
     .date-navigator__day--disabled
   ) {
-  background: rgba(0, 0, 0, 0.06);
+  background: rgba(20, 125, 126, 0.1);
 }
 
 .date-navigator__day-number {
   font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--ion-text-color);
+  font-weight: 650;
+  color: #243f42;
   line-height: 1;
 }
 
 /* Selected day */
 .date-navigator__day--selected {
-  background: var(--ion-color-primary);
+  background: #147d7e;
   border-radius: 50%;
 }
 
@@ -221,12 +224,12 @@
 }
 
 .date-navigator__day--selected:active {
-  background: var(--ion-color-primary-shade) !important;
+  background: #116c6d !important;
 }
 
 /* Today (when not selected) */
 .date-navigator__day--today .date-navigator__day-number {
-  color: var(--ion-color-primary);
+  color: #116c6d;
   font-weight: 700;
 }
 
@@ -236,7 +239,8 @@
 }
 
 .date-navigator__day--disabled .date-navigator__day-number {
-  opacity: 0.3;
+  color: #9f9a93;
+  opacity: 1;
 }
 
 /* Event dot */
@@ -244,7 +248,7 @@
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: var(--ion-color-primary);
+  background: #147d7e;
   position: absolute;
   bottom: 3px;
 }
