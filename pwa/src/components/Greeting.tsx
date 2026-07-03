@@ -1,26 +1,17 @@
 import { usePeople } from '../features/people/usePeople'
+import { householdGreetingText } from '../lib/greeting'
 
 /**
  *
  */
 export function Greeting() {
   const people = usePeople()
-
-  const hour = new Date().getHours()
-  const period = (() => {
-    if (hour < 12) return 'morning'
-    if (hour < 18) return 'afternoon'
-    return 'evening'
-  })()
-
   const selfPerson = people.data?.find((p) => p.role === 'self')
-  const name = selfPerson ? `, ${selfPerson.displayName}` : ''
 
   return (
     <>
       <h1 className="household-greeting">
-        Good {period}
-        {name} 👋
+        {householdGreetingText(selfPerson?.displayName)}
       </h1>
       <p className="household-subtitle">Here's how your household is doing.</p>
     </>

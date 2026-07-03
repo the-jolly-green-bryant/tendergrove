@@ -8,7 +8,7 @@ import {
   IonTabs,
 } from '@ionic/react'
 import { IonReactRouter } from '@ionic/react-router'
-import { Redirect, Route } from 'react-router-dom'
+import { Redirect, Route, useLocation } from 'react-router-dom'
 import {
   clipboardOutline,
   homeOutline,
@@ -17,6 +17,7 @@ import {
 } from 'ionicons/icons'
 
 import HouseholdPage from '../features/household/HouseholdPage'
+import HouseholdRecapPage from '../features/household/HouseholdRecapPage'
 import TimelinePage from '../features/timeline/TimelinePage'
 import ReportsPage from '../features/reports/ReportsPage'
 import InsightsPage from '../features/insights/InsightsPage'
@@ -29,90 +30,47 @@ import IndicatorFormPage from '../features/people/indicators/IndicatorFormPage'
 import ArchivedPeoplePage from '../features/people/ArchivedPeoplePage'
 import { CheckInWizardPage } from '../features/checkins/CheckInWizardPage'
 
+const appRoutes = [
+  { path: '/dashboard', component: HouseholdPage },
+  { path: '/household/recap', component: HouseholdRecapPage },
+  { path: '/people/new', component: PersonFormPage },
+  { path: '/person/:personId', component: PersonPage },
+  { path: '/person/:personId/edit', component: PersonFormPage },
+  { path: '/person/:personId/check-in', component: CheckInWizardPage },
+  { path: '/person/:personId/indicators', component: ManageIndicatorsPage },
+  {
+    path: '/person/:personId/indicators/checklist',
+    component: IndicatorChecklistPage,
+  },
+  {
+    path: '/person/:personId/indicators/new',
+    component: ChooseIndicatorTypePage,
+  },
+  {
+    path: '/person/:personId/indicators/new/:polarity',
+    component: IndicatorFormPage,
+  },
+  {
+    path: '/person/:personId/indicators/:indicatorId/edit',
+    component: IndicatorFormPage,
+  },
+  { path: '/archived', component: ArchivedPeoplePage },
+  { path: '/check-in', component: TimelinePage },
+  { path: '/check-in/wizard', component: CheckInWizardPage },
+  { path: '/reports', component: InsightsPage },
+  { path: '/reports/export', component: ReportsPage },
+]
+
 const renderRoutes = () => (
   <IonRouterOutlet>
-    <Route
-      exact
-      path="/dashboard"
-      component={HouseholdPage}
-    />
-    <Route
-      exact
-      path="/people/new"
-      component={PersonFormPage}
-    />
-    <Route
-      exact
-      path="/person/:personId"
-      component={PersonPage}
-    />
-    <Route
-      exact
-      path="/person/:personId/edit"
-      component={PersonFormPage}
-    />
-
-    <Route
-      exact
-      path="/person/:personId/check-in"
-      component={CheckInWizardPage}
-    />
-
-    <Route
-      exact
-      path="/person/:personId/indicators"
-      component={ManageIndicatorsPage}
-    />
-
-    <Route
-      exact
-      path="/person/:personId/indicators/checklist"
-      component={IndicatorChecklistPage}
-    />
-
-    <Route
-      exact
-      path="/person/:personId/indicators/new"
-      component={ChooseIndicatorTypePage}
-    />
-
-    <Route
-      exact
-      path="/person/:personId/indicators/new/:polarity"
-      component={IndicatorFormPage}
-    />
-
-    <Route
-      exact
-      path="/person/:personId/indicators/:indicatorId/edit"
-      component={IndicatorFormPage}
-    />
-
-    <Route
-      exact
-      path="/archived"
-      component={ArchivedPeoplePage}
-    />
-    <Route
-      exact
-      path="/check-in"
-      component={TimelinePage}
-    />
-    <Route
-      exact
-      path="/check-in/wizard"
-      component={CheckInWizardPage}
-    />
-    <Route
-      exact
-      path="/reports"
-      component={InsightsPage}
-    />
-    <Route
-      exact
-      path="/reports/export"
-      component={ReportsPage}
-    />
+    {appRoutes.map(({ path, component }) => (
+      <Route
+        key={path}
+        exact
+        path={path}
+        component={component}
+      />
+    ))}
     <Route
       exact
       path="/"
@@ -158,13 +116,27 @@ const renderTabBar = () => (
   </IonTabBar>
 )
 
+/** Renders the tab shell and hides the tab bar for route-level full-screen pages. */
+function AppTabs() {
+  const location = useLocation()
+  const hideTabBar = location.pathname === '/household/recap'
+
+  return (
+    <IonTabs>
+      {renderRoutes()}
+      {!hideTabBar && renderTabBar()}
+    </IonTabs>
+  )
+}
+
+/**
+ * Mounts the Ionic router and tab shell.
+ * @returns {React.JSX.Element}
+ */
 export default function AppShell() {
   return (
     <IonReactRouter>
-      <IonTabs>
-        {renderRoutes()}
-        {renderTabBar()}
-      </IonTabs>
+      <AppTabs />
     </IonReactRouter>
   )
 }

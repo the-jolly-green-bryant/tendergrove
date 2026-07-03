@@ -17,7 +17,7 @@ import {
 } from '@ionic/react'
 import { checkmarkCircle, removeCircle } from 'ionicons/icons'
 import { useEffect, useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 
 import { LoadingState } from '../../components/LoadingState'
 import { PersonAvatar } from '../../components/PersonAvatar'
@@ -53,6 +53,13 @@ function formatDateLabel(date: Date): string {
 }
 
 type Indicator = NonNullable<ReturnType<typeof usePerson>['data']>['indicators'][number]
+
+function returnPathFromSearch(search: string): string | undefined {
+  const returnTo = new URLSearchParams(search).get('returnTo')
+  if (!returnTo?.startsWith('/')) return undefined
+  if (returnTo.startsWith('//')) return undefined
+  return returnTo
+}
 
 /**
  * Renders the check-in form for a single person inside the wizard.
@@ -248,8 +255,13 @@ function WizardStep({
 export function CheckInWizardPage() {
   const router = useIonRouter()
   const { personId } = useParams<{ personId: string }>()
+  const location = useLocation()
   const { selectedDate } = useSelectedDate()
   const people = usePeople()
+  const returnPath = useMemo(
+    () => returnPathFromSearch(location.search),
+    [location.search],
+  )
 
   const activePeople = useMemo(() => {
     const list = (people.data ?? []).filter((p) => !p.archived)
@@ -264,6 +276,9 @@ export function CheckInWizardPage() {
   function advance() {
     const next = currentIndex + 1
     if (next >= activePeople.length) {
+      if (returnPath) {
+        return router.push(returnPath, 'back', 'pop')
+      }
       if (personId) {
         return router.push(`/person/${personId}`, 'back', 'pop')
       }
@@ -281,7 +296,9 @@ export function CheckInWizardPage() {
         <IonToolbar>
           <IonButtons slot="start">
             <IonBackButton
-              defaultHref={personId ? `/person/${personId}` : '/dashboard'}
+              defaultHref={
+                returnPath ?? (personId ? `/person/${personId}` : '/dashboard')
+              }
               text=""
             />
           </IonButtons>
