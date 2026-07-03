@@ -25,6 +25,23 @@ import './HouseholdPage.css'
 
 type HouseholdPerson = HouseholdRecapSourcePerson
 
+const SELF_CARE_QUOTES: ReadonlyArray<readonly [string, string]> = [
+  ['Small steps still move you', 'toward steadier ground.'],
+  ['Healing does not ask you to rush,', 'it asks you to return.'],
+  ['Care for yourself with the patience', 'you so freely offer others.'],
+  ['A quiet breath can become', 'a brave beginning.'],
+  ['Rest is not a pause from growth,', 'it is part of growth.'],
+  ['You can honor what is hard', 'without carrying it alone.'],
+  ['Gentleness is a form', 'of enduring strength.'],
+  ['Today only needs', 'one honest next step.'],
+] as const
+
+function randomQuoteIndex(): number {
+  const values = new Uint32Array(1)
+  window.crypto.getRandomValues(values)
+  return values[0] % SELF_CARE_QUOTES.length
+}
+
 /** True when an ISO datetime string falls on the given local calendar date. */
 function isSameDay(occurredAt: string, date: Date): boolean {
   const d = new Date(occurredAt)
@@ -58,6 +75,24 @@ const renderTree = (
       }))}
     />
   )
+
+function SelfCareQuote() {
+  const quoteIndex = useMemo(randomQuoteIndex, [])
+  const quote = SELF_CARE_QUOTES[quoteIndex]
+
+  return (
+    <aside
+      className="self-care-quote"
+      aria-label={`${quote[0]} ${quote[1]}`}
+    >
+      <span className="self-care-quote__mark">“</span>
+      <p>
+        <span>{quote[0]}</span>
+        <span>{quote[1]}</span>
+      </p>
+    </aside>
+  )
+}
 
 function HouseholdPersonButton({
   person,
@@ -197,6 +232,7 @@ function HouseholdDashboardBody({
         id="household-hero-panel"
         className="household-snap-panel household-hero-panel"
       >
+        <SelfCareQuote />
         {renderTree(people, recap, onPersonClick, onRecapClick)}
         {people.length > 0 && (
           <button

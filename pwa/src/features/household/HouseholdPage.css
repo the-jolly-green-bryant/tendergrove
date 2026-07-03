@@ -33,6 +33,46 @@
   background: transparent;
 }
 
+.self-care-quote {
+  position: absolute;
+  z-index: 1;
+  top: max(112px, calc(env(safe-area-inset-top) + 102px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(calc(100% - 48px), 430px);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #244446;
+  text-align: center;
+  text-shadow: 0 2px 10px rgba(255, 255, 255, 0.74);
+}
+
+.self-care-quote p {
+  margin: 0;
+  color: #2f5556;
+  font-family: "Bradley Hand", "Comic Sans MS", "Segoe Print", cursive;
+  font-size: clamp(25px, 6vw, 36px);
+  font-weight: 700;
+  line-height: 1.12;
+}
+
+.self-care-quote p span {
+  display: block;
+}
+
+.self-care-quote__mark {
+  display: block;
+  height: 24px;
+  margin-bottom: 6px;
+  color: rgba(20, 125, 126, 0.38);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 58px;
+  font-weight: 800;
+  line-height: 0.7;
+}
+
 .household-hero-panel .household-tree-container {
   flex: 1;
   min-height: 0;
@@ -41,7 +81,7 @@
 
 .household-hero-panel .household-tree-card {
   min-height: 100dvh;
-  padding: max(118px, calc(env(safe-area-inset-top) + 108px)) 18px 58px;
+  padding: max(228px, calc(env(safe-area-inset-top) + 218px)) 18px 58px;
   justify-content: space-around;
   border-bottom: 0;
   background: transparent;
@@ -212,8 +252,16 @@
 }
 
 @media (max-height: 760px) {
+  .self-care-quote {
+    top: max(92px, calc(env(safe-area-inset-top) + 84px));
+  }
+
+  .self-care-quote p {
+    font-size: clamp(22px, 5.7vw, 30px);
+  }
+
   .household-hero-panel .household-tree-card {
-    padding-top: max(96px, calc(env(safe-area-inset-top) + 90px));
+    padding-top: max(176px, calc(env(safe-area-inset-top) + 166px));
     padding-bottom: 54px;
   }
 
