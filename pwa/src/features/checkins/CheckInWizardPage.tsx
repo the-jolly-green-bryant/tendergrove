@@ -293,7 +293,7 @@ export function CheckInWizardPage() {
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar color={'transparent'}>
+        <IonToolbar>
           <IonButtons slot="start">
             <IonBackButton
               defaultHref={

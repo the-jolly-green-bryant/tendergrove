@@ -300,7 +300,7 @@ export default function PersonPage() {
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar color={'transparent'}>
+        <IonToolbar>
           <IonButtons slot="start">
             <IonBackButton
               defaultHref="/dashboard"

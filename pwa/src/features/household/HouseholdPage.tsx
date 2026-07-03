@@ -294,6 +294,7 @@ export default function HouseholdPage() {
       disablePadding
       className="household-dashboard-content"
       transparentHeaderUntilScroll
+      transparentHeaderMode="snap-panel"
     >
       {people.isLoading && <LoadingState />}
       {people.error && <p className="ion-padding">Failed to load people.</p>}

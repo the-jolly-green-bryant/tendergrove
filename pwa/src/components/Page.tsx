@@ -13,6 +13,7 @@ import {
   IonPage,
   IonTitle,
   IonToolbar,
+  useIonViewWillEnter,
 } from '@ionic/react'
 import {
   archiveOutline,
@@ -23,7 +24,7 @@ import {
   settingsOutline,
   timeOutline,
 } from 'ionicons/icons'
-import { ReactNode, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 
 import { useAppAuth } from '../auth/AuthContext'
 
@@ -38,6 +39,7 @@ interface PageProps {
   readonly className?: string
   readonly backHref?: string
   readonly transparentHeaderUntilScroll?: boolean
+  readonly transparentHeaderMode?: 'scroll' | 'snap-panel'
 }
 
 const menuItems = [
@@ -125,6 +127,64 @@ const renderMenu = () => {
   )
 }
 
+function useHeaderScrollState(
+  transparentHeaderUntilScroll: boolean | undefined,
+  transparentHeaderMode: PageProps['transparentHeaderMode'],
+  className: string | undefined,
+) {
+  const [isAtTop, setIsAtTop] = useState(true)
+  const contentRef = useRef<HTMLIonContentElement | null>(null)
+  const updateHeaderPosition = useCallback(
+    (scrollTop: number) => {
+      const scrollElement = contentRef.current?.shadowRoot?.querySelector(
+        '[part="scroll"]',
+      ) as HTMLElement | null
+      const threshold =
+        transparentHeaderMode === 'snap-panel'
+          ? (scrollElement?.clientHeight ?? window.innerHeight) / 2
+          : 1
+      const nextIsAtTop = scrollTop < threshold
+      setIsAtTop((currentIsAtTop) =>
+        currentIsAtTop === nextIsAtTop ? currentIsAtTop : nextIsAtTop,
+      )
+    },
+    [transparentHeaderMode],
+  )
+  const syncHeaderPosition = useCallback(async () => {
+    const scrollElement = await contentRef.current?.getScrollElement()
+    if (!scrollElement) return
+    updateHeaderPosition(scrollElement.scrollTop)
+  }, [updateHeaderPosition])
+
+  useEffect(() => {
+    if (!transparentHeaderUntilScroll) return
+
+    let cancelled = false
+    const syncIfActive = async () => {
+      if (cancelled) return
+      await syncHeaderPosition()
+    }
+
+    void syncIfActive()
+    const frame = requestAnimationFrame(() => void syncIfActive())
+
+    return () => {
+      cancelled = true
+      cancelAnimationFrame(frame)
+    }
+  }, [transparentHeaderUntilScroll, className, syncHeaderPosition])
+
+  useIonViewWillEnter(() => {
+    if (!transparentHeaderUntilScroll) return
+    if (transparentHeaderMode === 'snap-panel') {
+      setIsAtTop(true)
+    }
+    void syncHeaderPosition()
+  }, [transparentHeaderMode, transparentHeaderUntilScroll, syncHeaderPosition])
+
+  return { contentRef, isAtTop, updateHeaderPosition }
+}
+
 /**
  * A wrapper for a page with a toolbar and content.
  * @param {PageProps} param0
@@ -145,11 +205,22 @@ export function Page({
   className,
   backHref,
   transparentHeaderUntilScroll,
+  transparentHeaderMode = 'scroll',
 }: PageProps) {
-  const [hasScrolled, setHasScrolled] = useState(false)
-  const headerClassName =
-    transparentHeaderUntilScroll && !hasScrolled ? 'page-header--transparent' : ''
-  const toolbarClassName = headerClassName ? 'page-toolbar--transparent' : ''
+  const { contentRef, isAtTop, updateHeaderPosition } = useHeaderScrollState(
+    transparentHeaderUntilScroll,
+    transparentHeaderMode,
+    className,
+  )
+  const headerScrollClassName = isAtTop
+    ? 'page-header--at-top'
+    : 'page-header--scrolled'
+  const headerClassName = transparentHeaderUntilScroll
+    ? `page-header--transparent ${headerScrollClassName}`
+    : ''
+  const toolbarClassName = transparentHeaderUntilScroll
+    ? 'page-toolbar--transparent'
+    : ''
 
   return (
     <>
@@ -189,11 +260,12 @@ export function Page({
           {subHeaderContent}
         </IonHeader>
         <IonContent
+          ref={contentRef}
           fullscreen
           scrollEvents={transparentHeaderUntilScroll}
           onIonScroll={(event) => {
             if (!transparentHeaderUntilScroll) return
-            setHasScrolled(event.detail.scrollTop > 8)
+            updateHeaderPosition(event.detail.scrollTop)
           }}
           className={`${disablePadding ? '' : 'ion-padding'} safe-content ${className ?? ''}`}
         >

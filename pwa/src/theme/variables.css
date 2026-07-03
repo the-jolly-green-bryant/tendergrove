@@ -60,7 +60,7 @@
   /** Components **/
   --ion-card-background: #ffffff;
   --ion-item-background: #ffffff;
-  --ion-toolbar-color: transparent;
+  --ion-toolbar-color: #5f6f70;
   --ion-tab-bar-background: #ffffff;
   --ion-tab-bar-color: #6e8583;
   --ion-tab-bar-color-selected: var(--ion-color-primary);

@@ -19,19 +19,19 @@
   font-family: inherit;
   font-size: 1.05rem;
   font-weight: 650;
-  color: var(--ion-text-color);
+  color: #5f6f70;
   cursor: pointer;
   -webkit-appearance: none;
   appearance: none;
 }
 
 .date-navigator__month-btn:active {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(95, 111, 112, 0.1);
 }
 
 .date-navigator__chevron {
   font-size: 0.9375rem;
-  color: var(--ion-text-color);
+  color: #5f6f70;
 }
 
 /* Controls group: back/forward arrows + today button */
@@ -54,12 +54,12 @@
   -webkit-appearance: none;
   appearance: none;
   padding: 0;
-  color: var(--ion-text-color);
+  color: #5f6f70;
   font-size: 1.1rem;
 }
 
 .date-navigator__arrow:active {
-  background: var(--ion-text-color);
+  background: rgba(95, 111, 112, 0.1);
 }
 
 .date-navigator__arrow:disabled {
@@ -74,7 +74,7 @@
   justify-content: center;
   width: 44px;
   height: 44px;
-  border: 2px solid var(--ion-text-color);
+  border: 2px solid #6b7b7c;
   border-radius: 6px;
   background: transparent;
   cursor: pointer;
@@ -85,14 +85,14 @@
 }
 
 .date-navigator__today-btn:active {
-  background: var(--ion-text-color);
+  background: rgba(95, 111, 112, 0.1);
 }
 
 .date-navigator__today-number {
   font-family: inherit;
   font-size: 0.9375rem;
   font-weight: 700;
-  color: var(--ion-text-color);
+  color: #5f6f70;
   line-height: 1;
 }
 

@@ -35,10 +35,21 @@ ion-chip {
 }
 
 ion-toolbar {
+  --background: rgba(236, 247, 245, 0.97);
+  --border-color: rgba(20, 125, 126, 0.16);
   --border-width: 0;
+  --color: #5f6f70;
   --padding-top: 8px;
   --padding-bottom: 8px;
   --min-height: 52px;
+  color: #5f6f70;
+}
+
+ion-header {
+  background: rgba(236, 247, 245, 0.97);
+  background-color: rgba(236, 247, 245, 0.97);
+  border-bottom: 1px solid rgba(20, 125, 126, 0.16);
+  box-shadow: 0 10px 24px rgba(36, 63, 66, 0.12);
 }
 
 .page-header--transparent {
@@ -47,7 +58,15 @@ ion-toolbar {
   --color: #5f6f70;
   background: transparent;
   background-color: transparent;
+  border-bottom: 0;
   box-shadow: none;
+}
+
+.page-header--scrolled {
+  background: rgba(236, 247, 245, 0.97);
+  background-color: rgba(236, 247, 245, 0.97);
+  border-bottom: 1px solid rgba(20, 125, 126, 0.16);
+  box-shadow: 0 10px 24px rgba(36, 63, 66, 0.12);
 }
 
 .page-header--transparent::after {
@@ -61,27 +80,29 @@ ion-toolbar {
   background-color: transparent;
   backdrop-filter: none;
   filter: none;
-  opacity: 1;
 }
 
 .page-header--transparent ion-toolbar,
 .page-toolbar--transparent {
-  --background: transparent;
+  --background: rgba(247, 243, 236, 0);
   --ion-toolbar-background: transparent;
   --ion-background-color: transparent;
-  --border-color: transparent;
+  --border-color: rgba(36, 63, 66, 0);
   --color: #5f6f70;
   background: transparent;
   background-color: transparent;
-  opacity: 1;
+}
+
+.page-header--scrolled ion-toolbar {
+  --background: rgba(236, 247, 245, 0.97);
+  --border-color: rgba(20, 125, 126, 0.16);
 }
 
 .page-header--transparent::part(background),
 .page-header--transparent::part(container),
 .page-toolbar--transparent::part(background) {
-  background: transparent;
+  background: var(--background);
   background-color: transparent;
-  opacity: 1;
 }
 
 .page-toolbar--transparent::part(container) {
@@ -90,9 +111,8 @@ ion-toolbar {
 }
 
 .page-header--transparent .toolbar-background {
-  background: transparent;
+  background: var(--background);
   background-color: transparent;
-  opacity: 1;
 }
 
 ion-toolbar {
@@ -143,21 +163,30 @@ ion-header::after {
 
 /* Left-align all toolbar titles (override iOS centering) */
 ion-title {
+  --color: #5f6f70;
   position: absolute;
   left: 56px;
   right: 56px;
   text-align: left;
   padding: 0;
+  color: #5f6f70;
+  font-weight: 800;
 }
 
-/* Toolbar buttons inherit white from toolbar color */
+/* Toolbar controls match the dashboard header color. */
 ion-toolbar ion-button,
 ion-toolbar ion-buttons {
-  --color: #ffffff;
+  --color: #5f6f70;
+  color: #5f6f70;
+}
+
+ion-back-button {
+  --color: #5f6f70;
+  color: #5f6f70;
 }
 
 ion-back-button button {
-  color: var(--ion-text-color)
+  color: #5f6f70;
 }
 
 /* Person profile page */
