@@ -562,13 +562,6 @@ export const HouseholdTree: React.FC<HouseholdTreeProps> = ({
   return (
     <div className={`household-tree-container ${className}`}>
       <div className={`household-tree-card ${isSinglePerson ? 'is-single' : ''}`}>
-        <HouseholdTreeGreeting
-          showGreeting={showGreeting}
-          showSingleGreeting={showSingleGreeting}
-          isSinglePerson={isSinglePerson}
-          selfPerson={people.find((p) => p.isSelf)}
-        />
-
         <div className="tree-composition">
           <TreeVisual
             people={people}

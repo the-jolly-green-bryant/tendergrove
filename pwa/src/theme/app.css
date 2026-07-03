@@ -95,6 +95,10 @@ ion-toolbar {
   opacity: 1;
 }
 
+ion-toolbar {
+  --border-style: none;
+}
+
 .page-header--transparent ion-button,
 .page-header--transparent ion-buttons {
   --color: #5f6f70;
@@ -116,6 +120,10 @@ ion-toolbar {
 
 .page-header--transparent .date-navigator__month-btn {
   padding: 8px 14px;
+}
+
+ion-header::after {
+  display: none;
 }
 
 .page-header--transparent .date-navigator__today-btn {
@@ -146,6 +154,10 @@ ion-title {
 ion-toolbar ion-button,
 ion-toolbar ion-buttons {
   --color: #ffffff;
+}
+
+ion-back-button button {
+  color: var(--ion-text-color)
 }
 
 /* Person profile page */

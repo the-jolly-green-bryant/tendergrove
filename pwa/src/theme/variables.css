@@ -39,7 +39,7 @@
   --ion-color-danger-tint: #eb584f;
 
   /** Base **/
-  --ion-background-color: #f7f3ec;
+  --ion-background-color: #f8f3fa;
   --ion-background-color-rgb: 247, 243, 236;
 
   --ion-text-color: #243f42;
@@ -60,8 +60,7 @@
   /** Components **/
   --ion-card-background: #ffffff;
   --ion-item-background: #ffffff;
-  --ion-toolbar-background: #147d7e;
-  --ion-toolbar-color: #ffffff;
+  --ion-toolbar-color: transparent;
   --ion-tab-bar-background: #ffffff;
   --ion-tab-bar-color: #6e8583;
   --ion-tab-bar-color-selected: var(--ion-color-primary);

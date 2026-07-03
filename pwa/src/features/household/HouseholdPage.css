@@ -99,7 +99,7 @@
 
 .household-people-panel {
   min-height: var(--household-panel-height);
-  background: #f7f3ec;
+  background: #f8f3fa;
   padding: max(210px, calc(env(safe-area-inset-top) + 200px)) 16px 32px;
   display: flex;
   flex-direction: column;

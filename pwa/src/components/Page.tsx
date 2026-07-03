@@ -156,10 +156,14 @@ export function Page({
       {renderMenu()}
       <IonPage id="main-content">
         <IonHeader
-          translucent
           className={headerClassName}
+          collapse={'fade'}
+          mode={'ios'}
         >
-          <IonToolbar className={toolbarClassName}>
+          <IonToolbar
+            className={toolbarClassName}
+            mode={'ios'}
+          >
             <IonButtons slot="start">
               {backHref ? (
                 <IonBackButton
