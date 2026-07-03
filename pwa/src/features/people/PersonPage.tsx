@@ -353,15 +353,6 @@ export default function PersonPage() {
                     <span className="person-status__dot" />
                     <IonLabel>{status.label}</IonLabel>
                   </IonChip>
-
-                  <span className="person-hero__timestamp">
-                    <IonIcon icon={timeOutline} />
-                    {recentCheckIn
-                      ? formatDistanceToNow(new Date(recentCheckIn.occurredAt), {
-                          addSuffix: true,
-                        })
-                      : 'No check-ins yet'}
-                  </span>
                 </div>
               </div>
             </section>

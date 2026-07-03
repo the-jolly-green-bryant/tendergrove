@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import './HouseholdTree.css'
 
 import { PersonAvatar } from './PersonAvatar'
@@ -17,7 +17,31 @@ interface HouseholdTreeProps {
   className?: string
   showGreeting?: boolean
   showSingleGreeting?: boolean
+  recap?: HouseholdRecap
   onPersonClick?: (personId: string) => void
+}
+
+/** A single person's status inside the household recap. */
+export interface HouseholdRecapPerson {
+  id: string
+  displayName: string
+  avatarUrl?: string | null
+  score: number | null
+  label: string
+  level: 'good' | 'trouble' | 'at-risk' | 'unknown'
+  emoji: string
+}
+
+/** Data used to render the compact household recap and its slideshow. */
+export interface HouseholdRecap {
+  eyebrow: string
+  title: string
+  dateLabel: string
+  summary: string
+  featuredPerson?: HouseholdRecapPerson
+  doingWell: HouseholdRecapPerson[]
+  needsCare: HouseholdRecapPerson[]
+  noData: HouseholdRecapPerson[]
 }
 
 interface Point {
@@ -40,11 +64,9 @@ const getTreeStage = (score: number): number => {
 }
 
 const getStatusColor = (score: number): string => {
-  if (score <= 20) return '#EF5350' // Red
-  if (score <= 40) return '#FB8C00' // Orange
-  if (score <= 60) return '#FBC02D' // Amber
-  if (score <= 80) return '#8BC34A' // Light Green
-  return '#43A047' // Green
+  if (score >= 80) return '#2FAE60'
+  if (score >= 60) return '#F5A623'
+  return '#E8453C'
 }
 
 const clampScore = (score: number): number =>
@@ -479,11 +501,296 @@ function HouseholdTreeGreeting({
   )
 }
 
+function RecapPersonList({
+  people,
+  emptyText,
+}: {
+  readonly people: HouseholdRecapPerson[]
+  readonly emptyText: string
+}) {
+  if (people.length === 0) {
+    return <p className="recap-slide__empty">{emptyText}</p>
+  }
+
+  return (
+    <div className="recap-person-list">
+      {people.map((person) => (
+        <div
+          key={person.id}
+          className={`recap-person recap-person--${person.level}`}
+        >
+          <span className="recap-person__emoji">{person.emoji}</span>
+          <span className="recap-person__name">{person.displayName}</span>
+          <span className="recap-person__score">
+            {person.score === null ? person.label : `${person.score}%`}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+interface RecapSlide {
+  title: string
+  body: string
+  content: React.ReactNode
+}
+
+function createRecapSlides(recap: HouseholdRecap): RecapSlide[] {
+  const featuredName = recap.featuredPerson?.displayName ?? 'Your household'
+  const featuredEmoji = recap.featuredPerson?.emoji ?? '✨'
+
+  return [
+    {
+      title: recap.title,
+      body: recap.summary,
+      content: (
+        <div className="recap-hero">
+          <div className="recap-hero__emoji">{featuredEmoji}</div>
+          <div>
+            <p className="recap-hero__label">Most needs attention</p>
+            <h3>{featuredName}</h3>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: 'Who is doing well',
+      body: 'These check-ins landed in a healthier range.',
+      content: (
+        <RecapPersonList
+          people={recap.doingWell}
+          emptyText="No one landed in the doing-well range for this recap."
+        />
+      ),
+    },
+    {
+      title: 'Who needs care',
+      body: 'These check-ins point to moderate risk or crisis.',
+      content: (
+        <RecapPersonList
+          people={recap.needsCare}
+          emptyText="No one landed in the needs-care range for this recap."
+        />
+      ),
+    },
+    {
+      title: 'Missing check-ins',
+      body: `For ${recap.dateLabel}, these people did not have scoreable data.`,
+      content: (
+        <RecapPersonList
+          people={recap.noData}
+          emptyText="Everyone had scoreable data for this recap."
+        />
+      ),
+    },
+  ]
+}
+
+function RecapModalTopbar({
+  eyebrow,
+  onClose,
+}: {
+  readonly eyebrow: string
+  readonly onClose: () => void
+}) {
+  return (
+    <div className="recap-modal__topbar">
+      <span>{eyebrow}</span>
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Close recap"
+      >
+        Close
+      </button>
+    </div>
+  )
+}
+
+function RecapProgress({
+  slides,
+  slideIndex,
+}: {
+  readonly slides: RecapSlide[]
+  readonly slideIndex: number
+}) {
+  return (
+    <div className="recap-progress">
+      {slides.map((item, index) => (
+        <span
+          key={item.title}
+          className={index <= slideIndex ? 'is-active' : ''}
+        />
+      ))}
+    </div>
+  )
+}
+
+function RecapSlideView({
+  slide,
+  dateLabel,
+}: {
+  readonly slide: RecapSlide
+  readonly dateLabel: string
+}) {
+  return (
+    <section className="recap-slide">
+      <p className="recap-slide__date">{dateLabel}</p>
+      <h2>{slide.title}</h2>
+      <p>{slide.body}</p>
+      {slide.content}
+    </section>
+  )
+}
+
+function RecapActions({
+  isFirst,
+  isLast,
+  onBack,
+  onNext,
+}: {
+  readonly isFirst: boolean
+  readonly isLast: boolean
+  readonly onBack: () => void
+  readonly onNext: () => void
+}) {
+  return (
+    <div className="recap-modal__actions">
+      <button
+        type="button"
+        onClick={onBack}
+        disabled={isFirst}
+      >
+        Back
+      </button>
+      <button
+        type="button"
+        onClick={onNext}
+      >
+        {isLast ? 'Done' : 'Next'}
+      </button>
+    </div>
+  )
+}
+
+function HouseholdRecapModal({
+  recap,
+  onClose,
+}: {
+  readonly recap: HouseholdRecap
+  readonly onClose: () => void
+}) {
+  const [slideIndex, setSlideIndex] = useState(0)
+  const slides = createRecapSlides(recap)
+  const slide = slides[slideIndex]
+  const isFirst = slideIndex === 0
+  const isLast = slideIndex === slides.length - 1
+  const goBack = () => setSlideIndex((current) => Math.max(0, current - 1))
+  const goNext = isLast ? onClose : () => setSlideIndex((current) => current + 1)
+
+  return (
+    <div
+      className="recap-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-label={recap.title}
+    >
+      <div className="recap-modal__panel">
+        <RecapModalTopbar
+          eyebrow={recap.eyebrow}
+          onClose={onClose}
+        />
+        <RecapProgress
+          slides={slides}
+          slideIndex={slideIndex}
+        />
+        <RecapSlideView
+          slide={slide}
+          dateLabel={recap.dateLabel}
+        />
+        <RecapActions
+          isFirst={isFirst}
+          isLast={isLast}
+          onBack={goBack}
+          onNext={goNext}
+        />
+      </div>
+    </div>
+  )
+}
+
+function HouseholdRecapTeaser({ recap }: { readonly recap: HouseholdRecap }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const featured = recap.featuredPerson
+
+  return (
+    <>
+      <button
+        type="button"
+        className="household-recap-teaser"
+        onClick={() => setIsOpen(true)}
+      >
+        <div className="household-recap-teaser__art">
+          {featured ? (
+            <PersonAvatar
+              name={featured.displayName}
+              src={featured.avatarUrl}
+              className="household-recap-teaser__avatar"
+            />
+          ) : (
+            <span>✨</span>
+          )}
+          <span className="household-recap-teaser__emoji">
+            {featured?.emoji ?? '✨'}
+          </span>
+        </div>
+        <span className="household-recap-teaser__copy">
+          <span>{recap.eyebrow}</span>
+          <strong>{recap.title}</strong>
+        </span>
+        <span className="household-recap-teaser__chevron">›</span>
+      </button>
+
+      {isOpen && (
+        <HouseholdRecapModal
+          recap={recap}
+          onClose={() => setIsOpen(false)}
+        />
+      )}
+    </>
+  )
+}
+
+function HouseholdSummary({
+  people,
+  score,
+  narrative,
+}: {
+  readonly people: Person[]
+  readonly score: number
+  readonly narrative: { status: string; insight: string }
+}) {
+  return (
+    <div className="household-summary">
+      <div className="household-wellbeing-label">
+        {people.length === 1 ? 'Your Wellbeing' : 'Household Wellbeing'}
+      </div>
+      <div className="household-score-value">{score}</div>
+      <div className="household-narrative">
+        <div className="status">{narrative.status}</div>
+        <div className="insight">{narrative.insight}</div>
+      </div>
+    </div>
+  )
+}
+
 export const HouseholdTree: React.FC<HouseholdTreeProps> = ({
   people,
   className = '',
   showGreeting = false,
   showSingleGreeting = true,
+  recap,
   onPersonClick,
 }) => {
   const householdScore = useMemo(() => {
@@ -517,16 +824,15 @@ export const HouseholdTree: React.FC<HouseholdTreeProps> = ({
 
         <div className="section-divider"></div>
 
-        <div className="household-summary">
-          <div className="household-wellbeing-label">
-            {people.length === 1 ? 'Your Wellbeing' : 'Household Wellbeing'}
-          </div>
-          <div className="household-score-value">{householdScore}</div>
-          <div className="household-narrative">
-            <div className="status">{narrative.status}</div>
-            <div className="insight">{narrative.insight}</div>
-          </div>
-        </div>
+        {recap ? (
+          <HouseholdRecapTeaser recap={recap} />
+        ) : (
+          <HouseholdSummary
+            people={people}
+            score={householdScore}
+            narrative={narrative}
+          />
+        )}
       </div>
     </div>
   )

@@ -7,12 +7,41 @@ import { LoadingState } from '../../components/LoadingState'
 import { Page } from '../../components/Page'
 import { useDateNavigator } from '../../components/DateNavigator'
 import { PersonAvatar } from '../../components/PersonAvatar'
-import { HouseholdTree } from '../../components/HouseholdTree'
-import { Greeting } from '../../components/Greeting'
+import {
+  HouseholdTree,
+  type HouseholdRecap,
+  type HouseholdRecapPerson,
+} from '../../components/HouseholdTree'
 import { useAppAuth } from '../../auth/AuthContext'
 import { useSelectedDate } from '../../context/SelectedDateContext'
 import { usePeople } from '../people/usePeople'
-import { derivePersonStatus, todayEmoji } from '../../lib/status'
+import {
+  computeScore,
+  derivePersonStatus,
+  statusFromScore,
+  todayEmoji,
+} from '../../lib/status'
+
+interface HouseholdCheckIn {
+  occurredAt: string
+  answersJson?: unknown
+}
+
+interface HouseholdIndicator {
+  id: string
+  polarity: string | null
+  active?: boolean | null
+}
+
+interface HouseholdPerson {
+  id: string
+  displayName: string
+  avatarUrl?: string | null
+  role?: string | null
+  archived?: boolean | null
+  indicators?: HouseholdIndicator[] | null
+  checkIns?: HouseholdCheckIn[] | null
+}
 
 /** True when an ISO datetime string falls on the given local calendar date. */
 function isSameDay(occurredAt: string, date: Date): boolean {
@@ -24,10 +53,124 @@ function isSameDay(occurredAt: string, date: Date): boolean {
   )
 }
 
-const renderTree = (people, onPersonClick: (personId: string) => void) =>
+function toDateKey(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function dateKeyFromIso(iso: string): string {
+  return toDateKey(new Date(iso))
+}
+
+function formatRecapDateLabel(dateKey: string): string {
+  const [year, month, day] = dateKey.split('-').map(Number)
+  return new Date(year, month - 1, day).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+  })
+}
+
+function latestCheckInForDate(
+  person: HouseholdPerson,
+  dateKey: string,
+): HouseholdCheckIn | undefined {
+  return (person.checkIns ?? [])
+    .filter((checkIn) => dateKeyFromIso(checkIn.occurredAt) === dateKey)
+    .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))[0]
+}
+
+function scorePersonForDate(
+  person: HouseholdPerson,
+  dateKey: string,
+): HouseholdRecapPerson {
+  const checkIn = latestCheckInForDate(person, dateKey)
+  const score = checkIn
+    ? computeScore(person.indicators ?? [], {
+        occurredAt: checkIn.occurredAt,
+        answersJson: checkIn.answersJson,
+      })
+    : null
+  const status = statusFromScore(score)
+  const emojiByLevel = {
+    good: '😎',
+    trouble: '🫤',
+    'at-risk': '😟',
+    unknown: '○',
+  } as const
+
+  return {
+    id: person.id,
+    displayName: person.displayName,
+    avatarUrl: person.avatarUrl,
+    score,
+    label: status.label,
+    level: status.level,
+    emoji: emojiByLevel[status.level],
+  }
+}
+
+function chooseRecapDateKey(people: HouseholdPerson[], now = new Date()): string {
+  const todayKey = toDateKey(now)
+  const hasCompleteToday =
+    people.length > 0 &&
+    people.every((person) => scorePersonForDate(person, todayKey).score !== null)
+
+  if (hasCompleteToday) {
+    return todayKey
+  }
+
+  const previousDateKeys = new Set<string>()
+  for (const person of people) {
+    for (const checkIn of person.checkIns ?? []) {
+      const dateKey = dateKeyFromIso(checkIn.occurredAt)
+      if (dateKey < todayKey) {
+        previousDateKeys.add(dateKey)
+      }
+    }
+  }
+
+  return Array.from(previousDateKeys).sort((a, b) => b.localeCompare(a))[0] ?? todayKey
+}
+
+function createHouseholdRecap(people: HouseholdPerson[]): HouseholdRecap | undefined {
+  if (people.length === 0) return undefined
+
+  const dateKey = chooseRecapDateKey(people)
+  const recapPeople = people.map((person) => scorePersonForDate(person, dateKey))
+  const doingWell = recapPeople.filter((person) => person.level === 'good')
+  const needsCare = recapPeople.filter(
+    (person) => person.level === 'trouble' || person.level === 'at-risk',
+  )
+  const noData = recapPeople.filter((person) => person.level === 'unknown')
+  const featuredPerson =
+    [...needsCare].sort((a, b) => (a.score ?? 101) - (b.score ?? 101))[0] ??
+    noData[0] ??
+    [...doingWell].sort((a, b) => (a.score ?? 101) - (b.score ?? 101))[0]
+  const selfPerson = people.find((person) => person.role === 'self')
+
+  return {
+    eyebrow: selfPerson ? `Hi, ${selfPerson.displayName}` : 'Your household',
+    title: "Today's Household Recap",
+    dateLabel: formatRecapDateLabel(dateKey),
+    summary: `${doingWell.length} doing well. ${needsCare.length} need care. ${noData.length} missing check-ins.`,
+    featuredPerson,
+    doingWell,
+    needsCare,
+    noData,
+  }
+}
+
+const renderTree = (
+  people: HouseholdPerson[],
+  recap: HouseholdRecap | undefined,
+  onPersonClick: (personId: string) => void,
+) =>
   people.length > 0 && (
     <HouseholdTree
       showGreeting
+      recap={recap}
       onPersonClick={onPersonClick}
       people={people.map((person) => ({
         id: person.id,
@@ -63,6 +206,11 @@ export default function HouseholdPage() {
     [people.data],
   )
 
+  const householdRecap = useMemo(
+    () => createHouseholdRecap(activePeople),
+    [activePeople],
+  )
+
   /** Collect all unique YYYY-MM-DD strings that have any check-in. */
   const eventDates = useMemo(
     () =>
@@ -93,7 +241,9 @@ export default function HouseholdPage() {
       {people.error && <p className="ion-padding">Failed to load people.</p>}
 
       {/* Household Tree */}
-      {renderTree(activePeople, (personId) => history.push(`/person/${personId}`))}
+      {renderTree(activePeople, householdRecap, (personId) =>
+        history.push(`/person/${personId}`),
+      )}
 
       <div className="household-list ion-padding">
         {activePeople.map((person) => {
