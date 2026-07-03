@@ -25,6 +25,11 @@ interface MonthGroup {
   days: DayBucket[]
 }
 
+interface ScoreableIndicator {
+  id: string
+  polarity?: string | null
+}
+
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
@@ -66,7 +71,7 @@ const EMPTY_STATE = (
  */
 export default function InsightsPage() {
   const people = usePeople()
-  const { selectedPeople, togglePerson, clearSelection } = usePersonFilter()
+  const { selectedPeople, selectOnlyPerson, clearSelection } = usePersonFilter()
 
   const activePeople = useMemo(
     () => (people.data ?? []).filter((p) => !p.archived),
@@ -90,7 +95,7 @@ export default function InsightsPage() {
         const checked = new Set(parseAnswers(ci.answersJson).checked)
         const key = toDateKey(ci.occurredAt)
 
-        const isGood = (indicator) => {
+        const isGood = (indicator: ScoreableIndicator) => {
           const wasChecked = checked.has(indicator.id)
           const isDesired = indicator.polarity === 'desired'
           return (isDesired && wasChecked) || (!isDesired && !wasChecked)
@@ -156,7 +161,7 @@ export default function InsightsPage() {
           <PersonFilterChips
             people={activePeople}
             selectedPeople={selectedPeople}
-            onToggle={togglePerson}
+            onToggle={selectOnlyPerson}
             onClear={clearSelection}
             className="person-filter-chips"
           />
@@ -179,7 +184,6 @@ export default function InsightsPage() {
                       <div className="insights-day__bar-track">
                         {(['bad', 'good'] as const).map((k) => {
                           const val = day[k]
-                          console.log('maxTotal', maxTotal)
                           return (
                             val > 0 && (
                               <div

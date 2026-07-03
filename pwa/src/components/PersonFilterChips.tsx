@@ -91,6 +91,7 @@ export function usePersonFilter() {
   }
 
   const clearSelection = () => setSelectedPeople(new Set())
+  const selectOnlyPerson = (personId: string) => setSelectedPeople(new Set([personId]))
 
-  return { selectedPeople, togglePerson, clearSelection }
+  return { selectedPeople, togglePerson, clearSelection, selectOnlyPerson }
 }
