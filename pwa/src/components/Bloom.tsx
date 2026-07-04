@@ -1,7 +1,16 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useHistory } from 'react-router-dom'
 import type { Status } from '../lib/status'
+import {
+  SCORE_VISUAL_COLORS,
+  isCrisisScore,
+  scoreVisualAssetColor,
+  scoreVisualColor,
+} from '../lib/scoreVisuals'
 
+/**
+ * Represents a person rendered on overview display.
+ */
 export interface BloomMember {
   id: string
   displayName: string
@@ -20,17 +29,15 @@ const CENTER = SIZE / 2
 
 // Map score (0-100) to petal properties
 const getPetalProps = (score: number) => {
-  const color =
-    score < 45
-      ? '#E2594B' // crisis coral
-      : score < 70
-        ? '#EFAE45' // watch gold
-        : '#8BB368' // stable green
-
   const scale = 0.62 + (score / 100) * 0.38
   const opacity = 0.35 + (score / 100) * 0.45
 
-  return { scale, color, opacity, isCrisis: score < 45 }
+  return {
+    scale,
+    color: scoreVisualColor(score),
+    opacity,
+    isCrisis: isCrisisScore(score),
+  }
 }
 
 const Petal = ({
@@ -120,7 +127,7 @@ const Petal = ({
           {/* Extra Atmosphere Splatters */}
           {member && (
             <image
-              href={`/assets/bloom/assets/splatter_0${(i % 5) + 1}_${score < 45 ? 'coral' : score < 70 ? 'gold' : 'green'}.png`}
+              href={`/assets/bloom/assets/splatter_0${(i % 5) + 1}_${scoreVisualAssetColor(score)}.png`}
               x={-120}
               y={-220}
               width="240"
@@ -180,7 +187,7 @@ const AvatarOnPetal = ({
           cy="0"
           r={AVATAR_R + 4}
           fill="none"
-          stroke="#E2594B"
+          stroke={SCORE_VISUAL_COLORS.crisis}
           strokeWidth="2"
           opacity="0.6"
         >

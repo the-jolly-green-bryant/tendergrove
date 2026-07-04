@@ -126,6 +126,7 @@ export default function IndicatorChecklistPage() {
           handler: (values: { behavior?: string }) => {
             const name = values.behavior?.trim()
             if (!name) return false
+
             if (item) {
               setItems((prev) => renameChecklistItem(prev, item.id, name))
             } else {
@@ -205,23 +206,17 @@ export default function IndicatorChecklistPage() {
               Select all that apply{displayName && ` for ${displayName}`}.
             </p>
 
-            <PolaritySection
-              polarity="undesired"
-              items={undesired}
-              onToggle={toggleItem}
-              onAddCustom={showCustomIndicatorAlert}
-              onEditCustom={showCustomIndicatorAlert}
-              onRemoveCustom={confirmRemoveCustomIndicator}
-            />
-
-            <PolaritySection
-              polarity="desired"
-              items={desired}
-              onToggle={toggleItem}
-              onAddCustom={showCustomIndicatorAlert}
-              onEditCustom={showCustomIndicatorAlert}
-              onRemoveCustom={confirmRemoveCustomIndicator}
-            />
+            {['undesired', 'desired'].map((polarity) => (
+              <PolaritySection
+                polarity={polarity as Polarity}
+                items={polarity == 'undesired' ? undesired : desired}
+                onToggle={toggleItem}
+                onAddCustom={showCustomIndicatorAlert}
+                onEditCustom={showCustomIndicatorAlert}
+                onRemoveCustom={confirmRemoveCustomIndicator}
+                key={polarity}
+              />
+            ))}
 
             <div className="checklist-footer">
               <IonButton
@@ -312,10 +307,7 @@ function PolaritySection({
               onIonChange={() => onToggle(item.id)}
               color={meta.color}
             />
-            <IonLabel>
-              {item.name}
-              {item.isCustom && <span className="checklist-custom-badge">Custom</span>}
-            </IonLabel>
+            <IonLabel>{item.name}</IonLabel>
             <CustomIndicatorButtons
               item={item}
               polarity={polarity}

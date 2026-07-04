@@ -3,7 +3,6 @@ import './HouseholdTree.css'
 
 import { PersonAvatar } from './PersonAvatar'
 import type { HouseholdRecap } from '../lib/householdRecap'
-import { householdGreetingText } from '../lib/greeting'
 
 interface Person {
   id: string
@@ -450,37 +449,6 @@ function TreeVisual({
   )
 }
 
-function HouseholdTreeGreeting({
-  showGreeting,
-  showSingleGreeting,
-  isSinglePerson,
-  selfPerson,
-}: {
-  readonly showGreeting: boolean
-  readonly showSingleGreeting: boolean
-  readonly isSinglePerson: boolean
-  readonly selfPerson?: Person
-}) {
-  if (showGreeting) {
-    return (
-      <div className="household-tree-greeting">
-        <h1 className="household-greeting">
-          {householdGreetingText(selfPerson?.displayName)}
-        </h1>
-        <p className="household-subtitle">Here's how your household is doing.</p>
-      </div>
-    )
-  }
-  if (!showSingleGreeting || !isSinglePerson || !selfPerson) return null
-
-  return (
-    <div className="household-tree-greeting">
-      <h1 className="household-greeting">Hi, {selfPerson.displayName}</h1>
-      <p className="household-subtitle">Here's a look at your wellbeing.</p>
-    </div>
-  )
-}
-
 function HouseholdRecapTeaser({
   recap,
   onRecapClick,
@@ -543,8 +511,6 @@ function HouseholdSummary({
 export const HouseholdTree: React.FC<HouseholdTreeProps> = ({
   people,
   className = '',
-  showGreeting = false,
-  showSingleGreeting = true,
   recap,
   onPersonClick,
   onRecapClick,

@@ -28,6 +28,7 @@ import {
 } from 'ionicons/icons'
 import { formatDistanceToNow } from 'date-fns'
 import { useMemo } from 'react'
+import type { ReactNode } from 'react'
 import { useLocation, useParams } from 'react-router-dom'
 
 import { useSelectedDate } from '../../context/SelectedDateContext'
@@ -45,6 +46,20 @@ type Indicator = NonNullable<ReturnType<typeof usePerson>['data']>['indicators']
 type CheckIn = NonNullable<ReturnType<typeof usePerson>['data']>['checkIns'][number]
 type Person = NonNullable<ReturnType<typeof usePerson>['data']>
 type PersonStatus = ReturnType<typeof derivePersonStatus>
+type PersonPageDateView = {
+  readonly viewDate: Date
+  readonly isTimelineView: boolean
+}
+type PersonPageSummary = {
+  readonly eventDates: Set<string>
+  readonly activeIndicators: Indicator[]
+  readonly selectedCheckIn?: CheckIn
+  readonly status: PersonStatus
+  readonly emoji?: string | null
+  readonly selectedDateNote: string | null
+  readonly lastNoteCheckIn: CheckIn | null
+  readonly checkedForDate?: Set<string>
+}
 
 const roleLabels: Record<PersonRole, string> = {
   self: 'You',
@@ -78,6 +93,133 @@ function isSameCalendarDate(a: Date, b: Date): boolean {
     a.getMonth() === b.getMonth() &&
     a.getDate() === b.getDate()
   )
+}
+
+function parseDateKey(dateKey: string | null): Date | null {
+  if (!dateKey) return null
+
+  const [year, month, day] = dateKey.split('-').map(Number)
+  if (!year || !month || !day) return null
+
+  return new Date(year, month - 1, day)
+}
+
+function getPersonPageDateView(search: string, selectedDate: Date): PersonPageDateView {
+  const params = new URLSearchParams(search)
+
+  return {
+    viewDate: parseDateKey(params.get('viewDate')) ?? selectedDate,
+    isTimelineView: params.has('viewDate'),
+  }
+}
+
+function usePersonPageSummary(
+  person: Person | null | undefined,
+  viewDate: Date,
+  personId: string | undefined,
+): PersonPageSummary {
+  const indicators = (person?.indicators ?? []) as Indicator[]
+  const checkIns = (person?.checkIns ?? []) as CheckIn[]
+
+  const eventDates = useMemo(
+    () => new Set<string>(checkIns.map((ci) => toISODate(new Date(ci.occurredAt)))),
+    [checkIns],
+  )
+  const activeIndicators = indicators.filter((indicator) => indicator.active !== false)
+
+  const selectedCheckIn = checkIns.find((ci) => isSameDay(ci.occurredAt, viewDate))
+  const status = derivePersonStatus(activeIndicators, checkIns)
+  const emoji = todayEmoji(activeIndicators, checkIns, new Date(), personId)
+  const selectedDateCheckIn = checkIns.find((ci) => isSameDay(ci.occurredAt, viewDate))
+  const selectedDateNote = selectedDateCheckIn?.note || null
+  const checkedForDate =
+    selectedDateCheckIn &&
+    new Set(parseAnswers(selectedDateCheckIn.answersJson).checked)
+
+  const lastNoteCheckIn =
+    [...checkIns]
+      .filter((ci) => Boolean(ci.note) && !isSameDay(ci.occurredAt, viewDate))
+      .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))[0] ?? null
+
+  return {
+    eventDates,
+    activeIndicators,
+    selectedCheckIn,
+    status,
+    emoji,
+    selectedDateNote,
+    lastNoteCheckIn,
+    checkedForDate,
+  }
+}
+
+function usePersonPageActions(
+  person: Person | null | undefined,
+  personId: string | undefined,
+) {
+  const router = useIonRouter()
+  const [presentActionSheet] = useIonActionSheet()
+  const [presentAlert] = useIonAlert()
+  const archiveMutation = useArchivePerson()
+
+  const editPerson = () => router.push(`/person/${personId}/edit`, 'forward')
+
+  const manageIndicators = () =>
+    router.push(`/person/${personId}/indicators`, 'forward')
+
+  function doArchive(archive: boolean) {
+    if (!person) return
+    archiveMutation.mutate(
+      { id: person.id, archived: archive },
+      {
+        onSuccess: () => archive && router.push('/dashboard', 'back', 'pop'),
+      },
+    )
+  }
+
+  const toggleArchive = () => {
+    if (!person) return
+    if (person.archived) {
+      doArchive(false)
+      return
+    }
+
+    void presentAlert({
+      header: 'Archive this person?',
+      message:
+        'Are you sure? You can unarchive people in the Settings section of the app.',
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Archive',
+          role: 'destructive',
+          handler: () => doArchive(true),
+        },
+      ],
+    })
+  }
+
+  const showMoreOptions = () => {
+    const isArchived = person?.archived
+    void presentActionSheet({
+      buttons: [
+        { text: 'Edit Person', icon: createOutline, handler: editPerson },
+        { text: 'Edit Indicators', icon: listOutline, handler: manageIndicators },
+        {
+          text: isArchived ? 'Unarchive' : 'Archive',
+          icon: archiveOutline,
+          role: isArchived ? undefined : 'destructive',
+          handler: toggleArchive,
+        },
+        { text: 'Cancel', role: 'cancel' },
+      ],
+    })
+  }
+
+  return {
+    startCheckIn: () => router.push(`/person/${personId}/check-in`, 'forward'),
+    showMoreOptions,
+  }
 }
 
 function formatUpdatedLabel(checkIn: CheckIn): string | null {
@@ -237,13 +379,195 @@ function PersonCheckInButton({
   )
 }
 
+function PersonPageHeader({
+  isTimelineView,
+  displayName,
+  headerElement,
+  calendarElement,
+}: {
+  readonly isTimelineView: boolean
+  readonly displayName: string
+  readonly headerElement: ReactNode
+  readonly calendarElement: ReactNode
+}) {
+  return (
+    <IonHeader>
+      <IonToolbar>
+        <IonButtons slot="start">
+          <IonBackButton
+            defaultHref="/dashboard"
+            text=""
+          />
+        </IonButtons>
+
+        {!isTimelineView ? headerElement : <IonTitle>{displayName}</IonTitle>}
+      </IonToolbar>
+      {!isTimelineView && calendarElement}
+    </IonHeader>
+  )
+}
+
+function PersonCheckInPanel({
+  person,
+  status,
+  emoji,
+  viewDate,
+  checkedForDate,
+  selectedCheckIn,
+  activeIndicators,
+  onStartCheckIn,
+}: {
+  readonly person: Person
+  readonly status: PersonStatus
+  readonly emoji?: string | null
+  readonly viewDate: Date
+  readonly checkedForDate?: Set<string>
+  readonly selectedCheckIn?: CheckIn
+  readonly activeIndicators: Indicator[]
+  readonly onStartCheckIn: () => void
+}) {
+  const updatedLabel = selectedCheckIn ? formatUpdatedLabel(selectedCheckIn) : null
+
+  return (
+    <section className="person-checkin-panel">
+      <PersonCheckInButton
+        person={person}
+        status={status}
+        emoji={emoji}
+        title={formatCheckInTitle(viewDate)}
+        onClick={onStartCheckIn}
+      />
+
+      <div className="person-checkin-panel__body">
+        {checkedForDate ? (
+          <>
+            {updatedLabel && <p className="check-in-updated">{updatedLabel}</p>}
+
+            <CheckInSummaryList
+              indicators={activeIndicators}
+              checkedForDate={checkedForDate}
+            />
+          </>
+        ) : (
+          <p className="person-checkin-panel__empty">
+            No check-in recorded for {formatDateLabel(viewDate).toLowerCase()}. Tap to
+            start.
+          </p>
+        )}
+      </div>
+    </section>
+  )
+}
+
+function PersonNotesCard({
+  viewDate,
+  selectedDateNote,
+  lastNoteCheckIn,
+}: {
+  readonly viewDate: Date
+  readonly selectedDateNote: string | null
+  readonly lastNoteCheckIn: CheckIn | null
+}) {
+  return (
+    <IonCard>
+      <IonCardContent>
+        <div className="section-header">
+          <h2>{formatDateLabel(viewDate)} Notes</h2>
+        </div>
+
+        {selectedDateNote ? (
+          <p className="person-notes">{selectedDateNote}</p>
+        ) : (
+          <>
+            <p className="person-notes person-notes--empty">
+              No notes for {formatDateLabel(viewDate).toLowerCase()}.
+            </p>
+
+            {lastNoteCheckIn && (
+              <div className="person-notes__last">
+                <div className="section-header">
+                  <h3>Last Notes</h3>
+                  <span className="section-header__meta">
+                    {formatDistanceToNow(new Date(lastNoteCheckIn.occurredAt), {
+                      addSuffix: true,
+                    })}
+                  </span>
+                </div>
+                <p className="person-notes">{lastNoteCheckIn.note}</p>
+              </div>
+            )}
+          </>
+        )}
+      </IonCardContent>
+    </IonCard>
+  )
+}
+
+function PersonPageLoadedContent({
+  person,
+  viewDate,
+  isTimelineView,
+  summary,
+  onStartCheckIn,
+  onShowMoreOptions,
+}: {
+  readonly person: Person
+  readonly viewDate: Date
+  readonly isTimelineView: boolean
+  readonly summary: PersonPageSummary
+  readonly onStartCheckIn: () => void
+  readonly onShowMoreOptions: () => void
+}) {
+  return (
+    <>
+      {isTimelineView && (
+        <p className="person-hero__date-label ion-padding-horizontal">
+          Viewing: {formatDateLabel(viewDate)}
+        </p>
+      )}
+
+      <div className="ion-padding">
+        <PersonCheckInPanel
+          person={person}
+          status={summary.status}
+          emoji={summary.emoji}
+          viewDate={viewDate}
+          checkedForDate={summary.checkedForDate}
+          selectedCheckIn={summary.selectedCheckIn}
+          activeIndicators={summary.activeIndicators}
+          onStartCheckIn={onStartCheckIn}
+        />
+
+        <PersonNotesCard
+          viewDate={viewDate}
+          selectedDateNote={summary.selectedDateNote}
+          lastNoteCheckIn={summary.lastNoteCheckIn}
+        />
+
+        <div className="person-page__footer-actions">
+          <IonButton
+            expand="block"
+            fill="outline"
+            onClick={onShowMoreOptions}
+          >
+            <IonIcon
+              slot="start"
+              icon={createOutline}
+            />
+            Edit Person
+          </IonButton>
+        </div>
+      </div>
+    </>
+  )
+}
+
 /**
  * Displays check-in status of a given person.
  * @returns {React.JSX.Element | null}
  * @constructor
  */
 export default function PersonPage() {
-  const router = useIonRouter()
   const { personId } = useParams<{ personId: string }>()
   const isRealPerson = Boolean(personId && personId !== 'new')
   const {
@@ -251,49 +575,21 @@ export default function PersonPage() {
     isLoading,
     error,
   } = usePerson(isRealPerson ? personId : undefined)
-  const [presentActionSheet] = useIonActionSheet()
-  const [presentAlert] = useIonAlert()
   const { selectedDate, setSelectedDate } = useSelectedDate()
   const location = useLocation()
+  const { startCheckIn, showMoreOptions } = usePersonPageActions(person, personId)
 
-  // If navigated from timeline with ?viewDate=YYYY-MM-DD, use that date
-  // for display without changing the app's master selectedDate.
-  const viewDate = useMemo(() => {
-    const params = new URLSearchParams(location.search)
-    const vd = params.get('viewDate')
-    if (vd) {
-      const [y, m, d] = vd.split('-').map(Number)
-      if (y && m && d) return new Date(y, m - 1, d)
-    }
-    return selectedDate
-  }, [location.search, selectedDate])
-
-  const isTimelineView = new URLSearchParams(location.search).has('viewDate')
-
-  const indicators = (person?.indicators ?? []) as Indicator[]
-  const checkIns = (person?.checkIns ?? []) as CheckIn[]
-
-  /** Collect YYYY-MM-DD strings for this person's check-ins (for calendar dots). */
-  const eventDates = useMemo(
-    () => new Set<string>(checkIns.map((ci) => toISODate(new Date(ci.occurredAt)))),
-    [checkIns],
+  const { viewDate, isTimelineView } = useMemo(
+    () => getPersonPageDateView(location.search, selectedDate),
+    [location.search, selectedDate],
   )
-  const activeIndicators = indicators.filter((indicator) => indicator.active !== false)
+  const summary = usePersonPageSummary(person, viewDate, personId)
 
-  const selectedCheckIn = checkIns.find((ci) => isSameDay(ci.occurredAt, viewDate))
-  const status = derivePersonStatus(activeIndicators, checkIns)
-  const emoji = todayEmoji(activeIndicators, checkIns, new Date(), personId)
-  const selectedDateCheckIn = checkIns.find((ci) => isSameDay(ci.occurredAt, viewDate))
-  /** Note for the currently viewed date. */
-  const selectedDateNote = selectedDateCheckIn?.note || null
-
-  /** Most recent check-in with a note on a *different* day (for "Last notes" fallback). */
-  const lastNoteCheckIn =
-    [...checkIns]
-      .filter((ci) => Boolean(ci.note) && !isSameDay(ci.occurredAt, viewDate))
-      .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))[0] ?? null
-
-  const checkInPath = `/person/${personId}/check-in`
+  const { headerElement, calendarElement } = useDateNavigator({
+    date: viewDate,
+    onChange: setSelectedDate,
+    eventDates: summary.eventDates,
+  })
 
   // When Ionic matches /people/new against /people/:personId, bail out so
   // PersonFormPage is the only visible page.
@@ -301,104 +597,14 @@ export default function PersonPage() {
     return null
   }
 
-  const editPerson = () => router.push(`/person/${personId}/edit`, 'forward')
-
-  const manageIndicators = () =>
-    router.push(`/person/${personId}/indicators`, 'forward')
-
-  const archiveMutation = useArchivePerson()
-
-  function doArchive(archive: boolean) {
-    if (!person) return
-    archiveMutation.mutate(
-      { id: person.id, archived: archive },
-      {
-        onSuccess: () => archive && router.push('/dashboard', 'back', 'pop'),
-      },
-    )
-  }
-
-  const toggleArchive = () => {
-    if (!person) return
-    if (person.archived) {
-      doArchive(false)
-      return
-    }
-
-    void presentAlert({
-      header: 'Archive this person?',
-      message:
-        'Are you sure? You can unarchive people in the Settings section of the app.',
-      buttons: [
-        { text: 'Cancel', role: 'cancel' },
-        {
-          text: 'Archive',
-          role: 'destructive',
-          handler: () => doArchive(true),
-        },
-      ],
-    })
-  }
-
-  const showMoreOptions = () => {
-    const isArchived = person?.archived
-    void presentActionSheet({
-      buttons: [
-        {
-          text: 'Edit Person',
-          icon: createOutline,
-          handler: editPerson,
-        },
-        {
-          text: 'Edit Indicators',
-          icon: listOutline,
-          handler: manageIndicators,
-        },
-        {
-          text: isArchived ? 'Unarchive' : 'Archive',
-          icon: archiveOutline,
-          role: isArchived ? undefined : 'destructive',
-          handler: toggleArchive,
-        },
-        {
-          text: 'Cancel',
-          role: 'cancel',
-        },
-      ],
-    })
-  }
-
-  const startCheckIn = () => router.push(checkInPath, 'forward')
-
-  const checkedForDate =
-    selectedDateCheckIn &&
-    new Set(parseAnswers(selectedDateCheckIn.answersJson).checked)
-
-  const { headerElement, calendarElement } = useDateNavigator({
-    date: viewDate,
-    onChange: setSelectedDate,
-    eventDates,
-  })
-
   return (
     <IonPage>
-      <IonHeader>
-        <IonToolbar>
-          <IonButtons slot="start">
-            <IonBackButton
-              defaultHref="/dashboard"
-              text=""
-            />
-          </IonButtons>
-
-          {!isTimelineView ? (
-            headerElement
-          ) : (
-            <IonTitle>{person?.displayName ?? ''}</IonTitle>
-          )}
-        </IonToolbar>
-        {!isTimelineView && calendarElement}
-      </IonHeader>
+      <PersonPageHeader
+        isTimelineView={isTimelineView}
+        displayName={person?.displayName ?? ''}
+        headerElement={headerElement}
+        calendarElement={calendarElement}
+      />
 
       <IonContent
         fullscreen
@@ -409,96 +615,14 @@ export default function PersonPage() {
         {error && <p className="ion-padding">Failed to load this person.</p>}
 
         {person && (
-          <>
-            {isTimelineView && (
-              <p className="person-hero__date-label ion-padding-horizontal">
-                Viewing: {formatDateLabel(viewDate)}
-              </p>
-            )}
-
-            <div className="ion-padding">
-              <section className="person-checkin-panel">
-                <PersonCheckInButton
-                  person={person}
-                  status={status}
-                  emoji={emoji}
-                  title={formatCheckInTitle(viewDate)}
-                  onClick={startCheckIn}
-                />
-
-                <div className="person-checkin-panel__body">
-                  {checkedForDate ? (
-                    <>
-                      {selectedCheckIn && formatUpdatedLabel(selectedCheckIn) && (
-                        <p className="check-in-updated">
-                          {formatUpdatedLabel(selectedCheckIn)}
-                        </p>
-                      )}
-
-                      <CheckInSummaryList
-                        indicators={activeIndicators}
-                        checkedForDate={checkedForDate}
-                      />
-                    </>
-                  ) : (
-                    <p className="person-checkin-panel__empty">
-                      No check-in recorded for {formatDateLabel(viewDate).toLowerCase()}
-                      . Tap to start.
-                    </p>
-                  )}
-                </div>
-              </section>
-
-              <IonCard>
-                <IonCardContent>
-                  <div className="section-header">
-                    <h2>{formatDateLabel(viewDate)} Notes</h2>
-                  </div>
-
-                  {selectedDateNote ? (
-                    <p className="person-notes">{selectedDateNote}</p>
-                  ) : (
-                    <>
-                      <p className="person-notes person-notes--empty">
-                        No notes for {formatDateLabel(viewDate).toLowerCase()}.
-                      </p>
-
-                      {lastNoteCheckIn && (
-                        <div className="person-notes__last">
-                          <div className="section-header">
-                            <h3>Last Notes</h3>
-                            <span className="section-header__meta">
-                              {formatDistanceToNow(
-                                new Date(lastNoteCheckIn.occurredAt),
-                                {
-                                  addSuffix: true,
-                                },
-                              )}
-                            </span>
-                          </div>
-                          <p className="person-notes">{lastNoteCheckIn.note}</p>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </IonCardContent>
-              </IonCard>
-
-              <div className="person-page__footer-actions">
-                <IonButton
-                  expand="block"
-                  fill="outline"
-                  onClick={showMoreOptions}
-                >
-                  <IonIcon
-                    slot="start"
-                    icon={createOutline}
-                  />
-                  Edit Person
-                </IonButton>
-              </div>
-            </div>
-          </>
+          <PersonPageLoadedContent
+            person={person}
+            viewDate={viewDate}
+            isTimelineView={isTimelineView}
+            summary={summary}
+            onStartCheckIn={startCheckIn}
+            onShowMoreOptions={showMoreOptions}
+          />
         )}
       </IonContent>
     </IonPage>

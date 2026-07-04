@@ -136,6 +136,16 @@ const checkInToEvent = (person, ci): TimelineEvent => {
   }
 }
 
+const groupEventsByDate = (events: TimelineEvent[]): Map<string, TimelineEvent[]> => {
+  const groups: Map<string, TimelineEvent[]> = new Map()
+  for (const event of events) {
+    const key = toDateKey(event.occurredAt)
+    if (!groups.has(key)) groups.set(key, [])
+    groups.get(key)!.push(event)
+  }
+  return groups
+}
+
 /**
  * Depicts check-ins as a timeseries bar chart to help users visualize distress over
  * time.
@@ -170,15 +180,10 @@ export default function TimelinePage() {
     [allEvents, selectedPeople, selectedTypes],
   )
 
-  const groupedEvents = useMemo(() => {
-    const groups: Map<string, TimelineEvent[]> = new Map()
-    for (const event of filteredEvents) {
-      const key = toDateKey(event.occurredAt)
-      if (!groups.has(key)) groups.set(key, [])
-      groups.get(key)!.push(event)
-    }
-    return groups
-  }, [filteredEvents])
+  const groupedEvents = useMemo(
+    () => groupEventsByDate(filteredEvents),
+    [filteredEvents],
+  )
 
   return (
     <Page

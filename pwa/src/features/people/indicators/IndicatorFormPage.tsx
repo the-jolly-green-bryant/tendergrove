@@ -65,7 +65,7 @@ export default function IndicatorFormPage() {
   const existing = isEditing
     ? indicators?.find((item) => item.id === indicatorId)
     : undefined
-  const { create, update, remove } = useIndicatorMutations(personId)
+  const { remove } = useIndicatorMutations(personId)
 
   const polarity: Polarity = isPolarity(polarityParam)
     ? polarityParam

@@ -42,16 +42,6 @@ function randomQuoteIndex(): number {
   return values[0] % SELF_CARE_QUOTES.length
 }
 
-/** True when an ISO datetime string falls on the given local calendar date. */
-function isSameDay(occurredAt: string, date: Date): boolean {
-  const d = new Date(occurredAt)
-  return (
-    d.getFullYear() === date.getFullYear() &&
-    d.getMonth() === date.getMonth() &&
-    d.getDate() === date.getDate()
-  )
-}
-
 const renderTree = (
   people: HouseholdPerson[],
   recap: HouseholdRecap | undefined,
@@ -60,7 +50,6 @@ const renderTree = (
 ) =>
   people.length > 0 && (
     <HouseholdTree
-      showGreeting
       recap={recap}
       onPersonClick={onPersonClick}
       onRecapClick={onRecapClick}
@@ -96,11 +85,9 @@ function SelfCareQuote() {
 
 function HouseholdPersonButton({
   person,
-  selectedDate,
   onClick,
 }: {
   readonly person: HouseholdPerson
-  readonly selectedDate: Date
   readonly onClick: () => void
 }) {
   const status = derivePersonStatus(person.indicators ?? [], person.checkIns ?? [])
@@ -171,7 +158,6 @@ function HouseholdList({
         <HouseholdPersonButton
           key={person.id}
           person={person}
-          selectedDate={selectedDate}
           onClick={() => onPersonClick(person.id)}
         />
       ))}
