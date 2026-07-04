@@ -1,7 +1,8 @@
 // src/AppShell.tsx
-import { IonRouterOutlet } from '@ionic/react'
+import { IonModal, IonRouterOutlet } from '@ionic/react'
 import { IonReactRouter } from '@ionic/react-router'
-import { Redirect, Route } from 'react-router-dom'
+import { ComponentType } from 'react'
+import { matchPath, Redirect, Route, useHistory, useLocation } from 'react-router-dom'
 
 import HouseholdPage from '../features/household/HouseholdPage'
 import HouseholdRecapPage from '../features/household/HouseholdRecapPage'
@@ -16,14 +17,12 @@ import ChooseIndicatorTypePage from '../features/people/indicators/ChooseIndicat
 import IndicatorFormPage from '../features/people/indicators/IndicatorFormPage'
 import ArchivedPeoplePage from '../features/people/ArchivedPeoplePage'
 import { CheckInWizardPage } from '../features/checkins/CheckInWizardPage'
+import { RouteModalProvider } from '../components/RouteModalContext'
 
 const appRoutes = [
   { path: '/dashboard', component: HouseholdPage },
-  { path: '/household/recap', component: HouseholdRecapPage },
-  { path: '/people/new', component: PersonFormPage },
   { path: '/person/:personId', component: PersonPage },
   { path: '/person/:personId/edit', component: PersonFormPage },
-  { path: '/person/:personId/check-in', component: CheckInWizardPage },
   { path: '/person/:personId/indicators', component: ManageIndicatorsPage },
   {
     path: '/person/:personId/indicators/checklist',
@@ -43,18 +42,71 @@ const appRoutes = [
   },
   { path: '/archived', component: ArchivedPeoplePage },
   { path: '/check-in', component: TimelinePage },
-  { path: '/check-in/wizard', component: CheckInWizardPage },
   { path: '/reports', component: InsightsPage },
   { path: '/reports/export', component: ReportsPage },
 ]
 
-const renderRoutes = () => (
+const modalRoutes = [
+  {
+    path: '/household/recap',
+    component: HouseholdRecapPage,
+    fallback: '/dashboard',
+  },
+  {
+    path: '/people/new',
+    component: PersonFormPage,
+    fallback: '/dashboard',
+  },
+  {
+    path: '/person/:personId/check-in',
+    component: CheckInWizardPage,
+    fallback: '/person/:personId',
+  },
+  {
+    path: '/check-in/wizard',
+    component: CheckInWizardPage,
+    fallback: '/check-in',
+  },
+] as const
+
+function resolveModalFallback(fallback: string, url: string): string {
+  if (fallback === '/person/:personId') {
+    return url.replace(/\/check-in$/, '')
+  }
+  return fallback
+}
+
+function getBackgroundLocation(location: ReturnType<typeof useLocation>) {
+  const modalRoute = modalRoutes.find(({ path }) =>
+    matchPath(location.pathname, { path, exact: true }),
+  )
+  if (!modalRoute) return location
+
+  const match = matchPath(location.pathname, {
+    path: modalRoute.path,
+    exact: true,
+  })
+  const pathname = resolveModalFallback(
+    modalRoute.fallback,
+    match?.url ?? location.pathname,
+  )
+
+  return {
+    ...location,
+    pathname,
+    search: '',
+    hash: '',
+  }
+}
+
+const renderRoutes = (routeLocation: ReturnType<typeof useLocation>) => (
   <IonRouterOutlet>
     {appRoutes.map(({ path, component }) => (
       <Route
         key={path}
         exact
         path={path}
+        location={routeLocation}
         component={component}
       />
     ))}
@@ -67,10 +119,81 @@ const renderRoutes = () => (
   </IonRouterOutlet>
 )
 
+function RouteModal({
+  path,
+  component: modalComponent,
+  fallback,
+}: {
+  readonly path: string
+  readonly component: ComponentType
+  readonly fallback: string
+}) {
+  const history = useHistory()
+  const location = useLocation()
+  const ModalContent = modalComponent
+  const dismiss = (targetPath?: string) => {
+    history.replace(targetPath ?? resolveModalFallback(fallback, location.pathname))
+  }
+
+  return (
+    <Route
+      exact
+      path={path}
+    >
+      {({ match }) => (
+        <IonModal
+          isOpen={Boolean(match)}
+          breakpoints={[0, 1]}
+          initialBreakpoint={1}
+          handle
+          className="route-modal"
+          onDidDismiss={() => {
+            if (match && location.pathname === match.url) {
+              dismiss(resolveModalFallback(fallback, match.url))
+            }
+          }}
+        >
+          {match && (
+            <RouteModalProvider value={{ isRouteModal: true, dismiss }}>
+              <ModalContent />
+            </RouteModalProvider>
+          )}
+        </IonModal>
+      )}
+    </Route>
+  )
+}
+
+const renderModalRoutes = () =>
+  modalRoutes.map(({ path, component, fallback }) => (
+    <RouteModal
+      key={path}
+      path={path}
+      component={component}
+      fallback={fallback}
+    />
+  ))
+
+function AppShellRoutes() {
+  const location = useLocation()
+  const backgroundLocation = getBackgroundLocation(location)
+
+  return (
+    <>
+      {renderRoutes(backgroundLocation)}
+      {renderModalRoutes()}
+    </>
+  )
+}
+
 /**
  * Mounts the Ionic router.
  * @returns {React.JSX.Element}
  */
 export default function AppShell() {
-  return <IonReactRouter>{renderRoutes()}</IonReactRouter>
+  return (
+    <IonReactRouter>
+      <AppShellRoutes />
+    </IonReactRouter>
+  )
 }

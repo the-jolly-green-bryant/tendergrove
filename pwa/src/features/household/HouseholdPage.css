@@ -53,7 +53,7 @@
 .self-care-quote p {
   margin: 0;
   color: #2f5556;
-  font-family: "Bradley Hand", "Comic Sans MS", "Segoe Print", cursive;
+  font-family: 'Bradley Hand', 'Comic Sans MS', 'Segoe Print', cursive;
   font-size: clamp(25px, 6vw, 36px);
   font-weight: 700;
   line-height: 1.12;
@@ -68,7 +68,7 @@
   height: 24px;
   margin-bottom: 6px;
   color: rgba(20, 125, 126, 0.38);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: Georgia, 'Times New Roman', serif;
   font-size: 58px;
   font-weight: 800;
   line-height: 0.7;

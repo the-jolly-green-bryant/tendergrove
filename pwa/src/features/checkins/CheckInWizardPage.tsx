@@ -15,6 +15,7 @@ import { useLocation, useParams } from 'react-router-dom'
 import { LoadingState } from '../../components/LoadingState'
 import { Page } from '../../components/Page'
 import { PersonAvatar } from '../../components/PersonAvatar'
+import { useRouteModal } from '../../components/RouteModalContext'
 import { useSelectedDate } from '../../context/SelectedDateContext'
 import { usePeople } from '../people/usePeople'
 import { usePerson } from '../people/usePerson'
@@ -349,10 +350,16 @@ function WizardStep({ personId, selectedDate, onDone, onSkip }: WizardStepProps)
  * @returns {React.JSX.Element}
  * @constructor
  */
-export function CheckInWizardPage() {
+export function CheckInWizardPage({
+  personIdOverride,
+}: {
+  readonly personIdOverride?: string
+} = {}) {
   const router = useIonRouter()
-  const { personId } = useParams<{ personId: string }>()
+  const { personId: routePersonId } = useParams<{ personId: string }>()
+  const personId = personIdOverride ?? routePersonId
   const location = useLocation()
+  const routeModal = useRouteModal()
   const { selectedDate } = useSelectedDate()
   const people = usePeople()
   const returnPath = useMemo(
@@ -373,6 +380,10 @@ export function CheckInWizardPage() {
   function advance() {
     const next = currentIndex + 1
     if (next >= activePeople.length) {
+      if (routeModal.isRouteModal) {
+        routeModal.dismiss()
+        return
+      }
       if (returnPath) {
         return router.push(returnPath, 'back', 'pop')
       }
@@ -393,6 +404,7 @@ export function CheckInWizardPage() {
     <Page
       title={title}
       backHref={backHref}
+      onBackClick={routeModal.isRouteModal ? () => routeModal.dismiss() : undefined}
       className="check-in-wizard-content"
     >
       <p className="wizard-date-badge">{formatDateLabel(selectedDate)}</p>

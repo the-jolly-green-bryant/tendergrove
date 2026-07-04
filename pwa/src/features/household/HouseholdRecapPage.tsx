@@ -1,16 +1,24 @@
-import { IonContent, IonIcon, IonPage, useIonViewWillEnter } from '@ionic/react'
+import {
+  IonContent,
+  IonIcon,
+  IonModal,
+  IonPage,
+  useIonViewWillEnter,
+} from '@ionic/react'
 import { closeOutline } from 'ionicons/icons'
 import { type ReactNode, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 
 import { LoadingState } from '../../components/LoadingState'
 import { PersonAvatar } from '../../components/PersonAvatar'
+import { RouteModalProvider, useRouteModal } from '../../components/RouteModalContext'
 import {
   createHouseholdRecap,
   type HouseholdRecap,
   type HouseholdRecapPerson,
 } from '../../lib/householdRecap'
 import { usePeople } from '../people/usePeople'
+import { CheckInWizardPage } from '../checkins/CheckInWizardPage'
 import './HouseholdRecapPage.css'
 
 interface RecapSlide {
@@ -202,22 +210,88 @@ function RecapProgress({
   )
 }
 
+function RecapCheckInModal({
+  personId,
+  onDismiss,
+}: {
+  readonly personId: string | null
+  readonly onDismiss: () => void
+}) {
+  return (
+    <IonModal
+      isOpen={Boolean(personId)}
+      breakpoints={[0, 1]}
+      initialBreakpoint={1}
+      handle
+      className="route-modal"
+      onDidDismiss={onDismiss}
+    >
+      {personId && (
+        <RouteModalProvider
+          value={{
+            isRouteModal: true,
+            dismiss: onDismiss,
+          }}
+        >
+          <CheckInWizardPage personIdOverride={personId} />
+        </RouteModalProvider>
+      )}
+    </IonModal>
+  )
+}
+
+function RecapActions({
+  isFirst,
+  isLast,
+  onBack,
+  onNext,
+}: {
+  readonly isFirst: boolean
+  readonly isLast: boolean
+  readonly onBack: () => void
+  readonly onNext: () => void
+}) {
+  return (
+    <div className="recap-page__actions">
+      <button
+        type="button"
+        onClick={onBack}
+        disabled={isFirst}
+      >
+        Back
+      </button>
+      <button
+        type="button"
+        onClick={onNext}
+      >
+        {isLast ? 'Done' : 'Next'}
+      </button>
+    </div>
+  )
+}
+
 function HouseholdRecapContent({ recap }: { readonly recap: HouseholdRecap }) {
   const history = useHistory()
+  const routeModal = useRouteModal()
   const [slideIndex, setSlideIndex] = useState(0)
+  const [checkInPersonId, setCheckInPersonId] = useState<string | null>(null)
   useIonViewWillEnter(() => {
     setSlideIndex(0)
   })
 
-  const slides = createRecapSlides(recap, (personId) =>
-    history.push(
-      `/person/${personId}/check-in?returnTo=${encodeURIComponent('/household/recap')}`,
-    ),
-  )
+  const slides = createRecapSlides(recap, (personId) => {
+    const checkInPath = `/person/${personId}/check-in`
+    if (routeModal.isRouteModal) {
+      setCheckInPersonId(personId)
+      return
+    }
+    history.push(`${checkInPath}?returnTo=${encodeURIComponent('/household/recap')}`)
+  })
   const slide = slides[slideIndex]
   const isFirst = slideIndex === 0
   const isLast = slideIndex === slides.length - 1
-  const close = () => history.push('/dashboard')
+  const close = () =>
+    routeModal.isRouteModal ? routeModal.dismiss() : history.push('/dashboard')
   const goBack = () => setSlideIndex((current) => Math.max(0, current - 1))
   const goNext = () => {
     if (isLast) {
@@ -228,46 +302,44 @@ function HouseholdRecapContent({ recap }: { readonly recap: HouseholdRecap }) {
   }
 
   return (
-    <div className="recap-page">
-      <div className="recap-page__topbar">
-        <span>{recap.eyebrow}</span>
-        <button
-          type="button"
-          onClick={close}
-          aria-label="Close recap"
-        >
-          <IonIcon icon={closeOutline} />
-        </button>
+    <>
+      <div className="recap-page">
+        <div className="recap-page__topbar">
+          <span>{recap.eyebrow}</span>
+          <button
+            type="button"
+            onClick={close}
+            aria-label="Close recap"
+          >
+            <IonIcon icon={closeOutline} />
+          </button>
+        </div>
+
+        <RecapProgress
+          slides={slides}
+          slideIndex={slideIndex}
+        />
+
+        <section className={`recap-slide recap-slide--${slide.layout}`}>
+          <p className="recap-slide__date">{recap.dateLabel}</p>
+          <h2>{slide.title}</h2>
+          <p>{slide.body}</p>
+          {slide.content}
+        </section>
+
+        <RecapActions
+          isFirst={isFirst}
+          isLast={isLast}
+          onBack={goBack}
+          onNext={goNext}
+        />
       </div>
 
-      <RecapProgress
-        slides={slides}
-        slideIndex={slideIndex}
+      <RecapCheckInModal
+        personId={checkInPersonId}
+        onDismiss={() => setCheckInPersonId(null)}
       />
-
-      <section className={`recap-slide recap-slide--${slide.layout}`}>
-        <p className="recap-slide__date">{recap.dateLabel}</p>
-        <h2>{slide.title}</h2>
-        <p>{slide.body}</p>
-        {slide.content}
-      </section>
-
-      <div className="recap-page__actions">
-        <button
-          type="button"
-          onClick={goBack}
-          disabled={isFirst}
-        >
-          Back
-        </button>
-        <button
-          type="button"
-          onClick={goNext}
-        >
-          {isLast ? 'Done' : 'Next'}
-        </button>
-      </div>
-    </div>
+    </>
   )
 }
 

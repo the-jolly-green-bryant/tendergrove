@@ -17,6 +17,7 @@ import {
 } from '@ionic/react'
 import {
   archiveOutline,
+  arrowBackOutline,
   homeOutline,
   logOutOutline,
   menuOutline,
@@ -38,6 +39,7 @@ interface PageProps {
   readonly disablePadding?: boolean
   readonly className?: string
   readonly backHref?: string
+  readonly onBackClick?: () => void
   readonly transparentHeaderUntilScroll?: boolean
   readonly transparentHeaderMode?: 'scroll' | 'snap-panel'
   readonly forceOverscroll?: boolean
@@ -186,29 +188,51 @@ function useHeaderScrollState(
   return { contentRef, isAtTop, updateHeaderPosition }
 }
 
-function HeaderStartControl({ backHref }: { readonly backHref?: string }) {
-  return (
-    <IonButtons slot="start">
-      {backHref ? (
-        <IonBackButton
-          defaultHref={backHref}
-          text=""
+function HeaderStartControl({
+  backHref,
+  onBackClick,
+}: {
+  readonly backHref?: string
+  readonly onBackClick?: () => void
+}) {
+  let control: ReactNode
+  if (onBackClick) {
+    control = (
+      <IonButton
+        fill="clear"
+        aria-label="Back"
+        onClick={onBackClick}
+      >
+        <IonIcon
+          slot="icon-only"
+          icon={arrowBackOutline}
         />
-      ) : (
-        <IonMenuToggle autoHide={false}>
-          <IonButton
-            fill="clear"
-            aria-label="Menu"
-          >
-            <IonIcon
-              slot="icon-only"
-              icon={menuOutline}
-            />
-          </IonButton>
-        </IonMenuToggle>
-      )}
-    </IonButtons>
-  )
+      </IonButton>
+    )
+  } else if (backHref) {
+    control = (
+      <IonBackButton
+        defaultHref={backHref}
+        text=""
+      />
+    )
+  } else {
+    control = (
+      <IonMenuToggle autoHide={false}>
+        <IonButton
+          fill="clear"
+          aria-label="Menu"
+        >
+          <IonIcon
+            slot="icon-only"
+            icon={menuOutline}
+          />
+        </IonButton>
+      </IonMenuToggle>
+    )
+  }
+
+  return <IonButtons slot="start">{control}</IonButtons>
 }
 
 /**
@@ -230,6 +254,7 @@ export function Page({
   disablePadding,
   className,
   backHref,
+  onBackClick,
   transparentHeaderUntilScroll,
   transparentHeaderMode = 'scroll',
   forceOverscroll,
@@ -262,7 +287,10 @@ export function Page({
             className={toolbarClassName}
             mode={'ios'}
           >
-            <HeaderStartControl backHref={backHref} />
+            <HeaderStartControl
+              backHref={backHref}
+              onBackClick={onBackClick}
+            />
             {headerContent ?? <IonTitle>{title}</IonTitle>}
           </IonToolbar>
           {subHeaderContent}

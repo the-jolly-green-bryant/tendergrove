@@ -34,6 +34,7 @@ import { client } from '../../lib/api'
 import { useAppAuth } from '../../auth/AuthContext'
 import { usePerson } from './usePerson'
 import { PersonAvatar } from '../../components/PersonAvatar'
+import { useRouteModal } from '../../components/RouteModalContext'
 
 const roleOptions: Array<{
   value: PersonRole
@@ -191,6 +192,7 @@ const renderHeader = (fnBack: () => void, fnClose: () => void, isEditing: boolea
  */
 export default function PersonFormPage() {
   const router = useIonRouter()
+  const routeModal = useRouteModal()
   const queryClient = useQueryClient()
   const { user } = useAppAuth()
   const { personId } = useParams<{ personId?: string }>()
@@ -218,8 +220,21 @@ export default function PersonFormPage() {
     setAvatarUrl(existingPerson.avatarUrl ?? undefined)
   }, [existingPerson])
 
-  const goBack = () => (step === 2 && !isEditing ? setStep(1) : router.goBack())
-  const close = () => router.push('/people', 'back', 'replace')
+  const goBack = () => {
+    if (step === 2 && !isEditing) {
+      setStep(1)
+      return
+    }
+    if (routeModal.isRouteModal) {
+      routeModal.dismiss()
+      return
+    }
+    router.goBack()
+  }
+  const close = () =>
+    routeModal.isRouteModal
+      ? routeModal.dismiss()
+      : router.push('/dashboard', 'back', 'replace')
 
   const choosePhoto = () => photoInputRef.current?.click()
 
@@ -280,6 +295,11 @@ export default function PersonFormPage() {
       (await queryClient.invalidateQueries({ queryKey: ['person', personId] }))
 
     const newId = isEditing ? personId : result.data?.id
+    if (routeModal.isRouteModal) {
+      routeModal.dismiss()
+      return
+    }
+
     if (newId && !isEditing) {
       const params = new URLSearchParams({
         role,
