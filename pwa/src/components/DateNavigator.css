@@ -113,8 +113,50 @@
   background: #f8f3fa;
   border-top: 1px solid rgba(36, 63, 66, 0.08);
   border-bottom: 1px solid #d8cfc2;
-  box-shadow: inset 0 10px 24px rgba(36, 63, 66, 0.1), inset 0 -10px 24px rgba(36, 63, 66, 0.1);
+  box-shadow:
+    inset 0 10px 24px rgba(36, 63, 66, 0.1),
+    inset 0 -10px 24px rgba(36, 63, 66, 0.1);
   color: var(--ion-text-color);
+  overflow: hidden;
+  animation: date-navigator-slide-open 240ms ease-out;
+}
+
+.date-navigator__calendar--closing {
+  animation: date-navigator-slide-close 240ms ease-in forwards;
+}
+
+@keyframes date-navigator-slide-open {
+  from {
+    max-height: 0;
+    opacity: 0;
+  }
+
+  to {
+    max-height: 520px;
+    opacity: 1;
+  }
+}
+
+@keyframes date-navigator-slide-close {
+  from {
+    max-height: 520px;
+    opacity: 1;
+  }
+
+  to {
+    max-height: 0;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .date-navigator__calendar {
+    animation: none;
+  }
+
+  .date-navigator__calendar--closing {
+    display: none;
+  }
 }
 
 /* Calendar header: ‹ Month Year › */

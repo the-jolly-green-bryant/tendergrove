@@ -53,6 +53,7 @@ type CheckedIndicators = Record<string, boolean>
 type WizardStepProps = {
   readonly personId: string
   readonly selectedDate: Date
+  readonly hasNext: boolean
   readonly onDone: () => void
   readonly onSkip: () => void
 }
@@ -176,15 +177,19 @@ function WizardActions({
   existing,
   saving,
   canSave,
+  hasNext,
   onSkip,
   onSave,
 }: {
   readonly existing: unknown
   readonly saving: boolean
   readonly canSave: boolean
+  readonly hasNext: boolean
   readonly onSkip: () => void
   readonly onSave: () => void
 }) {
+  const saveLabel = `${existing ? 'Update' : 'Save'}${hasNext ? ' & Next' : ''}`
+
   return (
     <div className="wizard-step__actions">
       <IonButton
@@ -197,7 +202,7 @@ function WizardActions({
         disabled={saving || !canSave}
         onClick={onSave}
       >
-        {existing ? 'Update' : 'Save'} &amp; Next
+        {saveLabel}
       </IonButton>
     </div>
   )
@@ -219,7 +224,11 @@ function buildCheckInPayload(
   }
 }
 
-function useWizardStepState({ personId, selectedDate, onDone }: WizardStepProps) {
+function useWizardStepState({
+  personId,
+  selectedDate,
+  onDone,
+}: Pick<WizardStepProps, 'personId' | 'selectedDate' | 'onDone'>) {
   const { data: person, isLoading } = usePerson(personId)
   const indicatorsQuery = useIndicators(personId)
   const { create, update } = useCheckInMutations(personId)
@@ -288,8 +297,14 @@ function useWizardStepState({ personId, selectedDate, onDone }: WizardStepProps)
  * Renders the check-in form for a single person inside the wizard.
  * Handles its own local state so each step is independent.
  */
-function WizardStep({ personId, selectedDate, onDone, onSkip }: WizardStepProps) {
-  const step = useWizardStepState({ personId, selectedDate, onDone, onSkip })
+function WizardStep({
+  personId,
+  selectedDate,
+  hasNext,
+  onDone,
+  onSkip,
+}: WizardStepProps) {
+  const step = useWizardStepState({ personId, selectedDate, onDone })
   const { person, isLoading, indicators, existing, checked, note, saving } = step
   const desired = indicators.filter((i) => i.polarity === 'desired')
   const undesired = indicators.filter((i) => i.polarity === 'undesired')
@@ -342,6 +357,7 @@ function WizardStep({ personId, selectedDate, onDone, onSkip }: WizardStepProps)
           existing={existing}
           saving={saving}
           canSave={indicators.length > 0}
+          hasNext={hasNext}
           onSkip={onSkip}
           onSave={step.save}
         />
@@ -426,6 +442,7 @@ export function CheckInWizardPage({
           key={currentPerson.id}
           personId={currentPerson.id}
           selectedDate={selectedDate}
+          hasNext={currentIndex < activePeople.length - 1}
           onDone={advance}
           onSkip={advance}
         />
