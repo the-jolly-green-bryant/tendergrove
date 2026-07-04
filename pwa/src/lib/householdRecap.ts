@@ -1,5 +1,6 @@
 import { computeScore, statusFromScore } from './status'
 import { householdGreetingText } from './greeting'
+import { isSameLocalDay, toLocalDateKey } from './dateKeys'
 
 /** Raw check-in data needed to score a recap person. */
 export interface HouseholdRecapCheckIn {
@@ -51,15 +52,8 @@ export interface HouseholdRecap {
   checkInsRequired: HouseholdRecapPerson[]
 }
 
-function toDateKey(date: Date): string {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
-
 function dateKeyFromIso(iso: string): string {
-  return toDateKey(new Date(iso))
+  return toLocalDateKey(new Date(iso))
 }
 
 function formatRecapDateLabel(dateKey: string): string {
@@ -92,8 +86,10 @@ function scoreForCheckIn(
 
 function latestScoreableCheckIn(
   person: HouseholdRecapSourcePerson,
+  dateKey: string,
 ): HouseholdRecapCheckIn | undefined {
   return [...(person.checkIns ?? [])]
+    .filter((checkIn) => dateKeyFromIso(checkIn.occurredAt) <= dateKey)
     .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))
     .find((checkIn) => scoreForCheckIn(person, checkIn) !== null)
 }
@@ -125,12 +121,12 @@ function recapPersonFromScore(
 
 function scorePersonForRecap(
   person: HouseholdRecapSourcePerson,
-  todayKey: string,
+  dateKey: string,
 ): HouseholdRecapPerson {
-  const todayScore = scoreForCheckIn(person, latestCheckInForDate(person, todayKey))
+  const todayScore = scoreForCheckIn(person, latestCheckInForDate(person, dateKey))
   const requiresCheckIn = todayScore === null
   const latestScore = requiresCheckIn
-    ? scoreForCheckIn(person, latestScoreableCheckIn(person))
+    ? scoreForCheckIn(person, latestScoreableCheckIn(person, dateKey))
     : todayScore
 
   return recapPersonFromScore(person, latestScore, requiresCheckIn)
@@ -142,18 +138,35 @@ const byLowestKnownScore = (a: HouseholdRecapPerson, b: HouseholdRecapPerson) =>
 const byHighestKnownScore = (a: HouseholdRecapPerson, b: HouseholdRecapPerson) =>
   (b.score ?? -1) - (a.score ?? -1)
 
+function datedRecapTitle(
+  selectedDate: Date,
+  dateKey: string,
+  hasRequiredCheckIns: boolean,
+): string {
+  const today = new Date()
+  const yesterday = new Date(today)
+  yesterday.setDate(today.getDate() - 1)
+  const noun = hasRequiredCheckIns ? 'Check-In' : 'Recap'
+
+  if (isSameLocalDay(selectedDate, today)) return `Today's ${noun}`
+  if (isSameLocalDay(selectedDate, yesterday)) return `Yesterday's ${noun}`
+  return `${formatRecapDateLabel(dateKey)}'s ${noun.toLowerCase()}`
+}
+
 /**
- * Builds a household recap from today's check-in requirements and latest statuses.
+ * Builds a household recap from selected-date check-in requirements and statuses.
  * @param people Active household members to include.
  * @returns Recap data, or undefined when there are no people.
  */
 export function createHouseholdRecap(
   people: HouseholdRecapSourcePerson[],
+  selectedDate: Date = new Date(),
 ): HouseholdRecap | undefined {
   if (people.length === 0) return undefined
 
-  const todayKey = toDateKey(new Date())
-  const recapPeople = people.map((person) => scorePersonForRecap(person, todayKey))
+  const dateKey = toLocalDateKey(selectedDate)
+  const isViewingToday = isSameLocalDay(selectedDate, new Date())
+  const recapPeople = people.map((person) => scorePersonForRecap(person, dateKey))
   const doingWell = recapPeople
     .filter((person) => person.level === 'good')
     .sort(byHighestKnownScore)
@@ -166,10 +179,12 @@ export function createHouseholdRecap(
   const selfPerson = people.find((person) => person.role === 'self')
 
   return {
-    eyebrow: householdGreetingText(selfPerson?.displayName),
-    title: checkInsRequired.length > 0 ? "Today's Check-In" : "Today's Recap",
-    dateLabel: 'Latest status',
-    requiredDateLabel: formatRecapDateLabel(todayKey),
+    eyebrow: isViewingToday
+      ? householdGreetingText(selfPerson?.displayName)
+      : formatRecapDateLabel(dateKey),
+    title: datedRecapTitle(selectedDate, dateKey, checkInsRequired.length > 0),
+    dateLabel: isViewingToday ? 'Latest status' : formatRecapDateLabel(dateKey),
+    requiredDateLabel: formatRecapDateLabel(dateKey),
     summary: `${doingWell.length} doing well. ${needsCare.length} need care. ${checkInsRequired.length} check-ins required.`,
     featuredPerson,
     doingWell,

@@ -1,5 +1,6 @@
 import { IonChip, IonIcon } from '@ionic/react'
 import {
+  alarmOutline,
   chevronDownOutline,
   chevronForwardOutline,
   chevronUpOutline,
@@ -21,6 +22,7 @@ import {
   type HouseholdRecap,
   type HouseholdRecapSourcePerson,
 } from '../../lib/householdRecap'
+import { isSameLocalDay, toLocalDateKey } from '../../lib/dateKeys'
 import './HouseholdPage.css'
 
 type HouseholdPerson = HouseholdRecapSourcePerson
@@ -45,12 +47,17 @@ function randomQuoteIndex(): number {
 const renderTree = (
   people: HouseholdPerson[],
   recap: HouseholdRecap | undefined,
+  selectedDate: Date,
+  isTimeTravel: boolean,
+  selectedDateHasData: boolean,
   onPersonClick: (personId: string) => void,
   onRecapClick: () => void,
 ) =>
   people.length > 0 && (
     <HouseholdTree
       recap={recap}
+      isTimeTravel={isTimeTravel}
+      selectedDateHasData={selectedDateHasData}
       onPersonClick={onPersonClick}
       onRecapClick={onRecapClick}
       people={people.map((person) => ({
@@ -58,8 +65,11 @@ const renderTree = (
         displayName: person.displayName,
         avatarUrl: person.avatarUrl,
         energy:
-          derivePersonStatus(person.indicators ?? [], person.checkIns ?? []).score ??
-          100,
+          derivePersonStatus(
+            person.indicators ?? [],
+            person.checkIns ?? [],
+            selectedDate,
+          ).score ?? 100,
         isSelf: person.role === 'self',
       }))}
     />
@@ -83,19 +93,57 @@ function SelfCareQuote() {
   )
 }
 
+function PastDataNotice({
+  selectedDateLabel,
+  onReturnToToday,
+}: {
+  readonly selectedDateLabel: string
+  readonly onReturnToToday: () => void
+}) {
+  return (
+    <button
+      type="button"
+      className="past-data-notice"
+      onClick={onReturnToToday}
+      aria-label="Return to today"
+    >
+      <span className="past-data-notice__icon">
+        <IonIcon
+          icon={alarmOutline}
+          aria-hidden="true"
+        />
+      </span>
+      <span className="past-data-notice__copy">
+        <strong>You’re viewing {selectedDateLabel}.</strong>
+        <span>Tap to return to today.</span>
+      </span>
+      <IonIcon
+        icon={chevronForwardOutline}
+        aria-hidden="true"
+      />
+    </button>
+  )
+}
+
 function HouseholdPersonButton({
   person,
+  selectedDate,
   onClick,
 }: {
   readonly person: HouseholdPerson
+  readonly selectedDate: Date
   readonly onClick: () => void
 }) {
-  const status = derivePersonStatus(person.indicators ?? [], person.checkIns ?? [])
+  const status = derivePersonStatus(
+    person.indicators ?? [],
+    person.checkIns ?? [],
+    selectedDate,
+  )
   const score = status.score
   const emoji = todayEmoji(
     person.indicators ?? [],
     person.checkIns ?? [],
-    new Date(),
+    selectedDate,
     person.id,
   )
 
@@ -158,6 +206,7 @@ function HouseholdList({
         <HouseholdPersonButton
           key={person.id}
           person={person}
+          selectedDate={selectedDate}
           onClick={() => onPersonClick(person.id)}
         />
       ))}
@@ -188,40 +237,99 @@ function scrollToHouseholdHero() {
     ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-function HouseholdDashboardBody({
+function HouseholdHeroPanel({
   people,
   recap,
   selectedDate,
+  isTimeTravel,
+  selectedDateHasData,
   onPersonClick,
   onRecapClick,
-  onAddPersonClick,
+  onReturnToToday,
 }: {
   readonly people: HouseholdPerson[]
   readonly recap: HouseholdRecap | undefined
   readonly selectedDate: Date
+  readonly isTimeTravel: boolean
+  readonly selectedDateHasData: boolean
+  readonly onPersonClick: (personId: string) => void
+  readonly onRecapClick: () => void
+  readonly onReturnToToday: () => void
+}) {
+  const selectedDateLabel = selectedDate.toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+  })
+
+  return (
+    <section
+      id="household-hero-panel"
+      className="household-snap-panel household-hero-panel"
+    >
+      {isTimeTravel ? (
+        <PastDataNotice
+          selectedDateLabel={selectedDateLabel}
+          onReturnToToday={onReturnToToday}
+        />
+      ) : (
+        <SelfCareQuote />
+      )}
+      {renderTree(
+        people,
+        recap,
+        selectedDate,
+        isTimeTravel,
+        selectedDateHasData,
+        onPersonClick,
+        onRecapClick,
+      )}
+      {people.length > 0 && (
+        <button
+          type="button"
+          className="household-scroll-cue"
+          onClick={scrollToHouseholdList}
+          aria-label="View household members"
+        >
+          <IonIcon icon={chevronDownOutline} />
+        </button>
+      )}
+    </section>
+  )
+}
+
+function HouseholdDashboardBody({
+  people,
+  recap,
+  selectedDate,
+  isTimeTravel,
+  selectedDateHasData,
+  onPersonClick,
+  onRecapClick,
+  onAddPersonClick,
+  onReturnToToday,
+}: {
+  readonly people: HouseholdPerson[]
+  readonly recap: HouseholdRecap | undefined
+  readonly selectedDate: Date
+  readonly isTimeTravel: boolean
+  readonly selectedDateHasData: boolean
   readonly onPersonClick: (personId: string) => void
   readonly onRecapClick: () => void
   readonly onAddPersonClick: () => void
+  readonly onReturnToToday: () => void
 }) {
   return (
     <div className="household-snap">
-      <section
-        id="household-hero-panel"
-        className="household-snap-panel household-hero-panel"
-      >
-        <SelfCareQuote />
-        {renderTree(people, recap, onPersonClick, onRecapClick)}
-        {people.length > 0 && (
-          <button
-            type="button"
-            className="household-scroll-cue"
-            onClick={scrollToHouseholdList}
-            aria-label="View household members"
-          >
-            <IonIcon icon={chevronDownOutline} />
-          </button>
-        )}
-      </section>
+      <HouseholdHeroPanel
+        people={people}
+        recap={recap}
+        selectedDate={selectedDate}
+        isTimeTravel={isTimeTravel}
+        selectedDateHasData={selectedDateHasData}
+        onPersonClick={onPersonClick}
+        onRecapClick={onRecapClick}
+        onReturnToToday={onReturnToToday}
+      />
 
       <section
         id="household-people-panel"
@@ -271,6 +379,9 @@ export default function HouseholdPage() {
   const history = useHistory()
 
   const { selectedDate, setSelectedDate } = useSelectedDate()
+  const isViewingToday = isSameLocalDay(selectedDate, new Date())
+  const isTimeTravel = !isViewingToday
+  const selectedDateKey = toLocalDateKey(selectedDate)
 
   const activePeople = useMemo(
     () => (people.data ?? []).filter((p) => !p.archived),
@@ -278,22 +389,22 @@ export default function HouseholdPage() {
   )
 
   const householdRecap = useMemo(
-    () => createHouseholdRecap(activePeople),
-    [activePeople],
+    () => createHouseholdRecap(activePeople, selectedDate),
+    [activePeople, selectedDate],
   )
 
   /** Collect all unique YYYY-MM-DD strings that have any check-in. */
   const eventDates = useMemo(
     () =>
       new Set<string>(
-        ...(people.data ?? []).map((person) =>
-          (person.checkIns ?? []).map((ci) =>
-            new Date(ci.occurredAt).toISOString().slice(0, 10),
-          ),
+        (people.data ?? []).flatMap((person) =>
+          (person.checkIns ?? []).map((ci) => toLocalDateKey(new Date(ci.occurredAt))),
         ),
       ),
     [people.data],
   )
+  const selectedDateHasData = eventDates.has(selectedDateKey)
+  const goToToday = () => setSelectedDate(new Date())
 
   const { headerElement, calendarElement } = useDateNavigator({
     date: selectedDate,
@@ -319,9 +430,12 @@ export default function HouseholdPage() {
         people={activePeople}
         recap={householdRecap}
         selectedDate={selectedDate}
+        isTimeTravel={isTimeTravel}
+        selectedDateHasData={selectedDateHasData}
         onPersonClick={(personId) => history.push(`/person/${personId}`)}
         onRecapClick={() => history.push('/household/recap')}
         onAddPersonClick={() => history.push('/people/new')}
+        onReturnToToday={goToToday}
       />
     </Page>
   )

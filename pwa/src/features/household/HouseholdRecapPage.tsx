@@ -17,6 +17,7 @@ import {
   type HouseholdRecap,
   type HouseholdRecapPerson,
 } from '../../lib/householdRecap'
+import { useSelectedDate } from '../../context/SelectedDateContext'
 import { usePeople } from '../people/usePeople'
 import { CheckInWizardPage } from '../checkins/CheckInWizardPage'
 import './HouseholdRecapPage.css'
@@ -349,11 +350,15 @@ function HouseholdRecapContent({ recap }: { readonly recap: HouseholdRecap }) {
  */
 export default function HouseholdRecapPage() {
   const people = usePeople()
+  const { selectedDate } = useSelectedDate()
   const activePeople = useMemo(
     () => (people.data ?? []).filter((person) => !person.archived),
     [people.data],
   )
-  const recap = useMemo(() => createHouseholdRecap(activePeople), [activePeople])
+  const recap = useMemo(
+    () => createHouseholdRecap(activePeople, selectedDate),
+    [activePeople, selectedDate],
+  )
 
   return (
     <IonPage>

@@ -8,23 +8,8 @@ import {
   chevronUpOutline,
 } from 'ionicons/icons'
 
+import { isSameLocalDay, toLocalDateKey } from '../lib/dateKeys'
 import './DateNavigator.css'
-
-/** Return YYYY-MM-DD for a Date in local time. */
-function toISODate(d: Date): string {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
-
-function isSameLocalDay(a: Date, b: Date): boolean {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  )
-}
 
 const addDays = (d: Date, n: number): Date => {
   const result = new Date(d)
@@ -68,8 +53,6 @@ interface DateNavigatorProps {
   /** Set of YYYY-MM-DD strings that have events (shown as dots). */
   eventDates?: Set<string>
 }
-
-const isYesterday = (date: Date) => isSameLocalDay(date, addDays(new Date(), -1))
 
 /**
  * Provides access to a reusable calendar navigation widget.
@@ -223,13 +206,11 @@ export function useDateNavigator({ date, onChange, eventDates }: DateNavigatorPr
     year: 'numeric',
   })
 
-  // Header label: show "Today", "Yesterday", or formatted date
+  // Header label: show "Today" or the selected calendar date.
   const isToday = isSameLocalDay(date, today)
   const headerLabel = (() => {
     if (isToday) return 'Today'
-    if (isYesterday(date)) return 'Yesterday'
     return date.toLocaleDateString(undefined, {
-      weekday: 'short',
       month: 'short',
       day: 'numeric',
     })
@@ -284,7 +265,7 @@ export function useDateNavigator({ date, onChange, eventDates }: DateNavigatorPr
             icon={calendarClearOutline}
             className="date-navigator__today-icon"
           />
-          <span className="date-navigator__today-number">{today.getDate()}</span>
+          <span className="date-navigator__today-number">{date.getDate()}</span>
         </button>
       </div>
     </div>
@@ -348,7 +329,7 @@ export function useDateNavigator({ date, onChange, eventDates }: DateNavigatorPr
                   )
                 }
 
-                const iso = toISODate(day)
+                const iso = toLocalDateKey(day)
                 const isSelected = isSameLocalDay(day, date)
                 const isTodayCell = isSameLocalDay(day, today)
                 const isFuture = day > today

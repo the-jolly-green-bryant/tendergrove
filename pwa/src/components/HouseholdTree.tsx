@@ -18,6 +18,8 @@ interface HouseholdTreeProps {
   showGreeting?: boolean
   showSingleGreeting?: boolean
   recap?: HouseholdRecap
+  isTimeTravel?: boolean
+  selectedDateHasData?: boolean
   onPersonClick?: (personId: string) => void
   onRecapClick?: () => void
 }
@@ -203,7 +205,7 @@ function TreePie({
 
   return (
     <svg
-      className="tree-pie"
+      className="tree-pie tree-stage__tree"
       viewBox="0 0 100 100"
       role="img"
       aria-label={ariaLabel}
@@ -308,7 +310,7 @@ function EmptyTree({ stage }: { readonly stage: number }) {
       <img
         src={`/assets/tree/tree_stage_${stage}.png`}
         alt="Household wellbeing tree"
-        className="tree-image active"
+        className="tree-image tree-stage__tree active"
       />
     </div>
   )
@@ -320,7 +322,7 @@ function SinglePersonTree({ stage }: { readonly stage: number }) {
       <img
         src={`/assets/tree/tree_stage_${stage}.png`}
         alt="Wellbeing tree"
-        className="single-person-tree__image"
+        className="single-person-tree__image tree-stage__tree"
       />
     </div>
   )
@@ -413,23 +415,38 @@ function TreeVisual({
   people,
   stage,
   isSinglePerson,
+  isTimeTravel,
   onPersonClick,
 }: {
   readonly people: Person[]
   readonly stage: number
   readonly isSinglePerson: boolean
+  readonly isTimeTravel: boolean
   readonly onPersonClick?: (personId: string) => void
 }) {
   const sliceSize = people.length > 0 ? 360 / people.length : 360
 
   return (
-    <div className="tree-visualization">
+    <div
+      className={`tree-visualization tree-stage${
+        isTimeTravel ? ' tree-stage--time-travel' : ''
+      }`}
+    >
       <TreeArtwork
         people={people}
         stage={stage}
         isSinglePerson={isSinglePerson}
         sliceSize={sliceSize}
       />
+
+      {isTimeTravel && (
+        <img
+          className="tree-stage__time-overlay"
+          src="/assets/time-travel-overlay.png"
+          alt=""
+          aria-hidden="true"
+        />
+      )}
 
       {!isSinglePerson && (
         <div className="avatars-overlay">
@@ -451,12 +468,22 @@ function TreeVisual({
 
 function HouseholdRecapTeaser({
   recap,
+  isTimeTravel,
+  emptyPastDate,
   onRecapClick,
 }: {
   readonly recap: HouseholdRecap
+  readonly isTimeTravel: boolean
+  readonly emptyPastDate: boolean
   readonly onRecapClick?: () => void
 }) {
   const featured = recap.featuredPerson
+  const eyebrow = (() => {
+    if (!isTimeTravel) return recap.eyebrow
+    if (emptyPastDate) return 'Tap to complete check-ins'
+    return 'Tap for recap'
+  })()
+  const title = emptyPastDate ? 'Fill in missing check-ins' : recap.title
 
   return (
     <button
@@ -477,8 +504,8 @@ function HouseholdRecapTeaser({
         <span className="household-recap-teaser__emoji">{featured?.emoji ?? '✨'}</span>
       </div>
       <span className="household-recap-teaser__copy">
-        <span>{recap.eyebrow}</span>
-        <strong>{recap.title}</strong>
+        <span>{eyebrow}</span>
+        <strong>{title}</strong>
       </span>
       <span className="household-recap-teaser__chevron">›</span>
     </button>
@@ -512,6 +539,8 @@ export const HouseholdTree: React.FC<HouseholdTreeProps> = ({
   people,
   className = '',
   recap,
+  isTimeTravel = false,
+  selectedDateHasData = true,
   onPersonClick,
   onRecapClick,
 }) => {
@@ -533,6 +562,7 @@ export const HouseholdTree: React.FC<HouseholdTreeProps> = ({
             people={people}
             stage={stage}
             isSinglePerson={isSinglePerson}
+            isTimeTravel={isTimeTravel}
             onPersonClick={onPersonClick}
           />
         </div>
@@ -542,6 +572,8 @@ export const HouseholdTree: React.FC<HouseholdTreeProps> = ({
         {recap ? (
           <HouseholdRecapTeaser
             recap={recap}
+            isTimeTravel={isTimeTravel}
+            emptyPastDate={isTimeTravel && !selectedDateHasData}
             onRecapClick={onRecapClick}
           />
         ) : (

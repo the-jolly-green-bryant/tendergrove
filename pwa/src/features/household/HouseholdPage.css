@@ -74,6 +74,70 @@
   line-height: 0.7;
 }
 
+.past-data-notice {
+  position: absolute;
+  z-index: 1;
+  top: max(112px, calc(env(safe-area-inset-top) + 102px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(calc(100% - 48px), 360px);
+  height: 76px;
+  padding: 10px 12px;
+  border: 1px dashed rgba(142, 102, 185, 0.46);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.74);
+  color: #6f4fa0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  box-shadow: 0 10px 24px rgba(88, 62, 120, 0.08);
+  backdrop-filter: blur(8px);
+}
+
+.past-data-notice:active {
+  transform: translateX(-50%) scale(0.98);
+}
+
+.past-data-notice__icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  background: rgba(126, 92, 165, 0.13);
+  color: #8e66b9;
+  font-size: 1.7rem;
+}
+
+.past-data-notice__copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.past-data-notice__copy strong {
+  display: block;
+  color: #614288;
+  font-size: 0.98rem;
+  font-weight: 800;
+  line-height: 1.12;
+}
+
+.past-data-notice__copy span {
+  display: block;
+  margin-top: 2px;
+  color: #6f4fa0;
+  font-size: 0.86rem;
+  line-height: 1.2;
+}
+
+.past-data-notice > ion-icon {
+  color: #8e66b9;
+  flex: 0 0 auto;
+  font-size: 1.3rem;
+}
+
 .household-hero-panel .household-tree-container {
   flex: 1;
   min-height: 0;
@@ -259,7 +323,8 @@
 }
 
 @media (max-height: 760px) {
-  .self-care-quote {
+  .self-care-quote,
+  .past-data-notice {
     top: max(92px, calc(env(safe-area-inset-top) + 84px));
   }
 
