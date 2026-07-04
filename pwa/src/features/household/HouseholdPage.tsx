@@ -1,6 +1,5 @@
 import { IonChip, IonIcon } from '@ionic/react'
 import {
-  alarmOutline,
   chevronDownOutline,
   chevronForwardOutline,
   chevronUpOutline,
@@ -11,6 +10,7 @@ import { useHistory } from 'react-router-dom'
 import { LoadingState } from '../../components/LoadingState'
 import { Page } from '../../components/Page'
 import { useDateNavigator } from '../../components/DateNavigator'
+import { PastDataNotice } from '../../components/PastDataNotice'
 import { PersonAvatar } from '../../components/PersonAvatar'
 import { HouseholdTree } from '../../components/HouseholdTree'
 import { useAppAuth } from '../../auth/AuthContext'
@@ -90,38 +90,6 @@ function SelfCareQuote() {
         <span>{quote[1]}</span>
       </p>
     </aside>
-  )
-}
-
-function PastDataNotice({
-  selectedDateLabel,
-  onReturnToToday,
-}: {
-  readonly selectedDateLabel: string
-  readonly onReturnToToday: () => void
-}) {
-  return (
-    <button
-      type="button"
-      className="past-data-notice"
-      onClick={onReturnToToday}
-      aria-label="Return to today"
-    >
-      <span className="past-data-notice__icon">
-        <IonIcon
-          icon={alarmOutline}
-          aria-hidden="true"
-        />
-      </span>
-      <span className="past-data-notice__copy">
-        <strong>You’re viewing {selectedDateLabel}.</strong>
-        <span>Tap to return to today.</span>
-      </span>
-      <IonIcon
-        icon={chevronForwardOutline}
-        aria-hidden="true"
-      />
-    </button>
   )
 }
 
@@ -270,6 +238,7 @@ function HouseholdHeroPanel({
         <PastDataNotice
           selectedDateLabel={selectedDateLabel}
           onReturnToToday={onReturnToToday}
+          className="past-data-notice--floating"
         />
       ) : (
         <SelfCareQuote />

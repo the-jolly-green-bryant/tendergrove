@@ -14,6 +14,7 @@ import { useLocation, useParams } from 'react-router-dom'
 
 import { LoadingState } from '../../components/LoadingState'
 import { Page } from '../../components/Page'
+import { PastDataNotice } from '../../components/PastDataNotice'
 import { PersonAvatar } from '../../components/PersonAvatar'
 import { useRouteModal } from '../../components/RouteModalContext'
 import { useSelectedDate } from '../../context/SelectedDateContext'
@@ -137,12 +138,16 @@ function EmptyIndicatorsMessage({ personId }: { readonly personId: string }) {
 function CheckInNotes({
   note,
   existing,
+  dateLabel,
   onNoteChange,
 }: {
   readonly note: string
   readonly existing: unknown
+  readonly dateLabel: string
   readonly onNoteChange: (note: string) => void
 }) {
+  const lowerDateLabel = dateLabel.toLowerCase()
+
   return (
     <>
       <h2 className="check-in__group-title">Notes</h2>
@@ -166,8 +171,8 @@ function CheckInNotes({
 
       <IonNote className="check-in__hint">
         {existing
-          ? "You're updating today's check-in."
-          : "Saving records today's check-in."}
+          ? `You're updating ${lowerDateLabel}'s check-in.`
+          : `Saving records ${lowerDateLabel}'s check-in.`}
       </IonNote>
     </>
   )
@@ -253,7 +258,7 @@ function useWizardStepState({
     setNote('')
     setSaving(false)
     setPrefilled(false)
-  }, [personId])
+  }, [personId, selectedDate])
 
   useEffect(() => {
     if (prefilled || !existing) return
@@ -348,6 +353,7 @@ function WizardStep({
             <CheckInNotes
               note={note}
               existing={existing}
+              dateLabel={formatDateLabel(selectedDate)}
               onNoteChange={step.setNote}
             />
           </>
@@ -366,6 +372,46 @@ function WizardStep({
   )
 }
 
+function useWizardPeople(
+  personId: string | undefined,
+  people: ReturnType<typeof usePeople>,
+) {
+  return useMemo(() => {
+    if (personId) return [{ id: personId }]
+    return (people.data ?? []).filter((p) => !p.archived)
+  }, [people.data, personId])
+}
+
+function useWizardAdvance({
+  activePeopleLength,
+  currentIndex,
+  personId,
+  returnPath,
+  routeModal,
+  router,
+  setCurrentIndex,
+}: {
+  readonly activePeopleLength: number
+  readonly currentIndex: number
+  readonly personId: string | undefined
+  readonly returnPath: string | undefined
+  readonly routeModal: ReturnType<typeof useRouteModal>
+  readonly router: ReturnType<typeof useIonRouter>
+  readonly setCurrentIndex: (index: number) => void
+}) {
+  return () => {
+    const next = currentIndex + 1
+    if (next < activePeopleLength) {
+      setCurrentIndex(next)
+      return
+    }
+    if (routeModal.isRouteModal) return routeModal.dismiss()
+    if (returnPath) return router.push(returnPath, 'back', 'pop')
+    if (personId) return router.push(`/person/${personId}`, 'back', 'pop')
+    return router.push('/dashboard', 'back', 'pop')
+  }
+}
+
 /**
  * Allows users to create a check-in for a person.
  * @returns {React.JSX.Element}
@@ -381,55 +427,46 @@ export function CheckInWizardPage({
   const personId = personIdOverride ?? routePersonId
   const location = useLocation()
   const routeModal = useRouteModal()
-  const { selectedDate } = useSelectedDate()
+  const { selectedDate, setSelectedDate } = useSelectedDate()
   const people = usePeople()
   const returnPath = useMemo(
     () => returnPathFromSearch(location.search),
     [location.search],
   )
-
-  const activePeople = useMemo(() => {
-    if (personId) {
-      return [{ id: personId }]
-    }
-    const list = (people.data ?? []).filter((p) => !p.archived)
-    return list
-  }, [people.data, personId])
-
+  const activePeople = useWizardPeople(personId, people)
   const [currentIndex, setCurrentIndex] = useState(0)
-
-  function advance() {
-    const next = currentIndex + 1
-    if (next >= activePeople.length) {
-      if (routeModal.isRouteModal) {
-        routeModal.dismiss()
-        return
-      }
-      if (returnPath) {
-        return router.push(returnPath, 'back', 'pop')
-      }
-      if (personId) {
-        return router.push(`/person/${personId}`, 'back', 'pop')
-      }
-      return router.push('/dashboard', 'back', 'pop')
-    }
-    setCurrentIndex(next)
-  }
-
   const currentPerson = activePeople[currentIndex]
   const total = activePeople.length
   const isLoadingPeople = !personId && people.isLoading
+  const isTimeTravel = formatDateLabel(selectedDate) !== 'Today'
   const title = total > 1 ? `Check-In (${currentIndex + 1} of ${total})` : 'Check-In'
   const backHref = returnPath ?? (personId ? `/person/${personId}` : '/dashboard')
+  const advance = useWizardAdvance({
+    activePeopleLength: activePeople.length,
+    currentIndex,
+    personId,
+    returnPath,
+    routeModal,
+    router,
+    setCurrentIndex,
+  })
 
   return (
     <Page
       title={title}
       backHref={backHref}
       onBackClick={routeModal.isRouteModal ? () => routeModal.dismiss() : undefined}
-      className="check-in-wizard-content"
+      className={`check-in-wizard-content${isTimeTravel ? ' time-travel-surface' : ''}`}
     >
-      <p className="wizard-date-badge">{formatDateLabel(selectedDate)}</p>
+      {isTimeTravel ? (
+        <PastDataNotice
+          selectedDateLabel={formatDateLabel(selectedDate)}
+          onReturnToToday={() => setSelectedDate(new Date())}
+          className="past-data-notice--page"
+        />
+      ) : (
+        <p className="wizard-date-badge">{formatDateLabel(selectedDate)}</p>
+      )}
 
       {isLoadingPeople && <LoadingState />}
 

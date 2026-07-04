@@ -1025,6 +1025,20 @@ ion-item.indicator-row {
   height: fit-content;
 }
 
+.time-travel-surface {
+  --background:
+    radial-gradient(circle at 16% 0%, rgba(222, 177, 226, 0.26), transparent 36%),
+    linear-gradient(180deg, #f7edf9 0%, #f8f3fa 58%, #ece8f6 100%);
+}
+
+.time-travel-surface ion-card,
+.time-travel-surface .person-checkin-panel,
+.time-travel-surface .wizard-step__hero,
+.time-travel-surface .check-in__list {
+  border-color: rgba(123, 93, 153, 0.2);
+  box-shadow: 0 10px 26px rgba(71, 55, 92, 0.1);
+}
+
 /* Person hero date label */
 .person-hero__date-label {
   text-align: center;

@@ -10,6 +10,7 @@ import { type ReactNode, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 
 import { LoadingState } from '../../components/LoadingState'
+import { PastDataNotice } from '../../components/PastDataNotice'
 import { PersonAvatar } from '../../components/PersonAvatar'
 import { RouteModalProvider, useRouteModal } from '../../components/RouteModalContext'
 import {
@@ -20,6 +21,7 @@ import {
 import { useSelectedDate } from '../../context/SelectedDateContext'
 import { usePeople } from '../people/usePeople'
 import { CheckInWizardPage } from '../checkins/CheckInWizardPage'
+import { isSameLocalDay } from '../../lib/dateKeys'
 import './HouseholdRecapPage.css'
 
 interface RecapSlide {
@@ -271,7 +273,53 @@ function RecapActions({
   )
 }
 
-function HouseholdRecapContent({ recap }: { readonly recap: HouseholdRecap }) {
+function RecapTopbar({
+  eyebrow,
+  onClose,
+}: {
+  readonly eyebrow: string
+  readonly onClose: () => void
+}) {
+  return (
+    <div className="recap-page__topbar">
+      <span>{eyebrow}</span>
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Close recap"
+      >
+        <IonIcon icon={closeOutline} />
+      </button>
+    </div>
+  )
+}
+
+function RecapSlideContent({
+  dateLabel,
+  slide,
+}: {
+  readonly dateLabel: string
+  readonly slide: RecapSlide
+}) {
+  return (
+    <section className={`recap-slide recap-slide--${slide.layout}`}>
+      <p className="recap-slide__date">{dateLabel}</p>
+      <h2>{slide.title}</h2>
+      <p>{slide.body}</p>
+      {slide.content}
+    </section>
+  )
+}
+
+function HouseholdRecapContent({
+  recap,
+  isTimeTravel,
+  onReturnToToday,
+}: {
+  readonly recap: HouseholdRecap
+  readonly isTimeTravel: boolean
+  readonly onReturnToToday: () => void
+}) {
   const history = useHistory()
   const routeModal = useRouteModal()
   const [slideIndex, setSlideIndex] = useState(0)
@@ -304,29 +352,29 @@ function HouseholdRecapContent({ recap }: { readonly recap: HouseholdRecap }) {
 
   return (
     <>
-      <div className="recap-page">
-        <div className="recap-page__topbar">
-          <span>{recap.eyebrow}</span>
-          <button
-            type="button"
-            onClick={close}
-            aria-label="Close recap"
-          >
-            <IonIcon icon={closeOutline} />
-          </button>
-        </div>
+      <div className={`recap-page${isTimeTravel ? ' recap-page--time-travel' : ''}`}>
+        <RecapTopbar
+          eyebrow={recap.eyebrow}
+          onClose={close}
+        />
 
         <RecapProgress
           slides={slides}
           slideIndex={slideIndex}
         />
 
-        <section className={`recap-slide recap-slide--${slide.layout}`}>
-          <p className="recap-slide__date">{recap.dateLabel}</p>
-          <h2>{slide.title}</h2>
-          <p>{slide.body}</p>
-          {slide.content}
-        </section>
+        {isTimeTravel && (
+          <PastDataNotice
+            selectedDateLabel={recap.dateLabel}
+            onReturnToToday={onReturnToToday}
+            className="past-data-notice--page"
+          />
+        )}
+
+        <RecapSlideContent
+          dateLabel={recap.dateLabel}
+          slide={slide}
+        />
 
         <RecapActions
           isFirst={isFirst}
@@ -350,7 +398,8 @@ function HouseholdRecapContent({ recap }: { readonly recap: HouseholdRecap }) {
  */
 export default function HouseholdRecapPage() {
   const people = usePeople()
-  const { selectedDate } = useSelectedDate()
+  const { selectedDate, setSelectedDate } = useSelectedDate()
+  const isTimeTravel = !isSameLocalDay(selectedDate, new Date())
   const activePeople = useMemo(
     () => (people.data ?? []).filter((person) => !person.archived),
     [people.data],
@@ -370,7 +419,11 @@ export default function HouseholdRecapPage() {
         {people.isLoading && <LoadingState />}
         {people.error && <p className="recap-page__fallback">Failed to load recap.</p>}
         {!people.isLoading && !people.error && recap && (
-          <HouseholdRecapContent recap={recap} />
+          <HouseholdRecapContent
+            recap={recap}
+            isTimeTravel={isTimeTravel}
+            onReturnToToday={() => setSelectedDate(new Date())}
+          />
         )}
         {!people.isLoading && !people.error && !recap && (
           <p className="recap-page__fallback">No household members to recap yet.</p>

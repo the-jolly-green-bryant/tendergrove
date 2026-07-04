@@ -16,6 +16,43 @@
   overflow: hidden;
 }
 
+.recap-page--time-travel {
+  color: #3f3653;
+  background:
+    radial-gradient(circle at 16% 12%, rgba(222, 177, 226, 0.58), transparent 32%),
+    radial-gradient(circle at 86% 22%, rgba(248, 233, 252, 0.92), transparent 36%),
+    linear-gradient(145deg, #f3e8f6, #f8f3fa 58%, #e7e2f4);
+}
+
+.recap-page--time-travel .recap-slide__date {
+  width: fit-content;
+  padding: 7px 12px;
+  border: 1px solid rgba(123, 93, 153, 0.22);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.58);
+  color: #6b4f82;
+}
+
+.recap-page--time-travel .recap-progress span {
+  background: rgba(123, 93, 153, 0.18);
+}
+
+.recap-page--time-travel .recap-progress .is-active {
+  background: #7b5d99;
+}
+
+.recap-page--time-travel button {
+  color: #6b4f82;
+}
+
+.recap-page .past-data-notice {
+  flex: 0 0 auto;
+  border: 1px dashed rgba(142, 102, 185, 0.46);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.74);
+  padding: 10px 12px;
+}
+
 .recap-page__topbar,
 .recap-page__actions {
   display: flex;

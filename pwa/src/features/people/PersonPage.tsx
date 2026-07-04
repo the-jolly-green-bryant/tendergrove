@@ -29,11 +29,12 @@ import {
 import { formatDistanceToNow } from 'date-fns'
 import { useMemo } from 'react'
 import type { ReactNode } from 'react'
-import { useLocation, useParams } from 'react-router-dom'
+import { useHistory, useLocation, useParams } from 'react-router-dom'
 
 import { useSelectedDate } from '../../context/SelectedDateContext'
 
 import { LoadingState } from '../../components/LoadingState'
+import { PastDataNotice } from '../../components/PastDataNotice'
 import { usePerson } from './usePerson'
 import { useArchivePerson } from './useArchivePerson'
 import { parseAnswers } from './checkin/checkInUtils'
@@ -507,6 +508,8 @@ function PersonPageLoadedContent({
   person,
   viewDate,
   isTimelineView,
+  isTimeTravel,
+  onReturnToToday,
   summary,
   onStartCheckIn,
   onShowMoreOptions,
@@ -514,16 +517,26 @@ function PersonPageLoadedContent({
   readonly person: Person
   readonly viewDate: Date
   readonly isTimelineView: boolean
+  readonly isTimeTravel: boolean
+  readonly onReturnToToday: () => void
   readonly summary: PersonPageSummary
   readonly onStartCheckIn: () => void
   readonly onShowMoreOptions: () => void
 }) {
   return (
     <>
-      {isTimelineView && (
-        <p className="person-hero__date-label ion-padding-horizontal">
-          Viewing: {formatDateLabel(viewDate)}
-        </p>
+      {isTimeTravel ? (
+        <PastDataNotice
+          selectedDateLabel={formatDateLabel(viewDate)}
+          onReturnToToday={onReturnToToday}
+          className="past-data-notice--page"
+        />
+      ) : (
+        isTimelineView && (
+          <p className="person-hero__date-label ion-padding-horizontal">
+            Viewing: {formatDateLabel(viewDate)}
+          </p>
+        )
       )}
 
       <div className="ion-padding">
@@ -577,13 +590,19 @@ export default function PersonPage() {
   } = usePerson(isRealPerson ? personId : undefined)
   const { selectedDate, setSelectedDate } = useSelectedDate()
   const location = useLocation()
+  const history = useHistory()
   const { startCheckIn, showMoreOptions } = usePersonPageActions(person, personId)
 
   const { viewDate, isTimelineView } = useMemo(
     () => getPersonPageDateView(location.search, selectedDate),
     [location.search, selectedDate],
   )
+  const isTimeTravel = !isSameCalendarDate(viewDate, new Date())
   const summary = usePersonPageSummary(person, viewDate, personId)
+  const returnToToday = () => {
+    setSelectedDate(new Date())
+    if (isTimelineView) history.replace(`/person/${personId}`)
+  }
 
   const { headerElement, calendarElement } = useDateNavigator({
     date: viewDate,
@@ -608,7 +627,9 @@ export default function PersonPage() {
 
       <IonContent
         fullscreen
-        className="safe-content person-page-content"
+        className={`safe-content person-page-content${
+          isTimeTravel ? ' time-travel-surface' : ''
+        }`}
       >
         {isLoading && <LoadingState />}
 
@@ -619,6 +640,8 @@ export default function PersonPage() {
             person={person}
             viewDate={viewDate}
             isTimelineView={isTimelineView}
+            isTimeTravel={isTimeTravel}
+            onReturnToToday={returnToToday}
             summary={summary}
             onStartCheckIn={startCheckIn}
             onShowMoreOptions={showMoreOptions}
