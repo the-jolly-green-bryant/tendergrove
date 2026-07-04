@@ -1,0 +1,78 @@
+.person-filter-chips {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  padding: 8px 0;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.person-filter-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.person-filter-chip {
+  align-items: center;
+  appearance: none;
+  background: var(--ion-color-light);
+  border: 0;
+  border-radius: 999px;
+  color: var(--ion-color-medium);
+  cursor: pointer;
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: 6px;
+  height: 36px;
+  justify-content: center;
+  line-height: 1;
+  min-width: 36px;
+  padding: 0 12px;
+  font-size: 0.875rem;
+  font: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.person-filter-chip--active {
+  background: var(--ion-color-primary);
+  color: #fff;
+}
+
+.person-filter-chip--avatar {
+  background: var(--ion-color-light);
+  border: 2px solid var(--ion-color-medium);
+  height: 40px;
+  padding: 4px;
+  width: 40px;
+}
+
+.person-filter-chip--avatar.person-filter-chip--active {
+  border-color: var(--ion-color-primary);
+  box-shadow: 0 0 0 2px rgba(var(--ion-color-primary-rgb), 0.18);
+}
+
+.person-filter-chip--success {
+  border-color: var(--ion-color-success);
+}
+
+.person-filter-chip--warning {
+  border-color: var(--ion-color-warning);
+}
+
+.person-filter-chip--danger {
+  border-color: var(--ion-color-danger);
+}
+
+.person-filter-chip--medium {
+  border-color: var(--ion-color-medium);
+}
+
+.person-filter-chip__avatar {
+  display: block;
+  flex: none;
+  height: 28px;
+  min-width: 28px;
+  object-fit: cover;
+  border-radius: 50%;
+  width: 28px;
+}

@@ -197,18 +197,19 @@ export default function PersonFormPage() {
   const queryClient = useQueryClient()
   const { user } = useAppAuth()
   const { personId } = useParams<{ personId?: string }>()
-
-  const isEditing = Boolean(personId)
-  const { data: existingPerson } = usePerson(isEditing ? personId : undefined)
+  const { data: existingPerson } = usePerson(personId ? personId : undefined)
 
   const photoInputRef = useRef<HTMLInputElement>(null)
-  const [step, setStep] = useState<1 | 2>(isEditing ? 2 : 1)
+  const [step, setStep] = useState<1 | 2>(existingPerson ? 2 : 1)
   const [role, setRole] = useState<PersonRole>('child')
   const [displayName, setDisplayName] = useState('')
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>()
   const [photoError, setPhotoError] = useState<string | undefined>()
   const [isProcessingPhoto, setIsProcessingPhoto] = useState(false)
-  const saveButtonLabel = getSaveButtonLabel(isProcessingPhoto, isEditing)
+  const saveButtonLabel = getSaveButtonLabel(
+    isProcessingPhoto,
+    existingPerson !== undefined,
+  )
 
   // Prefill the form once the person being edited has loaded.
   useEffect(() => {
@@ -222,7 +223,7 @@ export default function PersonFormPage() {
   }, [existingPerson])
 
   const goBack = () => {
-    if (step === 2 && !isEditing) {
+    if (step === 2 && !existingPerson) {
       setStep(1)
       return
     }
@@ -272,20 +273,19 @@ export default function PersonFormPage() {
       throw new Error('Cannot save a person without an authenticated user')
     }
 
-    const result =
-      isEditing && personId
-        ? await client.models.Person.update({
-            id: personId,
-            displayName: trimmedDisplayName,
-            role,
-            avatarUrl,
-          })
-        : await client.models.Person.create({
-            displayName: trimmedDisplayName,
-            role,
-            avatarUrl,
-            householdId: user.userId,
-          })
+    const result = personId
+      ? await client.models.Person.update({
+          id: personId,
+          displayName: trimmedDisplayName,
+          role,
+          avatarUrl,
+        })
+      : await client.models.Person.create({
+          displayName: trimmedDisplayName,
+          role,
+          avatarUrl,
+          householdId: user.userId,
+        })
 
     if (result.errors?.length) {
       throw new Error(result.errors[0].message)
@@ -295,29 +295,14 @@ export default function PersonFormPage() {
     personId &&
       (await queryClient.invalidateQueries({ queryKey: ['person', personId] }))
 
-    const newId = isEditing ? personId : result.data?.id
-    if (routeModal.isRouteModal) {
-      routeModal.dismiss()
-      return
-    }
-
-    if (newId && !isEditing) {
-      const params = new URLSearchParams({
-        role,
-        name: trimmedDisplayName,
-        setup: '1',
-      })
-      return router.push(`/person/${newId}/indicators/checklist?${params}`, 'forward')
-    }
-
-    return newId
-      ? router.push(`/person/${newId}`, 'forward')
+    return routeModal.isRouteModal
+      ? routeModal.dismiss()
       : router.push('/dashboard', 'back')
   }
 
   return (
     <IonPage>
-      {renderHeader(goBack, close, isEditing)}
+      {renderHeader(goBack, close, existingPerson !== undefined)}
 
       <IonContent
         fullscreen
@@ -385,7 +370,7 @@ export default function PersonFormPage() {
         ) : (
           <section className="person-form-section">
             <h1 className="choose-type__heading">
-              {isEditing ? 'Update person' : 'Let’s add some details'}
+              {existingPerson ? 'Update person' : 'Let’s add some details'}
             </h1>
             <p className="indicator-intro">This helps personalize their experience.</p>
 

@@ -6,12 +6,14 @@ import { Page } from '../../components/Page'
 import { PersonAvatar } from '../../components/PersonAvatar'
 import { PersonFilterChips, usePersonFilter } from '../../components/PersonFilterChips'
 import { usePeople } from '../people/usePeople'
-import { computeScore, statusFromScore } from '../../lib/status'
+import { computeScore, statusFromScore, type Status } from '../../lib/status'
 
 import './TimelinePage.css'
 import { StatusChip } from '../../components/StatusChip'
 
 type EventType = 'check-in'
+type TimelinePerson = NonNullable<ReturnType<typeof usePeople>['data']>[number]
+type TimelineCheckIn = NonNullable<TimelinePerson['checkIns']>[number]
 
 interface TimelineEvent {
   id: string
@@ -22,8 +24,8 @@ interface TimelineEvent {
   occurredAt: string
   timestamp: string
   type: EventType
-  statusLabel: string
-  statusColor: 'success' | 'warning' | 'danger' | 'medium'
+  statusLabel: Status['label']
+  statusColor: Status['color']
 }
 
 function formatDayHeading(dateStr: string): string {
@@ -118,7 +120,7 @@ const renderEventButton = (event: TimelineEvent) => {
   )
 }
 
-const checkInToEvent = (person, ci): TimelineEvent => {
+const checkInToEvent = (person: TimelinePerson, ci: TimelineCheckIn): TimelineEvent => {
   const score = computeScore(person.indicators ?? [], ci)
   const status = statusFromScore(score)
 
@@ -154,7 +156,7 @@ const groupEventsByDate = (events: TimelineEvent[]): Map<string, TimelineEvent[]
  */
 export default function TimelinePage() {
   const people = usePeople()
-  const { selectedPeople, togglePerson, clearSelection } = usePersonFilter()
+  const { selectedPeople, selectOnlyPerson, clearSelection } = usePersonFilter()
   const [selectedTypes] = useState<Set<EventType>>(new Set(['check-in']))
 
   const activePeople = useMemo(
@@ -199,9 +201,8 @@ export default function TimelinePage() {
             <PersonFilterChips
               people={activePeople}
               selectedPeople={selectedPeople}
-              onToggle={togglePerson}
+              onSelectPerson={selectOnlyPerson}
               onClear={clearSelection}
-              className="timeline-person-chips"
             />
           </div>
 

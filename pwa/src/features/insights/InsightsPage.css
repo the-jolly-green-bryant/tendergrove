@@ -1,40 +1,4 @@
 /* ------------------------------------------------------------------ */
-/*  Person filter chips (shared)                                       */
-/* ------------------------------------------------------------------ */
-
-.person-filter-chips {
-  display: flex;
-  gap: 4px;
-  overflow-x: auto;
-  padding: 8px 0;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-
-.person-filter-chips::-webkit-scrollbar {
-  display: none;
-}
-
-.person-filter-chip {
-  --background: var(--ion-color-light);
-  --color: var(--ion-color-medium);
-  flex-shrink: 0;
-  height: 36px;
-  font-size: 0.875rem;
-}
-
-.person-filter-chip--active {
-  --background: var(--ion-color-primary);
-  --color: #fff;
-}
-
-.person-filter-chip__avatar {
-  width: 24px;
-  height: 24px;
-  margin-inline-end: 4px;
-}
-
-/* ------------------------------------------------------------------ */
 /*  Insights page                                                      */
 /* ------------------------------------------------------------------ */
 

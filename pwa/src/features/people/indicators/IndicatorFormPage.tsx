@@ -19,7 +19,7 @@ import { useParams } from 'react-router-dom'
 
 import { useIndicators } from './useIndicators'
 import { useIndicatorMutations } from './useIndicatorMutations'
-import { polarityMeta, type InputType, type Polarity } from './indicatorMeta'
+import { polarityMeta, type Polarity } from './indicatorMeta'
 
 function isPolarity(value: string | undefined): value is Polarity {
   return value === 'undesired' || value === 'desired'
@@ -33,8 +33,8 @@ async function performWrite(
     name: string
     description: string | undefined
     notes: string | undefined
-    polarity: any
-    inputType: any
+    polarity: 'desired' | 'undesired'
+    inputType: 'boolean'
   },
 ) {
   const { create, update } = useIndicatorMutations(personId)
@@ -42,6 +42,22 @@ async function performWrite(
     ? await update(indicatorId, payload)
     : await create(payload)
 }
+
+const renderDeleteButton = (deleteIndicator: () => void) => (
+  <IonButtons slot="end">
+    <IonButton
+      fill="clear"
+      color="danger"
+      onClick={deleteIndicator}
+      aria-label="Delete indicator"
+    >
+      <IonIcon
+        slot="icon-only"
+        icon={trashOutline}
+      />
+    </IonButton>
+  </IonButtons>
+)
 
 /**
  * Allows users to create bespoke indicators for people.
@@ -75,7 +91,6 @@ export default function IndicatorFormPage() {
 
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
-  const [inputType, setInputType] = useState<InputType>('boolean')
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
 
@@ -86,7 +101,6 @@ export default function IndicatorFormPage() {
     }
     setName(existing.name)
     setDescription(existing.description ?? '')
-    setInputType((existing.inputType as InputType | null) ?? 'boolean')
     setNotes(existing.notes ?? '')
   }, [existing])
 
@@ -101,7 +115,7 @@ export default function IndicatorFormPage() {
       description: description.trim() || undefined,
       notes: notes.trim() || undefined,
       polarity,
-      inputType,
+      inputType: 'boolean' as const,
     }
 
     setSaving(true)
@@ -139,21 +153,7 @@ export default function IndicatorFormPage() {
           <IonTitle>
             {isEditing ? 'Edit' : 'Add'} {meta.title} Indicator
           </IonTitle>
-          {isEditing && (
-            <IonButtons slot="end">
-              <IonButton
-                fill="clear"
-                color="danger"
-                onClick={deleteIndicator}
-                aria-label="Delete indicator"
-              >
-                <IonIcon
-                  slot="icon-only"
-                  icon={trashOutline}
-                />
-              </IonButton>
-            </IonButtons>
-          )}
+          {isEditing && renderDeleteButton(deleteIndicator)}
         </IonToolbar>
       </IonHeader>
 

@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import { IonIcon } from '@ionic/react'
 import {
   calendarClearOutline,
@@ -10,6 +10,7 @@ import {
 
 import { isSameLocalDay, toLocalDateKey } from '../lib/dateKeys'
 import './DateNavigator.css'
+import { min } from 'date-fns'
 
 const addDays = (d: Date, n: number): Date => {
   const result = new Date(d)
@@ -54,179 +55,78 @@ interface DateNavigatorProps {
   eventDates?: Set<string>
 }
 
-/**
- * Provides access to a reusable calendar navigation widget.
- * @param {DateNavigatorProps} param0
- * @param {Date} param0.date
- * @param {(date: Date) => void} param0.onChange
- * @param {Set<string> | undefined} param0.eventDates
- * @returns {{headerElement: React.JSX.Element, calendarElement: React.JSX.Element | null}}
- */
-export function useDateNavigator({ date, onChange, eventDates }: DateNavigatorProps) {
-  const [calendarOpen, setCalendarOpen] = useState(false)
-  const [calendarClosing, setCalendarClosing] = useState(false)
-  const today = new Date()
+interface RenderCalendarDayParams {
+  day: Date | null
+  dayIndex: number
+  date: Date
+  today: Date
+  eventDates?: Set<string>
+  handleDayClick: (day: Date) => void
+}
 
-  // The calendar shows a specific month (may differ from selected date when navigating months)
-  const [viewYear, setViewYear] = useState(date.getFullYear())
-  const [viewMonth, setViewMonth] = useState(date.getMonth())
+function renderCalendarDay({
+  day,
+  dayIndex,
+  date,
+  today,
+  eventDates,
+  handleDayClick,
+}: RenderCalendarDayParams): React.JSX.Element {
+  if (!day) {
+    return (
+      <span
+        key={dayIndex}
+        className="date-navigator__day date-navigator__day--empty"
+      />
+    )
+  }
 
-  // Swipe handling
-  const touchStartX = useRef<number | null>(null)
-  const touchStartY = useRef<number | null>(null)
-  const swiped = useRef(false)
-  const closeTimeout = useRef<number | null>(null)
+  const iso = toLocalDateKey(day)
+  const isSelected = isSameLocalDay(day, date)
+  const isTodayCell = isSameLocalDay(day, today)
+  const isFuture = day > today
+  const hasEvent = eventDates?.has(iso) ?? false
 
-  useEffect(
-    () => () => {
-      if (closeTimeout.current !== null) {
-        window.clearTimeout(closeTimeout.current)
-      }
-    },
-    [],
+  let cellClass = 'date-navigator__day'
+  if (isSelected) cellClass += ' date-navigator__day--selected'
+  if (isTodayCell && !isSelected) cellClass += ' date-navigator__day--today'
+  if (isFuture) cellClass += ' date-navigator__day--disabled'
+
+  return (
+    <button
+      key={dayIndex}
+      className={cellClass}
+      onClick={() => handleDayClick(day)}
+      disabled={isFuture}
+    >
+      <span className="date-navigator__day-number">{day.getDate()}</span>
+      {hasEvent && <span className="date-navigator__day-dot" />}
+    </button>
   )
+}
 
-  const goBack = useCallback(() => onChange(addDays(date, -1)), [date, onChange])
+interface DateNavigatorHeaderProps {
+  calendarOpen: boolean
+  goBack: () => void
+  goForward: () => void
+  goToToday: () => void
+  headerLabel: string
+  isToday: boolean
+  today: Date
+  toggleCalendar: () => void
+}
 
-  const goForward = useCallback(() => {
-    if (isSameLocalDay(date, today)) {
-      return
-    }
-
-    const next = addDays(date, 1)
-    onChange(next <= today ? next : today)
-  }, [date, onChange, today])
-
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX
-    touchStartY.current = e.touches[0].clientY
-    swiped.current = false
-  }, [])
-
-  const handleTouchEnd = useCallback(
-    (e: React.TouchEvent) => {
-      if (
-        touchStartX.current === null ||
-        touchStartY.current === null ||
-        swiped.current
-      )
-        return
-
-      const deltaX = e.changedTouches[0].clientX - touchStartX.current
-      const deltaY = e.changedTouches[0].clientY - touchStartY.current
-
-      if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
-        swiped.current = true
-        if (deltaX > 0) {
-          goBack()
-        } else {
-          goForward()
-        }
-      }
-
-      touchStartX.current = null
-      touchStartY.current = null
-    },
-    [goBack, goForward],
-  )
-
-  const openCalendar = useCallback(() => {
-    if (closeTimeout.current !== null) {
-      window.clearTimeout(closeTimeout.current)
-      closeTimeout.current = null
-    }
-    // Open on the current month while leaving the selected date highlighted.
-    setViewYear(today.getFullYear())
-    setViewMonth(today.getMonth())
-    setCalendarClosing(false)
-    setCalendarOpen(true)
-  }, [today])
-
-  const closeCalendar = useCallback(() => {
-    setCalendarOpen(false)
-    setCalendarClosing(true)
-    if (closeTimeout.current !== null) {
-      window.clearTimeout(closeTimeout.current)
-    }
-    closeTimeout.current = window.setTimeout(() => {
-      setCalendarClosing(false)
-      closeTimeout.current = null
-    }, CALENDAR_ANIMATION_MS)
-  }, [])
-
-  const toggleCalendar = useCallback(() => {
-    if (calendarOpen) {
-      closeCalendar()
-      return
-    }
-    openCalendar()
-  }, [calendarOpen, closeCalendar, openCalendar])
-
-  const goToToday = useCallback(() => {
-    onChange(today)
-    setViewYear(today.getFullYear())
-    setViewMonth(today.getMonth())
-  }, [onChange])
-
-  const prevMonth = useCallback(() => {
-    setViewMonth((m) => {
-      if (m === 0) {
-        setViewYear((y) => y - 1)
-        return 11
-      }
-      return m - 1
-    })
-  }, [])
-
-  const nextMonth = useCallback(() => {
-    // Don't allow navigating past the current month
-    const nextM = viewMonth === 11 ? 0 : viewMonth + 1
-    const nextY = viewMonth === 11 ? viewYear + 1 : viewYear
-    if (
-      nextY > today.getFullYear() ||
-      (nextY === today.getFullYear() && nextM > today.getMonth())
-    ) {
-      return
-    }
-
-    setViewMonth(nextM)
-    setViewYear(nextY)
-  }, [viewMonth, viewYear, today])
-
-  const calendarWeeks = useMemo(
-    () => buildCalendarGrid(viewYear, viewMonth),
-    [viewYear, viewMonth],
-  )
-
-  const isFutureBlocked =
-    viewYear === today.getFullYear() && viewMonth === today.getMonth()
-
-  const monthLabel = new Date(viewYear, viewMonth).toLocaleDateString(undefined, {
-    month: 'long',
-    year: 'numeric',
-  })
-
-  // Header label: show "Today" or the selected calendar date.
-  const isToday = isSameLocalDay(date, today)
-  const headerLabel = (() => {
-    if (isToday) return 'Today'
-    return date.toLocaleDateString(undefined, {
-      month: 'short',
-      day: 'numeric',
-    })
-  })()
-
-  const handleDayClick = useCallback(
-    (day: Date) => {
-      // Don't select future dates
-      if (day > today) return
-      onChange(day)
-      closeCalendar()
-    },
-    [closeCalendar, onChange, today],
-  )
-
-  const headerElement = (
+function DateNavigatorHeader({
+  calendarOpen,
+  goBack,
+  goForward,
+  goToToday,
+  headerLabel,
+  isToday,
+  today,
+  toggleCalendar,
+}: Readonly<DateNavigatorHeaderProps>): React.JSX.Element {
+  return (
     <div className="date-navigator__header">
       <button
         className="date-navigator__month-btn"
@@ -270,94 +170,326 @@ export function useDateNavigator({ date, onChange, eventDates }: DateNavigatorPr
       </div>
     </div>
   )
+}
 
-  const calendarElement =
-    calendarOpen || calendarClosing ? (
-      <div
-        className={`date-navigator__calendar${
-          calendarClosing ? ' date-navigator__calendar--closing' : ''
-        }`}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
-        {/* Calendar month navigation */}
-        <div className="date-navigator__cal-header">
-          <button
-            className="date-navigator__cal-nav"
-            onClick={prevMonth}
-            aria-label="Previous month"
-          >
-            <IonIcon icon={chevronBackOutline} />
-          </button>
-          <span className="date-navigator__cal-month">{monthLabel}</span>
-          <button
-            className="date-navigator__cal-nav"
-            onClick={nextMonth}
-            disabled={isFutureBlocked}
-            aria-label="Next month"
-          >
-            <IonIcon icon={chevronForwardOutline} />
-          </button>
-        </div>
+interface DateNavigatorCalendarProps {
+  calendarClosing: boolean
+  calendarOpen: boolean
+  calendarWeeks: (Date | null)[][]
+  date: Date
+  eventDates?: Set<string>
+  handleDayClick: (day: Date) => void
+  isFutureBlocked: boolean
+  monthLabel: string
+  nextMonth: () => void
+  prevMonth: () => void
+  today: Date
+}
 
-        {/* Day-of-week headers */}
-        <div className="date-navigator__weekdays">
-          {DAY_LABELS.map((label, i) => (
-            <span
-              key={i}
-              className="date-navigator__weekday"
-            >
-              {label}
-            </span>
-          ))}
-        </div>
+function DateNavigatorCalendar({
+  calendarClosing,
+  calendarOpen,
+  calendarWeeks,
+  date,
+  eventDates,
+  handleDayClick,
+  isFutureBlocked,
+  monthLabel,
+  nextMonth,
+  prevMonth,
+  today,
+}: Readonly<DateNavigatorCalendarProps>): React.JSX.Element | null {
+  if (!calendarOpen && !calendarClosing) return null
 
-        {/* Calendar grid */}
-        <div className="date-navigator__grid">
-          {calendarWeeks.map((week, wi) => (
-            <div
-              key={wi}
-              className="date-navigator__week"
-            >
-              {week.map((day, di) => {
-                if (!day) {
-                  return (
-                    <span
-                      key={di}
-                      className="date-navigator__day date-navigator__day--empty"
-                    />
-                  )
-                }
-
-                const iso = toLocalDateKey(day)
-                const isSelected = isSameLocalDay(day, date)
-                const isTodayCell = isSameLocalDay(day, today)
-                const isFuture = day > today
-                const hasEvent = eventDates?.has(iso) ?? false
-
-                let cellClass = 'date-navigator__day'
-                if (isSelected) cellClass += ' date-navigator__day--selected'
-                if (isTodayCell && !isSelected)
-                  cellClass += ' date-navigator__day--today'
-                if (isFuture) cellClass += ' date-navigator__day--disabled'
-
-                return (
-                  <button
-                    key={di}
-                    className={cellClass}
-                    onClick={() => handleDayClick(day)}
-                    disabled={isFuture}
-                  >
-                    <span className="date-navigator__day-number">{day.getDate()}</span>
-                    {hasEvent && <span className="date-navigator__day-dot" />}
-                  </button>
-                )
-              })}
-            </div>
-          ))}
-        </div>
+  return (
+    <div
+      className={`date-navigator__calendar${
+        calendarClosing ? ' date-navigator__calendar--closing' : ''
+      }`}
+    >
+      <div className="date-navigator__cal-header">
+        <button
+          className="date-navigator__cal-nav"
+          onClick={prevMonth}
+          aria-label="Previous month"
+        >
+          <IonIcon icon={chevronBackOutline} />
+        </button>
+        <span className="date-navigator__cal-month">{monthLabel}</span>
+        <button
+          className="date-navigator__cal-nav"
+          onClick={nextMonth}
+          disabled={isFutureBlocked}
+          aria-label="Next month"
+        >
+          <IonIcon icon={chevronForwardOutline} />
+        </button>
       </div>
-    ) : null
+
+      <div className="date-navigator__weekdays">
+        {DAY_LABELS.map((label, i) => (
+          <span
+            key={i}
+            className="date-navigator__weekday"
+          >
+            {label}
+          </span>
+        ))}
+      </div>
+
+      <div className="date-navigator__grid">
+        {calendarWeeks.map((week, wi) => (
+          <div
+            key={wi}
+            className="date-navigator__week"
+          >
+            {week.map((day, di) =>
+              renderCalendarDay({
+                day,
+                dayIndex: di,
+                date,
+                today,
+                eventDates,
+                handleDayClick,
+              }),
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+interface CalendarState {
+  calendarClosing: boolean
+  calendarOpen: boolean
+  calendarWeeks: (Date | null)[][]
+  closeCalendar: () => void
+  isFutureBlocked: boolean
+  monthLabel: string
+  nextMonth: () => void
+  prevMonth: () => void
+  showTodayMonth: () => void
+  toggleCalendar: () => void
+}
+
+interface MonthNavigation {
+  nextMonth: () => void
+  prevMonth: () => void
+}
+
+function useCloseTimeoutRef() {
+  const closeTimeout = useRef<number | null>(null)
+
+  useEffect(
+    () => () => {
+      if (closeTimeout.current !== null) {
+        window.clearTimeout(closeTimeout.current)
+      }
+    },
+    [],
+  )
+
+  return closeTimeout
+}
+
+function useMonthNavigation(
+  viewMonth: number,
+  viewYear: number,
+  setViewMonth: React.Dispatch<React.SetStateAction<number>>,
+  setViewYear: React.Dispatch<React.SetStateAction<number>>,
+  today: Date,
+): MonthNavigation {
+  const prevMonth = useCallback(() => {
+    setViewMonth((m) => {
+      if (m !== 0) return m - 1
+      setViewYear((y) => y - 1)
+      return 11
+    })
+  }, [setViewMonth, setViewYear])
+
+  const nextMonth = useCallback(() => {
+    const nextM = viewMonth === 11 ? 0 : viewMonth + 1
+    const nextY = viewMonth === 11 ? viewYear + 1 : viewYear
+    const isFutureMonth =
+      nextY > today.getFullYear() ||
+      (nextY === today.getFullYear() && nextM > today.getMonth())
+
+    if (isFutureMonth) return
+    setViewMonth(nextM)
+    setViewYear(nextY)
+  }, [setViewMonth, setViewYear, viewMonth, viewYear, today])
+
+  return { nextMonth, prevMonth }
+}
+
+function useCalendarState(date: Date, today: Date): CalendarState {
+  const [calendarOpen, setCalendarOpen] = useState(false)
+  const [calendarClosing, setCalendarClosing] = useState(false)
+  const [viewYear, setViewYear] = useState(date.getFullYear())
+  const [viewMonth, setViewMonth] = useState(date.getMonth())
+  const closeTimeout = useCloseTimeoutRef()
+
+  const showTodayMonth = useCallback(() => {
+    setViewYear(today.getFullYear())
+    setViewMonth(today.getMonth())
+  }, [today])
+
+  const openCalendar = useCallback(() => {
+    if (closeTimeout.current !== null) {
+      window.clearTimeout(closeTimeout.current)
+      closeTimeout.current = null
+    }
+    showTodayMonth()
+    setCalendarClosing(false)
+    setCalendarOpen(true)
+  }, [showTodayMonth])
+
+  const closeCalendar = useCallback(() => {
+    setCalendarOpen(false)
+    setCalendarClosing(true)
+    if (closeTimeout.current !== null) {
+      window.clearTimeout(closeTimeout.current)
+    }
+    closeTimeout.current = window.setTimeout(() => {
+      setCalendarClosing(false)
+      closeTimeout.current = null
+    }, CALENDAR_ANIMATION_MS)
+  }, [])
+
+  const toggleCalendar = useCallback(() => {
+    if (calendarOpen) closeCalendar()
+    else openCalendar()
+  }, [calendarOpen, closeCalendar, openCalendar])
+
+  const { nextMonth, prevMonth } = useMonthNavigation(
+    viewMonth,
+    viewYear,
+    setViewMonth,
+    setViewYear,
+    today,
+  )
+
+  const calendarWeeks = useMemo(
+    () => buildCalendarGrid(viewYear, viewMonth),
+    [viewYear, viewMonth],
+  )
+  const isFutureBlocked =
+    viewYear === today.getFullYear() && viewMonth === today.getMonth()
+  const monthLabel = new Date(viewYear, viewMonth).toLocaleDateString(undefined, {
+    month: 'long',
+    year: 'numeric',
+  })
+
+  return {
+    calendarClosing,
+    calendarOpen,
+    calendarWeeks,
+    closeCalendar,
+    isFutureBlocked,
+    monthLabel,
+    nextMonth,
+    prevMonth,
+    showTodayMonth,
+    toggleCalendar,
+  }
+}
+
+interface DayNavigation {
+  goBack: () => void
+  goForward: () => void
+  goToToday: () => void
+  handleDayClick: (day: Date) => void
+}
+
+function useDayNavigation(
+  date: Date,
+  onChange: (date: Date) => void,
+  today: Date,
+  closeCalendar: () => void,
+  showTodayMonth: () => void,
+): DayNavigation {
+  const goBack = useCallback(() => onChange(addDays(date, -1)), [date, onChange])
+  const goForward = useCallback(() => {
+    if (!isSameLocalDay(date, today)) onChange(min([addDays(date, 1), today]))
+  }, [date, onChange, today])
+
+  const goToToday = useCallback(() => {
+    onChange(today)
+    showTodayMonth()
+  }, [onChange, showTodayMonth, today])
+
+  const handleDayClick = useCallback(
+    (day: Date) => {
+      if (day > today) return
+      onChange(day)
+      closeCalendar()
+    },
+    [closeCalendar, onChange, today],
+  )
+
+  return { goBack, goForward, goToToday, handleDayClick }
+}
+
+function getHeaderLabel(date: Date, today: Date): string {
+  if (isSameLocalDay(date, today)) return 'Today'
+  return date.toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+  })
+}
+
+/**
+ * Provides access to a reusable calendar navigation widget.
+ * @param {DateNavigatorProps} param0
+ * @param {Date} param0.date
+ * @param {(date: Date) => void} param0.onChange
+ * @param {Set<string> | undefined} param0.eventDates
+ * @returns {{headerElement: React.JSX.Element, calendarElement: React.JSX.Element | null}}
+ */
+export function useDateNavigator({ date, onChange, eventDates }: DateNavigatorProps): {
+  headerElement: React.JSX.Element
+  calendarElement: React.JSX.Element | null
+} {
+  const today = new Date()
+  const isToday = isSameLocalDay(date, today)
+  const calendarState = useCalendarState(date, today)
+  const dayNavigation = useDayNavigation(
+    date,
+    onChange,
+    today,
+    calendarState.closeCalendar,
+    calendarState.showTodayMonth,
+  )
+
+  const headerElement = (
+    <DateNavigatorHeader
+      calendarOpen={calendarState.calendarOpen}
+      goBack={dayNavigation.goBack}
+      goForward={dayNavigation.goForward}
+      goToToday={dayNavigation.goToToday}
+      headerLabel={getHeaderLabel(date, today)}
+      isToday={isToday}
+      today={today}
+      toggleCalendar={calendarState.toggleCalendar}
+    />
+  )
+
+  const calendarElement = (
+    <DateNavigatorCalendar
+      calendarClosing={calendarState.calendarClosing}
+      calendarOpen={calendarState.calendarOpen}
+      calendarWeeks={calendarState.calendarWeeks}
+      date={date}
+      eventDates={eventDates}
+      handleDayClick={dayNavigation.handleDayClick}
+      isFutureBlocked={calendarState.isFutureBlocked}
+      monthLabel={calendarState.monthLabel}
+      nextMonth={calendarState.nextMonth}
+      prevMonth={calendarState.prevMonth}
+      today={today}
+    />
+  )
 
   return { headerElement, calendarElement }
 }

@@ -1,7 +1,9 @@
 import { IonChip } from '@ionic/react'
 
+import type { Status } from '../lib/status'
+
 interface PageProps {
-  label: 'Crisis' | 'Moderate Risk' | 'Doing Well'
+  label: Status['label']
 }
 
 export const StatusChip = ({ label }: PageProps) => {
@@ -9,6 +11,7 @@ export const StatusChip = ({ label }: PageProps) => {
     Crisis: 'danger',
     'Moderate Risk': 'warning',
     'Doing Well': 'success',
+    'No Data': 'medium',
   }[label]
 
   return (

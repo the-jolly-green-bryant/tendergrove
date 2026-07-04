@@ -15,18 +15,6 @@
   margin-bottom: 1rem;
 }
 
-.timeline-person-chips {
-  display: flex;
-  gap: 0.25rem;
-  overflow-x: auto;
-  padding-bottom: 0.25rem;
-  -webkit-overflow-scrolling: touch;
-}
-
-.timeline-person-chips::-webkit-scrollbar {
-  display: none;
-}
-
 .timeline-type-chips {
   display: flex;
   align-items: center;
@@ -50,34 +38,6 @@
 .timeline-chip--active {
   --background: var(--ion-color-primary);
   --color: #fff;
-}
-
-.timeline-chip__avatar {
-  width: 24px !important;
-  height: 24px !important;
-  min-width: 24px;
-  font-size: 0.6rem;
-  margin-right: 4px;
-}
-
-.timeline-chip__avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-}
-
-.timeline-chip--avatar-only {
-  --padding-start: 4px;
-  --padding-end: 4px;
-}
-
-.timeline-chip--avatar-only .timeline-chip__avatar {
-  margin-right: 0;
-  width: 28px !important;
-  height: 28px !important;
-  min-width: 28px;
-  font-size: 0.65rem;
 }
 
 /* ------------------------------------------------------------------ */
