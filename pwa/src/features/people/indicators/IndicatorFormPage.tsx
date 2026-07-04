@@ -25,6 +25,24 @@ function isPolarity(value: string | undefined): value is Polarity {
   return value === 'undesired' || value === 'desired'
 }
 
+async function performWrite(
+  personId: string,
+  isEditing: boolean,
+  indicatorId: string | undefined,
+  payload: {
+    name: string
+    description: string | undefined
+    notes: string | undefined
+    polarity: any
+    inputType: any
+  },
+) {
+  const { create, update } = useIndicatorMutations(personId)
+  return isEditing && indicatorId
+    ? await update(indicatorId, payload)
+    : await create(payload)
+}
+
 /**
  * Allows users to create bespoke indicators for people.
  * @returns {React.JSX.Element}
@@ -51,7 +69,7 @@ export default function IndicatorFormPage() {
 
   const polarity: Polarity = isPolarity(polarityParam)
     ? polarityParam
-    : ((existing?.polarity as Polarity | undefined) ?? 'undesired')
+    : (existing?.polarity ?? 'undesired')
 
   const meta = polarityMeta[polarity]
 
@@ -88,9 +106,7 @@ export default function IndicatorFormPage() {
 
     setSaving(true)
     try {
-      isEditing && indicatorId
-        ? await update(indicatorId, payload)
-        : await create(payload)
+      await performWrite(personId, isEditing, indicatorId, payload)
       router.push(`/person/${personId}/indicators`, 'back', 'pop')
     } finally {
       setSaving(false)

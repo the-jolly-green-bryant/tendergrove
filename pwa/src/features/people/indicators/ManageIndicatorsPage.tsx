@@ -12,11 +12,9 @@ import {
   IonLabel,
   IonList,
   IonPage,
-  IonSegment,
-  IonSegmentButton,
   IonTitle,
   IonToolbar,
-  useIonRouter,
+  useIonAlert,
 } from '@ionic/react'
 import {
   add,
@@ -24,32 +22,109 @@ import {
   informationCircleOutline,
   trash,
 } from 'ionicons/icons'
-import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 
 import { LoadingState } from '../../../components/LoadingState'
 import { useIndicators, type Indicator } from './useIndicators'
 import { useIndicatorMutations } from './useIndicatorMutations'
-import { polarityMeta, type Polarity } from './indicatorMeta'
+import { polarityMeta, type InputType, type Polarity } from './indicatorMeta'
 
-type Filter = 'all' | Polarity
+type AlertValues = { behavior?: string }
+
+function normalizeIndicatorName(values: AlertValues): string | false {
+  return values.behavior?.trim() || false
+}
+
+function useIndicatorAlertActions(personId: string) {
+  const { create, update, remove } = useIndicatorMutations(personId)
+  const [presentAlert] = useIonAlert()
+
+  const addIndicator = (polarity: Polarity) => {
+    const meta = polarityMeta[polarity]
+    void presentAlert({
+      header: `Add ${meta.title} Indicator`,
+      inputs: [
+        {
+          name: 'behavior',
+          type: 'text',
+          placeholder: `e.g. ${meta.examples.split(',')[0]}`,
+        },
+      ],
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Add',
+          handler: (values: AlertValues) => {
+            const name = normalizeIndicatorName(values)
+            if (!name) return false
+            void create({ name, polarity, inputType: 'boolean' })
+            return true
+          },
+        },
+      ],
+    })
+  }
+
+  const editIndicator = (indicator: Indicator) => {
+    const polarity = (indicator.polarity ?? 'undesired') as Polarity
+    const inputType = (indicator.inputType ?? 'boolean') as InputType
+    void presentAlert({
+      header: 'Edit Indicator',
+      inputs: [
+        {
+          name: 'behavior',
+          type: 'text',
+          value: indicator.name,
+          placeholder: 'Behavior',
+        },
+      ],
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Save',
+          handler: (values: AlertValues) => {
+            const name = normalizeIndicatorName(values)
+            if (!name) return false
+            void update(indicator.id, {
+              name,
+              polarity,
+              inputType,
+              description: indicator.description ?? undefined,
+              notes: indicator.notes ?? undefined,
+            })
+            return true
+          },
+        },
+      ],
+    })
+  }
+
+  const confirmRemoveIndicator = (indicator: Indicator) => {
+    void presentAlert({
+      header: 'Remove indicator?',
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Remove',
+          role: 'destructive',
+          handler: () => void remove(indicator.id),
+        },
+      ],
+    })
+  }
+
+  return { addIndicator, editIndicator, confirmRemoveIndicator }
+}
 
 /**
- *
+ * Displays and edits a person's desired and undesired indicators.
+ * @returns Indicator management page.
  */
 export default function ManageIndicatorsPage() {
-  const router = useIonRouter()
   const { personId } = useParams<{ personId: string }>()
   const { data: indicators, isLoading, error } = useIndicators(personId)
-  const { remove } = useIndicatorMutations(personId)
-
-  const [filter, setFilter] = useState<Filter>('all')
-
-  const addIndicator = (polarity: Polarity) =>
-    router.push(`/person/${personId}/indicators/new/${polarity}`, 'forward')
-
-  const editIndicator = (indicatorId: string) =>
-    router.push(`/person/${personId}/indicators/${indicatorId}/edit`, 'forward')
+  const { addIndicator, editIndicator, confirmRemoveIndicator } =
+    useIndicatorAlertActions(personId)
 
   const byPolarity = (polarity: Polarity) =>
     (indicators ?? []).filter((indicator) => indicator.polarity === polarity)
@@ -72,49 +147,10 @@ export default function ManageIndicatorsPage() {
         fullscreen
         className="ion-padding safe-content"
       >
-        <IonSegment
-          value={filter}
-          onIonChange={(event) => setFilter((event.detail.value as Filter) ?? 'all')}
-          className="indicator-segment"
-        >
-          <IonSegmentButton value="all">
-            <IonLabel>All</IonLabel>
-          </IonSegmentButton>
-          <IonSegmentButton value="undesired">
-            <IonLabel>Undesired</IonLabel>
-          </IonSegmentButton>
-          <IonSegmentButton value="desired">
-            <IonLabel>Desired</IonLabel>
-          </IonSegmentButton>
-        </IonSegment>
-
         <p className="indicator-intro">
-          Track what increases distress (undesired) and what supports well-being
-          (desired).
+          Track behaviors that either increase distress (undesired) or support
+          well-being (desired).
         </p>
-
-        {isLoading && <LoadingState />}
-        {error && <p>Failed to load indicators.</p>}
-
-        {(filter === 'all' || filter === 'undesired') && (
-          <IndicatorSection
-            polarity="undesired"
-            indicators={byPolarity('undesired')}
-            onAdd={() => addIndicator('undesired')}
-            onEdit={editIndicator}
-            onDelete={(id) => remove(id)}
-          />
-        )}
-
-        {(filter === 'all' || filter === 'desired') && (
-          <IndicatorSection
-            polarity="desired"
-            indicators={byPolarity('desired')}
-            onAdd={() => addIndicator('desired')}
-            onEdit={editIndicator}
-            onDelete={(id) => remove(id)}
-          />
-        )}
 
         <div className="indicator-why">
           <IonIcon
@@ -129,6 +165,25 @@ export default function ManageIndicatorsPage() {
             </p>
           </div>
         </div>
+
+        {isLoading && <LoadingState />}
+        {error && <p>Failed to load indicators.</p>}
+
+        <IndicatorSection
+          polarity="undesired"
+          indicators={byPolarity('undesired')}
+          onAdd={() => addIndicator('undesired')}
+          onEdit={editIndicator}
+          onDelete={confirmRemoveIndicator}
+        />
+
+        <IndicatorSection
+          polarity="desired"
+          indicators={byPolarity('desired')}
+          onAdd={() => addIndicator('desired')}
+          onEdit={editIndicator}
+          onDelete={confirmRemoveIndicator}
+        />
       </IonContent>
     </IonPage>
   )
@@ -144,8 +199,8 @@ const IndicatorSection = ({
   readonly polarity: Polarity
   readonly indicators: Indicator[]
   readonly onAdd: () => void
-  readonly onEdit: (id: string) => void
-  readonly onDelete: (id: string) => void
+  readonly onEdit: (indicator: Indicator) => void
+  readonly onDelete: (indicator: Indicator) => void
 }) => {
   const meta = polarityMeta[polarity]
 
@@ -178,7 +233,7 @@ const IndicatorSection = ({
               <IonItem
                 button
                 detail={false}
-                onClick={() => onEdit(indicator.id)}
+                onClick={() => onEdit(indicator)}
                 className="indicator-row"
               >
                 <IonIcon
@@ -196,7 +251,7 @@ const IndicatorSection = ({
               <IonItemOptions side="end">
                 <IonItemOption
                   color="danger"
-                  onClick={() => onDelete(indicator.id)}
+                  onClick={() => onDelete(indicator)}
                 >
                   <IonIcon
                     slot="icon-only"

@@ -25,6 +25,7 @@ import {
   peopleOutline,
   heartOutline,
   accessibilityOutline,
+  informationCircleOutline,
 } from 'ionicons/icons'
 import React, { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
@@ -318,40 +319,60 @@ export default function PersonFormPage() {
     <IonPage>
       {renderHeader(goBack, close, isEditing)}
 
-      <IonContent fullscreen>
+      <IonContent
+        fullscreen
+        className="ion-padding safe-content person-form-content"
+      >
         {step === 1 ? (
-          <section>
-            <h1>Who are you tracking?</h1>
-            <p>You can always edit this later.</p>
+          <section className="person-form-section">
+            <h1 className="choose-type__heading">Who are you tracking?</h1>
+            <p className="indicator-intro">Choose the role that best fits.</p>
+
+            <div className="indicator-why">
+              <IonIcon
+                icon={informationCircleOutline}
+                color="primary"
+              />
+              <div>
+                <strong>You can always edit this later</strong>
+                <p>This helps tailor suggested indicators and check-ins.</p>
+              </div>
+            </div>
 
             <IonRadioGroup
               value={role}
               onIonChange={(event) => setRole(event.detail.value)}
             >
-              {roleOptions.map((option) => (
-                <IonItem
-                  key={option.value}
-                  className="role-option"
-                  button
-                  detail={false}
-                  onClick={() => setRole(option.value)}
-                >
-                  <IonIcon
-                    slot="start"
-                    icon={option.icon}
-                  />
+              <IonList
+                lines="none"
+                className="indicator-list"
+              >
+                {roleOptions.map((option) => (
+                  <IonItem
+                    key={option.value}
+                    className="role-option indicator-row"
+                    button
+                    detail={false}
+                    onClick={() => setRole(option.value)}
+                  >
+                    <IonIcon
+                      slot="start"
+                      icon={option.icon}
+                      color="primary"
+                    />
 
-                  <IonLabel>
-                    <h2>{option.label}</h2>
-                    <p>{option.description}</p>
-                  </IonLabel>
+                    <IonLabel>
+                      <h2>{option.label}</h2>
+                      <p>{option.description}</p>
+                    </IonLabel>
 
-                  <IonRadio
-                    slot="end"
-                    value={option.value}
-                  />
-                </IonItem>
-              ))}
+                    <IonRadio
+                      slot="end"
+                      value={option.value}
+                    />
+                  </IonItem>
+                ))}
+              </IonList>
             </IonRadioGroup>
 
             <IonButton
@@ -362,12 +383,17 @@ export default function PersonFormPage() {
             </IonButton>
           </section>
         ) : (
-          <section>
-            <h1>{isEditing ? 'Update person' : 'Let’s add some details'}</h1>
-            <p>This helps personalize their experience.</p>
+          <section className="person-form-section">
+            <h1 className="choose-type__heading">
+              {isEditing ? 'Update person' : 'Let’s add some details'}
+            </h1>
+            <p className="indicator-intro">This helps personalize their experience.</p>
 
-            <IonList>
-              <IonItem>
+            <IonList
+              lines="none"
+              className="indicator-list"
+            >
+              <IonItem className="indicator-row">
                 <IonInput
                   label="Name"
                   labelPlacement="stacked"
@@ -378,7 +404,7 @@ export default function PersonFormPage() {
               </IonItem>
             </IonList>
 
-            <IonItem>
+            <IonItem className="indicator-row person-form-photo-row">
               <PersonAvatar
                 slot="start"
                 name={displayName || role}

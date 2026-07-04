@@ -1,6 +1,5 @@
 import {
   IonBackButton,
-  IonButton,
   IonButtons,
   IonCard,
   IonCardContent,
@@ -10,6 +9,7 @@ import {
   IonPage,
   IonTitle,
   IonToolbar,
+  useIonRouter,
 } from '@ionic/react'
 import { chevronForwardOutline, informationCircleOutline } from 'ionicons/icons'
 import { useParams } from 'react-router-dom'

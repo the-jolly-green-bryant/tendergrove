@@ -19,6 +19,7 @@ import { useRouteModal } from '../../components/RouteModalContext'
 import { useSelectedDate } from '../../context/SelectedDateContext'
 import { usePeople } from '../people/usePeople'
 import { usePerson } from '../people/usePerson'
+import { useIndicators } from '../people/indicators/useIndicators'
 import { parseAnswers } from '../people/checkin/checkInUtils'
 import { useCheckInMutations } from '../people/checkin/useCheckInMutations'
 
@@ -98,12 +99,12 @@ function IndicatorGroup({
               color={color}
             />
             <IonCheckbox
-              justify="space-between"
+              slot="end"
+              aria-label={indicator.name}
               checked={Boolean(checked[indicator.id])}
               onIonChange={() => onToggle(indicator.id)}
-            >
-              {indicator.name}
-            </IonCheckbox>
+            />
+            <span className="check-in__item-label">{indicator.name}</span>
           </IonItem>
         ))}
       </IonList>
@@ -220,10 +221,14 @@ function buildCheckInPayload(
 
 function useWizardStepState({ personId, selectedDate, onDone }: WizardStepProps) {
   const { data: person, isLoading } = usePerson(personId)
+  const indicatorsQuery = useIndicators(personId)
   const { create, update } = useCheckInMutations(personId)
   const indicators = useMemo(
-    () => ((person?.indicators ?? []) as Indicator[]).filter((i) => i.active !== false),
-    [person],
+    () =>
+      ((indicatorsQuery.data ?? person?.indicators ?? []) as Indicator[]).filter(
+        (i) => i.active !== false,
+      ),
+    [indicatorsQuery.data, person],
   )
   const existing = useMemo(
     () => (person?.checkIns ?? []).find((ci) => isSameDay(ci.occurredAt, selectedDate)),
@@ -267,7 +272,7 @@ function useWizardStepState({ personId, selectedDate, onDone }: WizardStepProps)
 
   return {
     person,
-    isLoading,
+    isLoading: isLoading || indicatorsQuery.isLoading,
     indicators,
     existing,
     checked,
@@ -368,10 +373,10 @@ export function CheckInWizardPage({
   )
 
   const activePeople = useMemo(() => {
-    const list = (people.data ?? []).filter((p) => !p.archived)
     if (personId) {
-      return list.filter((p) => p.id === personId)
+      return [{ id: personId }]
     }
+    const list = (people.data ?? []).filter((p) => !p.archived)
     return list
   }, [people.data, personId])
 
@@ -397,7 +402,8 @@ export function CheckInWizardPage({
 
   const currentPerson = activePeople[currentIndex]
   const total = activePeople.length
-  const title = total > 0 ? `Check-In (${currentIndex + 1} of ${total})` : 'Check-In'
+  const isLoadingPeople = !personId && people.isLoading
+  const title = total > 1 ? `Check-In (${currentIndex + 1} of ${total})` : 'Check-In'
   const backHref = returnPath ?? (personId ? `/person/${personId}` : '/dashboard')
 
   return (
@@ -409,9 +415,9 @@ export function CheckInWizardPage({
     >
       <p className="wizard-date-badge">{formatDateLabel(selectedDate)}</p>
 
-      {people.isLoading && <LoadingState />}
+      {isLoadingPeople && <LoadingState />}
 
-      {!people.isLoading && activePeople.length === 0 && (
+      {!isLoadingPeople && activePeople.length === 0 && (
         <p className="section-empty">No household members to check in.</p>
       )}
 

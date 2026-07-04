@@ -6,16 +6,16 @@ import {
   IonContent,
   IonHeader,
   IonIcon,
-  IonInput,
   IonItem,
   IonLabel,
   IonList,
   IonPage,
   IonTitle,
   IonToolbar,
+  useIonAlert,
   useIonRouter,
 } from '@ionic/react'
-import { addOutline } from 'ionicons/icons'
+import { addOutline, createOutline, trashOutline } from 'ionicons/icons'
 import { useEffect, useState } from 'react'
 import { useParams, useLocation } from 'react-router-dom'
 
@@ -36,6 +36,20 @@ let nextCustomId = 0
 
 const LOADING_STATE = <LoadingState className="ion-text-center ion-padding" />
 
+function renameChecklistItem(
+  items: ChecklistItem[],
+  itemId: string,
+  name: string,
+): ChecklistItem[] {
+  return items.map((current) =>
+    current.id === itemId ? { ...current, name } : current,
+  )
+}
+
+function removeChecklistItem(items: ChecklistItem[], itemId: string): ChecklistItem[] {
+  return items.filter((current) => current.id !== itemId)
+}
+
 /**
  * Allows users to create a list of indicators to watch for.
  * @returns {React.JSX.Element}
@@ -53,11 +67,9 @@ export default function IndicatorChecklistPage() {
 
   const { data: template, isLoading } = useRoleTemplate(role)
   const { create } = useIndicatorMutations(personId)
+  const [presentAlert] = useIonAlert()
 
   const [items, setItems] = useState<ChecklistItem[]>([])
-  const [customName, setCustomName] = useState('')
-  const [customPolarity, setCustomPolarity] = useState<Polarity>('undesired')
-  const [showCustomInput, setShowCustomInput] = useState(false)
   const [saving, setSaving] = useState(false)
 
   useEffect(
@@ -80,14 +92,11 @@ export default function IndicatorChecklistPage() {
       ),
     )
 
-  function addCustomIndicator() {
-    const trimmed = customName.trim()
-    if (!trimmed) return
-
+  function addCustomIndicator(polarity: Polarity, name: string) {
     const newItem: ChecklistItem = {
       id: `custom-${nextCustomId++}`,
-      name: trimmed,
-      polarity: customPolarity,
+      name,
+      polarity,
       inputType: 'boolean',
       defaultSelected: true,
       selected: true,
@@ -95,8 +104,53 @@ export default function IndicatorChecklistPage() {
     }
 
     setItems((prev) => [...prev, newItem])
-    setCustomName('')
-    setShowCustomInput(false)
+  }
+
+  const showCustomIndicatorAlert = (polarity: Polarity, item?: ChecklistItem) => {
+    const meta = polarityMeta[polarity]
+    void presentAlert({
+      header: `${item ? 'Edit' : 'Add'} ${meta.title} Indicator`,
+      message: 'Enter the behavior you want to track.',
+      inputs: [
+        {
+          name: 'behavior',
+          type: 'text',
+          value: item?.name,
+          placeholder: `e.g. ${meta.examples.split(',')[0]}`,
+        },
+      ],
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: item ? 'Save' : 'Add',
+          handler: (values: { behavior?: string }) => {
+            const name = values.behavior?.trim()
+            if (!name) return false
+            if (item) {
+              setItems((prev) => renameChecklistItem(prev, item.id, name))
+            } else {
+              addCustomIndicator(polarity, name)
+            }
+            return true
+          },
+        },
+      ],
+    })
+  }
+
+  const confirmRemoveCustomIndicator = (item: ChecklistItem) => {
+    void presentAlert({
+      header: 'Remove indicator?',
+      message: `Remove "${item.name}" from this setup checklist?`,
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Remove',
+          role: 'destructive',
+          handler: () => setItems((prev) => removeChecklistItem(prev, item.id)),
+        },
+      ],
+    })
   }
 
   const saveIndicators = async () => {
@@ -151,90 +205,23 @@ export default function IndicatorChecklistPage() {
               Select all that apply{displayName && ` for ${displayName}`}.
             </p>
 
-            {undesired.length > 0 && (
-              <PolaritySection
-                polarity="undesired"
-                items={undesired}
-                onToggle={toggleItem}
-              />
-            )}
+            <PolaritySection
+              polarity="undesired"
+              items={undesired}
+              onToggle={toggleItem}
+              onAddCustom={showCustomIndicatorAlert}
+              onEditCustom={showCustomIndicatorAlert}
+              onRemoveCustom={confirmRemoveCustomIndicator}
+            />
 
-            {desired.length > 0 && (
-              <PolaritySection
-                polarity="desired"
-                items={desired}
-                onToggle={toggleItem}
-              />
-            )}
-
-            {showCustomInput ? (
-              <div className="custom-indicator-input">
-                <IonList>
-                  <IonItem>
-                    <IonInput
-                      label="Indicator name"
-                      labelPlacement="stacked"
-                      placeholder="e.g. Nail biting"
-                      value={customName}
-                      onIonInput={(e) => setCustomName(e.detail.value ?? '')}
-                      autofocus
-                    />
-                  </IonItem>
-                  <IonItem>
-                    <IonLabel>Type</IonLabel>
-                    <IonButton
-                      slot="end"
-                      fill={customPolarity === 'undesired' ? 'solid' : 'outline'}
-                      color="danger"
-                      size="small"
-                      onClick={() => setCustomPolarity('undesired')}
-                    >
-                      Undesired
-                    </IonButton>
-                    <IonButton
-                      slot="end"
-                      fill={customPolarity === 'desired' ? 'solid' : 'outline'}
-                      color="success"
-                      size="small"
-                      onClick={() => setCustomPolarity('desired')}
-                    >
-                      Desired
-                    </IonButton>
-                  </IonItem>
-                </IonList>
-                <div className="custom-indicator-actions">
-                  <IonButton
-                    fill="clear"
-                    size="small"
-                    onClick={() => {
-                      setShowCustomInput(false)
-                      setCustomName('')
-                    }}
-                  >
-                    Cancel
-                  </IonButton>
-                  <IonButton
-                    size="small"
-                    disabled={!customName.trim()}
-                    onClick={addCustomIndicator}
-                  >
-                    Add
-                  </IonButton>
-                </div>
-              </div>
-            ) : (
-              <IonButton
-                fill="clear"
-                className="add-custom-btn"
-                onClick={() => setShowCustomInput(true)}
-              >
-                <IonIcon
-                  slot="start"
-                  icon={addOutline}
-                />
-                Custom Indicator
-              </IonButton>
-            )}
+            <PolaritySection
+              polarity="desired"
+              items={desired}
+              onToggle={toggleItem}
+              onAddCustom={showCustomIndicatorAlert}
+              onEditCustom={showCustomIndicatorAlert}
+              onRemoveCustom={confirmRemoveCustomIndicator}
+            />
 
             <div className="checklist-footer">
               <IonButton
@@ -273,25 +260,47 @@ function PolaritySection({
   polarity,
   items,
   onToggle,
+  onAddCustom,
+  onEditCustom,
+  onRemoveCustom,
 }: {
   readonly polarity: Polarity
   readonly items: ChecklistItem[]
   readonly onToggle: (id: string) => void
+  readonly onAddCustom: (polarity: Polarity) => void
+  readonly onEditCustom: (polarity: Polarity, item: ChecklistItem) => void
+  readonly onRemoveCustom: (item: ChecklistItem) => void
 }) {
   const meta = polarityMeta[polarity]
 
   return (
     <section className="checklist-section">
-      <h2
-        className="checklist-section__title"
-        style={{ color: `var(--ion-color-${meta.color})` }}
-      >
-        {meta.title}
-      </h2>
+      <div className="section-header">
+        <h2
+          className="checklist-section__title"
+          style={{ color: `var(--ion-color-${meta.color})` }}
+        >
+          {meta.title}
+        </h2>
+        <IonButton
+          fill="clear"
+          size="small"
+          onClick={() => onAddCustom(polarity)}
+          aria-label={`Add ${meta.title.toLowerCase()} indicator`}
+        >
+          <IonIcon
+            slot="icon-only"
+            icon={addOutline}
+          />
+        </IonButton>
+      </div>
       <IonList
         lines="none"
         className="checklist-list"
       >
+        {items.length === 0 && (
+          <p className="section-empty">No {meta.title.toLowerCase()} indicators yet.</p>
+        )}
         {items.map((item) => (
           <IonItem
             key={item.id}
@@ -307,9 +316,57 @@ function PolaritySection({
               {item.name}
               {item.isCustom && <span className="checklist-custom-badge">Custom</span>}
             </IonLabel>
+            <CustomIndicatorButtons
+              item={item}
+              polarity={polarity}
+              onEdit={onEditCustom}
+              onRemove={onRemoveCustom}
+            />
           </IonItem>
         ))}
       </IonList>
     </section>
+  )
+}
+
+function CustomIndicatorButtons({
+  item,
+  polarity,
+  onEdit,
+  onRemove,
+}: {
+  readonly item: ChecklistItem
+  readonly polarity: Polarity
+  readonly onEdit: (polarity: Polarity, item: ChecklistItem) => void
+  readonly onRemove: (item: ChecklistItem) => void
+}) {
+  if (!item.isCustom) return null
+
+  return (
+    <>
+      <IonButton
+        slot="end"
+        fill="clear"
+        aria-label={`Edit ${item.name}`}
+        onClick={() => onEdit(polarity, item)}
+      >
+        <IonIcon
+          slot="icon-only"
+          icon={createOutline}
+        />
+      </IonButton>
+      <IonButton
+        slot="end"
+        fill="clear"
+        color="danger"
+        aria-label={`Remove ${item.name}`}
+        onClick={() => onRemove(item)}
+      >
+        <IonIcon
+          slot="icon-only"
+          icon={trashOutline}
+        />
+      </IonButton>
+    </>
   )
 }
