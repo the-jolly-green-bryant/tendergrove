@@ -265,7 +265,7 @@ export function useDateNavigator({ date, onChange, eventDates }: DateNavigatorPr
             icon={calendarClearOutline}
             className="date-navigator__today-icon"
           />
-          <span className="date-navigator__today-number">{date.getDate()}</span>
+          <span className="date-navigator__today-number">{today.getDate()}</span>
         </button>
       </div>
     </div>
