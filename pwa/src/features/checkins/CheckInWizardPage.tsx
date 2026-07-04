@@ -1,18 +1,11 @@
 import {
-  IonBackButton,
   IonButton,
-  IonButtons,
   IonCheckbox,
-  IonContent,
-  IonHeader,
   IonIcon,
   IonItem,
   IonList,
   IonNote,
-  IonPage,
   IonTextarea,
-  IonTitle,
-  IonToolbar,
   useIonRouter,
 } from '@ionic/react'
 import { checkmarkCircle, removeCircle } from 'ionicons/icons'
@@ -20,6 +13,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useParams } from 'react-router-dom'
 
 import { LoadingState } from '../../components/LoadingState'
+import { Page } from '../../components/Page'
 import { PersonAvatar } from '../../components/PersonAvatar'
 import { useSelectedDate } from '../../context/SelectedDateContext'
 import { usePeople } from '../people/usePeople'
@@ -53,6 +47,13 @@ function formatDateLabel(date: Date): string {
 }
 
 type Indicator = NonNullable<ReturnType<typeof usePerson>['data']>['indicators'][number]
+type CheckedIndicators = Record<string, boolean>
+type WizardStepProps = {
+  readonly personId: string
+  readonly selectedDate: Date
+  readonly onDone: () => void
+  readonly onSkip: () => void
+}
 
 function returnPathFromSearch(search: string): string | undefined {
   const returnTo = new URLSearchParams(search).get('returnTo')
@@ -61,43 +62,177 @@ function returnPathFromSearch(search: string): string | undefined {
   return returnTo
 }
 
-/**
- * Renders the check-in form for a single person inside the wizard.
- * Handles its own local state so each step is independent.
- */
-function WizardStep({
-  personId,
-  selectedDate,
-  onDone,
-  onSkip,
+function IndicatorGroup({
+  title,
+  items,
+  icon,
+  color,
+  checked,
+  onToggle,
 }: {
-  readonly personId: string
-  readonly selectedDate: Date
-  readonly onDone: () => void
-  readonly onSkip: () => void
+  readonly title: string
+  readonly items: Indicator[]
+  readonly icon: string
+  readonly color: string
+  readonly checked: CheckedIndicators
+  readonly onToggle: (id: string) => void
 }) {
+  if (items.length === 0) return null
+
+  return (
+    <>
+      <h2 className="check-in__group-title">{title}</h2>
+      <IonList
+        inset
+        className="check-in__list"
+      >
+        {items.map((indicator) => (
+          <IonItem
+            key={indicator.id}
+            className="check-in__item"
+          >
+            <IonIcon
+              slot="start"
+              icon={icon}
+              color={color}
+            />
+            <IonCheckbox
+              justify="space-between"
+              checked={Boolean(checked[indicator.id])}
+              onIonChange={() => onToggle(indicator.id)}
+            >
+              {indicator.name}
+            </IonCheckbox>
+          </IonItem>
+        ))}
+      </IonList>
+    </>
+  )
+}
+
+function EmptyIndicatorsMessage({ personId }: { readonly personId: string }) {
   const router = useIonRouter()
+  const indicatorPath = `/person/${personId}/indicators/new`
+
+  return (
+    <p className="section-empty">
+      No indicators yet — skip or{' '}
+      <a
+        href={indicatorPath}
+        onClick={(event) => {
+          event.preventDefault()
+          router.push(indicatorPath, 'forward', 'push')
+        }}
+      >
+        add some first
+      </a>
+      .
+    </p>
+  )
+}
+
+function CheckInNotes({
+  note,
+  existing,
+  onNoteChange,
+}: {
+  readonly note: string
+  readonly existing: unknown
+  readonly onNoteChange: (note: string) => void
+}) {
+  return (
+    <>
+      <h2 className="check-in__group-title">Notes</h2>
+      <IonList
+        inset
+        className="check-in__list check-in__list--notes"
+      >
+        <IonItem
+          lines="none"
+          className="check-in__item check-in__item--notes"
+        >
+          <IonTextarea
+            label="Anything else worth remembering?"
+            labelPlacement="stacked"
+            autoGrow
+            value={note}
+            onIonInput={(event) => onNoteChange(event.detail.value ?? '')}
+          />
+        </IonItem>
+      </IonList>
+
+      <IonNote className="check-in__hint">
+        {existing
+          ? "You're updating today's check-in."
+          : "Saving records today's check-in."}
+      </IonNote>
+    </>
+  )
+}
+
+function WizardActions({
+  existing,
+  saving,
+  canSave,
+  onSkip,
+  onSave,
+}: {
+  readonly existing: unknown
+  readonly saving: boolean
+  readonly canSave: boolean
+  readonly onSkip: () => void
+  readonly onSave: () => void
+}) {
+  return (
+    <div className="wizard-step__actions">
+      <IonButton
+        fill="outline"
+        onClick={onSkip}
+      >
+        Skip
+      </IonButton>
+      <IonButton
+        disabled={saving || !canSave}
+        onClick={onSave}
+      >
+        {existing ? 'Update' : 'Save'} &amp; Next
+      </IonButton>
+    </div>
+  )
+}
+
+function buildCheckInPayload(
+  selectedDate: Date,
+  indicators: Indicator[],
+  checked: CheckedIndicators,
+  note: string,
+) {
+  const occurDate = new Date(selectedDate)
+  occurDate.setHours(12, 0, 0, 0)
+
+  return {
+    occurredAt: occurDate.toISOString(),
+    answers: { checked: indicators.filter((i) => checked[i.id]).map((i) => i.id) },
+    note: note.trim() || undefined,
+  }
+}
+
+function useWizardStepState({ personId, selectedDate, onDone }: WizardStepProps) {
   const { data: person, isLoading } = usePerson(personId)
   const { create, update } = useCheckInMutations(personId)
-
   const indicators = useMemo(
     () => ((person?.indicators ?? []) as Indicator[]).filter((i) => i.active !== false),
     [person],
   )
-  const desired = indicators.filter((i) => i.polarity === 'desired')
-  const undesired = indicators.filter((i) => i.polarity === 'undesired')
-
   const existing = useMemo(
     () => (person?.checkIns ?? []).find((ci) => isSameDay(ci.occurredAt, selectedDate)),
     [person, selectedDate],
   )
-
-  const [checked, setChecked] = useState<Record<string, boolean>>({})
+  const [checked, setChecked] = useState<CheckedIndicators>({})
   const [note, setNote] = useState('')
   const [saving, setSaving] = useState(false)
   const [prefilled, setPrefilled] = useState(false)
 
-  // Reset local state when the personId changes (new step).
   useEffect(() => {
     setChecked({})
     setNote('')
@@ -105,7 +240,6 @@ function WizardStep({
     setPrefilled(false)
   }, [personId])
 
-  // Prefill from an existing check-in for today.
   useEffect(() => {
     if (prefilled || !existing) return
     const answers = parseAnswers(existing.answersJson)
@@ -119,58 +253,40 @@ function WizardStep({
   async function save() {
     if (saving) return
 
-    // Use noon on the selected date so the timestamp clearly belongs to that day.
-    const occurDate = new Date(selectedDate)
-    occurDate.setHours(12, 0, 0, 0)
-
-    const payload = {
-      occurredAt: occurDate.toISOString(),
-      answers: { checked: indicators.filter((i) => checked[i.id]).map((i) => i.id) },
-      note: note.trim() || undefined,
-    }
-
     setSaving(true)
     try {
-      if (existing) {
-        await update(existing.id, payload)
-      } else {
-        await create(payload)
-      }
+      const payload = buildCheckInPayload(selectedDate, indicators, checked, note)
+      if (existing) await update(existing.id, payload)
+      else await create(payload)
       onDone()
     } finally {
       setSaving(false)
     }
   }
 
-  const renderGroup = (
-    title: string,
-    items: Indicator[],
-    icon: string,
-    color: string,
-  ) =>
-    items.length > 0 && (
-      <>
-        <h2 className="check-in__group-title">{title}</h2>
-        <IonList inset>
-          {items.map((indicator) => (
-            <IonItem key={indicator.id}>
-              <IonIcon
-                slot="start"
-                icon={icon}
-                color={color}
-              />
-              <IonCheckbox
-                justify="space-between"
-                checked={Boolean(checked[indicator.id])}
-                onIonChange={() => toggle(indicator.id)}
-              >
-                {indicator.name}
-              </IonCheckbox>
-            </IonItem>
-          ))}
-        </IonList>
-      </>
-    )
+  return {
+    person,
+    isLoading,
+    indicators,
+    existing,
+    checked,
+    note,
+    saving,
+    setNote,
+    toggle,
+    save,
+  }
+}
+
+/**
+ * Renders the check-in form for a single person inside the wizard.
+ * Handles its own local state so each step is independent.
+ */
+function WizardStep({ personId, selectedDate, onDone, onSkip }: WizardStepProps) {
+  const step = useWizardStepState({ personId, selectedDate, onDone, onSkip })
+  const { person, isLoading, indicators, existing, checked, note, saving } = step
+  const desired = indicators.filter((i) => i.polarity === 'desired')
+  const undesired = indicators.filter((i) => i.polarity === 'undesired')
 
   if (isLoading) {
     return <LoadingState />
@@ -189,59 +305,40 @@ function WizardStep({
         </div>
 
         {indicators.length === 0 ? (
-          <p className="section-empty">
-            No indicators yet — skip or{' '}
-            <a
-              href={`/person/${personId}/indicators/new`}
-              onClick={(e) => {
-                e.preventDefault()
-                router.push(`/person/${personId}/indicators/new`, 'forward', 'push')
-              }}
-            >
-              add some first
-            </a>
-            .
-          </p>
+          <EmptyIndicatorsMessage personId={personId} />
         ) : (
           <>
-            {renderGroup('What went well', desired, checkmarkCircle, 'success')}
-            {renderGroup('What we watched for', undesired, removeCircle, 'danger')}
-
-            <h2 className="check-in__group-title">Notes</h2>
-            <IonList inset>
-              <IonItem lines="none">
-                <IonTextarea
-                  label="Anything else worth remembering?"
-                  labelPlacement="stacked"
-                  autoGrow
-                  value={note}
-                  onIonInput={(e) => setNote(e.detail.value ?? '')}
-                />
-              </IonItem>
-            </IonList>
-
-            <IonNote className="check-in__hint">
-              {existing
-                ? "You're updating today's check-in."
-                : "Saving records today's check-in."}
-            </IonNote>
+            <IndicatorGroup
+              title="What went well"
+              items={desired}
+              icon={checkmarkCircle}
+              color="success"
+              checked={checked}
+              onToggle={step.toggle}
+            />
+            <IndicatorGroup
+              title="What we watched for"
+              items={undesired}
+              icon={removeCircle}
+              color="danger"
+              checked={checked}
+              onToggle={step.toggle}
+            />
+            <CheckInNotes
+              note={note}
+              existing={existing}
+              onNoteChange={step.setNote}
+            />
           </>
         )}
 
-        <div className="wizard-step__actions">
-          <IonButton
-            fill="outline"
-            onClick={onSkip}
-          >
-            Skip
-          </IonButton>
-          <IonButton
-            disabled={saving || indicators.length === 0}
-            onClick={save}
-          >
-            {existing ? 'Update' : 'Save'} &amp; Next
-          </IonButton>
-        </div>
+        <WizardActions
+          existing={existing}
+          saving={saving}
+          canSave={indicators.length > 0}
+          onSkip={onSkip}
+          onSave={step.save}
+        />
       </>
     )
   )
@@ -289,54 +386,32 @@ export function CheckInWizardPage() {
 
   const currentPerson = activePeople[currentIndex]
   const total = activePeople.length
+  const title = total > 0 ? `Check-In (${currentIndex + 1} of ${total})` : 'Check-In'
+  const backHref = returnPath ?? (personId ? `/person/${personId}` : '/dashboard')
 
   return (
-    <IonPage>
-      <IonHeader>
-        <IonToolbar>
-          <IonButtons slot="start">
-            <IonBackButton
-              defaultHref={
-                returnPath ?? (personId ? `/person/${personId}` : '/dashboard')
-              }
-              text=""
-            />
-          </IonButtons>
-          <IonTitle>
-            {total > 0 ? `Check-In (${currentIndex + 1} of ${total})` : 'Check-In'}
-          </IonTitle>
-          <IonButtons slot="end">
-            <IonButton
-              fill="clear"
-              disabled
-              className="wizard-date-badge"
-            >
-              {formatDateLabel(selectedDate)}
-            </IonButton>
-          </IonButtons>
-        </IonToolbar>
-      </IonHeader>
+    <Page
+      title={title}
+      backHref={backHref}
+      className="check-in-wizard-content"
+    >
+      <p className="wizard-date-badge">{formatDateLabel(selectedDate)}</p>
 
-      <IonContent
-        fullscreen
-        className="ion-padding safe-content"
-      >
-        {people.isLoading && <LoadingState />}
+      {people.isLoading && <LoadingState />}
 
-        {!people.isLoading && activePeople.length === 0 && (
-          <p className="section-empty">No household members to check in.</p>
-        )}
+      {!people.isLoading && activePeople.length === 0 && (
+        <p className="section-empty">No household members to check in.</p>
+      )}
 
-        {currentPerson && (
-          <WizardStep
-            key={currentPerson.id}
-            personId={currentPerson.id}
-            selectedDate={selectedDate}
-            onDone={advance}
-            onSkip={advance}
-          />
-        )}
-      </IonContent>
-    </IonPage>
+      {currentPerson && (
+        <WizardStep
+          key={currentPerson.id}
+          personId={currentPerson.id}
+          selectedDate={selectedDate}
+          onDone={advance}
+          onSkip={advance}
+        />
+      )}
+    </Page>
   )
 }

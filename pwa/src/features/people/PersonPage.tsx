@@ -4,7 +4,6 @@ import {
   IonButtons,
   IonCard,
   IonCardContent,
-  IonChip,
   IonContent,
   IonHeader,
   IonIcon,
@@ -21,15 +20,15 @@ import {
 import {
   archiveOutline,
   checkmarkCircle,
+  chevronForwardOutline,
   closeCircle,
   createOutline,
   listOutline,
   removeCircle,
-  timeOutline,
 } from 'ionicons/icons'
 import { formatDistanceToNow } from 'date-fns'
-import { useEffect, useMemo, useRef } from 'react'
-import { useHistory, useLocation, useParams } from 'react-router-dom'
+import { useMemo } from 'react'
+import { useLocation, useParams } from 'react-router-dom'
 
 import { useSelectedDate } from '../../context/SelectedDateContext'
 
@@ -39,12 +38,13 @@ import { useArchivePerson } from './useArchivePerson'
 import { parseAnswers } from './checkin/checkInUtils'
 import { useDateNavigator } from '../../components/DateNavigator'
 import { PersonAvatar } from '../../components/PersonAvatar'
-import { HouseholdTree } from '../../components/HouseholdTree'
 import { PersonRole } from '../../lib/domain'
 import { derivePersonStatus, todayEmoji } from '../../lib/status'
 
 type Indicator = NonNullable<ReturnType<typeof usePerson>['data']>['indicators'][number]
 type CheckIn = NonNullable<ReturnType<typeof usePerson>['data']>['checkIns'][number]
+type Person = NonNullable<ReturnType<typeof usePerson>['data']>
+type PersonStatus = ReturnType<typeof derivePersonStatus>
 
 const roleLabels: Record<PersonRole, string> = {
   self: 'You',
@@ -53,10 +53,6 @@ const roleLabels: Record<PersonRole, string> = {
   parent: 'Parent',
   caregiver: 'Caregiver',
   other: 'Other',
-}
-
-function latestCheckIn(checkIns: CheckIn[]): CheckIn | undefined {
-  return [...checkIns].sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))[0]
 }
 
 /** Return YYYY-MM-DD for a Date. */
@@ -73,6 +69,14 @@ function isSameDay(occurredAt: string, date: Date): boolean {
     d.getFullYear() === date.getFullYear() &&
     d.getMonth() === date.getMonth() &&
     d.getDate() === date.getDate()
+  )
+}
+
+function isSameCalendarDate(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
   )
 }
 
@@ -121,6 +125,118 @@ function formatDateLabel(date: Date): string {
   })
 }
 
+function formatCheckInTitle(date: Date): string {
+  const today = new Date()
+  const yesterday = new Date()
+  yesterday.setDate(today.getDate() - 1)
+
+  if (isSameCalendarDate(date, today)) return "Today's Check-In"
+  if (isSameCalendarDate(date, yesterday)) return "Yesterday's Check-In"
+
+  const dateLabel = date.toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+  })
+  return `${dateLabel}'s Check-In`
+}
+
+function checkInSummaryIcon(seen: boolean, isDesired: boolean): string {
+  if (seen) return isDesired ? checkmarkCircle : removeCircle
+  return isDesired ? closeCircle : checkmarkCircle
+}
+
+function CheckInSummaryList({
+  indicators,
+  checkedForDate,
+}: {
+  readonly indicators: Indicator[]
+  readonly checkedForDate: Set<string>
+}) {
+  if (indicators.length === 0) {
+    return <p className="section-empty">No indicators tracked.</p>
+  }
+
+  return (
+    <IonList
+      lines="none"
+      className="check-in-summary person-checkin-panel__summary"
+    >
+      {indicators.map((indicator) => {
+        const seen = checkedForDate.has(indicator.id)
+        const isDesired = indicator.polarity === 'desired'
+        const markGood = seen == isDesired
+        return (
+          <IonItem
+            key={indicator.id}
+            className="check-in-summary__item"
+          >
+            <IonIcon
+              slot="start"
+              icon={checkInSummaryIcon(seen, isDesired)}
+              color={markGood ? 'success' : 'danger'}
+            />
+            <IonLabel
+              className={seen ? '' : 'check-in-summary__muted'}
+              style={!seen ? { textDecoration: 'line-through' } : undefined}
+            >
+              {indicator.name}
+            </IonLabel>
+          </IonItem>
+        )
+      })}
+    </IonList>
+  )
+}
+
+function PersonCheckInButton({
+  person,
+  status,
+  emoji,
+  title,
+  onClick,
+}: {
+  readonly person: Person
+  readonly status: PersonStatus
+  readonly emoji?: string | null
+  readonly title: string
+  readonly onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      className="person-checkin-button"
+      onClick={onClick}
+    >
+      <div className="person-checkin-button__art avatar-emoji-wrapper">
+        <PersonAvatar
+          className="person-checkin-button__avatar"
+          name={person.displayName}
+          src={person.avatarUrl}
+        />
+        {emoji && <span className="avatar-emoji-badge">{emoji}</span>}
+      </div>
+
+      <span className="person-checkin-button__copy">
+        <span>
+          {person.displayName} · {roleLabels[person.role as PersonRole] ?? 'Person'}
+        </span>
+        <strong>{title}</strong>
+        <span
+          className={`person-checkin-button__status person-status--${status.color}`}
+        >
+          <span className="person-status__dot" />
+          {status.label}
+        </span>
+      </span>
+
+      <IonIcon
+        icon={chevronForwardOutline}
+        className="person-checkin-button__chevron"
+      />
+    </button>
+  )
+}
+
 /**
  * Displays check-in status of a given person.
  * @returns {React.JSX.Element | null}
@@ -128,7 +244,6 @@ function formatDateLabel(date: Date): string {
  */
 export default function PersonPage() {
   const router = useIonRouter()
-  const history = useHistory()
   const { personId } = useParams<{ personId: string }>()
   const isRealPerson = Boolean(personId && personId !== 'new')
   const {
@@ -136,7 +251,6 @@ export default function PersonPage() {
     isLoading,
     error,
   } = usePerson(isRealPerson ? personId : undefined)
-  const hasRedirected = useRef(false)
   const [presentActionSheet] = useIonActionSheet()
   const [presentAlert] = useIonAlert()
   const { selectedDate, setSelectedDate } = useSelectedDate()
@@ -166,7 +280,6 @@ export default function PersonPage() {
   )
   const activeIndicators = indicators.filter((indicator) => indicator.active !== false)
 
-  const recentCheckIn = latestCheckIn(checkIns)
   const selectedCheckIn = checkIns.find((ci) => isSameDay(ci.occurredAt, viewDate))
   const status = derivePersonStatus(activeIndicators, checkIns)
   const emoji = todayEmoji(activeIndicators, checkIns, new Date(), personId)
@@ -181,36 +294,6 @@ export default function PersonPage() {
       .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))[0] ?? null
 
   const checkInPath = `/person/${personId}/check-in`
-
-  // No check-in yet for today → drop the caregiver straight into the check-in flow.
-  // Only auto-redirect when viewing today's date (not past dates) and not from the timeline.
-  const isViewingToday = isSameDay(new Date().toISOString(), viewDate)
-  useEffect(() => {
-    if (
-      !isRealPerson ||
-      isLoading ||
-      !person ||
-      hasRedirected.current ||
-      isTimelineView ||
-      !isViewingToday
-    ) {
-      return
-    }
-    if (activeIndicators.length > 0 && !selectedDateCheckIn) {
-      hasRedirected.current = true
-      history.push(checkInPath)
-    }
-  }, [
-    isRealPerson,
-    isLoading,
-    person,
-    activeIndicators.length,
-    selectedDateCheckIn,
-    history,
-    checkInPath,
-    isTimelineView,
-    isViewingToday,
-  ])
 
   // When Ionic matches /people/new against /people/:personId, bail out so
   // PersonFormPage is the only visible page.
@@ -327,50 +410,6 @@ export default function PersonPage() {
 
         {person && (
           <>
-            <section className="person-hero person-hero--compact ion-padding">
-              <div className="avatar-emoji-wrapper">
-                <PersonAvatar
-                  className="person-hero__avatar"
-                  name={person.displayName}
-                  src={person.avatarUrl}
-                />
-                {emoji && <span className="avatar-emoji-badge">{emoji}</span>}
-              </div>
-
-              <div className="person-hero__info">
-                <div className="person-hero__name-row">
-                  <h1 className="person-hero__name">{person.displayName}</h1>
-                  <span className="person-hero__role">
-                    {roleLabels[person.role as PersonRole] ?? 'Person'}
-                  </span>
-                </div>
-
-                <div className="person-hero__meta">
-                  <IonChip
-                    color={status.color}
-                    className="person-status__chip person-status__chip--sm"
-                  >
-                    <span className="person-status__dot" />
-                    <IonLabel>{status.label}</IonLabel>
-                  </IonChip>
-                </div>
-              </div>
-            </section>
-
-            <HouseholdTree
-              className="person-page-tree"
-              showSingleGreeting={false}
-              people={[
-                {
-                  id: person.id,
-                  displayName: person.displayName,
-                  avatarUrl: person.avatarUrl,
-                  energy: status.score ?? 100,
-                  isSelf: true,
-                },
-              ]}
-            />
-
             {isTimelineView && (
               <p className="person-hero__date-label ion-padding-horizontal">
                 Viewing: {formatDateLabel(viewDate)}
@@ -378,88 +417,37 @@ export default function PersonPage() {
             )}
 
             <div className="ion-padding">
-              {!checkedForDate && (
-                <IonCard className="no-checkin-card">
-                  <IonCardContent className="no-checkin-card__body">
-                    <p className="no-checkin-card__message">
+              <section className="person-checkin-panel">
+                <PersonCheckInButton
+                  person={person}
+                  status={status}
+                  emoji={emoji}
+                  title={formatCheckInTitle(viewDate)}
+                  onClick={startCheckIn}
+                />
+
+                <div className="person-checkin-panel__body">
+                  {checkedForDate ? (
+                    <>
+                      {selectedCheckIn && formatUpdatedLabel(selectedCheckIn) && (
+                        <p className="check-in-updated">
+                          {formatUpdatedLabel(selectedCheckIn)}
+                        </p>
+                      )}
+
+                      <CheckInSummaryList
+                        indicators={activeIndicators}
+                        checkedForDate={checkedForDate}
+                      />
+                    </>
+                  ) : (
+                    <p className="person-checkin-panel__empty">
                       No check-in recorded for {formatDateLabel(viewDate).toLowerCase()}
-                      .
+                      . Tap to start.
                     </p>
-                    <IonButton
-                      expand="block"
-                      onClick={startCheckIn}
-                    >
-                      Start Check-In
-                    </IonButton>
-                  </IonCardContent>
-                </IonCard>
-              )}
-
-              {checkedForDate && (
-                <IonCard>
-                  <IonCardContent>
-                    <div className="section-header">
-                      <h2>{formatDateLabel(viewDate)} Check-In</h2>
-                      <IonButton
-                        fill="clear"
-                        size="small"
-                        onClick={startCheckIn}
-                      >
-                        Edit
-                      </IonButton>
-                    </div>
-
-                    {selectedCheckIn && formatUpdatedLabel(selectedCheckIn) && (
-                      <p className="check-in-updated">
-                        {formatUpdatedLabel(selectedCheckIn)}
-                      </p>
-                    )}
-
-                    {activeIndicators.length === 0 ? (
-                      <p className="section-empty">No indicators tracked.</p>
-                    ) : (
-                      <IonList
-                        lines="none"
-                        className="check-in-summary"
-                      >
-                        {activeIndicators.map((indicator) => {
-                          const seen = checkedForDate.has(indicator.id)
-                          const isDesired = indicator.polarity === 'desired'
-                          const markGood = seen == isDesired
-                          return (
-                            <IonItem
-                              key={indicator.id}
-                              className="check-in-summary__item"
-                            >
-                              <IonIcon
-                                slot="start"
-                                icon={
-                                  seen
-                                    ? isDesired
-                                      ? checkmarkCircle
-                                      : removeCircle
-                                    : isDesired
-                                      ? closeCircle
-                                      : checkmarkCircle
-                                }
-                                color={markGood ? 'success' : 'danger'}
-                              />
-                              <IonLabel
-                                className={seen ? '' : 'check-in-summary__muted'}
-                                style={
-                                  !seen ? { textDecoration: 'line-through' } : undefined
-                                }
-                              >
-                                {indicator.name}
-                              </IonLabel>
-                            </IonItem>
-                          )
-                        })}
-                      </IonList>
-                    )}
-                  </IonCardContent>
-                </IonCard>
-              )}
+                  )}
+                </div>
+              </section>
 
               <IonCard>
                 <IonCardContent>
