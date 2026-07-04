@@ -18,29 +18,11 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
 import { useIndicators } from './useIndicators'
-import { useIndicatorMutations } from './useIndicatorMutations'
+import { type IndicatorInput, useIndicatorMutations } from './useIndicatorMutations'
 import { polarityMeta, type Polarity } from './indicatorMeta'
 
 function isPolarity(value: string | undefined): value is Polarity {
   return value === 'undesired' || value === 'desired'
-}
-
-async function performWrite(
-  personId: string,
-  isEditing: boolean,
-  indicatorId: string | undefined,
-  payload: {
-    name: string
-    description: string | undefined
-    notes: string | undefined
-    polarity: 'desired' | 'undesired'
-    inputType: 'boolean'
-  },
-) {
-  const { create, update } = useIndicatorMutations(personId)
-  return isEditing && indicatorId
-    ? await update(indicatorId, payload)
-    : await create(payload)
 }
 
 const renderDeleteButton = (deleteIndicator: () => void) => (
@@ -58,6 +40,184 @@ const renderDeleteButton = (deleteIndicator: () => void) => (
     </IonButton>
   </IonButtons>
 )
+
+interface IndicatorFormHeaderProps {
+  readonly deleteIndicator: () => void
+  readonly isEditing: boolean
+  readonly personId: string
+  readonly title: string
+}
+
+function IndicatorFormHeader({
+  deleteIndicator,
+  isEditing,
+  personId,
+  title,
+}: IndicatorFormHeaderProps) {
+  return (
+    <IonHeader translucent>
+      <IonToolbar>
+        <IonButtons slot="start">
+          <IonBackButton
+            defaultHref={`/person/${personId}/indicators`}
+            text=""
+          />
+        </IonButtons>
+        <IonTitle>{title}</IonTitle>
+        {isEditing && renderDeleteButton(deleteIndicator)}
+      </IonToolbar>
+    </IonHeader>
+  )
+}
+
+interface IndicatorFormContentProps {
+  readonly exampleText: string
+  readonly icon: string
+  readonly color: 'danger' | 'success'
+  readonly blurb: string
+  readonly name: string
+  readonly saving: boolean
+  readonly save: () => void
+  readonly setName: (name: string) => void
+}
+
+function IndicatorFormContent({
+  exampleText,
+  icon,
+  color,
+  blurb,
+  name,
+  saving,
+  save,
+  setName,
+}: IndicatorFormContentProps) {
+  return (
+    <IonContent
+      fullscreen
+      className="ion-padding safe-content"
+    >
+      <div className="indicator-form__icon">
+        <IonIcon
+          icon={icon}
+          color={color}
+        />
+      </div>
+
+      <p>{blurb}</p>
+
+      <IonList lines="none">
+        <IonItem>
+          <IonInput
+            label="Behavior"
+            labelPlacement="stacked"
+            placeholder={`e.g. ${exampleText}`}
+            value={name}
+            onIonInput={(event) => setName(event.detail.value ?? '')}
+          />
+        </IonItem>
+      </IonList>
+
+      <IonButton
+        expand="block"
+        disabled={!name.trim() || saving}
+        onClick={save}
+      >
+        Save Indicator
+      </IonButton>
+    </IonContent>
+  )
+}
+
+function createIndicatorPayload(
+  name: string,
+  description: string,
+  notes: string,
+  polarity: Polarity,
+): IndicatorInput {
+  return {
+    name,
+    description: description.trim() || undefined,
+    notes: notes.trim() || undefined,
+    polarity,
+    inputType: 'boolean',
+  }
+}
+
+type ExistingIndicator = NonNullable<ReturnType<typeof useIndicators>['data']>[number]
+type IndicatorMutations = ReturnType<typeof useIndicatorMutations>
+
+function useIndicatorDraft(existing: ExistingIndicator | undefined) {
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [notes, setNotes] = useState('')
+
+  useEffect(() => {
+    if (!existing) return
+    setName(existing.name)
+    setDescription(existing.description ?? '')
+    setNotes(existing.notes ?? '')
+  }, [existing])
+
+  return { description, name, notes, setName }
+}
+
+interface IndicatorActionsParams {
+  readonly draft: ReturnType<typeof useIndicatorDraft>
+  readonly indicatorId: string | undefined
+  readonly isEditing: boolean
+  readonly mutations: IndicatorMutations
+  readonly personId: string
+  readonly polarity: Polarity
+  readonly router: ReturnType<typeof useIonRouter>
+}
+
+function useIndicatorActions({
+  draft,
+  indicatorId,
+  isEditing,
+  mutations,
+  personId,
+  polarity,
+  router,
+}: IndicatorActionsParams) {
+  const [saving, setSaving] = useState(false)
+  const returnToList = () =>
+    router.push(`/person/${personId}/indicators`, 'back', 'pop')
+
+  const save = async () => {
+    const trimmedName = draft.name.trim()
+    if (!trimmedName || saving) return
+
+    const payload = createIndicatorPayload(
+      trimmedName,
+      draft.description,
+      draft.notes,
+      polarity,
+    )
+
+    setSaving(true)
+    try {
+      if (isEditing && indicatorId) await mutations.update(indicatorId, payload)
+      else await mutations.create(payload)
+      returnToList()
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const deleteIndicator = async () => {
+    if (!indicatorId || saving) return
+    setSaving(true)
+    try {
+      await mutations.remove(indicatorId)
+      returnToList()
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return { deleteIndicator, save, saving }
+}
 
 /**
  * Allows users to create bespoke indicators for people.
@@ -81,115 +241,42 @@ export default function IndicatorFormPage() {
   const existing = isEditing
     ? indicators?.find((item) => item.id === indicatorId)
     : undefined
-  const { remove } = useIndicatorMutations(personId)
+  const mutations = useIndicatorMutations(personId)
 
   const polarity: Polarity = isPolarity(polarityParam)
     ? polarityParam
     : (existing?.polarity ?? 'undesired')
 
   const meta = polarityMeta[polarity]
-
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [notes, setNotes] = useState('')
-  const [saving, setSaving] = useState(false)
-
-  // Prefill once the indicator being edited has loaded.
-  useEffect(() => {
-    if (!existing) {
-      return
-    }
-    setName(existing.name)
-    setDescription(existing.description ?? '')
-    setNotes(existing.notes ?? '')
-  }, [existing])
-
-  async function save() {
-    const trimmedName = name.trim()
-    if (!trimmedName || saving) {
-      return
-    }
-
-    const payload = {
-      name: trimmedName,
-      description: description.trim() || undefined,
-      notes: notes.trim() || undefined,
-      polarity,
-      inputType: 'boolean' as const,
-    }
-
-    setSaving(true)
-    try {
-      await performWrite(personId, isEditing, indicatorId, payload)
-      router.push(`/person/${personId}/indicators`, 'back', 'pop')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  async function deleteIndicator() {
-    if (!indicatorId || saving) {
-      return
-    }
-    setSaving(true)
-    try {
-      await remove(indicatorId)
-      router.push(`/person/${personId}/indicators`, 'back', 'pop')
-    } finally {
-      setSaving(false)
-    }
-  }
+  const draft = useIndicatorDraft(existing)
+  const { deleteIndicator, save, saving } = useIndicatorActions({
+    draft,
+    indicatorId,
+    isEditing,
+    mutations,
+    personId,
+    polarity,
+    router,
+  })
 
   return (
     <IonPage>
-      <IonHeader translucent>
-        <IonToolbar>
-          <IonButtons slot="start">
-            <IonBackButton
-              defaultHref={`/person/${personId}/indicators`}
-              text=""
-            />
-          </IonButtons>
-          <IonTitle>
-            {isEditing ? 'Edit' : 'Add'} {meta.title} Indicator
-          </IonTitle>
-          {isEditing && renderDeleteButton(deleteIndicator)}
-        </IonToolbar>
-      </IonHeader>
-
-      <IonContent
-        fullscreen
-        className="ion-padding safe-content"
-      >
-        <div className="indicator-form__icon">
-          <IonIcon
-            icon={meta.icon}
-            color={meta.color}
-          />
-        </div>
-
-        <p>{meta.blurb}</p>
-
-        <IonList lines="none">
-          <IonItem>
-            <IonInput
-              label="Behavior"
-              labelPlacement="stacked"
-              placeholder={`e.g. ${meta.examples}`}
-              value={name}
-              onIonInput={(event) => setName(event.detail.value ?? '')}
-            />
-          </IonItem>
-        </IonList>
-
-        <IonButton
-          expand="block"
-          disabled={!name.trim() || saving}
-          onClick={save}
-        >
-          Save Indicator
-        </IonButton>
-      </IonContent>
+      <IndicatorFormHeader
+        deleteIndicator={deleteIndicator}
+        isEditing={isEditing}
+        personId={personId}
+        title={`${isEditing ? 'Edit' : 'Add'} ${meta.title} Indicator`}
+      />
+      <IndicatorFormContent
+        blurb={meta.blurb}
+        color={meta.color}
+        exampleText={meta.examples}
+        icon={meta.icon}
+        name={draft.name}
+        saving={saving}
+        save={save}
+        setName={draft.setName}
+      />
     </IonPage>
   )
 }

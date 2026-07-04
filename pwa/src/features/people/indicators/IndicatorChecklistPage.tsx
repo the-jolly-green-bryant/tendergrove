@@ -16,7 +16,7 @@ import {
   useIonRouter,
 } from '@ionic/react'
 import { addOutline, createOutline, trashOutline } from 'ionicons/icons'
-import { useEffect, useState } from 'react'
+import { type Dispatch, type SetStateAction, useEffect, useState } from 'react'
 import { useParams, useLocation } from 'react-router-dom'
 
 import { LoadingState } from '../../../components/LoadingState'
@@ -30,6 +30,21 @@ interface ChecklistItem extends TemplateIndicator {
   id: string
   selected: boolean
   isCustom?: boolean
+}
+
+type RoleTemplate = NonNullable<ReturnType<typeof useRoleTemplate>['data']>
+type PresentAlert = ReturnType<typeof useIonAlert>[0]
+
+interface ChecklistState {
+  desired: ChecklistItem[]
+  items: ChecklistItem[]
+  saving: boolean
+  selectedCount: number
+  setSaving: (saving: boolean) => void
+  showCustomIndicatorAlert: (polarity: Polarity, item?: ChecklistItem) => void
+  toggleItem: (id: string) => void
+  undesired: ChecklistItem[]
+  confirmRemoveCustomIndicator: (item: ChecklistItem) => void
 }
 
 let nextCustomId = 0
@@ -50,25 +65,63 @@ function removeChecklistItem(items: ChecklistItem[], itemId: string): ChecklistI
   return items.filter((current) => current.id !== itemId)
 }
 
-/**
- * Allows users to create a list of indicators to watch for.
- * @returns {React.JSX.Element}
- * @constructor
- */
-export default function IndicatorChecklistPage() {
-  const router = useIonRouter()
-  const { personId } = useParams<{ personId: string }>()
-  const location = useLocation()
+interface CustomIndicatorAlertParams {
+  readonly addCustomIndicator: (polarity: Polarity, name: string) => void
+  readonly item?: ChecklistItem
+  readonly polarity: Polarity
+  readonly presentAlert: PresentAlert
+  readonly setItems: Dispatch<SetStateAction<ChecklistItem[]>>
+}
 
-  const params = new URLSearchParams(location.search)
-  const role = (params.get('role') as PersonRole) || 'child'
-  const displayName = params.get('name') || ''
-  const isSetup = params.get('setup') === '1'
+function showCustomIndicatorAlert({
+  addCustomIndicator,
+  item,
+  polarity,
+  presentAlert,
+  setItems,
+}: CustomIndicatorAlertParams) {
+  const meta = polarityMeta[polarity]
+  void presentAlert({
+    header: `${item ? 'Edit' : 'Add'} ${meta.title} Indicator`,
+    message: 'Enter the behavior you want to track.',
+    inputs: [
+      {
+        name: 'behavior',
+        type: 'text',
+        value: item?.name,
+        placeholder: `e.g. ${meta.examples.split(',')[0]}`,
+      },
+    ],
+    buttons: [
+      { text: 'Cancel', role: 'cancel' },
+      createSaveCustomIndicatorButton(item, polarity, setItems, addCustomIndicator),
+    ],
+  })
+}
 
-  const { data: template, isLoading } = useRoleTemplate(role)
-  const { create } = useIndicatorMutations(personId)
-  const [presentAlert] = useIonAlert()
+function confirmRemoveCustomIndicator(
+  item: ChecklistItem,
+  presentAlert: PresentAlert,
+  setItems: Dispatch<SetStateAction<ChecklistItem[]>>,
+) {
+  void presentAlert({
+    header: 'Remove indicator?',
+    message: `Remove "${item.name}" from this setup checklist?`,
+    buttons: [
+      { text: 'Cancel', role: 'cancel' },
+      {
+        text: 'Remove',
+        role: 'destructive',
+        handler: () => setItems((prev) => removeChecklistItem(prev, item.id)),
+      },
+    ],
+  })
+}
 
+function useChecklistState(
+  template: RoleTemplate | undefined,
+  presentAlert: PresentAlert,
+): ChecklistState {
   const [items, setItems] = useState<ChecklistItem[]>([])
   const [saving, setSaving] = useState(false)
 
@@ -92,73 +145,181 @@ export default function IndicatorChecklistPage() {
       ),
     )
 
-  function addCustomIndicator(polarity: Polarity, name: string) {
-    const newItem: ChecklistItem = {
-      id: `custom-${nextCustomId++}`,
-      name,
+  const addCustomIndicator = (polarity: Polarity, name: string) =>
+    setItems((prev) => [
+      ...prev,
+      {
+        id: `custom-${nextCustomId++}`,
+        name,
+        polarity,
+        inputType: 'boolean',
+        defaultSelected: true,
+        selected: true,
+        isCustom: true,
+      },
+    ])
+
+  const openCustomIndicatorAlert = (polarity: Polarity, item?: ChecklistItem) =>
+    showCustomIndicatorAlert({
+      addCustomIndicator,
+      item,
       polarity,
-      inputType: 'boolean',
-      defaultSelected: true,
-      selected: true,
-      isCustom: true,
-    }
-
-    setItems((prev) => [...prev, newItem])
-  }
-
-  const showCustomIndicatorAlert = (polarity: Polarity, item?: ChecklistItem) => {
-    const meta = polarityMeta[polarity]
-    void presentAlert({
-      header: `${item ? 'Edit' : 'Add'} ${meta.title} Indicator`,
-      message: 'Enter the behavior you want to track.',
-      inputs: [
-        {
-          name: 'behavior',
-          type: 'text',
-          value: item?.name,
-          placeholder: `e.g. ${meta.examples.split(',')[0]}`,
-        },
-      ],
-      buttons: [
-        { text: 'Cancel', role: 'cancel' },
-        {
-          text: item ? 'Save' : 'Add',
-          handler: (values: { behavior?: string }) => {
-            const name = values.behavior?.trim()
-            if (!name) return false
-
-            if (item) {
-              setItems((prev) => renameChecklistItem(prev, item.id, name))
-            } else {
-              addCustomIndicator(polarity, name)
-            }
-            return true
-          },
-        },
-      ],
+      presentAlert,
+      setItems,
     })
-  }
 
-  const confirmRemoveCustomIndicator = (item: ChecklistItem) => {
-    void presentAlert({
-      header: 'Remove indicator?',
-      message: `Remove "${item.name}" from this setup checklist?`,
-      buttons: [
-        { text: 'Cancel', role: 'cancel' },
-        {
-          text: 'Remove',
-          role: 'destructive',
-          handler: () => setItems((prev) => removeChecklistItem(prev, item.id)),
-        },
-      ],
-    })
+  const openRemoveCustomIndicatorAlert = (item: ChecklistItem) =>
+    confirmRemoveCustomIndicator(item, presentAlert, setItems)
+
+  return {
+    desired: items.filter((i) => i.polarity === 'desired'),
+    items,
+    saving,
+    selectedCount: items.filter((i) => i.selected).length,
+    setSaving,
+    showCustomIndicatorAlert: openCustomIndicatorAlert,
+    toggleItem,
+    undesired: items.filter((i) => i.polarity === 'undesired'),
+    confirmRemoveCustomIndicator: openRemoveCustomIndicatorAlert,
   }
+}
+
+function createSaveCustomIndicatorButton(
+  item: ChecklistItem | undefined,
+  polarity: Polarity,
+  setItems: Dispatch<SetStateAction<ChecklistItem[]>>,
+  addCustomIndicator: (polarity: Polarity, name: string) => void,
+) {
+  return {
+    text: item ? 'Save' : 'Add',
+    handler: (values: { behavior?: string }) => {
+      const name = values.behavior?.trim()
+      if (!name) return false
+
+      if (item) setItems((prev) => renameChecklistItem(prev, item.id, name))
+      else addCustomIndicator(polarity, name)
+      return true
+    },
+  }
+}
+
+interface ChecklistContentProps {
+  readonly checklist: ChecklistState
+  readonly displayName: string
+  readonly isLoading: boolean
+  readonly isSetup: boolean
+  readonly onSave: () => void
+  readonly onSkip: () => void
+}
+
+function ChecklistContent({
+  checklist,
+  displayName,
+  isLoading,
+  isSetup,
+  onSave,
+  onSkip,
+}: ChecklistContentProps) {
+  if (isLoading) return LOADING_STATE
+
+  return (
+    <>
+      <h1>What should we watch for?</h1>
+      <p className="checklist-sub">
+        Select all that apply{displayName && ` for ${displayName}`}.
+      </p>
+
+      {(['undesired', 'desired'] as const).map((polarity) => (
+        <PolaritySection
+          key={polarity}
+          polarity={polarity}
+          items={polarity === 'undesired' ? checklist.undesired : checklist.desired}
+          onToggle={checklist.toggleItem}
+          onAddCustom={checklist.showCustomIndicatorAlert}
+          onEditCustom={checklist.showCustomIndicatorAlert}
+          onRemoveCustom={checklist.confirmRemoveCustomIndicator}
+        />
+      ))}
+
+      <ChecklistFooter
+        isSetup={isSetup}
+        saving={checklist.saving}
+        selectedCount={checklist.selectedCount}
+        onSave={onSave}
+        onSkip={onSkip}
+      />
+    </>
+  )
+}
+
+function ChecklistFooter({
+  isSetup,
+  saving,
+  selectedCount,
+  onSave,
+  onSkip,
+}: {
+  readonly isSetup: boolean
+  readonly saving: boolean
+  readonly selectedCount: number
+  readonly onSave: () => void
+  readonly onSkip: () => void
+}) {
+  return (
+    <div className="checklist-footer">
+      <IonButton
+        expand="block"
+        disabled={selectedCount === 0 || saving}
+        onClick={onSave}
+      >
+        {saving ? (
+          <LoadingState
+            className=""
+            name="crescent"
+          />
+        ) : (
+          `Save Indicators (${selectedCount})`
+        )}
+      </IonButton>
+
+      {isSetup && (
+        <IonButton
+          expand="block"
+          fill="clear"
+          onClick={onSkip}
+        >
+          Skip for now
+        </IonButton>
+      )}
+    </div>
+  )
+}
+
+/**
+ * Allows users to create a list of indicators to watch for.
+ * @returns {React.JSX.Element}
+ * @constructor
+ */
+export default function IndicatorChecklistPage() {
+  const router = useIonRouter()
+  const { personId } = useParams<{ personId: string }>()
+  const location = useLocation()
+
+  const params = new URLSearchParams(location.search)
+  const role = (params.get('role') as PersonRole) || 'child'
+  const displayName = params.get('name') || ''
+  const isSetup = params.get('setup') === '1'
+
+  const { data: template, isLoading } = useRoleTemplate(role)
+  const { create } = useIndicatorMutations(personId)
+  const [presentAlert] = useIonAlert()
+  const checklist = useChecklistState(template, presentAlert)
 
   const saveIndicators = async () => {
-    const selected = items.filter((item) => item.selected)
+    const selected = checklist.items.filter((item) => item.selected)
     if (selected.length === 0) return
 
-    setSaving(true)
+    checklist.setSaving(true)
 
     try {
       for (const item of selected) {
@@ -173,14 +334,11 @@ export default function IndicatorChecklistPage() {
       router.push(`/person/${personId}`, 'forward', 'replace')
     } catch (error) {
       console.error('Failed to save indicators:', error)
-      setSaving(false)
+      checklist.setSaving(false)
     }
   }
 
   const skip = () => router.push(`/person/${personId}`, 'forward', 'replace')
-  const undesired = items.filter((i) => i.polarity === 'undesired')
-  const desired = items.filter((i) => i.polarity === 'desired')
-  const selectedCount = items.filter((i) => i.selected).length
 
   return (
     <IonPage>
@@ -197,55 +355,14 @@ export default function IndicatorChecklistPage() {
         fullscreen
         className="ion-padding safe-content"
       >
-        {isLoading && LOADING_STATE}
-
-        {!isLoading && (
-          <>
-            <h1>What should we watch for?</h1>
-            <p className="checklist-sub">
-              Select all that apply{displayName && ` for ${displayName}`}.
-            </p>
-
-            {['undesired', 'desired'].map((polarity) => (
-              <PolaritySection
-                polarity={polarity as Polarity}
-                items={polarity == 'undesired' ? undesired : desired}
-                onToggle={toggleItem}
-                onAddCustom={showCustomIndicatorAlert}
-                onEditCustom={showCustomIndicatorAlert}
-                onRemoveCustom={confirmRemoveCustomIndicator}
-                key={polarity}
-              />
-            ))}
-
-            <div className="checklist-footer">
-              <IonButton
-                expand="block"
-                disabled={selectedCount === 0 || saving}
-                onClick={saveIndicators}
-              >
-                {saving ? (
-                  <LoadingState
-                    className=""
-                    name="crescent"
-                  />
-                ) : (
-                  `Save Indicators (${selectedCount})`
-                )}
-              </IonButton>
-
-              {isSetup && (
-                <IonButton
-                  expand="block"
-                  fill="clear"
-                  onClick={skip}
-                >
-                  Skip for now
-                </IonButton>
-              )}
-            </div>
-          </>
-        )}
+        <ChecklistContent
+          checklist={checklist}
+          displayName={displayName}
+          isLoading={isLoading}
+          isSetup={isSetup}
+          onSave={saveIndicators}
+          onSkip={skip}
+        />
       </IonContent>
     </IonPage>
   )
