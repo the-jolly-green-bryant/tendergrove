@@ -3,6 +3,7 @@ import {
   IonCheckbox,
   IonIcon,
   IonItem,
+  IonLabel,
   IonList,
   IonNote,
   IonTextarea,
@@ -106,7 +107,7 @@ function IndicatorGroup({
               checked={Boolean(checked[indicator.id])}
               onIonChange={() => onToggle(indicator.id)}
             />
-            <span className="check-in__item-label">{indicator.name}</span>
+            <IonLabel className="check-in__item-label">{indicator.name}</IonLabel>
           </IonItem>
         ))}
       </IonList>

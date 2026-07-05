@@ -146,6 +146,7 @@ function RouteModal({
           breakpoints={[0, 1]}
           initialBreakpoint={1}
           handle
+          handleBehavior="cycle"
           className="route-modal"
           onDidDismiss={() => {
             if (match && location.pathname === match.url) {

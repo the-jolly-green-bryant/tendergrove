@@ -23,16 +23,39 @@ ion-chip {
 
 .route-modal {
   --width: min(100vw, 720px);
+  --height: min(92dvh, calc(100dvh - 28px));
+  --route-modal-action-inset: max(16px, calc((100vw - 720px) / 2 + 16px));
   --border-radius: 18px 18px 0 0;
   --box-shadow: 0 -18px 44px rgba(36, 63, 66, 0.22);
 }
 
 .route-modal::part(content) {
+  display: flex;
+  flex-direction: column;
+  height: var(--height);
+  max-height: calc(100dvh - 28px);
   overflow: hidden;
 }
 
+.route-modal ion-page {
+  contain: layout size style;
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  position: relative;
+}
+
+.route-modal ion-content {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
 .route-modal ion-content::part(scroll) {
-  padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  height: 100%;
+  padding-bottom: max(112px, calc(env(safe-area-inset-bottom, 0px) + 104px));
+  overscroll-behavior: contain;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .route-modal::part(handle) {
@@ -578,9 +601,13 @@ ion-item.check-in-summary__item {
 }
 
 .check-in-wizard-content::part(scroll) {
-  display: flex;
-  flex-direction: column;
+  display: block;
   gap: 2px;
+  overflow-y: auto;
+}
+
+.route-modal .check-in-wizard-content::part(scroll) {
+  padding-bottom: max(132px, calc(env(safe-area-inset-bottom, 0px) + 124px));
 }
 
 .check-in__intro {
@@ -589,6 +616,7 @@ ion-item.check-in-summary__item {
 }
 
 .check-in__group-title {
+  flex: 0 0 auto;
   margin: 18px 4px 8px;
   font-size: 0.9rem;
   font-weight: 700;
@@ -599,6 +627,7 @@ ion-item.check-in-summary__item {
 
 .check-in__list {
   display: block;
+  flex: 0 0 auto;
   overflow: visible;
   margin: 0;
   height: auto;
@@ -616,28 +645,37 @@ ion-item.check-in__item {
   --background: transparent;
   --border-color: rgba(20, 125, 126, 0.1);
   --inner-padding-end: 14px;
+  --inner-padding-start: 0;
   --min-height: 54px;
+  --padding-start: 14px;
+  flex: 0 0 auto;
   min-height: 54px;
   height: auto;
   color: #344947;
 }
 
 .check-in__item ion-icon[slot='start'] {
+  flex: 0 0 24px;
   margin-right: 12px;
 }
 
 .check-in__item-label {
-  flex: 1;
+  display: block;
+  flex: 1 0 0;
   min-width: 0;
+  margin: 10px 10px 10px 0;
   color: #344947;
   font-weight: 600;
   line-height: 1.3;
+  overflow: visible;
+  white-space: normal;
 }
 
 .check-in__item ion-checkbox {
   --checkbox-background-checked: var(--ion-color-primary);
   --border-color-checked: var(--ion-color-primary);
-  flex: 0 0 auto;
+  flex: 0 0 28px;
+  margin-left: 8px;
 }
 
 .check-in__list--notes {
@@ -652,6 +690,7 @@ ion-item.check-in__item--notes {
 
 .check-in__hint {
   display: block;
+  flex: 0 0 auto;
   margin: 10px 4px 16px;
   font-size: 0.875rem;
   color: var(--app-muted-text);
@@ -1051,6 +1090,7 @@ ion-item.indicator-row {
 /* Wizard date badge in header */
 .wizard-date-badge {
   align-self: center;
+  flex: 0 0 auto;
   width: fit-content;
   margin: 0 auto 16px;
   padding: 8px 14px;
@@ -1067,6 +1107,7 @@ ion-item.indicator-row {
 /* Check-in wizard */
 .wizard-step__hero {
   display: flex;
+  flex: 0 0 auto;
   flex-direction: column;
   align-items: center;
   text-align: center;
@@ -1095,6 +1136,7 @@ ion-item.indicator-row {
 
 .wizard-step__actions {
   display: flex;
+  flex: 0 0 auto;
   gap: 12px;
   margin-top: 22px;
   padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
@@ -1102,6 +1144,22 @@ ion-item.indicator-row {
 
 .wizard-step__actions ion-button {
   flex: 1;
+}
+
+.route-modal .wizard-step__actions {
+  position: fixed;
+  z-index: 20;
+  right: var(--route-modal-action-inset);
+  bottom: max(12px, env(safe-area-inset-bottom, 0px));
+  left: var(--route-modal-action-inset);
+  max-width: calc(720px - 32px);
+  margin: 0 auto;
+  padding: 12px;
+  border: 1px solid rgba(20, 125, 126, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 -12px 28px rgba(36, 63, 66, 0.14);
+  backdrop-filter: blur(12px);
 }
 
 /* Indicator form */
