@@ -8,6 +8,7 @@
     "sandbox:delete": "ampx sandbox delete",
     "pwa": "pnpm --filter pwa dev",
     "lint": "pnpm -r lint",
+    "build": "pnpm -r build",
     "format": "pnpm -r format",
     "mobile:build:debug": "pnpm --filter pwa build && cd pwa && (npx cap add android 2>/dev/null || true) && npx cap sync && cd android && JAVA_HOME=$(/usr/libexec/java_home -v 21) ./gradlew assembleDebug",
     "seed:test-person": "npx tsx scripts/seed-test-person.ts"
