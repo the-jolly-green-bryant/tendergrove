@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/pwa/justify.iml" filepath="$PROJECT_DIR$/pwa/justify.iml" />
       <module fileurl="file://$PROJECT_DIR$/pwa/pwa.iml" filepath="$PROJECT_DIR$/pwa/pwa.iml" />
+      <module fileurl="file://$PROJECT_DIR$/pwa/tendergrove.iml" filepath="$PROJECT_DIR$/pwa/tendergrove.iml" />
     </modules>
   </component>
 </project>
