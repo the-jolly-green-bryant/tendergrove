@@ -6,26 +6,26 @@ import {
   IonHeader,
   IonIcon,
   IonInput,
-  IonItem,
-  IonLabel,
-  IonList,
-  IonNote,
   IonPage,
-  IonRadio,
-  IonRadioGroup,
-  IonTitle,
+  IonSpinner,
   IonToolbar,
+  useIonAlert,
   useIonRouter,
 } from '@ionic/react'
 import {
+  accessibilityOutline,
+  addOutline,
   arrowBackOutline,
   cameraOutline,
+  checkmarkCircle,
+  closeCircle,
   closeOutline,
-  personCircleOutline,
-  peopleOutline,
+  heart,
   heartOutline,
-  accessibilityOutline,
-  informationCircleOutline,
+  peopleOutline,
+  personCircleOutline,
+  removeCircle,
+  sparkles,
 } from 'ionicons/icons'
 import React, { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
@@ -36,6 +36,12 @@ import { useAppAuth } from '../../auth/AuthContext'
 import { usePerson } from './usePerson'
 import { PersonAvatar } from '../../components/PersonAvatar'
 import { useRouteModal } from '../../components/RouteModalContext'
+import { useRoleTemplate } from './indicators/useRoleTemplates'
+import { useIndicatorMutations } from './indicators/useIndicatorMutations'
+import type { RoleTemplate } from './indicators/roleTemplates'
+import type { Polarity, InputType } from './indicators/indicatorMeta'
+
+const TOTAL_STEPS = 3
 
 const roleOptions: Array<{
   value: PersonRole
@@ -57,7 +63,7 @@ const roleOptions: Array<{
   },
   {
     value: 'spouse',
-    label: 'Spouse',
+    label: 'Spouse / Partner',
     description: 'Track your partner',
     icon: heartOutline,
   },
@@ -81,9 +87,53 @@ const roleOptions: Array<{
   },
 ]
 
+const roleLabels: Record<PersonRole, string> = {
+  self: 'Myself',
+  child: 'Child',
+  spouse: 'Spouse',
+  parent: 'Parent',
+  caregiver: 'Caregiver',
+  other: 'Other',
+}
+
+interface PolaritySection {
+  polarity: Polarity
+  title: string
+  icon: string
+  iconColor: string
+}
+
+const polaritySections: PolaritySection[] = [
+  {
+    polarity: 'undesired',
+    title: 'Challenges to watch',
+    icon: removeCircle,
+    iconColor: 'var(--ion-color-danger)',
+  },
+  {
+    polarity: 'desired',
+    title: 'Positive signs',
+    icon: checkmarkCircle,
+    iconColor: 'var(--ion-color-success)',
+  },
+]
+
 const AVATAR_IMAGE_SIZE = 320
 const AVATAR_JPEG_QUALITY = 0.82
 const MAX_AVATAR_UPLOAD_BYTES = 8 * 1024 * 1024
+
+type WizardStep = 1 | 2 | 3
+type PresentAlert = ReturnType<typeof useIonAlert>[0]
+
+interface SuggestedItem {
+  id: string
+  name: string
+  polarity: Polarity
+  inputType: InputType
+  suggested: boolean
+}
+
+let nextSuggestedId = 0
 
 function loadImageFromFile(file: File): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -141,243 +191,268 @@ async function createAvatarDataUrl(file: File): Promise<string> {
   return canvas.toDataURL('image/jpeg', AVATAR_JPEG_QUALITY)
 }
 
-function getSaveButtonLabel(isProcessingPhoto: boolean, isEditing: boolean): string {
-  if (isProcessingPhoto) return 'Preparing photo...'
-  return isEditing ? 'Save Changes' : 'Next'
+function dotState(position: number, step: number): 'done' | 'active' | 'upcoming' {
+  if (position < step) return 'done'
+  return position === step ? 'active' : 'upcoming'
 }
 
-const renderHeader = (fnBack: () => void, fnClose: () => void, isEditing: boolean) => (
-  <IonHeader translucent>
-    <IonToolbar>
-      <IonButtons slot="start">
-        {isEditing ? (
-          <IonBackButton
-            defaultHref="/dashboard"
-            text=""
+function detailsPrimaryLabel(isProcessingPhoto: boolean, isEditing: boolean): string {
+  if (isProcessingPhoto) return 'Preparing photo…'
+  return isEditing ? 'Save Changes' : 'Continue'
+}
+
+function seedSuggestedItems(template: RoleTemplate): SuggestedItem[] {
+  return template.indicators
+    .filter((indicator) => indicator.defaultSelected)
+    .map((indicator) => ({
+      id: `suggested-${nextSuggestedId++}`,
+      name: indicator.name,
+      polarity: indicator.polarity,
+      inputType: indicator.inputType,
+      suggested: true,
+    }))
+}
+
+/** Branded modal header: back, centered TenderGrove logo, close. */
+function WizardHeader({
+  isEditing,
+  onBack,
+  onClose,
+}: {
+  readonly isEditing: boolean
+  readonly onBack: () => void
+  readonly onClose: () => void
+}) {
+  return (
+    <IonHeader
+      translucent
+      className="wizard-header"
+    >
+      <IonToolbar className="wizard-toolbar">
+        <IonButtons slot="start">
+          {isEditing ? (
+            <IonBackButton
+              defaultHref="/dashboard"
+              text=""
+            />
+          ) : (
+            <IonButton
+              fill="clear"
+              onClick={onBack}
+              aria-label="Go back"
+            >
+              <IonIcon
+                slot="icon-only"
+                icon={arrowBackOutline}
+              />
+            </IonButton>
+          )}
+        </IonButtons>
+
+        <div className="wizard-brand">
+          <img
+            src="/favicon.png"
+            alt=""
+            className="wizard-brand__logo"
           />
-        ) : (
+          <span className="wizard-brand__name">TenderGrove</span>
+        </div>
+
+        <IonButtons slot="end">
           <IonButton
             fill="clear"
-            onClick={fnBack}
-            aria-label="Go back"
+            onClick={onClose}
+            aria-label="Close"
           >
             <IonIcon
               slot="icon-only"
-              icon={arrowBackOutline}
+              icon={closeOutline}
             />
           </IonButton>
-        )}
-      </IonButtons>
+        </IonButtons>
+      </IonToolbar>
+    </IonHeader>
+  )
+}
 
-      <IonTitle />
+/** "Step X of 3" label with a connected three-dot progress track. */
+function StepIndicator({ step }: { readonly step: number }) {
+  return (
+    <div className="wizard-stepper">
+      <p className="wizard-stepper__label">
+        Step {step} of {TOTAL_STEPS}
+      </p>
+      <div className="wizard-stepper__track">
+        {Array.from({ length: TOTAL_STEPS }, (_, index) => {
+          const position = index + 1
+          return (
+            <React.Fragment key={position}>
+              {index > 0 && (
+                <span
+                  className={`wizard-stepper__line ${
+                    position <= step ? 'wizard-stepper__line--filled' : ''
+                  }`}
+                />
+              )}
+              <span
+                className={`wizard-stepper__dot wizard-stepper__dot--${dotState(position, step)}`}
+              />
+            </React.Fragment>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
 
-      <IonButtons
-        slot="end"
-        className="person-photo-upload"
-      >
-        <IonButton
-          fill="clear"
-          onClick={fnClose}
-        >
-          <IonIcon icon={closeOutline} />
-        </IonButton>
-      </IonButtons>
-    </IonToolbar>
-  </IonHeader>
-)
+function RoleCard({
+  option,
+  selected,
+  onSelect,
+}: {
+  readonly option: (typeof roleOptions)[number]
+  readonly selected: boolean
+  readonly onSelect: () => void
+}) {
+  return (
+    <button
+      type="button"
+      className={`role-card ${selected ? 'role-card--selected' : ''}`}
+      aria-pressed={selected}
+      onClick={onSelect}
+    >
+      <IonIcon
+        className="role-card__icon"
+        icon={option.icon}
+      />
+      <span className="role-card__text">
+        <span className="role-card__label">{option.label}</span>
+        <span className="role-card__desc">{option.description}</span>
+      </span>
+      {selected && (
+        <IonIcon
+          className="role-card__check"
+          icon={checkmarkCircle}
+        />
+      )}
+    </button>
+  )
+}
 
-type ExistingPerson = Exclude<ReturnType<typeof usePerson>['data'], null | undefined>
-
-interface RoleStepProps {
+function RoleStep({
+  role,
+  setRole,
+  onNext,
+}: {
   readonly role: PersonRole
   readonly setRole: (role: PersonRole) => void
   readonly onNext: () => void
-}
-
-function RoleStep({ role, setRole, onNext }: RoleStepProps) {
+}) {
   return (
-    <section className="person-form-section">
-      <h1 className="choose-type__heading">Who are you tracking?</h1>
-      <p className="indicator-intro">Choose the role that best fits.</p>
+    <section className="wizard-step">
+      <StepIndicator step={1} />
 
-      <div className="indicator-why">
-        <IonIcon
-          icon={informationCircleOutline}
-          color="primary"
-        />
-        <div>
-          <strong>You can always edit this later</strong>
-          <p>This helps tailor suggested indicators and check-ins.</p>
-        </div>
+      <div className="wizard-step__intro">
+        <h1 className="wizard-heading">Who are you tracking?</h1>
+        <p className="wizard-subheading">
+          We&rsquo;ll personalize suggestions based on who this person is.
+        </p>
       </div>
 
-      <IonRadioGroup
-        value={role}
-        onIonChange={(event) => setRole(event.detail.value)}
-      >
-        <IonList
-          lines="none"
-          className="indicator-list"
-        >
-          {roleOptions.map((option) => (
-            <IonItem
-              key={option.value}
-              className="role-option indicator-row"
-              button
-              detail={false}
-              onClick={() => setRole(option.value)}
-            >
-              <IonIcon
-                slot="start"
-                icon={option.icon}
-                color="primary"
-              />
-              <IonLabel>
-                <h2>{option.label}</h2>
-                <p>{option.description}</p>
-              </IonLabel>
-              <IonRadio
-                slot="end"
-                value={option.value}
-              />
-            </IonItem>
-          ))}
-        </IonList>
-      </IonRadioGroup>
-
-      <IonButton
-        expand="block"
-        onClick={onNext}
-      >
-        Next
-      </IonButton>
-    </section>
-  )
-}
-
-interface DetailsStepProps {
-  readonly avatarUrl: string | undefined
-  readonly choosePhoto: () => void
-  readonly displayName: string
-  readonly handlePhotoChange: (event: React.ChangeEvent<HTMLInputElement>) => void
-  readonly isEditing: boolean
-  readonly isProcessingPhoto: boolean
-  readonly photoError: string | undefined
-  readonly photoInputRef: React.RefObject<HTMLInputElement | null>
-  readonly role: PersonRole
-  readonly save: () => void
-  readonly saveButtonLabel: string
-  readonly setAvatarUrl: (avatarUrl: string | undefined) => void
-  readonly setDisplayName: (displayName: string) => void
-  readonly setPhotoError: (photoError: string | undefined) => void
-}
-
-function DetailsStep({
-  avatarUrl,
-  choosePhoto,
-  displayName,
-  handlePhotoChange,
-  isEditing,
-  isProcessingPhoto,
-  photoError,
-  photoInputRef,
-  role,
-  save,
-  saveButtonLabel,
-  setAvatarUrl,
-  setDisplayName,
-  setPhotoError,
-}: DetailsStepProps) {
-  return (
-    <section className="person-form-section">
-      <h1 className="choose-type__heading">
-        {isEditing ? 'Update person' : 'Let’s add some details'}
-      </h1>
-      <p className="indicator-intro">This helps personalize their experience.</p>
-
-      <IonList
-        lines="none"
-        className="indicator-list"
-      >
-        <IonItem className="indicator-row">
-          <IonInput
-            label="Name"
-            labelPlacement="stacked"
-            placeholder="Enter text"
-            value={displayName}
-            onIonInput={(event) => setDisplayName(event.detail.value ?? '')}
+      <div className="role-grid">
+        {roleOptions.map((option) => (
+          <RoleCard
+            key={option.value}
+            option={option}
+            selected={role === option.value}
+            onSelect={() => setRole(option.value)}
           />
-        </IonItem>
-      </IonList>
+        ))}
+      </div>
 
-      <PhotoRow
-        avatarUrl={avatarUrl}
-        choosePhoto={choosePhoto}
-        displayName={displayName}
-        handlePhotoChange={handlePhotoChange}
-        isProcessingPhoto={isProcessingPhoto}
-        photoInputRef={photoInputRef}
-        role={role}
-        setAvatarUrl={setAvatarUrl}
-        setPhotoError={setPhotoError}
-      />
-
-      {photoError && (
-        <IonNote
-          color="danger"
-          className="person-form__photo-error"
-        >
-          {photoError}
-        </IonNote>
-      )}
-
-      <div className="person-form__footer">
+      <div className="wizard-footer">
         <IonButton
           expand="block"
-          disabled={!displayName.trim() || isProcessingPhoto}
-          onClick={save}
+          onClick={onNext}
         >
-          {saveButtonLabel}
+          Continue
         </IonButton>
       </div>
     </section>
   )
 }
 
-interface PhotoRowProps {
-  readonly avatarUrl: string | undefined
-  readonly choosePhoto: () => void
+function NameField({
+  displayName,
+  setDisplayName,
+}: {
   readonly displayName: string
-  readonly handlePhotoChange: (event: React.ChangeEvent<HTMLInputElement>) => void
-  readonly isProcessingPhoto: boolean
-  readonly photoInputRef: React.RefObject<HTMLInputElement | null>
-  readonly role: PersonRole
-  readonly setAvatarUrl: (avatarUrl: string | undefined) => void
-  readonly setPhotoError: (photoError: string | undefined) => void
+  readonly setDisplayName: (displayName: string) => void
+}) {
+  return (
+    <div className="wizard-field">
+      <label
+        className="wizard-field__label"
+        htmlFor="person-name"
+      >
+        Name
+      </label>
+      <div className="wizard-input">
+        <IonInput
+          id="person-name"
+          placeholder="Enter a name"
+          value={displayName}
+          clearInput
+          onIonInput={(event) => setDisplayName(event.detail.value ?? '')}
+        />
+      </div>
+    </div>
+  )
 }
 
-function PhotoRow({
+interface PhotoFieldProps {
+  readonly avatarUrl: string | undefined
+  readonly role: PersonRole
+  readonly displayName: string
+  readonly choosePhoto: () => void
+  readonly isProcessingPhoto: boolean
+  readonly photoError: string | undefined
+  readonly photoInputRef: React.RefObject<HTMLInputElement | null>
+  readonly handlePhotoChange: (event: React.ChangeEvent<HTMLInputElement>) => void
+}
+
+function PhotoField({
   avatarUrl,
-  choosePhoto,
-  displayName,
-  handlePhotoChange,
-  isProcessingPhoto,
-  photoInputRef,
   role,
-  setAvatarUrl,
-  setPhotoError,
-}: PhotoRowProps) {
+  displayName,
+  choosePhoto,
+  isProcessingPhoto,
+  photoError,
+  photoInputRef,
+  handlePhotoChange,
+}: PhotoFieldProps) {
   return (
-    <IonItem className="indicator-row person-form-photo-row">
-      <PersonAvatar
-        slot="start"
-        name={displayName || role}
-        src={avatarUrl}
-      />
-      <IonLabel>
-        <h2>Photo</h2>
-        <p>Add a profile picture</p>
-      </IonLabel>
+    <div className="wizard-field">
+      <span className="wizard-field__label">Photo</span>
+      <button
+        type="button"
+        className="wizard-photo"
+        onClick={choosePhoto}
+        disabled={isProcessingPhoto}
+      >
+        <span className="wizard-photo__avatar">
+          <PersonAvatar
+            name={displayName || roleLabels[role]}
+            src={avatarUrl}
+          />
+          <span className="wizard-photo__badge">
+            <IonIcon icon={cameraOutline} />
+          </span>
+        </span>
+        <span className="wizard-photo__caption">
+          {avatarUrl ? 'Change profile picture' : 'Add a profile picture'}
+        </span>
+      </button>
       <input
         ref={photoInputRef}
         type="file"
@@ -385,67 +460,300 @@ function PhotoRow({
         hidden
         onChange={handlePhotoChange}
       />
-      <PhotoButtons
-        avatarUrl={avatarUrl}
-        choosePhoto={choosePhoto}
-        isProcessingPhoto={isProcessingPhoto}
-        setAvatarUrl={setAvatarUrl}
-        setPhotoError={setPhotoError}
-      />
-    </IonItem>
+      {photoError && <p className="wizard-photo__error">{photoError}</p>}
+    </div>
   )
 }
 
-interface PhotoButtonsProps {
-  readonly avatarUrl: string | undefined
-  readonly choosePhoto: () => void
-  readonly isProcessingPhoto: boolean
-  readonly setAvatarUrl: (avatarUrl: string | undefined) => void
-  readonly setPhotoError: (photoError: string | undefined) => void
+interface DetailsStepProps extends PhotoFieldProps {
+  readonly isEditing: boolean
+  readonly isSaving: boolean
+  readonly onContinue: () => void
+  readonly setDisplayName: (displayName: string) => void
 }
 
-function PhotoButtons({
-  avatarUrl,
-  choosePhoto,
-  isProcessingPhoto,
-  setAvatarUrl,
-  setPhotoError,
-}: PhotoButtonsProps) {
+function DetailsStep(props: DetailsStepProps) {
+  const { displayName, isEditing, isProcessingPhoto, isSaving, onContinue } = props
+  const primaryLabel = detailsPrimaryLabel(isProcessingPhoto, isEditing)
+
   return (
-    <>
-      <IonButton
-        slot="end"
-        fill="clear"
-        aria-label="Choose photo"
-        onClick={choosePhoto}
-        disabled={isProcessingPhoto}
-      >
-        <IonIcon
-          slot="icon-only"
-          icon={cameraOutline}
-        />
-      </IonButton>
+    <section className="wizard-step">
+      {!isEditing && <StepIndicator step={2} />}
 
-      {avatarUrl && (
+      <div className="wizard-step__intro">
+        <h1 className="wizard-heading">
+          {isEditing ? 'Update person' : 'Let’s add some details'}
+        </h1>
+        <p className="wizard-subheading">This helps personalize their experience.</p>
+      </div>
+
+      <NameField
+        displayName={displayName}
+        setDisplayName={props.setDisplayName}
+      />
+
+      <PhotoField
+        avatarUrl={props.avatarUrl}
+        role={props.role}
+        displayName={displayName}
+        choosePhoto={props.choosePhoto}
+        isProcessingPhoto={isProcessingPhoto}
+        photoError={props.photoError}
+        photoInputRef={props.photoInputRef}
+        handlePhotoChange={props.handlePhotoChange}
+      />
+
+      <div className="wizard-footer">
         <IonButton
-          slot="end"
-          fill="clear"
-          aria-label="Remove photo"
-          onClick={() => {
-            setAvatarUrl(undefined)
-            setPhotoError(undefined)
-          }}
-          disabled={isProcessingPhoto}
+          expand="block"
+          disabled={!displayName.trim() || isProcessingPhoto || isSaving}
+          onClick={onContinue}
         >
-          <IonIcon
-            slot="icon-only"
-            icon={closeOutline}
-          />
+          {isSaving ? <IonSpinner name="crescent" /> : primaryLabel}
         </IonButton>
-      )}
-    </>
+      </div>
+    </section>
   )
 }
+
+function SuggestedIntro({
+  role,
+  displayName,
+  count,
+}: {
+  readonly role: PersonRole
+  readonly displayName: string
+  readonly count: number
+}) {
+  return (
+    <div className="wizard-step__intro wizard-step__intro--celebrate">
+      <IonIcon
+        className="wizard-step__badge"
+        icon={heart}
+      />
+      <h1 className="wizard-heading">We&rsquo;ve created a starting point</h1>
+      <p className="wizard-subheading">
+        Based on <strong>&ldquo;{roleLabels[role]}&rdquo;</strong>
+      </p>
+      <p className="wizard-subheading">
+        We&rsquo;ve added {count} suggested indicator{count === 1 ? '' : 's'}
+        {displayName ? ` for ${displayName}` : ''} to help you get started.
+      </p>
+    </div>
+  )
+}
+
+function SuggestedRow({
+  item,
+  section,
+  onRemove,
+}: {
+  readonly item: SuggestedItem
+  readonly section: PolaritySection
+  readonly onRemove: (id: string) => void
+}) {
+  return (
+    <div className="suggested-row">
+      <IonIcon
+        className="suggested-row__icon"
+        icon={section.icon}
+        style={{ color: section.iconColor }}
+      />
+      <span className="suggested-row__name">{item.name}</span>
+      {item.suggested && <span className="suggested-row__badge">Suggested</span>}
+      <button
+        type="button"
+        className="suggested-row__remove"
+        aria-label={`Remove ${item.name}`}
+        onClick={() => onRemove(item.id)}
+      >
+        <IonIcon icon={closeCircle} />
+      </button>
+    </div>
+  )
+}
+
+function SuggestedSection({
+  section,
+  items,
+  onAdd,
+  onRemove,
+}: {
+  readonly section: PolaritySection
+  readonly items: SuggestedItem[]
+  readonly onAdd: () => void
+  readonly onRemove: (id: string) => void
+}) {
+  return (
+    <div className="suggested-section">
+      <div className="suggested-section__header">
+        <h2 style={{ color: section.iconColor }}>{section.title}</h2>
+        <button
+          type="button"
+          className="suggested-section__add"
+          aria-label={`Add ${section.title.toLowerCase()}`}
+          onClick={onAdd}
+        >
+          <IonIcon icon={addOutline} />
+        </button>
+      </div>
+
+      <div className="suggested-list">
+        {items.length === 0 && <p className="suggested-empty">Nothing here yet.</p>}
+        {items.map((item) => (
+          <SuggestedRow
+            key={item.id}
+            item={item}
+            section={section}
+            onRemove={onRemove}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+interface SuggestedItemsState {
+  items: SuggestedItem[]
+  suggestedCount: number
+  itemsFor: (polarity: Polarity) => SuggestedItem[]
+  removeItem: (id: string) => void
+  addItem: (polarity: Polarity, name: string) => void
+}
+
+function useSuggestedItems(template: RoleTemplate | undefined): SuggestedItemsState {
+  const [items, setItems] = useState<SuggestedItem[]>([])
+  const [suggestedCount, setSuggestedCount] = useState(0)
+  const initialized = useRef(false)
+
+  useEffect(() => {
+    if (!template || initialized.current) return
+    initialized.current = true
+    const seeded = seedSuggestedItems(template)
+    setItems(seeded)
+    setSuggestedCount(seeded.length)
+  }, [template])
+
+  const removeItem = (id: string) =>
+    setItems((prev) => prev.filter((item) => item.id !== id))
+
+  const addItem = (polarity: Polarity, name: string) =>
+    setItems((prev) => [
+      ...prev,
+      {
+        id: `suggested-${nextSuggestedId++}`,
+        name,
+        polarity,
+        inputType: 'boolean',
+        suggested: false,
+      },
+    ])
+
+  return {
+    items,
+    suggestedCount,
+    itemsFor: (polarity) => items.filter((item) => item.polarity === polarity),
+    removeItem,
+    addItem,
+  }
+}
+
+function promptForIndicatorName(
+  presentAlert: PresentAlert,
+  addItem: (polarity: Polarity, name: string) => void,
+  polarity: Polarity,
+) {
+  const isChallenge = polarity === 'undesired'
+  void presentAlert({
+    header: isChallenge ? 'Add a challenge to watch' : 'Add a positive sign',
+    inputs: [
+      {
+        name: 'name',
+        type: 'text',
+        placeholder: isChallenge ? 'e.g. Anxiety' : 'e.g. Ate breakfast',
+      },
+    ],
+    buttons: [
+      { text: 'Cancel', role: 'cancel' },
+      {
+        text: 'Add',
+        handler: (values: { name?: string }) => {
+          const name = values.name?.trim()
+          if (!name) return false
+          addItem(polarity, name)
+          return true
+        },
+      },
+    ],
+  })
+}
+
+function SuggestedIndicatorsStep({
+  role,
+  displayName,
+  isSaving,
+  onFinish,
+}: {
+  readonly role: PersonRole
+  readonly displayName: string
+  readonly isSaving: boolean
+  readonly onFinish: (items: SuggestedItem[]) => void
+}) {
+  const { data: template, isLoading } = useRoleTemplate(role)
+  const suggested = useSuggestedItems(template)
+  const [presentAlert] = useIonAlert()
+
+  if (isLoading) {
+    return (
+      <section className="wizard-step wizard-step--center">
+        <StepIndicator step={3} />
+        <IonSpinner name="crescent" />
+      </section>
+    )
+  }
+
+  return (
+    <section className="wizard-step">
+      <StepIndicator step={3} />
+      <SuggestedIntro
+        role={role}
+        displayName={displayName}
+        count={suggested.suggestedCount}
+      />
+
+      <div className="suggested-tip">
+        <IonIcon icon={sparkles} />
+        <span>
+          You can remove anything that doesn&rsquo;t fit and add your own anytime.
+        </span>
+      </div>
+
+      {polaritySections.map((section) => (
+        <SuggestedSection
+          key={section.polarity}
+          section={section}
+          items={suggested.itemsFor(section.polarity)}
+          onAdd={() =>
+            promptForIndicatorName(presentAlert, suggested.addItem, section.polarity)
+          }
+          onRemove={suggested.removeItem}
+        />
+      ))}
+
+      <div className="wizard-footer">
+        <IonButton
+          expand="block"
+          disabled={isSaving}
+          onClick={() => onFinish(suggested.items)}
+        >
+          {isSaving ? <IonSpinner name="crescent" /> : 'Finish'}
+        </IonButton>
+      </div>
+    </section>
+  )
+}
+
+type ExistingPerson = Exclude<ReturnType<typeof usePerson>['data'], null | undefined>
 
 function usePrefillPerson(
   existingPerson: ExistingPerson | undefined,
@@ -491,30 +799,119 @@ function usePhotoUpload(setAvatarUrl: (avatarUrl: string | undefined) => void) {
     isProcessingPhoto,
     photoError,
     photoInputRef,
-    setPhotoError,
   }
 }
 
-interface NavigationParams {
-  readonly existingPerson: ExistingPerson | undefined
-  readonly routeModal: ReturnType<typeof useRouteModal>
-  readonly router: ReturnType<typeof useIonRouter>
-  readonly setStep: (step: 1 | 2) => void
-  readonly step: 1 | 2
+interface SavePersonArgs {
+  displayName: string
+  role: PersonRole
+  avatarUrl: string | undefined
+  personId: string | undefined
+  createdPersonId: string | undefined
+  user: ReturnType<typeof useAppAuth>['user']
+  queryClient: ReturnType<typeof useQueryClient>
+  setCreatedPersonId: (id: string) => void
 }
 
-function usePersonFormNavigation({
-  existingPerson,
-  routeModal,
-  router,
-  setStep,
-  step,
-}: NavigationParams) {
-  const goBack = () => {
-    if (step === 2 && !existingPerson) {
-      setStep(1)
-      return
+async function savePerson(args: SavePersonArgs): Promise<string> {
+  const { displayName, role, avatarUrl, personId, createdPersonId, user } = args
+  const trimmed = displayName.trim()
+  if (!trimmed) throw new Error('A name is required')
+  if (!user) throw new Error('Cannot save a person without an authenticated user')
+
+  const existingId = personId ?? createdPersonId
+  if (existingId) {
+    const result = await client.models.Person.update({
+      id: existingId,
+      displayName: trimmed,
+      role,
+      avatarUrl,
+    })
+    if (result.errors?.length) throw new Error(result.errors[0].message)
+    await args.queryClient.invalidateQueries({ queryKey: ['people'] })
+    await args.queryClient.invalidateQueries({ queryKey: ['person', existingId] })
+    return existingId
+  }
+
+  const result = await client.models.Person.create({
+    displayName: trimmed,
+    role,
+    avatarUrl,
+    householdId: user.userId,
+  })
+  if (result.errors?.length) throw new Error(result.errors[0].message)
+  const newId = result.data!.id
+  args.setCreatedPersonId(newId)
+  await args.queryClient.invalidateQueries({ queryKey: ['people'] })
+  return newId
+}
+
+interface WizardActionsArgs {
+  personId: string | undefined
+  isEditing: boolean
+  step: WizardStep
+  setStep: (step: WizardStep) => void
+  role: PersonRole
+  displayName: string
+  avatarUrl: string | undefined
+  isProcessingPhoto: boolean
+}
+
+function useWizardActions(config: WizardActionsArgs) {
+  const router = useIonRouter()
+  const routeModal = useRouteModal()
+  const queryClient = useQueryClient()
+  const { user } = useAppAuth()
+  const [createdPersonId, setCreatedPersonId] = useState<string | undefined>()
+  const [isSavingPerson, setIsSavingPerson] = useState(false)
+  const [isSavingIndicators, setIsSavingIndicators] = useState(false)
+  const activePersonId = config.personId ?? createdPersonId
+  const { create: createIndicator } = useIndicatorMutations(activePersonId)
+
+  const navigateToPerson = (id: string) =>
+    routeModal.isRouteModal
+      ? routeModal.dismiss(`/person/${id}`)
+      : router.push(`/person/${id}`, 'back')
+
+  const handleDetailsContinue = async () => {
+    if (!config.displayName.trim() || config.isProcessingPhoto) return
+    setIsSavingPerson(true)
+    try {
+      const id = await savePerson({
+        ...config,
+        createdPersonId,
+        user,
+        queryClient,
+        setCreatedPersonId,
+      })
+      if (config.isEditing) navigateToPerson(id)
+      else config.setStep(3)
+    } finally {
+      setIsSavingPerson(false)
     }
+  }
+
+  const handleFinish = async (items: SuggestedItem[]) => {
+    if (!activePersonId) return
+    setIsSavingIndicators(true)
+    try {
+      for (const item of items) {
+        await createIndicator({
+          name: item.name,
+          polarity: item.polarity,
+          inputType: item.inputType,
+        })
+      }
+      navigateToPerson(activePersonId)
+    } catch (error) {
+      console.error('Failed to save indicators:', error)
+      setIsSavingIndicators(false)
+    }
+  }
+
+  const goBack = () => {
+    if (config.step === 3) return config.setStep(2)
+    if (config.step === 2 && !config.isEditing) return config.setStep(1)
     if (routeModal.isRouteModal) routeModal.dismiss()
     else router.goBack()
   }
@@ -524,134 +921,89 @@ function usePersonFormNavigation({
       ? routeModal.dismiss()
       : router.push('/dashboard', 'back', 'replace')
 
-  return { close, goBack }
-}
-
-interface SavePersonParams {
-  readonly avatarUrl: string | undefined
-  readonly displayName: string
-  readonly personId: string | undefined
-  readonly queryClient: ReturnType<typeof useQueryClient>
-  readonly role: PersonRole
-  readonly routeModal: ReturnType<typeof useRouteModal>
-  readonly router: ReturnType<typeof useIonRouter>
-  readonly user: ReturnType<typeof useAppAuth>['user']
-}
-
-function useSavePerson({
-  avatarUrl,
-  displayName,
-  personId,
-  queryClient,
-  role,
-  routeModal,
-  router,
-  user,
-}: SavePersonParams) {
-  return async () => {
-    const trimmedDisplayName = displayName.trim()
-    if (!trimmedDisplayName) return
-    if (!user) throw new Error('Cannot save a person without an authenticated user')
-
-    const result = personId
-      ? await client.models.Person.update({
-          id: personId,
-          displayName: trimmedDisplayName,
-          role,
-          avatarUrl,
-        })
-      : await client.models.Person.create({
-          displayName: trimmedDisplayName,
-          role,
-          avatarUrl,
-          householdId: user.userId,
-        })
-
-    if (result.errors?.length) throw new Error(result.errors[0].message)
-    await queryClient.invalidateQueries({ queryKey: ['people'] })
-    if (personId)
-      await queryClient.invalidateQueries({ queryKey: ['person', personId] })
-
-    return routeModal.isRouteModal
-      ? routeModal.dismiss()
-      : router.push('/dashboard', 'back')
+  return {
+    handleDetailsContinue,
+    handleFinish,
+    goBack,
+    close,
+    isSavingPerson,
+    isSavingIndicators,
   }
 }
 
 /**
- * Allows us to create or edit a person.
+ * Guided flow for adding a new person (role → details → suggested indicators)
+ * or editing an existing one (details only).
  * @returns {React.JSX.Element}
  * @constructor
  */
 export default function PersonFormPage() {
-  const router = useIonRouter()
-  const routeModal = useRouteModal()
-  const queryClient = useQueryClient()
-  const { user } = useAppAuth()
   const { personId } = useParams<{ personId?: string }>()
   const { data: existingPerson } = usePerson(personId ? personId : undefined)
+  const loadedPerson = existingPerson ?? undefined
+  const isEditing = loadedPerson !== undefined
 
-  const [step, setStep] = useState<1 | 2>(existingPerson ? 2 : 1)
+  const [step, setStep] = useState<WizardStep>(isEditing ? 2 : 1)
   const [role, setRole] = useState<PersonRole>('child')
   const [displayName, setDisplayName] = useState('')
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>()
 
-  const loadedPerson = existingPerson ?? undefined
-
   usePrefillPerson(loadedPerson, setDisplayName, setRole, setAvatarUrl)
   const photoUpload = usePhotoUpload(setAvatarUrl)
-  const { close, goBack } = usePersonFormNavigation({
-    existingPerson: loadedPerson,
-    routeModal,
-    router,
-    setStep,
-    step,
-  })
-  const save = useSavePerson({
-    avatarUrl,
-    displayName,
+  const actions = useWizardActions({
     personId,
-    queryClient,
+    isEditing,
+    step,
+    setStep,
     role,
-    routeModal,
-    router,
-    user,
+    displayName,
+    avatarUrl,
+    isProcessingPhoto: photoUpload.isProcessingPhoto,
   })
-  const saveButtonLabel = getSaveButtonLabel(
-    photoUpload.isProcessingPhoto,
-    loadedPerson !== undefined,
-  )
 
   return (
     <IonPage>
-      {renderHeader(goBack, close, loadedPerson !== undefined)}
+      <WizardHeader
+        isEditing={isEditing}
+        onBack={actions.goBack}
+        onClose={actions.close}
+      />
 
       <IonContent
         fullscreen
-        className="ion-padding safe-content person-form-content"
+        className="ion-padding safe-content person-wizard-content"
       >
-        {step === 1 ? (
+        {step === 1 && (
           <RoleStep
             role={role}
             setRole={setRole}
             onNext={() => setStep(2)}
           />
-        ) : (
+        )}
+
+        {step === 2 && (
           <DetailsStep
             avatarUrl={avatarUrl}
-            choosePhoto={photoUpload.choosePhoto}
+            role={role}
             displayName={displayName}
-            handlePhotoChange={photoUpload.handlePhotoChange}
-            isEditing={loadedPerson !== undefined}
+            choosePhoto={photoUpload.choosePhoto}
             isProcessingPhoto={photoUpload.isProcessingPhoto}
             photoError={photoUpload.photoError}
             photoInputRef={photoUpload.photoInputRef}
-            role={role}
-            save={save}
-            saveButtonLabel={saveButtonLabel}
-            setAvatarUrl={setAvatarUrl}
+            handlePhotoChange={photoUpload.handlePhotoChange}
+            isEditing={isEditing}
+            isSaving={actions.isSavingPerson}
+            onContinue={actions.handleDetailsContinue}
             setDisplayName={setDisplayName}
-            setPhotoError={photoUpload.setPhotoError}
+          />
+        )}
+
+        {step === 3 && (
+          <SuggestedIndicatorsStep
+            role={role}
+            displayName={displayName.trim()}
+            isSaving={actions.isSavingIndicators}
+            onFinish={actions.handleFinish}
           />
         )}
       </IonContent>

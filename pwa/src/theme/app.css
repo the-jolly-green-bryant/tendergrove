@@ -1183,3 +1183,394 @@ ion-item.indicator-row {
 a:visited {
   color: inherit;
 }
+
+/* ---- Add / edit person wizard ---- */
+.person-wizard-content {
+  --background:
+    linear-gradient(rgba(248, 243, 250, 0.74), rgba(248, 243, 250, 0.92)),
+    url('/assets/add-person-bg.png') center top / cover no-repeat;
+}
+
+.wizard-header ion-toolbar.wizard-toolbar {
+  position: relative;
+  --background: transparent;
+  --border-width: 0;
+  --border-color: transparent;
+  --color: var(--ion-color-primary);
+}
+
+.wizard-brand {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.wizard-brand__logo {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+}
+
+.wizard-brand__name {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--ion-color-primary);
+}
+
+.wizard-step {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.wizard-step--center {
+  align-items: center;
+  padding-top: 48px;
+}
+
+.wizard-step__intro {
+  text-align: center;
+}
+
+.wizard-step__intro--celebrate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.wizard-step__badge {
+  font-size: 1.7rem;
+  color: #7c5cbf;
+  margin-bottom: 4px;
+}
+
+.wizard-heading {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.7rem;
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 6px 0 8px;
+  color: var(--ion-color-step-900);
+}
+
+.wizard-subheading {
+  margin: 0 auto;
+  max-width: 34ch;
+  color: var(--app-muted-text);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.wizard-subheading + .wizard-subheading {
+  margin-top: 8px;
+}
+
+/* Step progress track */
+.wizard-stepper {
+  text-align: center;
+  margin: 2px 0 6px;
+}
+
+.wizard-stepper__label {
+  margin: 0 0 12px;
+  font-size: 0.9rem;
+  color: var(--app-muted-text);
+}
+
+.wizard-stepper__track {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wizard-stepper__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--ion-color-step-200);
+  flex: 0 0 auto;
+}
+
+.wizard-stepper__dot--active {
+  background: var(--ion-color-primary);
+  box-shadow: 0 0 0 4px rgba(20, 125, 126, 0.16);
+}
+
+.wizard-stepper__dot--done {
+  background: var(--ion-color-primary);
+}
+
+.wizard-stepper__line {
+  width: 52px;
+  height: 2px;
+  background: var(--ion-color-step-200);
+}
+
+.wizard-stepper__line--filled {
+  background: var(--ion-color-primary);
+}
+
+/* Role selection cards */
+.role-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.role-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 16px;
+  border: 1.5px solid var(--app-border-color);
+  border-radius: var(--app-radius-md);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: var(--app-shadow-card);
+  text-align: left;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.role-card--selected {
+  border-color: var(--ion-color-primary);
+  background: rgba(20, 125, 126, 0.07);
+}
+
+.role-card__icon {
+  font-size: 1.5rem;
+  color: var(--ion-color-primary);
+  flex: 0 0 auto;
+}
+
+.role-card__text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.role-card__label {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--ion-color-step-900);
+}
+
+.role-card__desc {
+  font-size: 0.85rem;
+  color: var(--app-muted-text);
+}
+
+.role-card__check {
+  font-size: 1.4rem;
+  color: var(--ion-color-primary);
+  flex: 0 0 auto;
+}
+
+/* Details fields */
+.wizard-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wizard-field__label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ion-color-step-800);
+}
+
+.wizard-input {
+  background: #fff;
+  border: 1px solid var(--app-border-color);
+  border-radius: var(--app-radius-md);
+  padding: 2px 12px;
+  box-shadow: var(--app-shadow-card);
+}
+
+.wizard-photo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 24px;
+  border: 1px dashed var(--app-border-color);
+  border-radius: var(--app-radius-md);
+  background: rgba(255, 255, 255, 0.72);
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.wizard-photo__avatar {
+  position: relative;
+  width: 104px;
+  height: 104px;
+}
+
+.wizard-photo__avatar ion-avatar {
+  width: 104px;
+  height: 104px;
+}
+
+.wizard-photo__badge {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: var(--ion-color-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+}
+
+.wizard-photo__badge ion-icon {
+  font-size: 1rem;
+}
+
+.wizard-photo__caption {
+  color: var(--app-muted-text);
+  font-size: 0.95rem;
+}
+
+.wizard-photo__error {
+  color: var(--ion-color-danger);
+  font-size: 0.875rem;
+  margin: 4px 0 0;
+}
+
+/* Suggested indicators (step 3) */
+.suggested-tip {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 14px;
+  border-radius: var(--app-radius-md);
+  background: rgba(124, 92, 191, 0.1);
+  color: #4a3b73;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.suggested-tip ion-icon {
+  font-size: 1.2rem;
+  color: #7c5cbf;
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+
+.suggested-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.suggested-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.suggested-section__header h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.suggested-section__add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid rgba(20, 125, 126, 0.35);
+  border-radius: 999px;
+  background: rgba(20, 125, 126, 0.08);
+  color: var(--ion-color-primary);
+  cursor: pointer;
+}
+
+.suggested-section__add ion-icon {
+  font-size: 1.25rem;
+}
+
+.suggested-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.suggested-empty {
+  margin: 0;
+  color: var(--app-muted-text);
+  font-size: 0.9rem;
+}
+
+.suggested-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #fff;
+  border: 1px solid var(--app-border-color);
+  border-radius: var(--app-radius-md);
+  box-shadow: var(--app-shadow-card);
+}
+
+.suggested-row__icon {
+  font-size: 1.2rem;
+  flex: 0 0 auto;
+}
+
+.suggested-row__name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.suggested-row__badge {
+  flex: 0 0 auto;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--app-muted-text);
+  background: var(--ion-color-step-100);
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.suggested-row__remove {
+  display: flex;
+  flex: 0 0 auto;
+  padding: 2px;
+  background: none;
+  border: none;
+  color: var(--ion-color-step-400);
+  cursor: pointer;
+}
+
+.suggested-row__remove ion-icon {
+  font-size: 1.3rem;
+}
+
+.wizard-footer {
+  padding: 8px 0 max(8px, env(safe-area-inset-bottom, 0px));
+}
