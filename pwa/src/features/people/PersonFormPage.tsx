@@ -13,17 +13,14 @@ import {
   useIonRouter,
 } from '@ionic/react'
 import {
-  accessibilityOutline,
   addOutline,
   arrowBackOutline,
   cameraOutline,
   checkmarkCircle,
   closeCircle,
   closeOutline,
+  createOutline,
   heart,
-  heartOutline,
-  peopleOutline,
-  personCircleOutline,
   removeCircle,
   sparkles,
 } from 'ionicons/icons'
@@ -36,65 +33,20 @@ import { useAppAuth } from '../../auth/AuthContext'
 import { usePerson } from './usePerson'
 import { PersonAvatar } from '../../components/PersonAvatar'
 import { useRouteModal } from '../../components/RouteModalContext'
-import { useRoleTemplate } from './indicators/useRoleTemplates'
 import { useIndicatorMutations } from './indicators/useIndicatorMutations'
-import type { RoleTemplate } from './indicators/roleTemplates'
 import type { Polarity, InputType } from './indicators/indicatorMeta'
+import {
+  roleTemplates,
+  roleKeys,
+  roleToPersonRole,
+  type IndicatorType,
+  type RoleKey,
+  type RoleTemplate,
+} from '../../templates/roleTemplates'
 
 const TOTAL_STEPS = 3
 
-const roleOptions: Array<{
-  value: PersonRole
-  label: string
-  description: string
-  icon: string
-}> = [
-  {
-    value: 'self',
-    label: 'Myself',
-    description: 'Track your own well-being',
-    icon: personCircleOutline,
-  },
-  {
-    value: 'child',
-    label: 'Child',
-    description: 'Track your child',
-    icon: accessibilityOutline,
-  },
-  {
-    value: 'spouse',
-    label: 'Spouse / Partner',
-    description: 'Track your partner',
-    icon: heartOutline,
-  },
-  {
-    value: 'parent',
-    label: 'Parent',
-    description: 'Track a parent',
-    icon: peopleOutline,
-  },
-  {
-    value: 'caregiver',
-    label: 'Caregiver',
-    description: 'Track a caregiver',
-    icon: peopleOutline,
-  },
-  {
-    value: 'other',
-    label: 'Other',
-    description: 'Someone else',
-    icon: personCircleOutline,
-  },
-]
-
-const roleLabels: Record<PersonRole, string> = {
-  self: 'Myself',
-  child: 'Child',
-  spouse: 'Spouse',
-  parent: 'Parent',
-  caregiver: 'Caregiver',
-  other: 'Other',
-}
+const DEFAULT_ROLE: RoleKey = 'child'
 
 interface PolaritySection {
   polarity: Polarity
@@ -106,13 +58,13 @@ interface PolaritySection {
 const polaritySections: PolaritySection[] = [
   {
     polarity: 'undesired',
-    title: 'Challenges to watch',
+    title: 'Challenges',
     icon: removeCircle,
     iconColor: 'var(--ion-color-danger)',
   },
   {
     polarity: 'desired',
-    title: 'Positive signs',
+    title: 'Positive Signs',
     icon: checkmarkCircle,
     iconColor: 'var(--ion-color-success)',
   },
@@ -134,6 +86,10 @@ interface SuggestedItem {
 }
 
 let nextSuggestedId = 0
+
+function polarityForType(type: IndicatorType): Polarity {
+  return type === 'positive' ? 'desired' : 'undesired'
+}
 
 function loadImageFromFile(file: File): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -202,15 +158,13 @@ function detailsPrimaryLabel(isProcessingPhoto: boolean, isEditing: boolean): st
 }
 
 function seedSuggestedItems(template: RoleTemplate): SuggestedItem[] {
-  return template.indicators
-    .filter((indicator) => indicator.defaultSelected)
-    .map((indicator) => ({
-      id: `suggested-${nextSuggestedId++}`,
-      name: indicator.name,
-      polarity: indicator.polarity,
-      inputType: indicator.inputType,
-      suggested: true,
-    }))
+  return template.indicators.map((indicator) => ({
+    id: `suggested-${nextSuggestedId++}`,
+    name: indicator.label,
+    polarity: polarityForType(indicator.type),
+    inputType: 'boolean',
+    suggested: true,
+  }))
 }
 
 /** Branded modal header: back, centered TenderGrove logo, close. */
@@ -306,11 +260,11 @@ function StepIndicator({ step }: { readonly step: number }) {
 }
 
 function RoleCard({
-  option,
+  template,
   selected,
   onSelect,
 }: {
-  readonly option: (typeof roleOptions)[number]
+  readonly template: RoleTemplate
   readonly selected: boolean
   readonly onSelect: () => void
 }) {
@@ -323,11 +277,11 @@ function RoleCard({
     >
       <IonIcon
         className="role-card__icon"
-        icon={option.icon}
+        icon={template.icon}
       />
       <span className="role-card__text">
-        <span className="role-card__label">{option.label}</span>
-        <span className="role-card__desc">{option.description}</span>
+        <span className="role-card__label">{template.label}</span>
+        <span className="role-card__desc">{template.description}</span>
       </span>
       {selected && (
         <IonIcon
@@ -344,8 +298,8 @@ function RoleStep({
   setRole,
   onNext,
 }: {
-  readonly role: PersonRole
-  readonly setRole: (role: PersonRole) => void
+  readonly role: RoleKey
+  readonly setRole: (role: RoleKey) => void
   readonly onNext: () => void
 }) {
   return (
@@ -360,12 +314,12 @@ function RoleStep({
       </div>
 
       <div className="role-grid">
-        {roleOptions.map((option) => (
+        {roleKeys.map((key) => (
           <RoleCard
-            key={option.value}
-            option={option}
-            selected={role === option.value}
-            onSelect={() => setRole(option.value)}
+            key={key}
+            template={roleTemplates[key]}
+            selected={role === key}
+            onSelect={() => setRole(key)}
           />
         ))}
       </div>
@@ -412,7 +366,7 @@ function NameField({
 
 interface PhotoFieldProps {
   readonly avatarUrl: string | undefined
-  readonly role: PersonRole
+  readonly roleLabel: string
   readonly displayName: string
   readonly choosePhoto: () => void
   readonly isProcessingPhoto: boolean
@@ -423,7 +377,7 @@ interface PhotoFieldProps {
 
 function PhotoField({
   avatarUrl,
-  role,
+  roleLabel,
   displayName,
   choosePhoto,
   isProcessingPhoto,
@@ -442,7 +396,7 @@ function PhotoField({
       >
         <span className="wizard-photo__avatar">
           <PersonAvatar
-            name={displayName || roleLabels[role]}
+            name={displayName || roleLabel}
             src={avatarUrl}
           />
           <span className="wizard-photo__badge">
@@ -494,7 +448,7 @@ function DetailsStep(props: DetailsStepProps) {
 
       <PhotoField
         avatarUrl={props.avatarUrl}
-        role={props.role}
+        roleLabel={props.roleLabel}
         displayName={displayName}
         choosePhoto={props.choosePhoto}
         isProcessingPhoto={isProcessingPhoto}
@@ -516,15 +470,7 @@ function DetailsStep(props: DetailsStepProps) {
   )
 }
 
-function SuggestedIntro({
-  role,
-  displayName,
-  count,
-}: {
-  readonly role: PersonRole
-  readonly displayName: string
-  readonly count: number
-}) {
+function SuggestedIntro({ roleLabel }: { readonly roleLabel: string }) {
   return (
     <div className="wizard-step__intro wizard-step__intro--celebrate">
       <IonIcon
@@ -533,11 +479,15 @@ function SuggestedIntro({
       />
       <h1 className="wizard-heading">We&rsquo;ve created a starting point</h1>
       <p className="wizard-subheading">
-        Based on <strong>&ldquo;{roleLabels[role]}&rdquo;</strong>
-      </p>
-      <p className="wizard-subheading">
-        We&rsquo;ve added {count} suggested indicator{count === 1 ? '' : 's'}
-        {displayName ? ` for ${displayName}` : ''} to help you get started.
+        Based on your selected role
+        {roleLabel ? (
+          <>
+            {' '}
+            (<strong>{roleLabel}</strong>)
+          </>
+        ) : null}
+        , we&rsquo;ve prepared a thoughtful set of indicators to help you begin tracking
+        right away.
       </p>
     </div>
   )
@@ -546,10 +496,12 @@ function SuggestedIntro({
 function SuggestedRow({
   item,
   section,
+  onEdit,
   onRemove,
 }: {
   readonly item: SuggestedItem
   readonly section: PolaritySection
+  readonly onEdit: (item: SuggestedItem) => void
   readonly onRemove: (id: string) => void
 }) {
   return (
@@ -563,7 +515,15 @@ function SuggestedRow({
       {item.suggested && <span className="suggested-row__badge">Suggested</span>}
       <button
         type="button"
-        className="suggested-row__remove"
+        className="suggested-row__action"
+        aria-label={`Edit ${item.name}`}
+        onClick={() => onEdit(item)}
+      >
+        <IonIcon icon={createOutline} />
+      </button>
+      <button
+        type="button"
+        className="suggested-row__action suggested-row__action--remove"
         aria-label={`Remove ${item.name}`}
         onClick={() => onRemove(item.id)}
       >
@@ -577,11 +537,13 @@ function SuggestedSection({
   section,
   items,
   onAdd,
+  onEdit,
   onRemove,
 }: {
   readonly section: PolaritySection
   readonly items: SuggestedItem[]
   readonly onAdd: () => void
+  readonly onEdit: (item: SuggestedItem) => void
   readonly onRemove: (id: string) => void
 }) {
   return (
@@ -605,6 +567,7 @@ function SuggestedSection({
             key={item.id}
             item={item}
             section={section}
+            onEdit={onEdit}
             onRemove={onRemove}
           />
         ))}
@@ -615,27 +578,35 @@ function SuggestedSection({
 
 interface SuggestedItemsState {
   items: SuggestedItem[]
-  suggestedCount: number
   itemsFor: (polarity: Polarity) => SuggestedItem[]
   removeItem: (id: string) => void
+  editItem: (id: string, name: string) => void
   addItem: (polarity: Polarity, name: string) => void
 }
 
-function useSuggestedItems(template: RoleTemplate | undefined): SuggestedItemsState {
+/**
+ * Draft indicator list for the wizard. Seeds from the selected role's starter
+ * template and re-seeds only when the role actually changes, so navigating
+ * between steps preserves the user's edits.
+ */
+function useSuggestedItems(roleKey: RoleKey): SuggestedItemsState {
   const [items, setItems] = useState<SuggestedItem[]>([])
-  const [suggestedCount, setSuggestedCount] = useState(0)
-  const initialized = useRef(false)
+  const seededRole = useRef<RoleKey | null>(null)
 
   useEffect(() => {
-    if (!template || initialized.current) return
-    initialized.current = true
-    const seeded = seedSuggestedItems(template)
-    setItems(seeded)
-    setSuggestedCount(seeded.length)
-  }, [template])
+    if (seededRole.current === roleKey) return
+    seededRole.current = roleKey
+    setItems(seedSuggestedItems(roleTemplates[roleKey]))
+  }, [roleKey])
 
   const removeItem = (id: string) =>
     setItems((prev) => prev.filter((item) => item.id !== id))
+
+  // Editing a suggested indicator turns it into a normal (user-owned) one.
+  const editItem = (id: string, name: string) =>
+    setItems((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, name, suggested: false } : item)),
+    )
 
   const addItem = (polarity: Polarity, name: string) =>
     setItems((prev) => [
@@ -651,26 +622,26 @@ function useSuggestedItems(template: RoleTemplate | undefined): SuggestedItemsSt
 
   return {
     items,
-    suggestedCount,
     itemsFor: (polarity) => items.filter((item) => item.polarity === polarity),
     removeItem,
+    editItem,
     addItem,
   }
 }
 
-function promptForIndicatorName(
+function promptAddIndicator(
   presentAlert: PresentAlert,
   addItem: (polarity: Polarity, name: string) => void,
   polarity: Polarity,
 ) {
   const isChallenge = polarity === 'undesired'
   void presentAlert({
-    header: isChallenge ? 'Add a challenge to watch' : 'Add a positive sign',
+    header: isChallenge ? 'Add a challenge' : 'Add a positive sign',
     inputs: [
       {
         name: 'name',
         type: 'text',
-        placeholder: isChallenge ? 'e.g. Anxiety' : 'e.g. Ate breakfast',
+        placeholder: isChallenge ? 'e.g. Missed medication' : 'e.g. Went for a walk',
       },
     ],
     buttons: [
@@ -688,43 +659,52 @@ function promptForIndicatorName(
   })
 }
 
+function promptEditIndicator(
+  presentAlert: PresentAlert,
+  editItem: (id: string, name: string) => void,
+  item: SuggestedItem,
+) {
+  void presentAlert({
+    header: 'Edit indicator',
+    inputs: [{ name: 'name', type: 'text', value: item.name }],
+    buttons: [
+      { text: 'Cancel', role: 'cancel' },
+      {
+        text: 'Save',
+        handler: (values: { name?: string }) => {
+          const name = values.name?.trim()
+          if (!name) return false
+          editItem(item.id, name)
+          return true
+        },
+      },
+    ],
+  })
+}
+
 function SuggestedIndicatorsStep({
-  role,
-  displayName,
+  roleLabel,
+  suggested,
   isSaving,
   onFinish,
 }: {
-  readonly role: PersonRole
-  readonly displayName: string
+  readonly roleLabel: string
+  readonly suggested: SuggestedItemsState
   readonly isSaving: boolean
   readonly onFinish: (items: SuggestedItem[]) => void
 }) {
-  const { data: template, isLoading } = useRoleTemplate(role)
-  const suggested = useSuggestedItems(template)
   const [presentAlert] = useIonAlert()
-
-  if (isLoading) {
-    return (
-      <section className="wizard-step wizard-step--center">
-        <StepIndicator step={3} />
-        <IonSpinner name="crescent" />
-      </section>
-    )
-  }
 
   return (
     <section className="wizard-step">
       <StepIndicator step={3} />
-      <SuggestedIntro
-        role={role}
-        displayName={displayName}
-        count={suggested.suggestedCount}
-      />
+      <SuggestedIntro roleLabel={roleLabel} />
 
       <div className="suggested-tip">
         <IonIcon icon={sparkles} />
         <span>
-          You can remove anything that doesn&rsquo;t fit and add your own anytime.
+          You can remove anything that doesn&rsquo;t fit, rename an indicator, or add
+          your own anytime.
         </span>
       </div>
 
@@ -734,8 +714,9 @@ function SuggestedIndicatorsStep({
           section={section}
           items={suggested.itemsFor(section.polarity)}
           onAdd={() =>
-            promptForIndicatorName(presentAlert, suggested.addItem, section.polarity)
+            promptAddIndicator(presentAlert, suggested.addItem, section.polarity)
           }
+          onEdit={(item) => promptEditIndicator(presentAlert, suggested.editItem, item)}
           onRemove={suggested.removeItem}
         />
       ))}
@@ -758,15 +739,13 @@ type ExistingPerson = Exclude<ReturnType<typeof usePerson>['data'], null | undef
 function usePrefillPerson(
   existingPerson: ExistingPerson | undefined,
   setDisplayName: (displayName: string) => void,
-  setRole: (role: PersonRole) => void,
   setAvatarUrl: (avatarUrl: string | undefined) => void,
 ) {
   useEffect(() => {
     if (!existingPerson) return
     setDisplayName(existingPerson.displayName)
-    setRole((existingPerson.role as PersonRole | null) ?? 'child')
     setAvatarUrl(existingPerson.avatarUrl ?? undefined)
-  }, [existingPerson, setAvatarUrl, setDisplayName, setRole])
+  }, [existingPerson, setAvatarUrl, setDisplayName])
 }
 
 function usePhotoUpload(setAvatarUrl: (avatarUrl: string | undefined) => void) {
@@ -944,18 +923,25 @@ export default function PersonFormPage() {
   const isEditing = loadedPerson !== undefined
 
   const [step, setStep] = useState<WizardStep>(isEditing ? 2 : 1)
-  const [role, setRole] = useState<PersonRole>('child')
+  const [roleKey, setRoleKey] = useState<RoleKey>(DEFAULT_ROLE)
   const [displayName, setDisplayName] = useState('')
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>()
 
-  usePrefillPerson(loadedPerson, setDisplayName, setRole, setAvatarUrl)
+  usePrefillPerson(loadedPerson, setDisplayName, setAvatarUrl)
   const photoUpload = usePhotoUpload(setAvatarUrl)
+  const suggested = useSuggestedItems(roleKey)
+
+  const roleLabel = roleTemplates[roleKey].label
+  const personRole: PersonRole = isEditing
+    ? ((loadedPerson.role as PersonRole | null) ?? 'other')
+    : roleToPersonRole[roleKey]
+
   const actions = useWizardActions({
     personId,
     isEditing,
     step,
     setStep,
-    role,
+    role: personRole,
     displayName,
     avatarUrl,
     isProcessingPhoto: photoUpload.isProcessingPhoto,
@@ -975,8 +961,8 @@ export default function PersonFormPage() {
       >
         {step === 1 && (
           <RoleStep
-            role={role}
-            setRole={setRole}
+            role={roleKey}
+            setRole={setRoleKey}
             onNext={() => setStep(2)}
           />
         )}
@@ -984,7 +970,7 @@ export default function PersonFormPage() {
         {step === 2 && (
           <DetailsStep
             avatarUrl={avatarUrl}
-            role={role}
+            roleLabel={roleLabel}
             displayName={displayName}
             choosePhoto={photoUpload.choosePhoto}
             isProcessingPhoto={photoUpload.isProcessingPhoto}
@@ -1000,8 +986,8 @@ export default function PersonFormPage() {
 
         {step === 3 && (
           <SuggestedIndicatorsStep
-            role={role}
-            displayName={displayName.trim()}
+            roleLabel={roleLabel}
+            suggested={suggested}
             isSaving={actions.isSavingIndicators}
             onFinish={actions.handleFinish}
           />

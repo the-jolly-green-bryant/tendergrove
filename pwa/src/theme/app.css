@@ -1557,7 +1557,7 @@ a:visited {
   border-radius: 999px;
 }
 
-.suggested-row__remove {
+.suggested-row__action {
   display: flex;
   flex: 0 0 auto;
   padding: 2px;
@@ -1567,8 +1567,12 @@ a:visited {
   cursor: pointer;
 }
 
-.suggested-row__remove ion-icon {
-  font-size: 1.3rem;
+.suggested-row__action ion-icon {
+  font-size: 1.25rem;
+}
+
+.suggested-row__action--remove ion-icon {
+  font-size: 1.35rem;
 }
 
 .wizard-footer {
