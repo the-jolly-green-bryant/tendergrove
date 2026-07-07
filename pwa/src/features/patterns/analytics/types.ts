@@ -1,0 +1,352 @@
+/**
+ * Type definitions for the TenderGrove Patterns analytics layer.
+ *
+ * Everything here is intentionally framed around *distress* (0 = calm/low,
+ * 100 = high distress) so the whole Patterns feature reads consistently. This
+ * is the inverse of the app's existing "wellness" score in `lib/status.ts`
+ * (there, high = doing well). We keep the two separate on purpose: Patterns is
+ * about surfacing where things are getting harder, so a high number meaning
+ * "more distress" matches the mental model of the screens.
+ *
+ * IMPORTANT LANGUAGE RULES (this feature is for overwhelmed caregivers):
+ *  - Insights must be human-readable, non-blaming, and non-medical.
+ *  - Never imply causation. Prefer: "appears related", "often occurs near",
+ *    "may indicate", "seems to coincide", "worth watching".
+ *  - Never say: "caused by", "diagnosis", "treatment", or medical conclusions.
+ *
+ * These types are deliberately plain data (no classes, no framework types) so
+ * the analytics functions stay pure and the whole module could later move
+ * behind a backend endpoint that returns exactly these shapes. See the notes in
+ * `index.ts` for how that migration would look.
+ */
+
+/* ------------------------------------------------------------------ */
+/*  Shared primitives                                                  */
+/* ------------------------------------------------------------------ */
+
+/**
+ * A local calendar day key in `YYYY-MM-DD` form. A named alias (rather than
+ * bare `string`) so signatures document intent — these are day keys, not
+ * arbitrary strings.
+ */
+// eslint-disable-next-line sonarjs/redundant-type-aliases
+export type DateKey = string
+
+/** Indicator sentiment as stored on the `Indicator` model. */
+export type Polarity = 'desired' | 'undesired'
+
+/** Person role as stored on the `Person` model. */
+export type PersonRole = 'child' | 'parent' | 'spouse' | 'self' | 'caregiver' | 'other'
+
+/**
+ * Confidence label attached to every surfaced insight. We only ever show three
+ * levels to caregivers so the copy stays reassuring and non-technical. `low`
+ * doubles as the "not enough data yet" state — such insights are generally
+ * filtered out before display.
+ */
+export type Confidence = 'low' | 'moderate' | 'high'
+
+/** Distress bands used by the calendar heatmap (see mockup legend). */
+export type DistressLevel = 'low' | 'moderate' | 'high' | 'veryHigh'
+
+/** Direction of a trend over time, framed around distress. */
+export type TrendDirection = 'improving' | 'worsening' | 'stable' | 'insufficient'
+
+/* ------------------------------------------------------------------ */
+/*  Normalized analytics input                                         */
+/* ------------------------------------------------------------------ */
+/*
+ * The analytics functions never touch the Amplify client or `answersJson`
+ * directly. Callers normalize the fetched household data into these shapes
+ * first (see `normalizePeople` in `index.ts`). This keeps every function pure,
+ * trivially testable, and portable to a backend.
+ */
+
+/** An indicator a caregiver tracks for a person. */
+export interface AnalyticsIndicator {
+  id: string
+  name: string
+  /** `null` when a caregiver never picked a polarity; such indicators are ignored by scoring. */
+  polarity: Polarity | null
+  active: boolean
+}
+
+/** A single check-in with its checked-indicator ids already parsed out. */
+export interface AnalyticsCheckIn {
+  occurredAt: string
+  /** Ids of indicators marked as having occurred (from `CheckIn.answersJson.checked`). */
+  checkedIndicatorIds: string[]
+}
+
+/** An incident (an `Event` of type `incident`). */
+export interface AnalyticsIncident {
+  occurredAt: string
+  title: string
+}
+
+/** All data needed to analyze one person. */
+export interface AnalyticsPerson {
+  id: string
+  displayName: string
+  role: PersonRole | null
+  indicators: AnalyticsIndicator[]
+  checkIns: AnalyticsCheckIn[]
+  incidents: AnalyticsIncident[]
+}
+
+/** The full, normalized input to the analytics engine. */
+export interface AnalyticsInput {
+  people: AnalyticsPerson[]
+  /** "Now" is injected so every calculation is deterministic and testable. */
+  now: Date
+  /** How many days back to build the daily score window. */
+  windowDays: number
+}
+
+/* ------------------------------------------------------------------ */
+/*  Daily scores                                                       */
+/* ------------------------------------------------------------------ */
+
+/**
+ * One person's distress for one calendar day.
+ *
+ * `score` is `null` when there is no data for the day (no check-in and no
+ * incident). Missing data is never treated as good or bad — it is simply
+ * absent, which matters for honest trends and averages.
+ */
+export interface DailyPersonScore {
+  personId: string
+  date: DateKey
+  /** 0–100 distress, or `null` when the day has no data. */
+  score: number | null
+  checkInCount: number
+  incidentCount: number
+  /** Distinct checked indicators with `desired` polarity that day. */
+  positiveCount: number
+  /** Distinct checked indicators with `undesired` polarity that day. */
+  negativeCount: number
+  /** True when the day had at least one check-in or incident. */
+  hasData: boolean
+}
+
+/**
+ * The household's distress for one calendar day, aggregated across people.
+ *
+ * The household score is the *average of each contributing person's daily
+ * score* — not a sum of raw check-ins. Collapsing every person to a single
+ * daily number first means someone who checks in ten times does not drown out
+ * someone who checked in once.
+ */
+export interface DailyHouseholdScore {
+  date: DateKey
+  /** Average of contributing person scores, or `null` when nobody had data. */
+  score: number | null
+  /** How many people contributed a (non-null) score this day. */
+  contributingPeople: number
+  checkInCount: number
+  incidentCount: number
+  positiveCount: number
+  negativeCount: number
+}
+
+/* ------------------------------------------------------------------ */
+/*  Trends                                                             */
+/* ------------------------------------------------------------------ */
+
+/** One point on a trend line, with a trailing rolling average for smoothing. */
+export interface TrendPoint {
+  date: DateKey
+  score: number | null
+  /** Trailing rolling average of available scores (null until enough data). */
+  rollingAverage: number | null
+}
+
+/** Result of comparing the most recent 7 days to the previous 7 days. */
+export interface TrendResult {
+  current7DayAverage: number | null
+  previous7DayAverage: number | null
+  /** `current - previous`; positive means distress rose (worsening). */
+  delta: number | null
+  direction: TrendDirection
+  /** Full windowed series for charting. */
+  points: TrendPoint[]
+  confidence: Confidence
+}
+
+/* ------------------------------------------------------------------ */
+/*  Calendar heatmap                                                   */
+/* ------------------------------------------------------------------ */
+
+/** One day cell for the calendar heatmap. */
+export interface CalendarDayPattern {
+  date: DateKey
+  score: number | null
+  level: DistressLevel | null
+  checkInCount: number
+  incidentCount: number
+  positiveCount: number
+  negativeCount: number
+  /** Short, non-clinical one-liner for the day (e.g. "Higher distress · 2 incidents"). */
+  shortSummary: string
+}
+
+/* ------------------------------------------------------------------ */
+/*  Correlations                                                       */
+/* ------------------------------------------------------------------ */
+
+/**
+ * A tendency for one tracked signal to appear near another. We compute a
+ * simple conditional frequency ("when A happened, how often did B happen
+ * within the lag window?") — never a causal claim.
+ */
+export interface CorrelationInsight {
+  /** Human label for the source signal, e.g. "Poor sleep". */
+  sourceLabel: string
+  sourcePersonId: string
+  sourcePersonName: string
+  /** Human label for the target signal, e.g. "dysregulation". */
+  targetLabel: string
+  targetPersonId: string
+  targetPersonName: string
+  /** How many days after the source the target tends to appear: 0 = same day, 1 = next day. */
+  lagDays: 0 | 1
+  /** Days where the target appeared within the lag window of the source. */
+  occurrences: number
+  /** Days where the source appeared (the chances for the target to follow). */
+  opportunities: number
+  /** occurrences / opportunities, 0–1. */
+  ratio: number
+  confidence: Confidence
+  summary: string
+}
+
+/* ------------------------------------------------------------------ */
+/*  Relationships                                                      */
+/* ------------------------------------------------------------------ */
+
+/** Two aligned distress series for side-by-side charting. */
+export interface RelationshipChartPoint {
+  date: DateKey
+  aScore: number | null
+  bScore: number | null
+}
+
+/**
+ * How two people's distress trends move relative to each other. Framed
+ * carefully so it never reads as one person being "the cause" of another's
+ * hard day.
+ */
+export interface RelationshipInsight {
+  personAId: string
+  personAName: string
+  personBId: string
+  personBName: string
+  metric: 'distress'
+  /** B compared to A shifted by this many days (0 = same day, 1 = next day). */
+  lagDays: 0 | 1
+  /** Pearson correlation of the two aligned series, -1..1. */
+  correlation: number
+  confidence: Confidence
+  summary: string
+  chartData: RelationshipChartPoint[]
+}
+
+/* ------------------------------------------------------------------ */
+/*  Turning points                                                     */
+/* ------------------------------------------------------------------ */
+
+/** The kind of shift a turning point represents. */
+export type TurningPointType =
+  | 'sustainedIncrease'
+  | 'sustainedDecrease'
+  | 'spike'
+  | 'recovery'
+
+/** A meaningful, sustained shift in household distress. */
+export interface TurningPointInsight {
+  date: DateKey
+  type: TurningPointType
+  beforeAverage: number
+  afterAverage: number
+  /** How many days the new level persisted. */
+  durationDays: number
+  severity: Confidence
+  summary: string
+}
+
+/* ------------------------------------------------------------------ */
+/*  Overview / summaries                                               */
+/* ------------------------------------------------------------------ */
+
+/** Emotional tone of an insight, driving its colour/icon. */
+export type InsightTone = 'positive' | 'watch' | 'neutral'
+
+/** A single human-readable insight card. */
+export interface PatternInsight {
+  id: string
+  kind: 'weekly' | 'change' | 'trend'
+  title: string
+  detail: string
+  tone: InsightTone
+  confidence: Confidence
+}
+
+/** The compact overview shown at the top of the Patterns section. */
+export interface OverviewSummary {
+  /** The single headline insight for the week. */
+  weeklyInsight: PatternInsight
+  /** 2–4 noteworthy changes worth a caregiver's attention. */
+  noteworthy: PatternInsight[]
+  overallTrend: {
+    direction: TrendDirection
+    current: number | null
+    previous: number | null
+    summary: string
+  }
+  confidence: Confidence
+}
+
+/* ------------------------------------------------------------------ */
+/*  Data quality                                                       */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Honest reporting of how much data backs the analytics. Small datasets get a
+ * low-confidence, gently worded result rather than confident nonsense.
+ */
+export interface DataQuality {
+  hasEnoughData: boolean
+  /** Days in the window that had at least one scoreable person. */
+  scoredDays: number
+  totalPeople: number
+  peopleWithData: number
+  /** Friendly copy explaining the current data state. */
+  message: string
+}
+
+/* ------------------------------------------------------------------ */
+/*  Top-level result                                                   */
+/* ------------------------------------------------------------------ */
+
+/** A lightweight person descriptor used by UI filters. */
+export interface AnalyticsPersonRef {
+  id: string
+  displayName: string
+  role: PersonRole | null
+}
+
+/** Everything the Patterns pages need, computed in one deterministic pass. */
+export interface AnalyticsResult {
+  window: { startDate: DateKey; endDate: DateKey; days: number }
+  dataQuality: DataQuality
+  people: AnalyticsPersonRef[]
+  householdDailyScores: DailyHouseholdScore[]
+  personDailyScores: Record<string, DailyPersonScore[]>
+  householdTrend: TrendResult
+  personTrends: Record<string, TrendResult>
+  calendar: CalendarDayPattern[]
+  correlations: CorrelationInsight[]
+  relationships: RelationshipInsight[]
+  turningPoints: TurningPointInsight[]
+  overview: OverviewSummary
+}

@@ -9,6 +9,11 @@ import HouseholdRecapPage from '../features/household/HouseholdRecapPage'
 import TimelinePage from '../features/timeline/TimelinePage'
 import ReportsPage from '../features/reports/ReportsPage'
 import InsightsPage from '../features/insights/InsightsPage'
+import PatternsOverviewPage from '../features/patterns/PatternsOverviewPage'
+import CalendarHeatmapPage from '../features/patterns/CalendarHeatmapPage'
+import CorrelationsPage from '../features/patterns/CorrelationsPage'
+import RelationshipsPage from '../features/patterns/RelationshipsPage'
+import TurningPointsPage from '../features/patterns/TurningPointsPage'
 import PersonFormPage from '../features/people/PersonFormPage'
 import PersonPage from '../features/people/PersonPage'
 import ManageIndicatorsPage from '../features/people/indicators/ManageIndicatorsPage'
@@ -54,6 +59,11 @@ const appRoutes = [
   { path: '/check-in', component: TimelinePage },
   { path: '/reports', component: InsightsPage },
   { path: '/reports/export', component: ReportsPage },
+  { path: '/patterns', component: PatternsOverviewPage },
+  { path: '/patterns/calendar', component: CalendarHeatmapPage },
+  { path: '/patterns/correlations', component: CorrelationsPage },
+  { path: '/patterns/relationships', component: RelationshipsPage },
+  { path: '/patterns/turning-points', component: TurningPointsPage },
 ]
 
 const modalRoutes = [

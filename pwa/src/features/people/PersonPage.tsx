@@ -42,6 +42,7 @@ import { useDateNavigator } from '../../components/DateNavigator'
 import { PersonAvatar } from '../../components/PersonAvatar'
 import { PersonRole } from '../../lib/domain'
 import { derivePersonStatus, todayEmoji } from '../../lib/status'
+import { PersonPatternsSection } from '../patterns/PersonPatternsSection'
 
 type Indicator = NonNullable<ReturnType<typeof usePerson>['data']>['indicators'][number]
 type CheckIn = NonNullable<ReturnType<typeof usePerson>['data']>['checkIns'][number]
@@ -555,6 +556,11 @@ function PersonPageLoadedContent({
           viewDate={viewDate}
           selectedDateNote={summary.selectedDateNote}
           lastNoteCheckIn={summary.lastNoteCheckIn}
+        />
+
+        <PersonPatternsSection
+          personId={person.id}
+          personName={person.displayName}
         />
 
         <div className="person-page__footer-actions">

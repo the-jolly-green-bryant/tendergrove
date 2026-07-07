@@ -16,6 +16,7 @@ import {
   useIonViewWillEnter,
 } from '@ionic/react'
 import {
+  analyticsOutline,
   archiveOutline,
   arrowBackOutline,
   homeOutline,
@@ -69,6 +70,12 @@ const menuItems = [
     direction: 'forward',
     icon: statsChartOutline,
     label: 'Insights',
+  },
+  {
+    href: '/patterns',
+    direction: 'forward',
+    icon: analyticsOutline,
+    label: 'Patterns',
   },
   {
     href: '/parent-care',

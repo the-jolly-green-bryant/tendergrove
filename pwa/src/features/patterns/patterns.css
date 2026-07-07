@@ -1,0 +1,458 @@
+/* ------------------------------------------------------------------ */
+/*  TenderGrove Patterns — shared styles                               */
+/*                                                                     */
+/*  Accessibility intent (per spec):                                   */
+/*   - one major chart per screen, explanations beside it              */
+/*   - no tiny tap targets (min 44px), no dense tables                 */
+/*   - vertical, single-column layout (no horizontal dashboards)       */
+/* ------------------------------------------------------------------ */
+
+.patterns-page {
+  --distress-low: #6fae5f;
+  --distress-moderate: #efae45;
+  --distress-high: #e8804d;
+  --distress-veryhigh: #e2594b;
+  --distress-none: #d9d2c6;
+}
+
+.patterns-section {
+  margin: 0 0 22px;
+}
+
+.patterns-lede {
+  margin: 2px 0 18px;
+  color: var(--app-muted-text);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.patterns-eyebrow {
+  margin: 0 0 4px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--app-muted-text);
+}
+
+/* ---- Chart --------------------------------------------------------- */
+
+.pattern-chart {
+  margin: 0;
+}
+
+.pattern-chart__svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.pattern-chart__grid {
+  stroke: var(--ion-color-step-150);
+  stroke-width: 1;
+}
+
+.pattern-chart__axis-text {
+  fill: var(--app-muted-text);
+  font-size: 9px;
+}
+
+.pattern-chart__highlight {
+  fill: rgba(226, 89, 75, 0.12);
+}
+
+.pattern-chart__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: var(--app-muted-text);
+}
+
+.pattern-chart__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pattern-chart__legend-swatch {
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+/* ---- Confidence badge --------------------------------------------- */
+
+.pattern-confidence {
+  font-size: 0.78rem;
+  font-weight: 650;
+  height: 26px;
+}
+
+.pattern-confidence--high {
+  --background: rgba(47, 174, 96, 0.16);
+  --color: #1f7a45;
+}
+
+.pattern-confidence--moderate {
+  --background: rgba(245, 166, 35, 0.18);
+  --color: #a5710f;
+}
+
+.pattern-confidence--low {
+  --background: rgba(96, 118, 117, 0.16);
+  --color: #4d5553;
+}
+
+/* ---- Insight cards ------------------------------------------------- */
+
+.pattern-insight {
+  border-left: 4px solid var(--ion-color-medium);
+}
+
+.pattern-insight--positive {
+  border-left-color: var(--ion-color-success);
+}
+
+.pattern-insight--watch {
+  border-left-color: var(--ion-color-warning);
+}
+
+.pattern-insight--neutral {
+  border-left-color: var(--ion-color-secondary);
+}
+
+.pattern-insight__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.pattern-insight__icon {
+  font-size: 1.2rem;
+}
+
+.pattern-insight__title {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--ion-text-color);
+}
+
+.pattern-insight__detail {
+  margin: 0 0 10px;
+  font-size: 0.96rem;
+  line-height: 1.5;
+  color: var(--ion-text-color);
+}
+
+/* Weekly headline — a little more prominent. */
+.pattern-weekly {
+  background: linear-gradient(180deg, rgba(117, 200, 196, 0.16), rgba(117, 200, 196, 0.05));
+  border: 1px solid rgba(20, 125, 126, 0.16);
+}
+
+.pattern-weekly .pattern-insight__detail {
+  font-size: 1.08rem;
+}
+
+/* ---- Trend summary strip ------------------------------------------ */
+
+.pattern-trend-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  margin-top: 12px;
+  border-radius: var(--app-radius-md);
+  background: var(--ion-color-step-50);
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.pattern-trend-summary__arrow {
+  font-size: 1.3rem;
+}
+
+/* ---- Navigation cards (Explore deeper patterns) ------------------- */
+
+.pattern-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pattern-nav-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 64px;
+  padding: 14px 16px;
+  border: 1px solid var(--app-border-color);
+  border-radius: var(--app-radius-lg);
+  background: var(--ion-card-background);
+  box-shadow: var(--app-shadow-card);
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+}
+
+.pattern-nav-card__icon {
+  flex: 0 0 auto;
+  font-size: 1.5rem;
+  color: var(--ion-color-primary);
+}
+
+.pattern-nav-card__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.pattern-nav-card__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.pattern-nav-card__sub {
+  margin: 2px 0 0;
+  font-size: 0.86rem;
+  color: var(--app-muted-text);
+}
+
+.pattern-nav-card__chevron {
+  flex: 0 0 auto;
+  color: var(--ion-color-medium);
+  font-size: 1.1rem;
+}
+
+/* ---- Calendar heatmap --------------------------------------------- */
+
+.pattern-calendar-month {
+  margin-bottom: 20px;
+}
+
+.pattern-calendar-heading {
+  margin: 0 0 10px;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.pattern-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.pattern-calendar-dow {
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--app-muted-text);
+  padding-bottom: 2px;
+}
+
+.pattern-calendar-cell {
+  aspect-ratio: 1 / 1;
+  min-height: 44px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--distress-none);
+  color: #2c3b3a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  cursor: pointer;
+  font-weight: 650;
+}
+
+.pattern-calendar-cell--empty {
+  background: transparent;
+  cursor: default;
+}
+
+.pattern-calendar-cell--nodata {
+  background: var(--distress-none);
+  color: #7d766a;
+  font-weight: 500;
+}
+
+.pattern-calendar-cell--low {
+  background: var(--distress-low);
+  color: #123314;
+}
+.pattern-calendar-cell--moderate {
+  background: var(--distress-moderate);
+  color: #4a3400;
+}
+.pattern-calendar-cell--high {
+  background: var(--distress-high);
+  color: #4a2200;
+}
+.pattern-calendar-cell--veryHigh {
+  background: var(--distress-veryhigh);
+  color: #fff;
+}
+
+.pattern-calendar-cell--selected {
+  outline: 3px solid var(--ion-color-primary);
+  outline-offset: 1px;
+}
+
+.pattern-calendar-cell__day {
+  font-size: 0.9rem;
+}
+
+.pattern-calendar-cell__dots {
+  font-size: 0.5rem;
+  line-height: 1;
+  opacity: 0.8;
+}
+
+.pattern-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 14px 0 6px;
+  font-size: 0.8rem;
+  color: var(--app-muted-text);
+}
+
+.pattern-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pattern-legend__swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+}
+
+/* Selected-day detail card */
+.pattern-day-detail__stats {
+  display: flex;
+  gap: 18px;
+  margin-top: 8px;
+}
+
+.pattern-day-detail__stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.pattern-day-detail__value {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.pattern-day-detail__label {
+  font-size: 0.78rem;
+  color: var(--app-muted-text);
+}
+
+/* ---- Correlation / relationship rows ------------------------------ */
+
+.pattern-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.pattern-row__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.pattern-row__title {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.pattern-row__meta {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: var(--app-muted-text);
+}
+
+/* ---- Turning point cards ------------------------------------------ */
+
+.pattern-turning-card__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.pattern-turning-card__date {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.pattern-tag {
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.pattern-tag--increase {
+  background: rgba(226, 89, 75, 0.15);
+  color: #b23a2e;
+}
+.pattern-tag--decrease,
+.pattern-tag--recovery {
+  background: rgba(47, 174, 96, 0.16);
+  color: #1f7a45;
+}
+.pattern-tag--spike {
+  background: rgba(123, 94, 191, 0.16);
+  color: #5a3fa0;
+}
+
+/* ---- Person page patterns section --------------------------------- */
+
+.person-patterns {
+  margin-top: 8px;
+}
+
+.person-patterns__scope {
+  margin-bottom: 14px;
+}
+
+/* ---- Empty / low-data state --------------------------------------- */
+
+.pattern-empty {
+  text-align: center;
+  padding: 40px 24px;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.pattern-empty__emoji {
+  font-size: 2.6rem;
+}
+
+.pattern-empty__title {
+  margin: 12px 0 6px;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.pattern-empty__message {
+  margin: 0;
+  color: var(--app-muted-text);
+  line-height: 1.5;
+}
