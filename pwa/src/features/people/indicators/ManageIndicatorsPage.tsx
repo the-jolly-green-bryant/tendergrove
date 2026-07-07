@@ -15,11 +15,13 @@ import {
   IonTitle,
   IonToolbar,
   useIonAlert,
+  useIonRouter,
 } from '@ionic/react'
 import {
   add,
   chevronForwardOutline,
   informationCircleOutline,
+  sparklesOutline,
   trash,
 } from 'ionicons/icons'
 import { useParams } from 'react-router-dom'
@@ -116,11 +118,35 @@ function useIndicatorAlertActions(personId: string) {
   return { addIndicator, editIndicator, confirmRemoveIndicator }
 }
 
+const IndicatorsIntro = () => (
+  <>
+    <p className="indicator-intro">
+      Track behaviors that either increase distress (undesired) or support well-being
+      (desired).
+    </p>
+
+    <div className="indicator-why">
+      <IonIcon
+        icon={informationCircleOutline}
+        color="primary"
+      />
+      <div>
+        <strong>Why both?</strong>
+        <p>
+          Tracking both challenges and positive behaviors helps us see the full picture
+          and spot patterns that matter.
+        </p>
+      </div>
+    </div>
+  </>
+)
+
 /**
  * Displays and edits a person's desired and undesired indicators.
  * @returns Indicator management page.
  */
 export default function ManageIndicatorsPage() {
+  const router = useIonRouter()
   const { personId } = useParams<{ personId: string }>()
   const { data: indicators, isLoading, error } = useIndicators(personId)
   const { addIndicator, editIndicator, confirmRemoveIndicator } =
@@ -147,24 +173,7 @@ export default function ManageIndicatorsPage() {
         fullscreen
         className="ion-padding safe-content"
       >
-        <p className="indicator-intro">
-          Track behaviors that either increase distress (undesired) or support
-          well-being (desired).
-        </p>
-
-        <div className="indicator-why">
-          <IonIcon
-            icon={informationCircleOutline}
-            color="primary"
-          />
-          <div>
-            <strong>Why both?</strong>
-            <p>
-              Tracking both challenges and positive behaviors helps us see the full
-              picture and spot patterns that matter.
-            </p>
-          </div>
-        </div>
+        <IndicatorsIntro />
 
         {isLoading && <LoadingState />}
         {error && <p>Failed to load indicators.</p>}
@@ -184,6 +193,22 @@ export default function ManageIndicatorsPage() {
           onEdit={editIndicator}
           onDelete={confirmRemoveIndicator}
         />
+
+        <div className="wizard-footer">
+          <IonButton
+            expand="block"
+            fill="outline"
+            onClick={() =>
+              router.push(`/person/${personId}/indicators/suggest`, 'forward')
+            }
+          >
+            <IonIcon
+              slot="start"
+              icon={sparklesOutline}
+            />
+            Suggest indicators
+          </IonButton>
+        </div>
       </IonContent>
     </IonPage>
   )

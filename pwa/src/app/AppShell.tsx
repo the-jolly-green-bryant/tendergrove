@@ -13,6 +13,8 @@ import PersonFormPage from '../features/people/PersonFormPage'
 import PersonPage from '../features/people/PersonPage'
 import ManageIndicatorsPage from '../features/people/indicators/ManageIndicatorsPage'
 import IndicatorChecklistPage from '../features/people/indicators/IndicatorChecklistPage'
+import SuggestRolePage from '../features/people/indicators/SuggestRolePage'
+import SuggestReviewPage from '../features/people/indicators/SuggestReviewPage'
 import ChooseIndicatorTypePage from '../features/people/indicators/ChooseIndicatorTypePage'
 import IndicatorFormPage from '../features/people/indicators/IndicatorFormPage'
 import ArchivedPeoplePage from '../features/people/ArchivedPeoplePage'
@@ -27,6 +29,14 @@ const appRoutes = [
   {
     path: '/person/:personId/indicators/checklist',
     component: IndicatorChecklistPage,
+  },
+  {
+    path: '/person/:personId/indicators/suggest',
+    component: SuggestRolePage,
+  },
+  {
+    path: '/person/:personId/indicators/suggest/:roleKey',
+    component: SuggestReviewPage,
   },
   {
     path: '/person/:personId/indicators/new',
