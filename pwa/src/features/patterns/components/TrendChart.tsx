@@ -43,8 +43,8 @@ interface TrendChartProps {
 
 const VIEW_W = 320
 const VIEW_H = 190
-const PAD_L = 30
-const PAD_R = 12
+const PAD_L = 0
+const PAD_R = 0
 const PAD_T = 14
 const PAD_B = 30
 
@@ -157,14 +157,6 @@ function ChartGrid({ domain }: { readonly domain: Domain }): React.JSX.Element {
             y2={yFor(value, domain)}
             className="pattern-chart__grid"
           />
-          <text
-            x={PAD_L - 6}
-            y={yFor(value, domain) + 3}
-            className="pattern-chart__axis-text"
-            textAnchor="end"
-          >
-            {value}
-          </text>
         </g>
       ))}
     </>
@@ -401,7 +393,6 @@ function ChartCanvas(props: CanvasProps): React.JSX.Element {
           className="pattern-chart__highlight"
         />
       )}
-      <ChartGrid domain={domain} />
       {showBaseline && (
         <line
           x1={PAD_L}
@@ -418,13 +409,6 @@ function ChartCanvas(props: CanvasProps): React.JSX.Element {
           domain={domain}
         />
       ))}
-      <XAxis dates={dates} />
-      {hasData && (
-        <CurrentMarkers
-          series={series}
-          domain={domain}
-        />
-      )}
       {hasData && activeIndex !== null && (
         <Crosshair
           index={activeIndex}
@@ -519,8 +503,6 @@ export function TrendChart({
           hasData={hasData}
         />
       </svg>
-
-      <ChartLegend series={series} />
     </figure>
   )
 }

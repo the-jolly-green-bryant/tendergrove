@@ -13,7 +13,7 @@ import { PatternsEmptyState } from './components/PatternsEmptyState'
 import { PatternsFilterBar } from './components/PatternsFilterBar'
 import { useScopedPatterns } from './useScopedPatterns'
 
-import './patterns.css'
+import './patterns.scss'
 
 // className maps to a colour token: --increase = red, --recovery = green,
 // --spike = purple. Well-being rising is the good news, so it gets green.

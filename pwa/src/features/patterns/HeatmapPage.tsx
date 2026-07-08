@@ -11,7 +11,7 @@ import { PatternsEmptyState } from './components/PatternsEmptyState'
 import { PatternsFilterBar } from './components/PatternsFilterBar'
 import { useScopedPatterns, type DisplayFilters } from './useScopedPatterns'
 
-import './patterns.css'
+import './patterns.scss'
 
 const WEEKDAY_PLURAL = [
   'Sundays',

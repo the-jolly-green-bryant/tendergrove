@@ -11,7 +11,7 @@ import { TrendChart, type ChartSeries } from './components/TrendChart'
 import { toDelta } from './components/trendSeries'
 import { useScopedPatterns } from './useScopedPatterns'
 
-import './patterns.css'
+import './patterns.scss'
 
 /** How many recent days to show per relationship chart (kept readable). */
 const RELATIONSHIP_CHART_DAYS = 14

@@ -452,24 +452,6 @@ function PersonCheckInPanel({
         title={formatCheckInTitle(viewDate)}
         onClick={onStartCheckIn}
       />
-
-      <div className="person-checkin-panel__body">
-        {checkedForDate ? (
-          <>
-            {updatedLabel && <p className="check-in-updated">{updatedLabel}</p>}
-
-            <CheckInSummaryList
-              indicators={activeIndicators}
-              checkedForDate={checkedForDate}
-            />
-          </>
-        ) : (
-          <p className="person-checkin-panel__empty">
-            No check-in recorded for {formatDateLabel(viewDate).toLowerCase()}. Tap to
-            start.
-          </p>
-        )}
-      </div>
     </section>
   )
 }
@@ -648,12 +630,6 @@ function PersonPageLoadedContent({
           selectedCheckIn={summary.selectedCheckIn}
           activeIndicators={summary.activeIndicators}
           onStartCheckIn={onStartCheckIn}
-        />
-
-        <PersonNotesCard
-          viewDate={viewDate}
-          selectedDateNote={summary.selectedDateNote}
-          lastNoteCheckIn={summary.lastNoteCheckIn}
         />
 
         <PersonPatternsSection

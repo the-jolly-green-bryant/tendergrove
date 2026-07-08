@@ -32,8 +32,6 @@ export function CorrelationCard({
             {lagLabel(correlation.lagDays)}
           </span>
         </div>
-        <p className="pattern-insight__detail">{correlation.summary}</p>
-        <ConfidenceBadge confidence={correlation.confidence} />
       </IonCardContent>
     </IonCard>
   )

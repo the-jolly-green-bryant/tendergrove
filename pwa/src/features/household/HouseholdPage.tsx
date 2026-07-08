@@ -23,7 +23,7 @@ import {
   type HouseholdRecapSourcePerson,
 } from '../../lib/householdRecap'
 import { isSameLocalDay, toLocalDateKey } from '../../lib/dateKeys'
-import './HouseholdPage.css'
+import './HouseholdPage.scss'
 
 type HouseholdPerson = HouseholdRecapSourcePerson
 

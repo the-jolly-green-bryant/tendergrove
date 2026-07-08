@@ -25,7 +25,7 @@ import { PersonAvatar } from '../../../components/PersonAvatar'
 import { usePatternsData } from '../usePatternsData'
 import { usePatternsFilterStore, type AnalyticsType } from '../patternsFilterStore'
 
-import '../patterns.css'
+import '../patterns.scss'
 
 const TYPE_OPTIONS: { value: AnalyticsType; label: string }[] = [
   { value: 'all', label: 'All' },

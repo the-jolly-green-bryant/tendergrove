@@ -27,7 +27,7 @@ import { buildTrendChart, trendLineColor } from './components/trendSeries'
 import { usePatternsFilterStore } from './patternsFilterStore'
 import { useScopedPatterns } from './useScopedPatterns'
 
-import './patterns.css'
+import './patterns.scss'
 
 const DIRECTION_ICON: Record<TrendDirection, string> = {
   improving: trendingUpOutline, // well-being up = good

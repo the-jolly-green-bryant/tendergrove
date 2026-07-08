@@ -21,7 +21,7 @@ import { buildTrendChart, trendLineColor } from './components/trendSeries'
 import { usePatternsAnalytics } from './usePatternsAnalytics'
 import { usePatternsFilterStore } from './patternsFilterStore'
 
-import './patterns.css'
+import './patterns.scss'
 
 /** Most correlations to surface inline before linking to the full page. */
 const MAX_INLINE_CORRELATIONS = 3
@@ -82,22 +82,19 @@ function PatternsBody({
 
   return (
     <>
-      <div className="pattern-trend-head">
-        <h3 className="pattern-calendar-heading">{chartTitle}</h3>
+      <div className={'pattern-chart__container'}>
+        <TrendChart
+          dates={chart.dates}
+          series={chart.series}
+          clampTo={chart.clampTo}
+        />
+
         <PeriodSelector
           value={rangeDays}
           onChange={onRangeChange}
         />
       </div>
-      <IonCard>
-        <IonCardContent>
-          <TrendChart
-            dates={chart.dates}
-            series={chart.series}
-            clampTo={chart.clampTo}
-          />
-        </IonCardContent>
-      </IonCard>
+
       <p className="pattern-row__meta">{trendText(data.trend)}</p>
 
       {correlations.length > 0 && (
@@ -199,21 +196,41 @@ export function PersonPatternsSection({
 
   return (
     <section className="patterns-section person-patterns">
-      <ScopeHeader
-        scopedToPerson={scopedToPerson}
-        personName={personName}
-        personAvatarUrl={personAvatarUrl}
-      />
       <IonSegment
         value={scope}
         onIonChange={(e) => setScope((e.detail.value as Scope) ?? 'person')}
         className="person-patterns__scope"
       >
         <IonSegmentButton value="person">
-          <IonLabel>Just {personName}</IonLabel>
+          <IonLabel>
+            <div className="person-patterns__header">
+              <PersonAvatar
+                name={personName}
+                src={personAvatarUrl}
+                className="person-patterns__avatar"
+              />
+
+              <h2 className="pattern-calendar-heading person-patterns__title">
+                {personName}
+              </h2>
+            </div>
+          </IonLabel>
         </IonSegmentButton>
         <IonSegmentButton value="household">
-          <IonLabel>Whole household</IonLabel>
+          <IonLabel>
+            <div className="person-patterns__header">
+              <span
+                className="person-patterns__household-icon"
+                aria-hidden="true"
+              >
+                <IonIcon icon={homeOutline} />
+              </span>
+
+              <h2 className="pattern-calendar-heading person-patterns__title">
+                Household
+              </h2>
+            </div>
+          </IonLabel>
         </IonSegmentButton>
       </IonSegment>
 

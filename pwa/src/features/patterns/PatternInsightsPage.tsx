@@ -10,7 +10,7 @@ import { PatternsFilterBar } from './components/PatternsFilterBar'
 import { useHumanInsights } from './useHumanInsights'
 import { useScopedPatterns } from './useScopedPatterns'
 
-import './patterns.css'
+import './patterns.scss'
 
 function InsightsContent({
   view,

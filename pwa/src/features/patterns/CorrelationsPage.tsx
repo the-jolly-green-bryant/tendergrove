@@ -17,7 +17,7 @@ import { PatternsEmptyState } from './components/PatternsEmptyState'
 import { PatternsFilterBar } from './components/PatternsFilterBar'
 import { useScopedPatterns } from './useScopedPatterns'
 
-import './patterns.css'
+import './patterns.scss'
 
 type View = 'strength' | 'sequence'
 
