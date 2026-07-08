@@ -3,13 +3,19 @@ import {
   IonCheckbox,
   IonIcon,
   IonItem,
-  IonLabel,
   IonList,
   IonNote,
   IonTextarea,
+  useIonAlert,
   useIonRouter,
 } from '@ionic/react'
-import { checkmarkCircle, removeCircle } from 'ionicons/icons'
+import {
+  add,
+  alertCircleOutline,
+  calendarOutline,
+  checkmarkCircle,
+  happyOutline,
+} from 'ionicons/icons'
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useParams } from 'react-router-dom'
 
@@ -21,6 +27,8 @@ import { useRouteModal } from '../../components/RouteModalContext'
 import { useSelectedDate } from '../../context/SelectedDateContext'
 import { usePeople } from '../people/usePeople'
 import { usePerson } from '../people/usePerson'
+import { useHouseholdLifeEvents, type LifeEvent } from '../people/events/useLifeEvents'
+import { useLifeEventMutations } from '../people/events/useLifeEventMutations'
 import { useIndicators } from '../people/indicators/useIndicators'
 import { parseAnswers } from '../people/checkin/checkInUtils'
 import { useCheckInMutations } from '../people/checkin/useCheckInMutations'
@@ -50,8 +58,14 @@ function formatDateLabel(date: Date): string {
   })
 }
 
+type Person = NonNullable<ReturnType<typeof usePerson>['data']>
 type Indicator = NonNullable<ReturnType<typeof usePerson>['data']>['indicators'][number]
 type CheckedIndicators = Record<string, boolean>
+/** A checkbox row: an indicator or a life event, reduced to id + label. */
+interface ChecklistItem {
+  id: string
+  label: string
+}
 type WizardStepProps = {
   readonly personId: string
   readonly selectedDate: Date
@@ -67,7 +81,7 @@ function returnPathFromSearch(search: string): string | undefined {
   return returnTo
 }
 
-function IndicatorGroup({
+function ChecklistGroup({
   title,
   items,
   icon,
@@ -76,7 +90,7 @@ function IndicatorGroup({
   onToggle,
 }: {
   readonly title: string
-  readonly items: Indicator[]
+  readonly items: ChecklistItem[]
   readonly icon: string
   readonly color: string
   readonly checked: CheckedIndicators
@@ -86,33 +100,40 @@ function IndicatorGroup({
 
   return (
     <>
-      <h2 className="check-in__group-title">{title}</h2>
+      <h2 className={`check-in__group-title check-in__group-title--${color}`}>
+        <IonIcon
+          icon={icon}
+          aria-hidden="true"
+        />
+        {title}
+      </h2>
       <IonList
         inset
         className="check-in__list"
       >
-        {items.map((indicator) => (
+        {items.map((item) => (
           <IonItem
-            key={indicator.id}
+            key={item.id}
             className="check-in__item"
           >
-            <IonIcon
-              slot="start"
-              icon={icon}
-              color={color}
-            />
             <IonCheckbox
-              slot="end"
-              aria-label={indicator.name}
-              checked={Boolean(checked[indicator.id])}
-              onIonChange={() => onToggle(indicator.id)}
-            />
-            <IonLabel className="check-in__item-label">{indicator.name}</IonLabel>
+              justify="start"
+              labelPlacement="end"
+              checked={Boolean(checked[item.id])}
+              onIonChange={() => onToggle(item.id)}
+            >
+              {item.label}
+            </IonCheckbox>
           </IonItem>
         ))}
       </IonList>
     </>
   )
+}
+
+/** Map indicators / life events into the generic checklist shape. */
+function indicatorItems(indicators: Indicator[]): ChecklistItem[] {
+  return indicators.map((i) => ({ id: i.id, label: i.name }))
 }
 
 function EmptyIndicatorsMessage({ personId }: { readonly personId: string }) {
@@ -216,8 +237,8 @@ function WizardActions({
 
 function buildCheckInPayload(
   selectedDate: Date,
-  indicators: Indicator[],
-  checked: CheckedIndicators,
+  checkedIndicatorIds: string[],
+  checkedEventIds: string[],
   note: string,
 ) {
   const occurDate = new Date(selectedDate)
@@ -225,39 +246,55 @@ function buildCheckInPayload(
 
   return {
     occurredAt: occurDate.toISOString(),
-    answers: { checked: indicators.filter((i) => checked[i.id]).map((i) => i.id) },
+    answers: { checked: checkedIndicatorIds, events: checkedEventIds },
     note: note.trim() || undefined,
   }
 }
 
-function useWizardStepState({
-  personId,
-  selectedDate,
-  onDone,
-}: Pick<WizardStepProps, 'personId' | 'selectedDate' | 'onDone'>) {
-  const { data: person, isLoading } = usePerson(personId)
-  const indicatorsQuery = useIndicators(personId)
-  const { create, update } = useCheckInMutations(personId)
-  const indicators = useMemo(
-    () =>
-      ((indicatorsQuery.data ?? person?.indicators ?? []) as Indicator[]).filter(
-        (i) => i.active !== false,
-      ),
-    [indicatorsQuery.data, person],
-  )
-  const existing = useMemo(
-    () => (person?.checkIns ?? []).find((ci) => isSameDay(ci.occurredAt, selectedDate)),
-    [person, selectedDate],
-  )
+/** Active life events, in display order, as checklist items. */
+function activeLifeEvents(events: LifeEvent[]): ChecklistItem[] {
+  return [...events]
+    .filter((e) => e.archived !== true)
+    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+    .map((e) => ({ id: e.id, label: e.label }))
+}
+
+const selectedIds = (items: ChecklistItem[], checked: CheckedIndicators): string[] =>
+  items.filter((i) => checked[i.id]).map((i) => i.id)
+
+const activeIndicators = (list: Indicator[]): Indicator[] =>
+  list.filter((i) => i.active !== false)
+
+type CheckInMutations = ReturnType<typeof useCheckInMutations>
+
+/** Create or update the day's check-in with the built payload. */
+async function commitCheckIn(
+  mutations: CheckInMutations,
+  existing: { id: string } | undefined,
+  payload: ReturnType<typeof buildCheckInPayload>,
+): Promise<void> {
+  if (existing) await mutations.update(existing.id, payload)
+  else await mutations.create(payload)
+}
+
+type ExistingCheckIn = { id: string; answersJson?: unknown; note?: string | null }
+
+/** Local editable draft (checked indicators/events + note), prefilled from an
+ *  existing check-in and reset whenever the person or date changes. */
+function useCheckInDraft(
+  personId: string,
+  selectedDate: Date,
+  existing: ExistingCheckIn | undefined,
+) {
   const [checked, setChecked] = useState<CheckedIndicators>({})
+  const [checkedEvents, setCheckedEvents] = useState<CheckedIndicators>({})
   const [note, setNote] = useState('')
-  const [saving, setSaving] = useState(false)
   const [prefilled, setPrefilled] = useState(false)
 
   useEffect(() => {
     setChecked({})
+    setCheckedEvents({})
     setNote('')
-    setSaving(false)
     setPrefilled(false)
   }, [personId, selectedDate])
 
@@ -265,21 +302,60 @@ function useWizardStepState({
     if (prefilled || !existing) return
     const answers = parseAnswers(existing.answersJson)
     setChecked(Object.fromEntries(answers.checked.map((id) => [id, true])))
+    setCheckedEvents(Object.fromEntries(answers.events.map((id) => [id, true])))
     setNote(existing.note ?? '')
     setPrefilled(true)
   }, [existing, prefilled])
 
-  const toggle = (id: string) => setChecked((prev) => ({ ...prev, [id]: !prev[id] }))
+  return {
+    checked,
+    checkedEvents,
+    note,
+    setNote,
+    toggle: (id: string) => setChecked((prev) => ({ ...prev, [id]: !prev[id] })),
+    toggleEvent: (id: string) =>
+      setCheckedEvents((prev) => ({ ...prev, [id]: !prev[id] })),
+  }
+}
 
-  async function save() {
-    if (saving) return
+function useWizardStepState({
+  personId,
+  selectedDate,
+}: Pick<WizardStepProps, 'personId' | 'selectedDate'>) {
+  const { data: person, isLoading } = usePerson(personId)
+  const indicatorsQuery = useIndicators(personId)
+  const lifeEventsQuery = useHouseholdLifeEvents(person?.householdId)
+  const mutations = useCheckInMutations(personId)
+  const [saving, setSaving] = useState(false)
+  const indicators = useMemo(
+    () =>
+      activeIndicators(
+        (indicatorsQuery.data ?? person?.indicators ?? []) as Indicator[],
+      ),
+    [indicatorsQuery.data, person],
+  )
+  const events = useMemo(
+    () => activeLifeEvents(lifeEventsQuery.data ?? []),
+    [lifeEventsQuery.data],
+  )
+  const existing = useMemo(
+    () => (person?.checkIns ?? []).find((ci) => isSameDay(ci.occurredAt, selectedDate)),
+    [person, selectedDate],
+  )
+  const draft = useCheckInDraft(personId, selectedDate, existing)
 
+  async function save(): Promise<boolean> {
+    if (saving) return false
     setSaving(true)
     try {
-      const payload = buildCheckInPayload(selectedDate, indicators, checked, note)
-      if (existing) await update(existing.id, payload)
-      else await create(payload)
-      onDone()
+      const payload = buildCheckInPayload(
+        selectedDate,
+        selectedIds(indicatorItems(indicators), draft.checked),
+        selectedIds(events, draft.checkedEvents),
+        draft.note,
+      )
+      await commitCheckIn(mutations, existing, payload)
+      return true
     } finally {
       setSaving(false)
     }
@@ -287,22 +363,297 @@ function useWizardStepState({
 
   return {
     person,
-    isLoading: isLoading || indicatorsQuery.isLoading,
+    householdId: person?.householdId,
+    isLoading: isLoading || indicatorsQuery.isLoading || lifeEventsQuery.isLoading,
     indicators,
+    events,
     existing,
-    checked,
-    note,
     saving,
-    setNote,
-    toggle,
+    ...draft,
     save,
   }
 }
 
+function WizardHero({ person }: { readonly person: Person }) {
+  return (
+    <div className="wizard-step__hero">
+      <PersonAvatar
+        name={person.displayName}
+        src={person.avatarUrl}
+        className="wizard-step__avatar"
+      />
+      <h2 className="wizard-step__name">{person.displayName}</h2>
+    </div>
+  )
+}
+
+/** One reviewed section: heading + count + the ticked items. */
+function ReviewGroup({
+  title,
+  color,
+  items,
+}: {
+  readonly title: string
+  readonly color: string
+  readonly items: ChecklistItem[]
+}) {
+  if (items.length === 0) return null
+  return (
+    <div className={`check-in-review__group check-in-review__group--${color}`}>
+      <div className="check-in-review__group-head">
+        <span>{title}</span>
+        <span className="check-in-review__count">{items.length}</span>
+      </div>
+      {items.map((item) => (
+        <div
+          key={item.id}
+          className="check-in-review__item"
+        >
+          <IonIcon
+            icon={checkmarkCircle}
+            aria-hidden="true"
+          />
+          {item.label}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/** The post-save review: what was logged, grouped and easy to scan. */
+function WizardReview({
+  person,
+  groups,
+  note,
+  saving,
+  onDone,
+  onEdit,
+}: {
+  readonly person: Person
+  readonly groups: {
+    challenges: ChecklistItem[]
+    positives: ChecklistItem[]
+    events: ChecklistItem[]
+  }
+  readonly note: string
+  readonly saving: boolean
+  readonly onDone: () => void
+  readonly onEdit: () => void
+}) {
+  const nothing =
+    groups.challenges.length + groups.positives.length + groups.events.length === 0
+  return (
+    <>
+      <WizardHero person={person} />
+      {nothing && !note && (
+        <p className="section-empty">Nothing flagged today — logged as a calm day.</p>
+      )}
+      <ReviewGroup
+        title="Challenges"
+        color="danger"
+        items={groups.challenges}
+      />
+      <ReviewGroup
+        title="Positive Signs"
+        color="success"
+        items={groups.positives}
+      />
+      <ReviewGroup
+        title="Events that occurred"
+        color="primary"
+        items={groups.events}
+      />
+      {note.trim() && (
+        <div className="check-in-review__note">
+          <h2 className="check-in__group-title">Note</h2>
+          <p>{note.trim()}</p>
+        </div>
+      )}
+      <div className="wizard-step__actions wizard-step__actions--review">
+        <IonButton
+          fill="outline"
+          onClick={onEdit}
+        >
+          Edit
+        </IonButton>
+        <IonButton
+          disabled={saving}
+          onClick={onDone}
+        >
+          Done
+        </IonButton>
+      </div>
+    </>
+  )
+}
+
 /**
- * Renders the check-in form for a single person inside the wizard.
- * Handles its own local state so each step is independent.
+ * Renders the check-in form (and, after saving, the review) for a single
+ * person inside the wizard. Handles its own local state so each step is
+ * independent.
  */
+type StepState = ReturnType<typeof useWizardStepState>
+
+/**
+ * "Events that occurred" — the shared household pool as checkboxes, plus an
+ * inline "Add event" that adds to the pool (and ticks it). No delete here: the
+ * pool is shared, so removing an event is left to the Events management page.
+ */
+function EventsSection({
+  events,
+  checked,
+  householdId,
+  onToggle,
+}: {
+  readonly events: ChecklistItem[]
+  readonly checked: CheckedIndicators
+  readonly householdId: string | undefined
+  readonly onToggle: (id: string) => void
+}) {
+  const { create } = useLifeEventMutations(householdId)
+  const [presentAlert] = useIonAlert()
+
+  const reportError = (error: unknown) =>
+    void presentAlert({
+      header: 'Couldn’t add event',
+      message: error instanceof Error ? error.message : 'Please try again.',
+      buttons: ['OK'],
+    })
+
+  const addEvent = () =>
+    void presentAlert({
+      header: 'Add event',
+      message: 'Adds to your household’s shared list of events.',
+      inputs: [
+        { name: 'label', type: 'text', placeholder: 'e.g. Therapy Appointment' },
+      ],
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Add',
+          handler: (values: { label?: string }) => {
+            const label = values.label?.trim()
+            if (!label) return false
+            create(label, events.length)
+              .then((id) => id && onToggle(id))
+              .catch(reportError)
+            return true
+          },
+        },
+      ],
+    })
+
+  return (
+    <>
+      <h2 className="check-in__group-title check-in__group-title--primary">
+        <IonIcon
+          icon={calendarOutline}
+          aria-hidden="true"
+        />
+        Events that occurred
+      </h2>
+      <CheckboxList
+        items={events}
+        checked={checked}
+        onToggle={onToggle}
+      />
+      <IonButton
+        fill="clear"
+        size="small"
+        className="check-in__add-event"
+        onClick={addEvent}
+      >
+        <IonIcon
+          slot="start"
+          icon={add}
+        />
+        Add event
+      </IonButton>
+    </>
+  )
+}
+
+/** A bare checkbox list (no heading), used inside sections. */
+function CheckboxList({
+  items,
+  checked,
+  onToggle,
+}: {
+  readonly items: ChecklistItem[]
+  readonly checked: CheckedIndicators
+  readonly onToggle: (id: string) => void
+}) {
+  if (items.length === 0) return null
+  return (
+    <IonList
+      inset
+      className="check-in__list"
+    >
+      {items.map((item) => (
+        <IonItem
+          key={item.id}
+          className="check-in__item"
+        >
+          <IonCheckbox
+            justify="start"
+            labelPlacement="end"
+            checked={Boolean(checked[item.id])}
+            onIonChange={() => onToggle(item.id)}
+          >
+            {item.label}
+          </IonCheckbox>
+        </IonItem>
+      ))}
+    </IonList>
+  )
+}
+
+/** The check-in form's three checklist sections plus the notes field. */
+function CheckInSections({
+  step,
+  challenges,
+  positives,
+  selectedDate,
+}: {
+  readonly step: StepState
+  readonly challenges: ChecklistItem[]
+  readonly positives: ChecklistItem[]
+  readonly selectedDate: Date
+}) {
+  return (
+    <>
+      <ChecklistGroup
+        title="Challenges"
+        items={challenges}
+        icon={alertCircleOutline}
+        color="danger"
+        checked={step.checked}
+        onToggle={step.toggle}
+      />
+      <ChecklistGroup
+        title="Positive Signs"
+        items={positives}
+        icon={happyOutline}
+        color="success"
+        checked={step.checked}
+        onToggle={step.toggle}
+      />
+      <EventsSection
+        events={step.events}
+        checked={step.checkedEvents}
+        householdId={step.householdId}
+        onToggle={step.toggleEvent}
+      />
+      <CheckInNotes
+        note={step.note}
+        existing={step.existing}
+        dateLabel={formatDateLabel(selectedDate)}
+        onNoteChange={step.setNote}
+      />
+    </>
+  )
+}
+
 function WizardStep({
   personId,
   selectedDate,
@@ -310,66 +661,63 @@ function WizardStep({
   onDone,
   onSkip,
 }: WizardStepProps) {
-  const step = useWizardStepState({ personId, selectedDate, onDone })
-  const { person, isLoading, indicators, existing, checked, note, saving } = step
-  const desired = indicators.filter((i) => i.polarity === 'desired')
-  const undesired = indicators.filter((i) => i.polarity === 'undesired')
+  const step = useWizardStepState({ personId, selectedDate })
+  const [reviewing, setReviewing] = useState(false)
 
-  if (isLoading) {
-    return <LoadingState />
+  const challenges = indicatorItems(
+    step.indicators.filter((i) => i.polarity === 'undesired'),
+  )
+  const positives = indicatorItems(
+    step.indicators.filter((i) => i.polarity === 'desired'),
+  )
+  const nothingToTrack = step.indicators.length === 0 && step.events.length === 0
+
+  if (step.isLoading) return <LoadingState />
+  if (!step.person) return null
+
+  const onSave = async () => {
+    if (await step.save()) setReviewing(true)
+  }
+
+  if (reviewing) {
+    return (
+      <WizardReview
+        person={step.person}
+        groups={{
+          challenges: challenges.filter((i) => step.checked[i.id]),
+          positives: positives.filter((i) => step.checked[i.id]),
+          events: step.events.filter((i) => step.checkedEvents[i.id]),
+        }}
+        note={step.note}
+        saving={step.saving}
+        onDone={onDone}
+        onEdit={() => setReviewing(false)}
+      />
+    )
   }
 
   return (
-    person && (
-      <>
-        <div className="wizard-step__hero">
-          <PersonAvatar
-            name={person.displayName}
-            src={person.avatarUrl}
-            className="wizard-step__avatar"
-          />
-          <h2 className="wizard-step__name">{person.displayName}</h2>
-        </div>
-
-        {indicators.length === 0 ? (
-          <EmptyIndicatorsMessage personId={personId} />
-        ) : (
-          <>
-            <IndicatorGroup
-              title="What went well"
-              items={desired}
-              icon={checkmarkCircle}
-              color="success"
-              checked={checked}
-              onToggle={step.toggle}
-            />
-            <IndicatorGroup
-              title="What we watched for"
-              items={undesired}
-              icon={removeCircle}
-              color="danger"
-              checked={checked}
-              onToggle={step.toggle}
-            />
-            <CheckInNotes
-              note={note}
-              existing={existing}
-              dateLabel={formatDateLabel(selectedDate)}
-              onNoteChange={step.setNote}
-            />
-          </>
-        )}
-
-        <WizardActions
-          existing={existing}
-          saving={saving}
-          canSave={indicators.length > 0}
-          hasNext={hasNext}
-          onSkip={onSkip}
-          onSave={step.save}
+    <>
+      <WizardHero person={step.person} />
+      {nothingToTrack ? (
+        <EmptyIndicatorsMessage personId={personId} />
+      ) : (
+        <CheckInSections
+          step={step}
+          challenges={challenges}
+          positives={positives}
+          selectedDate={selectedDate}
         />
-      </>
-    )
+      )}
+      <WizardActions
+        existing={step.existing}
+        saving={step.saving}
+        canSave={!nothingToTrack}
+        hasNext={hasNext}
+        onSkip={onSkip}
+        onSave={onSave}
+      />
+    </>
   )
 }
 

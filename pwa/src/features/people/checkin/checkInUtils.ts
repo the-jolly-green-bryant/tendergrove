@@ -7,9 +7,12 @@ type Person = NonNullable<ReturnType<typeof usePerson>['data']>
 export type CheckIn = Person['checkIns'][number]
 
 /** Shape persisted in CheckIn.answersJson. `checked` holds the ids of the
- *  indicators that occurred on the day of the check-in. */
+ *  indicators that occurred on the day of the check-in; `events` holds the ids
+ *  of the life events (School, Therapy, …) that occurred that day. Events are
+ *  context only — they never affect the well-being score. */
 export interface CheckInAnswers {
   checked: string[]
+  events: string[]
 }
 
 /** True when an ISO datetime falls on the same local calendar day as now. */
@@ -39,15 +42,22 @@ export function parseAnswers(answersJson: unknown): CheckInAnswers {
     try {
       value = JSON.parse(value)
     } catch {
-      return { checked: [] }
+      return { checked: [], events: [] }
     }
   }
 
-  if (value && typeof value === 'object' && 'checked' in value) {
-    const checked = (value as { checked: unknown }).checked
-    if (Array.isArray(checked)) {
-      return { checked: checked.filter((id): id is string => typeof id === 'string') }
+  if (value && typeof value === 'object') {
+    return {
+      checked: stringIds((value as { checked?: unknown }).checked),
+      events: stringIds((value as { events?: unknown }).events),
     }
   }
-  return { checked: [] }
+  return { checked: [], events: [] }
+}
+
+/** Coerce an unknown value into an array of string ids. */
+function stringIds(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((id): id is string => typeof id === 'string')
+    : []
 }

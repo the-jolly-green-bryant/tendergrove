@@ -8,6 +8,7 @@ const personSelectionSet = [
   'role',
   'avatarUrl',
   'archived',
+  'householdId',
   'indicators.id',
   'indicators.name',
   'indicators.polarity',

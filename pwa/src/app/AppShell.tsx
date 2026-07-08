@@ -20,6 +20,7 @@ import PatternInsightsPage from '../features/patterns/PatternInsightsPage'
 import PersonFormPage from '../features/people/PersonFormPage'
 import PersonPage from '../features/people/PersonPage'
 import ManageIndicatorsPage from '../features/people/indicators/ManageIndicatorsPage'
+import ManageEventsPage from '../features/people/events/ManageEventsPage'
 import IndicatorChecklistPage from '../features/people/indicators/IndicatorChecklistPage'
 import SuggestRolePage from '../features/people/indicators/SuggestRolePage'
 import SuggestReviewPage from '../features/people/indicators/SuggestReviewPage'
@@ -34,6 +35,7 @@ const appRoutes = [
   { path: '/person/:personId', component: PersonPage },
   { path: '/person/:personId/edit', component: PersonFormPage },
   { path: '/person/:personId/indicators', component: ManageIndicatorsPage },
+  { path: '/person/:personId/events', component: ManageEventsPage },
   {
     path: '/person/:personId/indicators/checklist',
     component: IndicatorChecklistPage,

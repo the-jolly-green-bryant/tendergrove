@@ -19,6 +19,7 @@ import {
 } from '@ionic/react'
 import {
   archiveOutline,
+  calendarOutline,
   checkmarkCircle,
   chevronForwardOutline,
   closeCircle,
@@ -170,6 +171,8 @@ function usePersonPageActions(
   const manageIndicators = () =>
     router.push(`/person/${personId}/indicators`, 'forward')
 
+  const manageEvents = () => router.push(`/person/${personId}/events`, 'forward')
+
   function doArchive(archive: boolean) {
     if (!person) return
     archiveMutation.mutate(
@@ -208,6 +211,7 @@ function usePersonPageActions(
       buttons: [
         { text: 'Edit Person', icon: createOutline, handler: editPerson },
         { text: 'Edit Indicators', icon: listOutline, handler: manageIndicators },
+        { text: 'Edit Events', icon: calendarOutline, handler: manageEvents },
         {
           text: isArchived ? 'Unarchive' : 'Archive',
           icon: archiveOutline,
@@ -225,7 +229,7 @@ function usePersonPageActions(
     router.push(`/person/${personId}/check-in?returnTo=${returnTo}`, 'forward')
   }
 
-  return { startCheckIn, showMoreOptions }
+  return { startCheckIn, showMoreOptions, manageIndicators, manageEvents }
 }
 
 function formatUpdatedLabel(checkIn: CheckIn): string | null {
@@ -509,6 +513,94 @@ function PersonNotesCard({
   )
 }
 
+function SetupNavCard({
+  icon,
+  title,
+  subtitle,
+  onClick,
+}: {
+  readonly icon: string
+  readonly title: string
+  readonly subtitle: string
+  readonly onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      className="person-setup-card"
+      onClick={onClick}
+    >
+      <IonIcon
+        className="person-setup-card__icon"
+        icon={icon}
+      />
+      <span className="person-setup-card__body">
+        <span className="person-setup-card__title">{title}</span>
+        <span className="person-setup-card__sub">{subtitle}</span>
+      </span>
+      <IonIcon
+        className="person-setup-card__chevron"
+        icon={chevronForwardOutline}
+      />
+    </button>
+  )
+}
+
+/** The "what we track for this person" setup cards: Indicators + Events. */
+function TrackingSetupCards({
+  onManageIndicators,
+  onManageEvents,
+}: {
+  readonly onManageIndicators: () => void
+  readonly onManageEvents: () => void
+}) {
+  return (
+    <div className="person-setup">
+      <SetupNavCard
+        icon={listOutline}
+        title="Indicators"
+        subtitle="Configure behaviors you want to track."
+        onClick={onManageIndicators}
+      />
+      <SetupNavCard
+        icon={calendarOutline}
+        title="Events"
+        subtitle="Configure common events that occur in this person's life."
+        onClick={onManageEvents}
+      />
+    </div>
+  )
+}
+
+/** The "viewing a past day" banner (or the time-travel notice). */
+function PersonDateBanner({
+  viewDate,
+  isTimeTravel,
+  isTimelineView,
+  onReturnToToday,
+}: {
+  readonly viewDate: Date
+  readonly isTimeTravel: boolean
+  readonly isTimelineView: boolean
+  readonly onReturnToToday: () => void
+}) {
+  if (isTimeTravel) {
+    return (
+      <PastDataNotice
+        selectedDateLabel={formatDateLabel(viewDate)}
+        onReturnToToday={onReturnToToday}
+        className="past-data-notice--page"
+      />
+    )
+  }
+  if (!isTimelineView) return null
+  return (
+    <p className="person-hero__date-label ion-padding-horizontal">
+      Viewing: {formatDateLabel(viewDate)}
+    </p>
+  )
+}
+
 function PersonPageLoadedContent({
   person,
   viewDate,
@@ -518,6 +610,8 @@ function PersonPageLoadedContent({
   summary,
   onStartCheckIn,
   onShowMoreOptions,
+  onManageIndicators,
+  onManageEvents,
 }: {
   readonly person: Person
   readonly viewDate: Date
@@ -527,22 +621,17 @@ function PersonPageLoadedContent({
   readonly summary: PersonPageSummary
   readonly onStartCheckIn: () => void
   readonly onShowMoreOptions: () => void
+  readonly onManageIndicators: () => void
+  readonly onManageEvents: () => void
 }) {
   return (
     <>
-      {isTimeTravel ? (
-        <PastDataNotice
-          selectedDateLabel={formatDateLabel(viewDate)}
-          onReturnToToday={onReturnToToday}
-          className="past-data-notice--page"
-        />
-      ) : (
-        isTimelineView && (
-          <p className="person-hero__date-label ion-padding-horizontal">
-            Viewing: {formatDateLabel(viewDate)}
-          </p>
-        )
-      )}
+      <PersonDateBanner
+        viewDate={viewDate}
+        isTimeTravel={isTimeTravel}
+        isTimelineView={isTimelineView}
+        onReturnToToday={onReturnToToday}
+      />
 
       <div className="ion-padding">
         <PersonCheckInPanel
@@ -566,6 +655,11 @@ function PersonPageLoadedContent({
           personId={person.id}
           personName={person.displayName}
           personAvatarUrl={person.avatarUrl}
+        />
+
+        <TrackingSetupCards
+          onManageIndicators={onManageIndicators}
+          onManageEvents={onManageEvents}
         />
 
         <div className="person-page__footer-actions">
@@ -602,7 +696,8 @@ export default function PersonPage() {
   const { selectedDate, setSelectedDate } = useSelectedDate()
   const location = useLocation()
   const history = useHistory()
-  const { startCheckIn, showMoreOptions } = usePersonPageActions(person, personId)
+  const { startCheckIn, showMoreOptions, manageIndicators, manageEvents } =
+    usePersonPageActions(person, personId)
 
   const { viewDate, isTimelineView } = useMemo(
     () => getPersonPageDateView(location.search, selectedDate),
@@ -656,6 +751,8 @@ export default function PersonPage() {
             summary={summary}
             onStartCheckIn={startCheckIn}
             onShowMoreOptions={showMoreOptions}
+            onManageIndicators={manageIndicators}
+            onManageEvents={manageEvents}
           />
         )}
       </IonContent>

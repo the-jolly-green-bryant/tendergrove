@@ -61,10 +61,10 @@ function hardestWeekdayInsight(
   return {
     id: 'hardest-weekday',
     title: withWho(
-      `${WEEKDAY_PLURAL[hardest.weekday]} tend to be more difficult`,
+      `${WEEKDAY_PLURAL[hardest.weekday]} tend to be the toughest`,
       personName,
     ),
-    description: 'Planning a little extra support ahead of these days may help.',
+    description: `Building a little breathing room into ${WEEKDAY_PLURAL[hardest.weekday].toLowerCase()} — a lighter schedule, an extra hand — can take the edge off.`,
     priority: 2,
     icon: 'calendar',
     tone: 'watch',
@@ -88,8 +88,11 @@ function calmestWeekdayInsight(
 
   return {
     id: 'calmest-weekday',
-    title: withWho(`${WEEKDAY_PLURAL[best.weekday]} tend to be calmer`, personName),
-    description: 'Whatever is working on these days may be worth leaning into.',
+    title: withWho(
+      `${WEEKDAY_PLURAL[best.weekday]} are usually the easiest`,
+      personName,
+    ),
+    description: `Whatever’s working on ${WEEKDAY_PLURAL[best.weekday].toLowerCase()}, it’s worth leaning into — even a small version of it on other days might help.`,
     priority: 5,
     icon: 'sparkle',
     tone: 'positive',
@@ -118,8 +121,8 @@ function timeOfDayInsight(
 
   return {
     id: 'time-of-day',
-    title: `Incidents cluster around ${formatHour(bestStart)}–${formatHour(bestStart + 4)}`,
-    description: 'A little extra support in this window may ease the hardest hours.',
+    title: `The hardest stretch is around ${formatHour(bestStart)}–${formatHour(bestStart + 4)}`,
+    description: `That’s when incidents tend to bunch up. A bit of extra support through that window can really take the pressure off.`,
     priority: 3,
     icon: 'moon',
     tone: 'watch',
@@ -140,11 +143,11 @@ function correlationInsight(
   return {
     id: `corr-${wantPositive ? 'positive' : 'negative'}-${match.indicatorId}`,
     title: wantPositive
-      ? `${match.label} lines up with better days`
-      : `${match.label} often shows up on harder days`,
+      ? `${match.label} really seems to help`
+      : `${match.label} tends to land on the harder days`,
     description: wantPositive
-      ? 'Keep encouraging this — it appears connected with your better days.'
-      : 'Worth watching gently; it appears connected with harder days.',
+      ? `On days with ${match.label.toLowerCase()}, things tend to go better. Keep it up where you can — it looks like it’s making a difference.`
+      : `When ${match.label.toLowerCase()} shows up, the day’s often tougher. It’s just a pattern, not a cause — but worth keeping a gentle eye on.`,
     priority: wantPositive ? 2 : 1,
     icon: wantPositive ? 'leaf' : 'alert',
     tone: wantPositive ? 'positive' : 'watch',
@@ -159,8 +162,9 @@ function trendInsight(
   if (trend.direction === 'improving') {
     return {
       id: 'trend',
-      title: withWho('Things have been looking up this week', personName),
-      description: 'Well-being is trending higher than last week. A hopeful sign.',
+      title: withWho('This week has felt a little brighter', personName),
+      description:
+        'Well-being’s been trending up from last week — a hopeful sign, and worth a quiet moment of credit to yourself.',
       priority: 4,
       icon: 'heart',
       tone: 'positive',
@@ -170,9 +174,9 @@ function trendInsight(
   if (trend.direction === 'worsening') {
     return {
       id: 'trend',
-      title: withWho('This week has been harder than last', personName),
+      title: withWho('This week has been heavier than last', personName),
       description:
-        'Well-being is trending lower. Be gentle with yourself, and watch for what helps.',
+        'Things have been trending down. Be gentle with yourself — and notice what tends to help, even the small things.',
       priority: 1,
       icon: 'alert',
       tone: 'watch',

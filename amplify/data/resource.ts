@@ -42,6 +42,27 @@ const schema = a.schema({
     })
     .authorization((allow) => [allow.owner()]),
 
+  // A configurable "thing that happened today" (School, Therapy, Vacation…),
+  // checked off during check-ins for context. Distinct from `Event` (timeline
+  // items/incidents) and from `Indicator` (observed behaviours). Deliberately
+  // minimal: no polarity, categories, icons, colours, or templates.
+  //
+  // Household-scoped: events live in one shared pool per household (keyed by the
+  // scalar `householdId`), so every person's check-in can pick from the same
+  // list. Standalone on purpose — no relation on the Person/Household models —
+  // so adding it is a purely additive schema change (one new table, no existing
+  // model or data touched).
+  LifeEvent: a
+    .model({
+      householdId: a.id().required(),
+
+      owner: a.string(),
+      label: a.string().required(),
+      archived: a.boolean().default(false),
+      sortOrder: a.integer(),
+    })
+    .authorization((allow) => [allow.owner()]),
+
   CheckIn: a
     .model({
       personId: a.id().required(),

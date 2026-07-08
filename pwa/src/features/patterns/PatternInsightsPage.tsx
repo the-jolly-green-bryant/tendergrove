@@ -7,6 +7,7 @@ import { AnalyticsRefresher } from './components/AnalyticsRefresher'
 import { GeneratedInsightCard } from './components/GeneratedInsightCard'
 import { PatternsEmptyState } from './components/PatternsEmptyState'
 import { PatternsFilterBar } from './components/PatternsFilterBar'
+import { useHumanInsights } from './useHumanInsights'
 import { useScopedPatterns } from './useScopedPatterns'
 
 import './patterns.css'
@@ -16,7 +17,12 @@ function InsightsContent({
 }: {
   readonly view: ScopedPatternsView
 }): React.JSX.Element {
-  if (view.generatedInsights.length === 0) {
+  const { insights } = useHumanInsights(
+    view.personId ?? 'household',
+    view.generatedInsights,
+  )
+
+  if (insights.length === 0) {
     const who = view.personName ? `for ${view.personName}` : ''
     return (
       <PatternsEmptyState
@@ -32,7 +38,7 @@ function InsightsContent({
         Plain-language takeaways from the data — the most useful first. These are gentle
         observations to notice, never medical advice.
       </p>
-      {view.generatedInsights.map((insight) => (
+      {insights.map((insight) => (
         <GeneratedInsightCard
           key={insight.id}
           insight={insight}

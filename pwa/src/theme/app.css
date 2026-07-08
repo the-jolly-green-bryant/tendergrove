@@ -245,6 +245,60 @@ ion-back-button button {
   padding: 0 8px;
 }
 
+/* Tracking setup cards (Indicators + Events) on the person page. */
+.person-setup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.person-setup-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 64px;
+  padding: 14px 16px;
+  border: 1px solid var(--app-border-color);
+  border-radius: var(--app-radius-lg);
+  background: var(--ion-card-background);
+  box-shadow: var(--app-shadow-card);
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+}
+
+.person-setup-card__icon {
+  flex: 0 0 auto;
+  font-size: 1.4rem;
+  color: var(--ion-color-primary);
+}
+
+.person-setup-card__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.person-setup-card__title {
+  display: block;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.person-setup-card__sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.85rem;
+  color: var(--app-muted-text);
+}
+
+.person-setup-card__chevron {
+  flex: 0 0 auto;
+  color: var(--ion-color-medium);
+  font-size: 1.05rem;
+}
+
 .person-form__photo-error {
   display: block;
   padding: 8px 20px 0;
@@ -616,13 +670,29 @@ ion-item.check-in-summary__item {
 }
 
 .check-in__group-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   flex: 0 0 auto;
   margin: 18px 4px 8px;
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #4d5553;
   letter-spacing: 0;
-  text-transform: uppercase;
+}
+
+.check-in__group-title ion-icon {
+  font-size: 1.15rem;
+}
+
+.check-in__group-title--danger {
+  color: var(--ion-color-danger-shade);
+}
+.check-in__group-title--success {
+  color: var(--ion-color-success-shade);
+}
+.check-in__group-title--primary {
+  color: var(--ion-color-primary-shade);
 }
 
 .check-in__list {
@@ -1144,6 +1214,68 @@ ion-item.indicator-row {
 
 .wizard-step__actions ion-button {
   flex: 1;
+}
+
+/* Post-save check-in review */
+.check-in-review__group {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: 1px solid rgba(20, 125, 126, 0.13);
+  border-left-width: 4px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.check-in-review__group--danger {
+  border-left-color: var(--ion-color-danger);
+}
+.check-in-review__group--success {
+  border-left-color: var(--ion-color-success);
+}
+.check-in-review__group--primary {
+  border-left-color: var(--ion-color-primary);
+}
+
+.check-in-review__group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.check-in-review__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--ion-color-step-100);
+  font-size: 0.8rem;
+}
+
+.check-in-review__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  font-size: 0.98rem;
+}
+
+.check-in-review__item ion-icon {
+  color: var(--ion-color-success);
+  font-size: 1.15rem;
+}
+
+.check-in-review__note {
+  margin-top: 16px;
+}
+
+.check-in-review__note p {
+  margin: 0;
+  line-height: 1.5;
 }
 
 .route-modal .wizard-step__actions {

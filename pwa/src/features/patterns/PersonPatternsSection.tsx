@@ -19,6 +19,7 @@ import { PeriodSelector } from './components/PeriodSelector'
 import { TrendChart } from './components/TrendChart'
 import { buildTrendChart, trendLineColor } from './components/trendSeries'
 import { usePatternsAnalytics } from './usePatternsAnalytics'
+import { usePatternsFilterStore } from './patternsFilterStore'
 
 import './patterns.css'
 
@@ -55,14 +56,14 @@ function PatternsBody({
   chartTitle,
   rangeDays,
   onRangeChange,
+  onViewAll,
 }: {
   readonly data: ScopedData
   readonly chartTitle: string
   readonly rangeDays: number
   readonly onRangeChange: (days: number) => void
+  readonly onViewAll: () => void
 }): React.JSX.Element {
-  const history = useHistory()
-
   if (data.scoredDays === 0) {
     return (
       <PatternsEmptyState
@@ -114,11 +115,44 @@ function PatternsBody({
       <IonButton
         expand="block"
         fill="clear"
-        onClick={() => history.push('/patterns')}
+        onClick={onViewAll}
       >
         View all patterns
       </IonButton>
     </>
+  )
+}
+
+/** Avatar/icon + title reflecting whether the section is scoped to a person. */
+function ScopeHeader({
+  scopedToPerson,
+  personName,
+  personAvatarUrl,
+}: {
+  readonly scopedToPerson: boolean
+  readonly personName: string
+  readonly personAvatarUrl?: string | null
+}): React.JSX.Element {
+  return (
+    <div className="person-patterns__header">
+      {scopedToPerson ? (
+        <PersonAvatar
+          name={personName}
+          src={personAvatarUrl}
+          className="person-patterns__avatar"
+        />
+      ) : (
+        <span
+          className="person-patterns__household-icon"
+          aria-hidden="true"
+        >
+          <IonIcon icon={homeOutline} />
+        </span>
+      )}
+      <h2 className="pattern-calendar-heading person-patterns__title">
+        {scopedToPerson ? `${personName}’s patterns` : 'Household patterns'}
+      </h2>
+    </div>
   )
 }
 
@@ -139,6 +173,8 @@ export function PersonPatternsSection({
   const [scope, setScope] = useState<Scope>('person')
   const [rangeDays, setRangeDays] = useState(30)
   const { result, isLoading, hasError } = usePatternsAnalytics(rangeDays)
+  const history = useHistory()
+  const setPerson = usePatternsFilterStore((s) => s.setPerson)
 
   // The main Person page already surfaces loading/errors; stay quiet here.
   if (isLoading || hasError || !result) return null
@@ -163,25 +199,11 @@ export function PersonPatternsSection({
 
   return (
     <section className="patterns-section person-patterns">
-      <div className="person-patterns__header">
-        {scopedToPerson ? (
-          <PersonAvatar
-            name={personName}
-            src={personAvatarUrl}
-            className="person-patterns__avatar"
-          />
-        ) : (
-          <span
-            className="person-patterns__household-icon"
-            aria-hidden="true"
-          >
-            <IonIcon icon={homeOutline} />
-          </span>
-        )}
-        <h2 className="pattern-calendar-heading person-patterns__title">
-          {scopedToPerson ? `${personName}’s patterns` : 'Household patterns'}
-        </h2>
-      </div>
+      <ScopeHeader
+        scopedToPerson={scopedToPerson}
+        personName={personName}
+        personAvatarUrl={personAvatarUrl}
+      />
       <IonSegment
         value={scope}
         onIonChange={(e) => setScope((e.detail.value as Scope) ?? 'person')}
@@ -200,6 +222,12 @@ export function PersonPatternsSection({
         chartTitle={chartTitle}
         rangeDays={rangeDays}
         onRangeChange={setRangeDays}
+        onViewAll={() => {
+          // Carry the current scope into the Patterns section so it opens
+          // pre-filtered to this person (or the whole household).
+          setPerson(scopedToPerson ? personId : null)
+          history.push('/patterns')
+        }}
       />
     </section>
   )
