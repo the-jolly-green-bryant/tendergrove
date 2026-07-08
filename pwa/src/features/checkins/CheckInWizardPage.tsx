@@ -1,11 +1,17 @@
 import {
   IonButton,
+  IonButtons,
   IonCheckbox,
+  IonContent,
+  IonFooter,
+  IonHeader,
   IonIcon,
   IonItem,
   IonList,
   IonNote,
   IonTextarea,
+  IonTitle,
+  IonToolbar,
   useIonAlert,
   useIonRouter,
 } from '@ionic/react'
@@ -213,20 +219,13 @@ function WizardActions({
   const saveLabel = `${existing ? 'Update' : 'Save'}${hasNext ? ' & Next' : ''}`
 
   return (
-    <div className="wizard-step__actions">
-      <IonButton
-        fill="outline"
-        onClick={onSkip}
-      >
-        Skip
-      </IonButton>
-      <IonButton
-        disabled={saving || !canSave}
-        onClick={onSave}
-      >
-        {saveLabel}
-      </IonButton>
-    </div>
+    <IonFooter>
+      <IonToolbar>
+        <IonButtons slot="primary">
+          <IonButton onClick={onSave}>{saveLabel}</IonButton>
+        </IonButtons>
+      </IonToolbar>
+    </IonFooter>
   )
 }
 
@@ -654,7 +653,6 @@ function WizardStep({
   onSkip,
 }: WizardStepProps) {
   const step = useWizardStepState({ personId, selectedDate })
-  const [reviewing, setReviewing] = useState(false)
 
   const challenges = indicatorItems(
     step.indicators.filter((i) => i.polarity === 'undesired'),
@@ -666,27 +664,6 @@ function WizardStep({
 
   if (step.isLoading) return <LoadingState />
   if (!step.person) return null
-
-  const onSave = async () => {
-    if (await step.save()) setReviewing(true)
-  }
-
-  if (reviewing) {
-    return (
-      <WizardReview
-        person={step.person}
-        groups={{
-          challenges: challenges.filter((i) => step.checked[i.id]),
-          positives: positives.filter((i) => step.checked[i.id]),
-          events: step.events.filter((i) => step.checkedEvents[i.id]),
-        }}
-        note={step.note}
-        saving={step.saving}
-        onDone={onDone}
-        onEdit={() => setReviewing(false)}
-      />
-    )
-  }
 
   return (
     <>
@@ -706,14 +683,6 @@ function WizardStep({
           selectedDate={selectedDate}
         />
       )}
-      <WizardActions
-        existing={step.existing}
-        saving={step.saving}
-        canSave={!nothingToTrack}
-        hasNext={hasNext}
-        onSkip={onSkip}
-        onSave={onSave}
-      />
     </>
   )
 }
@@ -799,37 +768,67 @@ export function CheckInWizardPage({
     setCurrentIndex,
   })
 
+  const [reviewing, setReviewing] = useState(false)
+  const step = useWizardStepState({ personId, selectedDate })
+  const nothingToTrack = step.indicators.length === 0 && step.events.length === 0
+  const onSave = async () => {
+    if (await step.save()) advance()
+  }
+
   return (
-    <Page
-      title={title}
-      backHref={backHref}
-      onBackClick={routeModal.isRouteModal ? () => routeModal.dismiss() : undefined}
-      className={`check-in-wizard-content${isTimeTravel ? ' time-travel-surface' : ''}`}
-    >
-      {isTimeTravel && (
-        <PastDataNotice
-          selectedDateLabel={formatDateLabel(selectedDate)}
-          onReturnToToday={() => setSelectedDate(new Date())}
-          className="past-data-notice--page"
-        />
-      )}
+    <>
+      <IonHeader>
+        <IonToolbar>
+          <IonButtons slot="start">
+            <IonButton onClick={() => routeModal.dismiss()}>Close</IonButton>
+          </IonButtons>
 
-      {isLoadingPeople && <LoadingState />}
+          <IonButtons slot="end">
+            <IonButton onClick={reviewing ? advance : onSave}>
+              {step.existing ? 'Update' : 'Save'}
+            </IonButton>
+          </IonButtons>
 
-      {!isLoadingPeople && activePeople.length === 0 && (
-        <p className="section-empty">No household members to check in.</p>
-      )}
+          <IonTitle>{title}</IonTitle>
+        </IonToolbar>
+      </IonHeader>
+      <IonContent
+        className={`ion-padding check-in-wizard-content${isTimeTravel ? ' time-travel-surface' : ''}`}
+      >
+        {isTimeTravel && (
+          <PastDataNotice
+            selectedDateLabel={formatDateLabel(selectedDate)}
+            onReturnToToday={() => setSelectedDate(new Date())}
+            className="past-data-notice--page"
+          />
+        )}
 
-      {currentPerson && (
-        <WizardStep
-          key={currentPerson.id}
-          personId={currentPerson.id}
-          selectedDate={selectedDate}
-          hasNext={currentIndex < activePeople.length - 1}
-          onDone={advance}
-          onSkip={advance}
-        />
-      )}
-    </Page>
+        {isLoadingPeople && <LoadingState />}
+
+        {!isLoadingPeople && activePeople.length === 0 && (
+          <p className="section-empty">No household members to check in.</p>
+        )}
+
+        {currentPerson && (
+          <WizardStep
+            key={currentPerson.id}
+            personId={currentPerson.id}
+            selectedDate={selectedDate}
+            hasNext={currentIndex < activePeople.length - 1}
+            onDone={advance}
+            onSkip={advance}
+          />
+        )}
+      </IonContent>
+
+      {/*<WizardActions*/}
+      {/*  existing={step.existing}*/}
+      {/*  saving={step.saving}*/}
+      {/*  canSave={!nothingToTrack}*/}
+      {/*  hasNext={currentIndex < activePeople.length - 1}*/}
+      {/*  onSkip={advance}*/}
+      {/*  onSave={onSave}*/}
+      {/*/>*/}
+    </>
   )
 }

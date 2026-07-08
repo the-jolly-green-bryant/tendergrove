@@ -5,3 +5,4 @@
  span.
 - When scanning, snap to the nearest day with the person's data, don't show blanks.
 - Chart should update after a check-in
+- Removing an item from check-in doesn't seem to save
