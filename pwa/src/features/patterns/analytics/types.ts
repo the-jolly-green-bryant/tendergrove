@@ -71,11 +71,13 @@ export interface AnalyticsIndicator {
   active: boolean
 }
 
-/** A single check-in with its checked-indicator ids already parsed out. */
+/** A single check-in with its checked-indicator and event ids already parsed out. */
 export interface AnalyticsCheckIn {
   occurredAt: string
   /** Ids of indicators marked as having occurred (from `CheckIn.answersJson.checked`). */
   checkedIndicatorIds: string[]
+  /** Ids of life events that occurred (from `CheckIn.answersJson.events`). Context only. */
+  eventIds: string[]
 }
 
 /** An incident (an `Event` of type `incident`). */
@@ -388,6 +390,39 @@ export interface TimingAnalysis {
   indicatorCorrelations: IndicatorOutcomeCorrelation[]
 }
 
+/**
+ * How a life event (School, Therapy, …) lines up with well-being. Negative
+ * correlation = the event tends to fall on harder days. Correlation, never
+ * causation. The event's label lives in the LifeEvent pool, so the UI maps
+ * `eventId` → label for display.
+ */
+export interface EventImpact {
+  eventId: string
+  /** Pearson correlation of the event's daily presence with well-being, -1..1. */
+  correlation: number
+  confidence: Confidence
+  /** Days that had a check-in and so could be measured. */
+  sampleSize: number
+}
+
+/** Direction + how long the current well-being trend has held. */
+export type TrendStatusState =
+  | 'improving'
+  | 'worsening'
+  | 'steady-good'
+  | 'steady-hard'
+  | 'steady-mixed'
+  | 'insufficient'
+
+/** A plain-language read on which way things are going, and for how long. */
+export interface TrendStatus {
+  state: TrendStatusState
+  /** How many days the current state has held. */
+  days: number
+  currentAverage: number | null
+  summary: string
+}
+
 /* ------------------------------------------------------------------ */
 /*  Generated insights                                                 */
 /* ------------------------------------------------------------------ */
@@ -454,6 +489,10 @@ export interface AnalyticsResult {
   timing: TimingAnalysis
   /** Timing per person, keyed by person id. */
   personTiming: Record<string, TimingAnalysis>
+  /** Event↔well-being correlations across the household. */
+  eventImpacts: EventImpact[]
+  /** Event↔well-being correlations per person, keyed by person id. */
+  personEventImpacts: Record<string, EventImpact[]>
   /** Generated, plain-language insights for the household. */
   generatedInsights: GeneratedInsight[]
   /** Generated insights per person, keyed by person id. */
