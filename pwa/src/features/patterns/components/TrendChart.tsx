@@ -164,18 +164,31 @@ function ChartGrid({ domain }: { readonly domain: Domain }): React.JSX.Element {
 }
 
 /** The line for one series, plus point dots for solid (non-dashed) lines. */
-function SeriesLine({
+const SeriesLine = ({
   series,
   domain,
 }: {
   readonly series: ChartSeries
   readonly domain: Domain
-}): React.JSX.Element {
+}): React.JSX.Element => {
   const count = series.values.length
+  const path = buildPath(series.values, domain)
+  const [mX, mY] = path.split(' ')
+  const missingData = ['M0', mY, mX.replace('M', 'L'), mY].join(' ')
   return (
     <>
       <path
-        d={buildPath(series.values, domain)}
+        d={missingData}
+        fill="none"
+        stroke={'#D3D3D3'}
+        strokeWidth={2.5}
+        strokeLinejoin="round"
+        strokeLinecap="round"
+        strokeDasharray={'5 5'}
+      />
+
+      <path
+        d={path}
         fill="none"
         stroke={series.color}
         strokeWidth={2.5}
@@ -183,6 +196,7 @@ function SeriesLine({
         strokeLinecap="round"
         strokeDasharray={series.dashed ? '5 5' : undefined}
       />
+
       {!series.dashed &&
         series.values.map((value, index) =>
           value === null ? null : (
@@ -195,26 +209,6 @@ function SeriesLine({
             />
           ),
         )}
-    </>
-  )
-}
-
-/** Sparse x-axis day labels. */
-function XAxis({ dates }: { readonly dates: DateKey[] }): React.JSX.Element {
-  const count = dates.length
-  return (
-    <>
-      {axisLabelIndexes(count).map((index) => (
-        <text
-          key={index}
-          x={xFor(index, count)}
-          y={VIEW_H - 10}
-          className="pattern-chart__axis-text"
-          textAnchor="middle"
-        >
-          {dates[index] ? formatDayLabel(dates[index]).replace(/^[A-Za-z]+, /, '') : ''}
-        </text>
-      ))}
     </>
   )
 }
@@ -256,37 +250,6 @@ function useScrub(count: number) {
     setActiveIndex(Math.round(ratio * (count - 1)))
   }
   return { activeIndex, update, clear: () => setActiveIndex(null) }
-}
-
-/** Emphasised ring on each solid series' latest point (the "current" value). */
-function CurrentMarkers({
-  series,
-  domain,
-}: {
-  readonly series: ChartSeries[]
-  readonly domain: Domain
-}): React.JSX.Element {
-  return (
-    <>
-      {series
-        .filter((s) => !s.dashed)
-        .map((s) => {
-          const index = lastValueIndex(s.values)
-          if (index < 0) return null
-          return (
-            <circle
-              key={s.label}
-              cx={xFor(index, s.values.length)}
-              cy={yFor(s.values[index] as number, domain)}
-              r={4.5}
-              fill="#fff"
-              stroke={s.color}
-              strokeWidth={2.5}
-            />
-          )
-        })}
-    </>
-  )
 }
 
 /** Vertical scan line + dots at the scrubbed index. */
