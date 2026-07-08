@@ -17,7 +17,6 @@ import TurningPointsPage from '../features/patterns/TurningPointsPage'
 import TrendsPage from '../features/patterns/TrendsPage'
 import HeatmapPage from '../features/patterns/HeatmapPage'
 import PatternInsightsPage from '../features/patterns/PatternInsightsPage'
-import FiltersPage from '../features/patterns/FiltersPage'
 import PersonFormPage from '../features/people/PersonFormPage'
 import PersonPage from '../features/people/PersonPage'
 import ManageIndicatorsPage from '../features/people/indicators/ManageIndicatorsPage'
@@ -71,7 +70,6 @@ const appRoutes = [
   { path: '/patterns/trends', component: TrendsPage },
   { path: '/patterns/heatmap', component: HeatmapPage },
   { path: '/patterns/insights', component: PatternInsightsPage },
-  { path: '/patterns/filters', component: FiltersPage },
 ]
 
 const modalRoutes = [
@@ -102,6 +100,19 @@ function resolveModalFallback(fallback: string, url: string): string {
     return url.replace(/\/check-in$/, '')
   }
   return fallback
+}
+
+/**
+ * Read a `?returnTo=` off a modal URL. This lets a page that opens a modal say
+ * "send me back here on dismiss" so the back button returns to the summoning
+ * page instead of the modal's generic fallback. Only same-app absolute paths
+ * are honoured (no protocol-relative or external URLs).
+ */
+function returnToFromSearch(search: string): string | undefined {
+  // URLSearchParams.get already decodes the value, so no manual decode here.
+  const value = new URLSearchParams(search).get('returnTo')
+  if (!value?.startsWith('/') || value.startsWith('//')) return undefined
+  return value
 }
 
 function getBackgroundLocation(location: ReturnType<typeof useLocation>) {
@@ -159,8 +170,14 @@ function RouteModal({
   const history = useHistory()
   const location = useLocation()
   const ModalContent = modalComponent
+  // Dismiss priority: an explicit target, then the summoning page (?returnTo=),
+  // then the modal's generic fallback.
   const dismiss = (targetPath?: string) => {
-    history.replace(targetPath ?? resolveModalFallback(fallback, location.pathname))
+    const destination =
+      targetPath ??
+      returnToFromSearch(location.search) ??
+      resolveModalFallback(fallback, location.pathname)
+    history.replace(destination)
   }
 
   return (
@@ -177,8 +194,10 @@ function RouteModal({
           handleBehavior="cycle"
           className="route-modal"
           onDidDismiss={() => {
+            // Swipe-to-dismiss / backdrop tap: return to the summoning page
+            // (?returnTo=) or the fallback, same as the back button.
             if (match && location.pathname === match.url) {
-              dismiss(resolveModalFallback(fallback, match.url))
+              dismiss()
             }
           }}
         >

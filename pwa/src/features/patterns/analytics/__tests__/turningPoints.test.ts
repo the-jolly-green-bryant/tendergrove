@@ -43,6 +43,17 @@ describe('findTurningPoints', () => {
     expect(spike!.afterAverage).toBe(35)
   })
 
+  it('flags a gradual multi-day slide even when one day bucks it', () => {
+    // Steady decline ~80 → 50 over ~13 days, with a single blip up on day 6.
+    const tps = findTurningPoints(
+      household([80, 78, 75, 72, 70, 78, 66, 63, 60, 57, 54, 51, 50, 50]),
+    )
+    const decline = tps.find((t) => t.type === 'sustainedDecrease')
+    expect(decline).toBeDefined()
+    expect(decline!.beforeAverage).toBeGreaterThan(decline!.afterAverage)
+    expect(decline!.durationDays).toBeGreaterThanOrEqual(8)
+  })
+
   it('ignores small wobble', () => {
     expect(
       findTurningPoints(household([50, 52, 48, 51, 49, 50, 53, 47, 50, 51])),

@@ -1,4 +1,4 @@
-import type { TrendPoint } from '../analytics'
+import type { TrendDirection, TrendPoint } from '../analytics'
 import type { ChartSeries } from './TrendChart'
 
 /** Everything a page needs to hand a well-being trend to `<TrendChart>`. */
@@ -11,6 +11,15 @@ export interface TrendChartConfig {
 
 const PRIMARY = 'var(--ion-color-primary)'
 const SECONDARY = 'var(--ion-color-secondary-shade)'
+const UP = 'var(--ion-color-success-shade)'
+const DOWN = 'var(--ion-color-danger)'
+
+/** Colour the primary line by direction: green rising, red falling, brand flat. */
+export function trendLineColor(direction: TrendDirection): string {
+  if (direction === 'improving') return UP
+  if (direction === 'worsening') return DOWN
+  return PRIMARY
+}
 
 /**
  * Day-to-day change: each point becomes its difference from the previous
@@ -36,6 +45,7 @@ export function toDelta(values: (number | null)[]): (number | null)[] {
 export function buildTrendChart(
   points: TrendPoint[],
   showDelta: boolean,
+  primaryColor: string = PRIMARY,
 ): TrendChartConfig {
   const dates = points.map((p) => p.date)
 
@@ -45,7 +55,7 @@ export function buildTrendChart(
       series: [
         {
           label: 'Day-to-day change',
-          color: PRIMARY,
+          color: primaryColor,
           values: toDelta(points.map((p) => p.score)),
         },
       ],
@@ -59,7 +69,7 @@ export function buildTrendChart(
     series: [
       {
         label: 'Daily well-being',
-        color: PRIMARY,
+        color: primaryColor,
         values: points.map((p) => p.score),
       },
       {

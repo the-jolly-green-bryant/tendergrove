@@ -7,7 +7,6 @@ import {
   gitNetworkOutline,
   gridOutline,
   heartOutline,
-  optionsOutline,
   pulseOutline,
   removeOutline,
   trendingDownOutline,
@@ -22,14 +21,13 @@ import type { ScopedPatternsView, TrendDirection } from './analytics'
 import { InsightCard } from './components/InsightCard'
 import { PatternsEmptyState } from './components/PatternsEmptyState'
 import { PatternsFilterBar } from './components/PatternsFilterBar'
+import { PeriodSelector } from './components/PeriodSelector'
 import { TrendChart } from './components/TrendChart'
-import { buildTrendChart } from './components/trendSeries'
+import { buildTrendChart, trendLineColor } from './components/trendSeries'
+import { usePatternsFilterStore } from './patternsFilterStore'
 import { useScopedPatterns } from './useScopedPatterns'
 
 import './patterns.css'
-
-/** How many days of the trend to show on the overview chart (kept readable). */
-const OVERVIEW_TREND_DAYS = 14
 
 const DIRECTION_ICON: Record<TrendDirection, string> = {
   improving: trendingUpOutline, // well-being up = good
@@ -81,12 +79,6 @@ const DEEPER_PATTERNS = [
     title: 'Turning points',
     sub: 'Big shifts and lasting changes',
   },
-  {
-    href: '/patterns/filters',
-    icon: optionsOutline,
-    title: 'Filters',
-    sub: 'Focus by date range, person, or type',
-  },
 ] as const
 
 function TrendSummary({
@@ -120,24 +112,32 @@ function TrendSection({
   readonly view: ScopedPatternsView
   readonly showDelta: boolean
 }): React.JSX.Element {
+  const rangeDays = usePatternsFilterStore((s) => s.rangeDays)
+  const setRangeDays = usePatternsFilterStore((s) => s.setRangeDays)
   const subject = view.personName ? `${view.personName}'s` : 'Household'
-  const points = view.trend.points.slice(-OVERVIEW_TREND_DAYS)
-  const chart = buildTrendChart(points, showDelta)
+  const lineColor = trendLineColor(view.trend.direction)
+  const chart = buildTrendChart(view.trend.points, showDelta, lineColor)
   return (
     <section
       className="patterns-section"
       aria-labelledby="trend-heading"
     >
-      <h2
-        id="trend-heading"
-        className="pattern-calendar-heading"
-      >
-        {subject} well-being trend
-      </h2>
+      <div className="pattern-trend-head">
+        <h2
+          id="trend-heading"
+          className="pattern-calendar-heading"
+        >
+          {subject} well-being trend
+        </h2>
+        <PeriodSelector
+          value={rangeDays}
+          onChange={setRangeDays}
+        />
+      </div>
       <p className="patterns-lede">
         {showDelta
           ? 'Day-to-day change in well-being. Points above the dashed line are better days than the one before; below it, harder ones.'
-          : 'Daily average well-being score (higher is better). Missing days simply mean no check-in yet.'}
+          : 'Daily well-being (higher is better). The line turns red when the trend is heading down. Drag across to read any day.'}
       </p>
       <IonCard>
         <IonCardContent>

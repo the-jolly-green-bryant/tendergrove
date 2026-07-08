@@ -1,25 +1,31 @@
 import {
   IonButton,
+  IonButtons,
   IonCheckbox,
   IonChip,
+  IonContent,
   IonDatetime,
+  IonFooter,
+  IonHeader,
+  IonIcon,
   IonItem,
   IonLabel,
   IonList,
+  IonModal,
   IonNote,
   IonSegment,
   IonSegmentButton,
+  IonTitle,
+  IonToolbar,
 } from '@ionic/react'
+import { closeOutline } from 'ionicons/icons'
 import React, { useMemo } from 'react'
-import { useHistory } from 'react-router-dom'
 
-import { Page } from '../../components/Page'
-import { PersonAvatar } from '../../components/PersonAvatar'
-import { AnalyticsLoadingSkeleton } from './components/AnalyticsLoadingSkeleton'
-import { usePatternsData } from './usePatternsData'
-import { usePatternsFilterStore, type AnalyticsType } from './patternsFilterStore'
+import { PersonAvatar } from '../../../components/PersonAvatar'
+import { usePatternsData } from '../usePatternsData'
+import { usePatternsFilterStore, type AnalyticsType } from '../patternsFilterStore'
 
-import './patterns.css'
+import '../patterns.css'
 
 const TYPE_OPTIONS: { value: AnalyticsType; label: string }[] = [
   { value: 'all', label: 'All' },
@@ -260,53 +266,70 @@ function collectIndicators(
 }
 
 /* ------------------------------------------------------------------ */
-/*  Page                                                               */
+/*  Modal                                                              */
 /* ------------------------------------------------------------------ */
 
 /**
- * Global analytics filters. Selections update the shared store immediately and
- * carry across every Patterns page; "Apply" simply returns to the overview.
+ * Global analytics filters as a bottom-sheet modal. Selections update the
+ * shared store immediately, so "Apply" (and swipe-down / close) simply dismiss
+ * — the caregiver lands back on exactly the page they opened it from. Because
+ * it's a modal, dismissing pops it without touching the navigation stack.
  */
-export default function FiltersPage(): React.JSX.Element {
-  const history = useHistory()
+export function FiltersModal({
+  isOpen,
+  onDismiss,
+}: {
+  readonly isOpen: boolean
+  readonly onDismiss: () => void
+}): React.JSX.Element {
   const reset = usePatternsFilterStore((s) => s.reset)
-  const { isLoading } = usePatternsData()
 
   return (
-    <Page
-      title="Filters"
-      className="patterns-page"
-      backHref="/patterns"
+    <IonModal
+      isOpen={isOpen}
+      onDidDismiss={onDismiss}
+      breakpoints={[0, 1]}
+      initialBreakpoint={1}
+      handle
+      className="filters-modal"
     >
-      {isLoading ? (
-        <AnalyticsLoadingSkeleton />
-      ) : (
-        <>
-          <div className="filters-toolbar">
+      <IonHeader>
+        <IonToolbar>
+          <IonButtons slot="start">
             <IonButton
-              fill="clear"
-              size="small"
-              onClick={() => reset()}
+              aria-label="Close filters"
+              onClick={onDismiss}
             >
-              Reset
+              <IonIcon
+                slot="icon-only"
+                icon={closeOutline}
+              />
             </IonButton>
-          </div>
+          </IonButtons>
+          <IonTitle>Filters</IonTitle>
+          <IonButtons slot="end">
+            <IonButton onClick={() => reset()}>Reset</IonButton>
+          </IonButtons>
+        </IonToolbar>
+      </IonHeader>
 
-          <DateRangeSection />
-          <PeopleSection />
-          <IndicatorsSection />
-          <TypeSection />
+      <IonContent className="ion-padding">
+        <DateRangeSection />
+        <PeopleSection />
+        <IndicatorsSection />
+        <TypeSection />
+      </IonContent>
 
-          <div className="filters-sticky-apply">
-            <IonButton
-              expand="block"
-              onClick={() => history.push('/patterns')}
-            >
-              Apply filters
-            </IonButton>
-          </div>
-        </>
-      )}
-    </Page>
+      <IonFooter>
+        <IonToolbar>
+          <IonButton
+            expand="block"
+            onClick={onDismiss}
+          >
+            Apply filters
+          </IonButton>
+        </IonToolbar>
+      </IonFooter>
+    </IonModal>
   )
 }

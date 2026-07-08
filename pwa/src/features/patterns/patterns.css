@@ -37,7 +37,14 @@
   margin: 0;
 }
 
-.patterns-delta-toggle {
+.patterns-filter-bar__actions {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.patterns-pill {
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
@@ -53,10 +60,20 @@
   cursor: pointer;
 }
 
-.patterns-delta-toggle--active {
+.patterns-pill--active {
   background: var(--ion-color-primary);
   border-color: var(--ion-color-primary);
   color: var(--ion-color-primary-contrast);
+}
+
+/* Filters bottom-sheet modal */
+.filters-modal {
+  --border-radius: 18px 18px 0 0;
+  --height: 92dvh;
+}
+
+.filters-modal::part(handle) {
+  background: rgba(36, 63, 66, 0.28);
 }
 
 .patterns-lede {
@@ -108,8 +125,72 @@
   opacity: 0.7;
 }
 
+.pattern-chart__crosshair {
+  stroke: var(--app-muted-text);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  opacity: 0.6;
+}
+
+/* Scan readout above the chart (date + current/scrubbed value). */
+.pattern-chart__readout {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+  min-height: 22px;
+}
+
+.pattern-chart__readout-date {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--app-muted-text);
+}
+
+.pattern-chart__readout-values {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.pattern-chart__readout-value {
+  font-size: 1.3rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
 .pattern-bar--empty {
   fill: var(--ion-color-step-200);
+}
+
+/* ---- Period selector (1M / 3M / 6M / 12M) ------------------------- */
+
+.pattern-periods {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--ion-color-step-50);
+}
+
+.pattern-period {
+  min-width: 42px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--app-muted-text);
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.pattern-period--active {
+  background: var(--ion-card-background);
+  color: var(--ion-color-primary);
+  box-shadow: var(--app-shadow-card);
 }
 
 /* ---- Segment spacing ---------------------------------------------- */
@@ -231,12 +312,10 @@
   font-size: 0.85em;
 }
 
-.filters-sticky-apply {
-  position: sticky;
-  bottom: 0;
-  margin: 18px -8px 0;
-  padding: 12px 8px calc(env(safe-area-inset-bottom, 0px) + 12px);
-  background: linear-gradient(180deg, rgba(248, 243, 250, 0), var(--ion-background-color) 40%);
+/* Remove the default toolbar hairline above the Apply footer. */
+.filters-modal ion-footer ion-toolbar {
+  --border-width: 0;
+  padding: 4px 12px calc(env(safe-area-inset-bottom, 0px) + 6px);
 }
 
 .pattern-chart__legend {
@@ -334,6 +413,19 @@
 
 .pattern-weekly .pattern-insight__detail {
   font-size: 1.08rem;
+}
+
+.pattern-trend-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.pattern-trend-head .pattern-calendar-heading {
+  margin: 0;
 }
 
 /* ---- Trend summary strip ------------------------------------------ */

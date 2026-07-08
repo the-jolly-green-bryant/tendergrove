@@ -11,7 +11,7 @@
  * reported separately as a "spike": one unusually hard day that bounced back).
  */
 
-import { daysBetween, mean, safeRound } from './dateUtils'
+import { addDaysToKey, daysBetween, mean, safeRound } from './dateUtils'
 import type {
   Confidence,
   DailyHouseholdScore,
@@ -38,6 +38,17 @@ export const SPIKE_DELTA = 22
 
 /** Well-being at/below this counts as "low" (used for spike / recovery). */
 export const LOW_WELLBEING = 40
+
+/**
+ * Drift detection (gradual, sustained trends). A slow slide over many days is
+ * noteworthy even when no single day jumps — and even if one good day interrupts
+ * it. We smooth first, then follow a run as long as it doesn't retrace by more
+ * than DRIFT_TOLERANCE from its running extreme.
+ */
+export const DRIFT_SMOOTH_WINDOW = 3
+export const DRIFT_MIN_DAYS = 5
+export const DRIFT_MIN_DELTA = 12
+export const DRIFT_TOLERANCE = 8
 
 /** |delta| → severity bands. */
 const SEVERITY_BANDS = { high: 30, moderate: 20 } as const
@@ -213,13 +224,130 @@ function detectSpikes(
 }
 
 /* ------------------------------------------------------------------ */
+/*  Drift: gradual, sustained trends                                   */
+/* ------------------------------------------------------------------ */
+
+/** Trailing rolling average of the scores, aligned to `scored`. */
+function smoothScores(scored: ScoredPoint[], window: number): number[] {
+  return scored.map((_, i) => {
+    const slice = scored.slice(Math.max(0, i - window + 1), i + 1)
+    return slice.reduce((sum, p) => sum + p.score, 0) / slice.length
+  })
+}
+
+/**
+ * Follow a run from `start` as long as the smoothed line keeps heading one way,
+ * allowing it to retrace up to DRIFT_TOLERANCE from its running extreme (so a
+ * single good/bad day doesn't end the run). Returns the last index of the run.
+ */
+function extendRun(smooth: number[], start: number): number {
+  let direction = 0
+  let extreme = smooth[start]
+  let end = start
+  for (let j = start + 1; j < smooth.length; j++) {
+    if (direction === 0) {
+      if (Math.abs(smooth[j] - smooth[start]) >= 1)
+        direction = Math.sign(smooth[j] - smooth[start])
+      extreme = smooth[j]
+      end = j
+      continue
+    }
+    const withinTolerance =
+      direction > 0
+        ? smooth[j] >= extreme - DRIFT_TOLERANCE
+        : smooth[j] <= extreme + DRIFT_TOLERANCE
+    if (!withinTolerance) break
+    extreme =
+      direction > 0 ? Math.max(extreme, smooth[j]) : Math.min(extreme, smooth[j])
+    end = j
+  }
+  return end
+}
+
+function driftInsight(
+  scored: ScoredPoint[],
+  startIndex: number,
+  endIndex: number,
+  smooth: number[],
+): TurningPointInsight {
+  const before = safeRound(smooth[startIndex])
+  const after = safeRound(smooth[endIndex])
+  const durationDays = daysBetween(scored[endIndex].date, scored[startIndex].date) + 1
+  const reachedEnd = endIndex === scored.length - 1
+  const type = classifySustained(before, after - before)
+  return {
+    date: scored[startIndex].date,
+    type,
+    beforeAverage: before,
+    afterAverage: after,
+    durationDays,
+    severity: severityFromDelta(after - before),
+    summary: buildSustainedSummary(type, before, after, durationDays, reachedEnd),
+  }
+}
+
+/** Detect gradual, sustained drift (e.g. a steady multi-day slide). */
+function detectDrift(scored: ScoredPoint[]): TurningPointInsight[] {
+  if (scored.length < DRIFT_MIN_DAYS) return []
+  const smooth = smoothScores(scored, DRIFT_SMOOTH_WINDOW)
+  const insights: TurningPointInsight[] = []
+  let i = 0
+  while (i < smooth.length - 1) {
+    const end = extendRun(smooth, i)
+    const net = smooth[end] - smooth[i]
+    const days = daysBetween(scored[end].date, scored[i].date) + 1
+    if (end > i && Math.abs(net) >= DRIFT_MIN_DELTA && days >= DRIFT_MIN_DAYS) {
+      insights.push(driftInsight(scored, i, end, smooth))
+      i = end
+    } else {
+      i += 1
+    }
+  }
+  return insights
+}
+
+/* ------------------------------------------------------------------ */
+/*  Merge helpers                                                      */
+/* ------------------------------------------------------------------ */
+
+/** Fewest days apart two sustained shifts must be to both be reported. */
+const MERGE_GAP_DAYS = 5
+
+/** Keep the strongest shift among any that start within a few days of each other. */
+function dedupeByProximity(items: TurningPointInsight[]): TurningPointInsight[] {
+  const byStrength = [...items].sort(
+    (a, b) =>
+      Math.abs(b.afterAverage - b.beforeAverage) -
+      Math.abs(a.afterAverage - a.beforeAverage),
+  )
+  const kept: TurningPointInsight[] = []
+  for (const item of byStrength) {
+    const clashes = kept.some(
+      (k) => Math.abs(daysBetween(item.date, k.date)) < MERGE_GAP_DAYS,
+    )
+    if (!clashes) kept.push(item)
+  }
+  return kept
+}
+
+/** Every calendar day spanned by the given sustained shifts. */
+function coveredDates(items: TurningPointInsight[]): Set<DateKey> {
+  const set = new Set<DateKey>()
+  for (const item of items) {
+    for (let d = 0; d < item.durationDays; d++) set.add(addDaysToKey(item.date, d))
+  }
+  return set
+}
+
+/* ------------------------------------------------------------------ */
 /*  Public entry point                                                 */
 /* ------------------------------------------------------------------ */
 
 /**
- * Find turning points in the household well-being series. Returns them in
- * chronological order. Sustained shifts take priority; spikes are only reported
- * for days not already inside a sustained change.
+ * Find turning points in the household well-being series. We report both sharp
+ * shifts and gradual drift (a steady multi-day slide counts, even if one day
+ * bucked it), deduped so we don't double-report the same period. Spikes are
+ * only reported for days not already inside a sustained change.
  */
 export function findTurningPoints(
   householdDailyScores: DailyHouseholdScore[],
@@ -228,9 +356,11 @@ export function findTurningPoints(
     .filter((d): d is DailyHouseholdScore & { score: number } => d.score !== null)
     .map((d) => ({ date: d.date, score: d.score }))
 
-  const sustained = detectSustained(scored)
-  const covered = new Set(sustained.map((s) => s.date))
-  const spikes = detectSpikes(scored, covered)
+  const sustained = dedupeByProximity([
+    ...detectSustained(scored),
+    ...detectDrift(scored),
+  ])
+  const spikes = detectSpikes(scored, coveredDates(sustained))
 
   return [...sustained, ...spikes].sort((a, b) => a.date.localeCompare(b.date))
 }

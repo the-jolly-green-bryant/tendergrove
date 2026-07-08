@@ -15,13 +15,12 @@ import { PersonAvatar } from '../../components/PersonAvatar'
 import { buildPersonView, type CorrelationInsight, type TrendResult } from './analytics'
 import { CorrelationCard } from './components/CorrelationCard'
 import { PatternsEmptyState } from './components/PatternsEmptyState'
-import { TrendChart, type ChartSeries } from './components/TrendChart'
+import { PeriodSelector } from './components/PeriodSelector'
+import { TrendChart } from './components/TrendChart'
+import { buildTrendChart, trendLineColor } from './components/trendSeries'
 import { usePatternsAnalytics } from './usePatternsAnalytics'
 
 import './patterns.css'
-
-/** Recent days to show on the compact trend chart. */
-const TREND_DAYS = 14
 
 /** Most correlations to surface inline before linking to the full page. */
 const MAX_INLINE_CORRELATIONS = 3
@@ -32,27 +31,6 @@ interface ScopedData {
   trend: TrendResult
   correlations: CorrelationInsight[]
   scoredDays: number
-}
-
-/** Build the chart series (daily line + rolling average) from a trend. */
-function trendSeries(trend: TrendResult): { dates: string[]; series: ChartSeries[] } {
-  const points = trend.points.slice(-TREND_DAYS)
-  return {
-    dates: points.map((p) => p.date),
-    series: [
-      {
-        label: 'Daily well-being',
-        color: 'var(--ion-color-primary)',
-        values: points.map((p) => p.score),
-      },
-      {
-        label: '7-day average',
-        color: 'var(--ion-color-secondary-shade)',
-        values: points.map((p) => p.rollingAverage),
-        dashed: true,
-      },
-    ],
-  }
 }
 
 /** A short, gentle sentence describing the trend direction. */
@@ -75,9 +53,13 @@ function trendText(trend: TrendResult): string {
 function PatternsBody({
   data,
   chartTitle,
+  rangeDays,
+  onRangeChange,
 }: {
   readonly data: ScopedData
   readonly chartTitle: string
+  readonly rangeDays: number
+  readonly onRangeChange: (days: number) => void
 }): React.JSX.Element {
   const history = useHistory()
 
@@ -90,17 +72,28 @@ function PatternsBody({
     )
   }
 
-  const { dates, series } = trendSeries(data.trend)
+  const chart = buildTrendChart(
+    data.trend.points,
+    false,
+    trendLineColor(data.trend.direction),
+  )
   const correlations = data.correlations.slice(0, MAX_INLINE_CORRELATIONS)
 
   return (
     <>
-      <h3 className="pattern-calendar-heading">{chartTitle}</h3>
+      <div className="pattern-trend-head">
+        <h3 className="pattern-calendar-heading">{chartTitle}</h3>
+        <PeriodSelector
+          value={rangeDays}
+          onChange={onRangeChange}
+        />
+      </div>
       <IonCard>
         <IonCardContent>
           <TrendChart
-            dates={dates}
-            series={series}
+            dates={chart.dates}
+            series={chart.series}
+            clampTo={chart.clampTo}
           />
         </IonCardContent>
       </IonCard>
@@ -143,8 +136,9 @@ export function PersonPatternsSection({
   readonly personName: string
   readonly personAvatarUrl?: string | null
 }): React.JSX.Element | null {
-  const { result, isLoading, hasError } = usePatternsAnalytics()
   const [scope, setScope] = useState<Scope>('person')
+  const [rangeDays, setRangeDays] = useState(30)
+  const { result, isLoading, hasError } = usePatternsAnalytics(rangeDays)
 
   // The main Person page already surfaces loading/errors; stay quiet here.
   if (isLoading || hasError || !result) return null
@@ -204,6 +198,8 @@ export function PersonPatternsSection({
       <PatternsBody
         data={data}
         chartTitle={chartTitle}
+        rangeDays={rangeDays}
+        onRangeChange={setRangeDays}
       />
     </section>
   )

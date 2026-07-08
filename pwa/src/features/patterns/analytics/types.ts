@@ -291,6 +291,23 @@ export interface PatternInsight {
   confidence: Confidence
 }
 
+/** A notable recent movement worth mentioning in the weekly observation. */
+export interface MovementFact {
+  kind: 'incidents-up' | 'harder-since' | 'looking-up'
+  /** Friendly date the movement is anchored to (e.g. "Wed, May 7"). */
+  dateLabel?: string
+}
+
+/** The structured facts a weekly observation sentence is composed from. */
+export interface WeeklyFacts {
+  direction: TrendDirection
+  delta: number | null
+  currentAverage: number | null
+  /** null = household; otherwise the person the observation is about. */
+  subjectName: string | null
+  movement: MovementFact | null
+}
+
 /** The compact overview shown at the top of the Patterns section. */
 export interface OverviewSummary {
   /** The single headline insight for the week. */

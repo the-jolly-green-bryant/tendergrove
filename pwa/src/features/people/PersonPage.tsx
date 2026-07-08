@@ -160,6 +160,7 @@ function usePersonPageActions(
   personId: string | undefined,
 ) {
   const router = useIonRouter()
+  const location = useLocation()
   const [presentActionSheet] = useIonActionSheet()
   const [presentAlert] = useIonAlert()
   const archiveMutation = useArchivePerson()
@@ -218,10 +219,13 @@ function usePersonPageActions(
     })
   }
 
-  return {
-    startCheckIn: () => router.push(`/person/${personId}/check-in`, 'forward'),
-    showMoreOptions,
+  const startCheckIn = () => {
+    // Return to the exact page (incl. any ?viewDate) after the check-in closes.
+    const returnTo = encodeURIComponent(location.pathname + location.search)
+    router.push(`/person/${personId}/check-in?returnTo=${returnTo}`, 'forward')
   }
+
+  return { startCheckIn, showMoreOptions }
 }
 
 function formatUpdatedLabel(checkIn: CheckIn): string | null {

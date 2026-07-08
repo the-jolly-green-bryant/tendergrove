@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 
 import { formatDayLabel } from '../analytics/dateUtils'
 import type { DateKey } from '../analytics'
@@ -239,7 +239,231 @@ function describeSeries(series: ChartSeries[]): string {
     .join('; ')
 }
 
-/** A small, accessible well-being line chart. */
+/** Index of the last non-null value in a series, or -1. */
+function lastValueIndex(values: (number | null)[]): number {
+  for (let i = values.length - 1; i >= 0; i--) {
+    if (values[i] !== null) return i
+  }
+  return -1
+}
+
+/** The x-index the readout/current marker anchors to by default (latest data). */
+function currentIndex(series: ChartSeries[]): number {
+  const primary = series.find((s) => !s.dashed) ?? series[0]
+  const index = primary ? lastValueIndex(primary.values) : -1
+  return index < 0 ? 0 : index
+}
+
+/** Track a scrub position from pointer input over the chart. */
+function useScrub(count: number) {
+  const [activeIndex, setActiveIndex] = useState<number | null>(null)
+  const update = (event: React.PointerEvent<SVGSVGElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect()
+    if (rect.width === 0 || count <= 1) return
+    const ratio = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width))
+    setActiveIndex(Math.round(ratio * (count - 1)))
+  }
+  return { activeIndex, update, clear: () => setActiveIndex(null) }
+}
+
+/** Emphasised ring on each solid series' latest point (the "current" value). */
+function CurrentMarkers({
+  series,
+  domain,
+}: {
+  readonly series: ChartSeries[]
+  readonly domain: Domain
+}): React.JSX.Element {
+  return (
+    <>
+      {series
+        .filter((s) => !s.dashed)
+        .map((s) => {
+          const index = lastValueIndex(s.values)
+          if (index < 0) return null
+          return (
+            <circle
+              key={s.label}
+              cx={xFor(index, s.values.length)}
+              cy={yFor(s.values[index] as number, domain)}
+              r={4.5}
+              fill="#fff"
+              stroke={s.color}
+              strokeWidth={2.5}
+            />
+          )
+        })}
+    </>
+  )
+}
+
+/** Vertical scan line + dots at the scrubbed index. */
+function Crosshair({
+  index,
+  series,
+  domain,
+  count,
+}: {
+  readonly index: number
+  readonly series: ChartSeries[]
+  readonly domain: Domain
+  readonly count: number
+}): React.JSX.Element {
+  const x = xFor(index, count)
+  return (
+    <g>
+      <line
+        x1={x}
+        x2={x}
+        y1={PAD_T}
+        y2={VIEW_H - PAD_B}
+        className="pattern-chart__crosshair"
+      />
+      {series.map((s) => {
+        const value = s.values[index]
+        if (value === null) return null
+        return (
+          <circle
+            key={s.label}
+            cx={x}
+            cy={yFor(value, domain)}
+            r={4}
+            fill={s.color}
+            stroke="#fff"
+            strokeWidth={1.5}
+          />
+        )
+      })}
+    </g>
+  )
+}
+
+/** A readout above the chart showing the date + value(s) at the active index. */
+function Readout({
+  dates,
+  series,
+  index,
+}: {
+  readonly dates: DateKey[]
+  readonly series: ChartSeries[]
+  readonly index: number
+}): React.JSX.Element {
+  const solid = series.filter((s) => !s.dashed)
+  return (
+    <div
+      className="pattern-chart__readout"
+      aria-hidden="true"
+    >
+      <span className="pattern-chart__readout-date">
+        {dates[index] ? formatDayLabel(dates[index]) : ''}
+      </span>
+      <span className="pattern-chart__readout-values">
+        {solid.map((s) => {
+          const value = s.values[index]
+          return (
+            <span
+              key={s.label}
+              className="pattern-chart__readout-value"
+              style={{ color: s.color }}
+            >
+              {value === null ? '—' : Math.round(value)}
+            </span>
+          )
+        })}
+      </span>
+    </div>
+  )
+}
+
+interface CanvasProps {
+  readonly dates: DateKey[]
+  readonly series: ChartSeries[]
+  readonly domain: Domain
+  readonly baseline?: number
+  readonly highlightRect: { x: number; width: number } | null
+  readonly activeIndex: number | null
+  readonly hasData: boolean
+}
+
+/** The plotted SVG: grid, baseline, lines, axis, current marker and crosshair. */
+function ChartCanvas(props: CanvasProps): React.JSX.Element {
+  const { dates, series, domain, baseline, highlightRect, activeIndex, hasData } = props
+  const showBaseline =
+    baseline !== undefined && baseline > domain.min && baseline < domain.max
+  return (
+    <>
+      {highlightRect && (
+        <rect
+          x={highlightRect.x}
+          y={PAD_T}
+          width={highlightRect.width}
+          height={VIEW_H - PAD_T - PAD_B}
+          className="pattern-chart__highlight"
+        />
+      )}
+      <ChartGrid domain={domain} />
+      {showBaseline && (
+        <line
+          x1={PAD_L}
+          x2={VIEW_W - PAD_R}
+          y1={yFor(baseline as number, domain)}
+          y2={yFor(baseline as number, domain)}
+          className="pattern-chart__baseline"
+        />
+      )}
+      {series.map((s) => (
+        <SeriesLine
+          key={s.label}
+          series={s}
+          domain={domain}
+        />
+      ))}
+      <XAxis dates={dates} />
+      {hasData && (
+        <CurrentMarkers
+          series={series}
+          domain={domain}
+        />
+      )}
+      {hasData && activeIndex !== null && (
+        <Crosshair
+          index={activeIndex}
+          series={series}
+          domain={domain}
+          count={dates.length}
+        />
+      )}
+    </>
+  )
+}
+
+/** The legend swatches beneath the chart. */
+function ChartLegend({
+  series,
+}: {
+  readonly series: ChartSeries[]
+}): React.JSX.Element {
+  return (
+    <figcaption className="pattern-chart__legend">
+      {series.map((s) => (
+        <span
+          key={s.label}
+          className="pattern-chart__legend-item"
+        >
+          <span
+            className="pattern-chart__legend-swatch"
+            style={{ background: s.color }}
+            aria-hidden="true"
+          />
+          {s.label}
+        </span>
+      ))}
+    </figcaption>
+  )
+}
+
+/** A small, accessible well-being line chart with scrub-to-read and a
+ *  highlighted current value (esomarkettracker-style). */
 export function TrendChart({
   dates,
   series,
@@ -249,8 +473,9 @@ export function TrendChart({
 }: TrendChartProps): React.JSX.Element {
   const count = dates.length
   const domain = useMemo(() => computeDomain(series, clampTo), [series, clampTo])
-  const showBaseline =
-    baseline !== undefined && baseline > domain.min && baseline < domain.max
+  const hasData = series.some((s) => s.values.some((v) => v !== null))
+  const { activeIndex, update, clear } = useScrub(count)
+  const readoutIndex = activeIndex ?? currentIndex(series)
 
   const highlightRect = useMemo(() => {
     if (!highlight) return null
@@ -264,57 +489,38 @@ export function TrendChart({
 
   return (
     <figure className="pattern-chart">
+      {hasData && (
+        <Readout
+          dates={dates}
+          series={series}
+          index={readoutIndex}
+        />
+      )}
       <svg
         viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
         className="pattern-chart__svg"
         role="img"
         aria-label={`Well-being trend chart. ${describeSeries(series)}.`}
         preserveAspectRatio="xMidYMid meet"
+        style={{ touchAction: 'pan-y' }}
+        onPointerDown={update}
+        onPointerMove={update}
+        onPointerUp={clear}
+        onPointerLeave={clear}
+        onPointerCancel={clear}
       >
-        {highlightRect && (
-          <rect
-            x={highlightRect.x}
-            y={PAD_T}
-            width={highlightRect.width}
-            height={VIEW_H - PAD_T - PAD_B}
-            className="pattern-chart__highlight"
-          />
-        )}
-        <ChartGrid domain={domain} />
-        {showBaseline && (
-          <line
-            x1={PAD_L}
-            x2={VIEW_W - PAD_R}
-            y1={yFor(baseline!, domain)}
-            y2={yFor(baseline!, domain)}
-            className="pattern-chart__baseline"
-          />
-        )}
-        {series.map((s) => (
-          <SeriesLine
-            key={s.label}
-            series={s}
-            domain={domain}
-          />
-        ))}
-        <XAxis dates={dates} />
+        <ChartCanvas
+          dates={dates}
+          series={series}
+          domain={domain}
+          baseline={baseline}
+          highlightRect={highlightRect}
+          activeIndex={activeIndex}
+          hasData={hasData}
+        />
       </svg>
 
-      <figcaption className="pattern-chart__legend">
-        {series.map((s) => (
-          <span
-            key={s.label}
-            className="pattern-chart__legend-item"
-          >
-            <span
-              className="pattern-chart__legend-swatch"
-              style={{ background: s.color }}
-              aria-hidden="true"
-            />
-            {s.label}
-          </span>
-        ))}
-      </figcaption>
+      <ChartLegend series={series} />
     </figure>
   )
 }

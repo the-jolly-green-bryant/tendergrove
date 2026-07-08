@@ -100,7 +100,7 @@ export function buildPersonView(
       householdDailyScores: householdShaped,
       turningPoints,
       correlations,
-      subjectLabel: `${personName}'s`,
+      subjectName: personName,
     }),
     scoredDays: dailyScores.filter((d) => d.score !== null).length,
   }
