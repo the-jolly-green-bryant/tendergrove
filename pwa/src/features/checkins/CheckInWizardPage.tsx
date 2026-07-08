@@ -32,6 +32,7 @@ import { useLifeEventMutations } from '../people/events/useLifeEventMutations'
 import { useIndicators } from '../people/indicators/useIndicators'
 import { parseAnswers } from '../people/checkin/checkInUtils'
 import { useCheckInMutations } from '../people/checkin/useCheckInMutations'
+import { PersonCheckInButton } from '../people/PersonPage'
 
 function isSameDay(occurredAt: string, date: Date): boolean {
   const d = new Date(occurredAt)
@@ -107,10 +108,7 @@ function ChecklistGroup({
         />
         {title}
       </h2>
-      <IonList
-        inset
-        className="check-in__list"
-      >
+      <IonList className="check-in__list">
         {items.map((item) => (
           <IonItem
             key={item.id}
@@ -173,10 +171,7 @@ function CheckInNotes({
   return (
     <>
       <h2 className="check-in__group-title">Notes</h2>
-      <IonList
-        inset
-        className="check-in__list check-in__list--notes"
-      >
+      <IonList className="check-in__list check-in__list--notes">
         <IonItem
           lines="none"
           className="check-in__item check-in__item--notes"
@@ -585,10 +580,7 @@ function CheckboxList({
 }) {
   if (items.length === 0) return null
   return (
-    <IonList
-      inset
-      className="check-in__list"
-    >
+    <IonList className="check-in__list">
       {items.map((item) => (
         <IonItem
           key={item.id}
@@ -698,7 +690,12 @@ function WizardStep({
 
   return (
     <>
-      <WizardHero person={step.person} />
+      <PersonCheckInButton
+        person={step.person}
+        status={undefined}
+        title={formatDateLabel(selectedDate)}
+        onClick={undefined}
+      />
       {nothingToTrack ? (
         <EmptyIndicatorsMessage personId={personId} />
       ) : (
@@ -809,14 +806,12 @@ export function CheckInWizardPage({
       onBackClick={routeModal.isRouteModal ? () => routeModal.dismiss() : undefined}
       className={`check-in-wizard-content${isTimeTravel ? ' time-travel-surface' : ''}`}
     >
-      {isTimeTravel ? (
+      {isTimeTravel && (
         <PastDataNotice
           selectedDateLabel={formatDateLabel(selectedDate)}
           onReturnToToday={() => setSelectedDate(new Date())}
           className="past-data-notice--page"
         />
-      ) : (
-        <p className="wizard-date-badge">{formatDateLabel(selectedDate)}</p>
       )}
 
       {isLoadingPeople && <LoadingState />}

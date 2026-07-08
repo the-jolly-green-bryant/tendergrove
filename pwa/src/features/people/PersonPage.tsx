@@ -340,7 +340,7 @@ function CheckInSummaryList({
   )
 }
 
-function PersonCheckInButton({
+export function PersonCheckInButton({
   person,
   status,
   emoji,
@@ -348,16 +348,16 @@ function PersonCheckInButton({
   onClick,
 }: {
   readonly person: Person
-  readonly status: PersonStatus
+  readonly status?: PersonStatus
   readonly emoji?: string | null
   readonly title: string
-  readonly onClick: () => void
+  readonly onClick?: () => void
 }) {
   return (
     <button
       type="button"
       className="person-checkin-button"
-      onClick={onClick}
+      onClick={onClick ?? (() => {})}
     >
       <div className="person-checkin-button__art avatar-emoji-wrapper">
         <PersonAvatar
@@ -372,19 +372,24 @@ function PersonCheckInButton({
         <span>
           {person.displayName} · {roleLabels[person.role as PersonRole] ?? 'Person'}
         </span>
+
         <strong>{title}</strong>
-        <span
-          className={`person-checkin-button__status person-status--${status.color}`}
-        >
-          <span className="person-status__dot" />
-          {status.label}
-        </span>
+        {status && (
+          <span
+            className={`person-checkin-button__status person-status--${status.color}`}
+          >
+            <span className="person-status__dot" />
+            {status.label}
+          </span>
+        )}
       </span>
 
-      <IonIcon
-        icon={chevronForwardOutline}
-        className="person-checkin-button__chevron"
-      />
+      {onClick && (
+        <IonIcon
+          icon={chevronForwardOutline}
+          className="person-checkin-button__chevron"
+        />
+      )}
     </button>
   )
 }
