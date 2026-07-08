@@ -73,12 +73,14 @@ interface ChecklistItem {
   id: string
   label: string
 }
+
 type WizardStepProps = {
   readonly personId: string
   readonly selectedDate: Date
   readonly hasNext: boolean
   readonly onDone: () => void
   readonly onSkip: () => void
+  readonly step: StepState
 }
 
 function returnPathFromSearch(search: string): string | undefined {
@@ -645,15 +647,7 @@ function CheckInSections({
   )
 }
 
-function WizardStep({
-  personId,
-  selectedDate,
-  hasNext,
-  onDone,
-  onSkip,
-}: WizardStepProps) {
-  const step = useWizardStepState({ personId, selectedDate })
-
+function WizardStep({ personId, selectedDate, step }: WizardStepProps) {
   const challenges = indicatorItems(
     step.indicators.filter((i) => i.polarity === 'undesired'),
   )
@@ -757,7 +751,6 @@ export function CheckInWizardPage({
   const isLoadingPeople = !personId && people.isLoading
   const isTimeTravel = formatDateLabel(selectedDate) !== 'Today'
   const title = total > 1 ? `Check-In (${currentIndex + 1} of ${total})` : 'Check-In'
-  const backHref = returnPath ?? (personId ? `/person/${personId}` : '/dashboard')
   const advance = useWizardAdvance({
     activePeopleLength: activePeople.length,
     currentIndex,
@@ -768,7 +761,6 @@ export function CheckInWizardPage({
     setCurrentIndex,
   })
 
-  const [reviewing, setReviewing] = useState(false)
   const step = useWizardStepState({ personId, selectedDate })
   const nothingToTrack = step.indicators.length === 0 && step.events.length === 0
   const onSave = async () => {
@@ -784,9 +776,7 @@ export function CheckInWizardPage({
           </IonButtons>
 
           <IonButtons slot="end">
-            <IonButton onClick={reviewing ? advance : onSave}>
-              {step.existing ? 'Update' : 'Save'}
-            </IonButton>
+            <IonButton onClick={onSave}>{step.existing ? 'Update' : 'Save'}</IonButton>
           </IonButtons>
 
           <IonTitle>{title}</IonTitle>
@@ -817,18 +807,10 @@ export function CheckInWizardPage({
             hasNext={currentIndex < activePeople.length - 1}
             onDone={advance}
             onSkip={advance}
+            step={step}
           />
         )}
       </IonContent>
-
-      {/*<WizardActions*/}
-      {/*  existing={step.existing}*/}
-      {/*  saving={step.saving}*/}
-      {/*  canSave={!nothingToTrack}*/}
-      {/*  hasNext={currentIndex < activePeople.length - 1}*/}
-      {/*  onSkip={advance}*/}
-      {/*  onSave={onSave}*/}
-      {/*/>*/}
     </>
   )
 }
