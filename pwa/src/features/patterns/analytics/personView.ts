@@ -16,8 +16,10 @@ import type {
   CorrelationInsight,
   DailyHouseholdScore,
   DailyPersonScore,
+  GeneratedInsight,
   OverviewSummary,
   RelationshipInsight,
+  TimingAnalysis,
   TrendResult,
   TurningPointInsight,
 } from './types'
@@ -120,6 +122,8 @@ export interface ScopedPatternsView {
   relationships: RelationshipInsight[]
   turningPoints: TurningPointInsight[]
   overview: OverviewSummary
+  timing: TimingAnalysis
+  generatedInsights: GeneratedInsight[]
   scoredDays: number
 }
 
@@ -142,6 +146,8 @@ export function buildScopedView(
       relationships: result.relationships,
       turningPoints: result.turningPoints,
       overview: result.overview,
+      timing: result.timing,
+      generatedInsights: result.generatedInsights,
       scoredDays: result.dataQuality.scoredDays,
     }
   }
@@ -156,6 +162,8 @@ export function buildScopedView(
     relationships: view.relationships,
     turningPoints: view.turningPoints,
     overview: view.overview,
+    timing: result.personTiming[personId],
+    generatedInsights: result.personGeneratedInsights[personId] ?? [],
     scoredDays: view.scoredDays,
   }
 }

@@ -36,14 +36,13 @@ export function PatternsFilterBar({
   readonly showDeltaToggle?: boolean
 }): React.JSX.Element | null {
   const { data } = usePatternsData()
-  const { selectedPersonId, setPerson, showDelta, toggleDelta } =
-    usePatternsFilterStore()
+  const personIds = usePatternsFilterStore((s) => s.personIds)
+  const setPerson = usePatternsFilterStore((s) => s.setPerson)
+  const showDelta = usePatternsFilterStore((s) => s.showDelta)
+  const toggleDelta = usePatternsFilterStore((s) => s.toggleDelta)
 
   const people = useMemo(() => toFilterablePeople(data), [data])
-  const selectedPeople = useMemo(
-    () => (selectedPersonId ? new Set([selectedPersonId]) : new Set<string>()),
-    [selectedPersonId],
-  )
+  const selectedPeople = useMemo(() => new Set(personIds), [personIds])
 
   // Nothing to filter with fewer than two people.
   if (people.length < 2) return null

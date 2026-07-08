@@ -28,9 +28,11 @@
 import { buildCalendar } from './calendarHeatmap'
 import { findCorrelations } from './correlations'
 import { buildDateWindow, formatRangeLabel } from './dateUtils'
+import { buildGeneratedInsights } from './generatedInsights'
 import { findRelationships } from './relationships'
 import { buildDailyScores } from './scoring'
 import { buildOverview } from './summaries'
+import { buildTiming } from './timing'
 import { computeTrend, type ScoredDay } from './trends'
 import { findTurningPoints } from './turningPoints'
 import type {
@@ -39,6 +41,7 @@ import type {
   AnalyticsPersonRef,
   AnalyticsResult,
   DataQuality,
+  GeneratedInsight,
   Polarity,
   PersonRole,
   TrendResult,
@@ -52,6 +55,8 @@ export { findCorrelations } from './correlations'
 export { findRelationships, pearson } from './relationships'
 export { findTurningPoints } from './turningPoints'
 export { buildOverview } from './summaries'
+export { buildTiming, buildDayOfWeek, buildTimeOfDay } from './timing'
+export { buildGeneratedInsights } from './generatedInsights'
 export {
   buildPersonView,
   buildScopedView,
@@ -276,6 +281,24 @@ export function runAnalytics(input: AnalyticsInput): AnalyticsResult {
     correlations,
   })
 
+  const timing = buildTiming(
+    input.people,
+    personDailyScores,
+    toScoredDays(householdDailyScores),
+  )
+  const generatedInsights = buildGeneratedInsights({
+    timing: timing.household,
+    trend: householdTrend,
+  })
+  const personGeneratedInsights: Record<string, GeneratedInsight[]> = {}
+  for (const person of input.people) {
+    personGeneratedInsights[person.id] = buildGeneratedInsights({
+      timing: timing.perPerson[person.id],
+      trend: personTrends[person.id],
+      personName: person.displayName,
+    })
+  }
+
   const scoredDays = householdDailyScores.filter((d) => d.score !== null).length
   const peopleWithData = input.people.filter((p) =>
     personDailyScores[p.id].some((d) => d.hasData),
@@ -294,6 +317,10 @@ export function runAnalytics(input: AnalyticsInput): AnalyticsResult {
     relationships,
     turningPoints,
     overview,
+    timing: timing.household,
+    personTiming: timing.perPerson,
+    generatedInsights,
+    personGeneratedInsights,
   }
 }
 

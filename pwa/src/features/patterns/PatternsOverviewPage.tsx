@@ -1,10 +1,14 @@
 import { IonCard, IonCardContent, IonIcon } from '@ionic/react'
 import {
+  bulbOutline,
   calendarNumberOutline,
   chevronForwardOutline,
   flagOutline,
   gitNetworkOutline,
+  gridOutline,
   heartOutline,
+  optionsOutline,
+  pulseOutline,
   removeOutline,
   trendingDownOutline,
   trendingUpOutline,
@@ -36,6 +40,24 @@ const DIRECTION_ICON: Record<TrendDirection, string> = {
 
 const DEEPER_PATTERNS = [
   {
+    href: '/patterns/insights',
+    icon: bulbOutline,
+    title: 'Insights',
+    sub: 'Plain-language takeaways to act on',
+  },
+  {
+    href: '/patterns/trends',
+    icon: pulseOutline,
+    title: 'Trends',
+    sub: 'When things tend to happen',
+  },
+  {
+    href: '/patterns/heatmap',
+    icon: gridOutline,
+    title: 'Patterns heatmap',
+    sub: 'Likelihood by day of the week',
+  },
+  {
     href: '/patterns/calendar',
     icon: calendarNumberOutline,
     title: 'Calendar heatmap',
@@ -45,7 +67,7 @@ const DEEPER_PATTERNS = [
     href: '/patterns/correlations',
     icon: gitNetworkOutline,
     title: 'Correlations',
-    sub: 'See which indicators appear connected',
+    sub: 'Which indicators appear connected',
   },
   {
     href: '/patterns/relationships',
@@ -58,6 +80,12 @@ const DEEPER_PATTERNS = [
     icon: flagOutline,
     title: 'Turning points',
     sub: 'Big shifts and lasting changes',
+  },
+  {
+    href: '/patterns/filters',
+    icon: optionsOutline,
+    title: 'Filters',
+    sub: 'Focus by date range, person, or type',
   },
 ] as const
 

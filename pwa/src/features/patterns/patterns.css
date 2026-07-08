@@ -108,6 +108,137 @@
   opacity: 0.7;
 }
 
+.pattern-bar--empty {
+  fill: var(--ion-color-step-200);
+}
+
+/* ---- Segment spacing ---------------------------------------------- */
+
+.pattern-segment {
+  margin-bottom: 16px;
+}
+
+/* ---- Heatmap grid ------------------------------------------------- */
+
+.pattern-heatmap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pattern-heatmap__row {
+  display: grid;
+  grid-template-columns: minmax(68px, 1.4fr) repeat(7, 1fr);
+  gap: 5px;
+  align-items: center;
+}
+
+.pattern-heatmap__colhead {
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--app-muted-text);
+}
+
+.pattern-heatmap__rowlabel {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ion-text-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pattern-heatmap__cell {
+  min-height: 40px;
+  border: 0;
+  border-radius: 8px;
+  color: #2c1b1a;
+  font-size: 0.72rem;
+  font-weight: 650;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pattern-heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0 4px;
+  font-size: 0.8rem;
+  color: var(--app-muted-text);
+}
+
+.pattern-heatmap-legend__scale {
+  flex: 1 1 auto;
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(226, 89, 75, 0.12),
+    rgba(226, 89, 75, 0.85)
+  );
+}
+
+.pattern-heatmap-legend__scale--green {
+  background: linear-gradient(90deg, rgba(78, 157, 94, 0.12), rgba(78, 157, 94, 0.85));
+}
+
+.pattern-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ---- Correlation strength value ----------------------------------- */
+
+.pattern-corr-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pattern-corr-value--pos {
+  color: var(--ion-color-success-shade);
+}
+
+.pattern-corr-value--neg {
+  color: var(--ion-color-danger-shade);
+}
+
+/* ---- Filters page ------------------------------------------------- */
+
+.filters-toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.filters-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filters-note {
+  display: block;
+  margin: 8px 2px 0;
+}
+
+.filters-indicator-owner {
+  color: var(--app-muted-text);
+  font-size: 0.85em;
+}
+
+.filters-sticky-apply {
+  position: sticky;
+  bottom: 0;
+  margin: 18px -8px 0;
+  padding: 12px 8px calc(env(safe-area-inset-bottom, 0px) + 12px);
+  background: linear-gradient(180deg, rgba(248, 243, 250, 0), var(--ion-background-color) 40%);
+}
+
 .pattern-chart__legend {
   display: flex;
   flex-wrap: wrap;

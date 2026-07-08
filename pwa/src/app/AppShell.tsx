@@ -14,6 +14,10 @@ import CalendarHeatmapPage from '../features/patterns/CalendarHeatmapPage'
 import CorrelationsPage from '../features/patterns/CorrelationsPage'
 import RelationshipsPage from '../features/patterns/RelationshipsPage'
 import TurningPointsPage from '../features/patterns/TurningPointsPage'
+import TrendsPage from '../features/patterns/TrendsPage'
+import HeatmapPage from '../features/patterns/HeatmapPage'
+import PatternInsightsPage from '../features/patterns/PatternInsightsPage'
+import FiltersPage from '../features/patterns/FiltersPage'
 import PersonFormPage from '../features/people/PersonFormPage'
 import PersonPage from '../features/people/PersonPage'
 import ManageIndicatorsPage from '../features/people/indicators/ManageIndicatorsPage'
@@ -64,6 +68,10 @@ const appRoutes = [
   { path: '/patterns/correlations', component: CorrelationsPage },
   { path: '/patterns/relationships', component: RelationshipsPage },
   { path: '/patterns/turning-points', component: TurningPointsPage },
+  { path: '/patterns/trends', component: TrendsPage },
+  { path: '/patterns/heatmap', component: HeatmapPage },
+  { path: '/patterns/insights', component: PatternInsightsPage },
+  { path: '/patterns/filters', component: FiltersPage },
 ]
 
 const modalRoutes = [

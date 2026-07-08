@@ -307,6 +307,90 @@ export interface OverviewSummary {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Timing: day-of-week, time-of-day, heatmap, indicator↔outcome       */
+/* ------------------------------------------------------------------ */
+
+/** Likelihood of a challenging / positive day for one weekday. */
+export interface DayOfWeekBucket {
+  /** 0 = Sunday … 6 = Saturday. */
+  weekday: number
+  label: string
+  /** % of scored days of this weekday that were challenging, or null (no data). */
+  challengingRate: number | null
+  /** % of scored days of this weekday that were positive, or null (no data). */
+  positiveRate: number | null
+  /** Scored days of this weekday in the window. */
+  sampleSize: number
+}
+
+/** How incidents distribute across the hours of the day. */
+export interface TimeOfDayBucket {
+  /** 0–23. */
+  hour: number
+  count: number
+  /** Share of all incidents that fell in this hour (0–100). */
+  percentage: number
+}
+
+/** One indicator × weekday cell in the heatmap. */
+export interface HeatmapCell {
+  indicatorId: string
+  label: string
+  personName: string
+  polarity: Polarity
+  weekday: number
+  /** % of that weekday's check-ins where the indicator occurred, or null. */
+  probability: number | null
+  sampleSize: number
+}
+
+/**
+ * A signed relationship between one tracked indicator and overall well-being.
+ * Positive means the indicator tends to show up on better days; negative, on
+ * harder ones. This is correlation, never causation.
+ */
+export interface IndicatorOutcomeCorrelation {
+  indicatorId: string
+  label: string
+  personName: string
+  polarity: Polarity
+  /** Pearson correlation with the daily well-being score, -1..1. */
+  correlation: number
+  confidence: Confidence
+  sampleSize: number
+  /** Non-causal, human-readable summary. */
+  summary: string
+}
+
+/** Timing analytics for a scope (household or one person). */
+export interface TimingAnalysis {
+  dayOfWeek: DayOfWeekBucket[]
+  timeOfDay: TimeOfDayBucket[]
+  totalIncidents: number
+  heatmap: HeatmapCell[]
+  indicatorCorrelations: IndicatorOutcomeCorrelation[]
+}
+
+/* ------------------------------------------------------------------ */
+/*  Generated insights                                                 */
+/* ------------------------------------------------------------------ */
+
+/** Icon hint for a generated insight card. */
+export type InsightIcon = 'moon' | 'calendar' | 'leaf' | 'heart' | 'sparkle' | 'alert'
+
+/** A plain-language, generated conclusion for the Insights page. */
+export interface GeneratedInsight {
+  id: string
+  title: string
+  description: string
+  /** Lower sorts first (most actionable first). */
+  priority: number
+  icon: InsightIcon
+  tone: InsightTone
+  confidence: Confidence
+}
+
+/* ------------------------------------------------------------------ */
 /*  Data quality                                                       */
 /* ------------------------------------------------------------------ */
 
@@ -349,4 +433,12 @@ export interface AnalyticsResult {
   relationships: RelationshipInsight[]
   turningPoints: TurningPointInsight[]
   overview: OverviewSummary
+  /** Household timing (day-of-week, time-of-day, heatmap, indicator↔outcome). */
+  timing: TimingAnalysis
+  /** Timing per person, keyed by person id. */
+  personTiming: Record<string, TimingAnalysis>
+  /** Generated, plain-language insights for the household. */
+  generatedInsights: GeneratedInsight[]
+  /** Generated insights per person, keyed by person id. */
+  personGeneratedInsights: Record<string, GeneratedInsight[]>
 }
