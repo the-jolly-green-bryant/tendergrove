@@ -1,36 +1,37 @@
 /**
  * Calendar heatmap: one gentle, glanceable summary per day.
  *
- * The bands match the mockup legend. Copy is intentionally soft and never
- * medical — a caregiver scanning the month should feel informed, not judged.
+ * Days are scored on well-being (0–100, higher = better), so a warmer/greener
+ * day is a good day and a cooler/redder day is a harder one. Copy is
+ * intentionally soft and never medical.
  */
 
-import type { CalendarDayPattern, DailyHouseholdScore, DistressLevel } from './types'
+import type { CalendarDayPattern, DailyHouseholdScore, WellbeingLevel } from './types'
 
 /**
- * Score → band thresholds (upper bound of each band, inclusive).
- * low: 0–25, moderate: 26–60, high: 61–80, veryHigh: 81–100.
+ * Lower bound (inclusive) of each well-being band:
+ *   struggling 0–34 · mixed 35–59 · good 60–79 · thriving 80–100.
  */
-export const DISTRESS_LEVEL_THRESHOLDS = {
-  low: 25,
-  moderate: 60,
-  high: 80,
+export const WELLBEING_LEVEL_THRESHOLDS = {
+  thriving: 80,
+  good: 60,
+  mixed: 35,
 } as const
 
-/** Map a 0–100 distress score to a band. */
-export function distressLevel(score: number): DistressLevel {
-  if (score <= DISTRESS_LEVEL_THRESHOLDS.low) return 'low'
-  if (score <= DISTRESS_LEVEL_THRESHOLDS.moderate) return 'moderate'
-  if (score <= DISTRESS_LEVEL_THRESHOLDS.high) return 'high'
-  return 'veryHigh'
+/** Map a 0–100 well-being score to a band. */
+export function wellbeingLevel(score: number): WellbeingLevel {
+  if (score >= WELLBEING_LEVEL_THRESHOLDS.thriving) return 'thriving'
+  if (score >= WELLBEING_LEVEL_THRESHOLDS.good) return 'good'
+  if (score >= WELLBEING_LEVEL_THRESHOLDS.mixed) return 'mixed'
+  return 'struggling'
 }
 
 /** Non-clinical adjective for each band. */
-const LEVEL_WORD: Record<DistressLevel, string> = {
-  low: 'Calmer day',
-  moderate: 'Some ups and downs',
-  high: 'Harder day',
-  veryHigh: 'A very hard day',
+const LEVEL_WORD: Record<WellbeingLevel, string> = {
+  thriving: 'A really good day',
+  good: 'A good day',
+  mixed: 'Some ups and downs',
+  struggling: 'A harder day',
 }
 
 /** Build a short, human summary for a day cell. */
@@ -41,7 +42,7 @@ function buildShortSummary(day: DailyHouseholdScore): string {
       : 'Not enough to summarize'
   }
 
-  const parts: string[] = [LEVEL_WORD[distressLevel(day.score)]]
+  const parts: string[] = [LEVEL_WORD[wellbeingLevel(day.score)]]
   if (day.incidentCount > 0) {
     parts.push(`${day.incidentCount} incident${day.incidentCount === 1 ? '' : 's'}`)
   }
@@ -58,7 +59,7 @@ export function buildCalendar(
   return householdDailyScores.map((day) => ({
     date: day.date,
     score: day.score,
-    level: day.score === null ? null : distressLevel(day.score),
+    level: day.score === null ? null : wellbeingLevel(day.score),
     checkInCount: day.checkInCount,
     incidentCount: day.incidentCount,
     positiveCount: day.positiveCount,

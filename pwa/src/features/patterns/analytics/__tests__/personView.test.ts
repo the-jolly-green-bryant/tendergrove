@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { analyzeHousehold, type RawPerson } from '../index'
-import { buildPersonView } from '../personView'
+import { buildPersonView, buildScopedView } from '../personView'
 import { NOW } from './fixtures'
 
 /** May day at noon, as an ISO string. */
@@ -65,5 +65,42 @@ describe('buildPersonView', () => {
 
   it('builds a per-person calendar spanning the window', () => {
     expect(buildPersonView(result, 'p1').calendar).toHaveLength(30)
+  })
+
+  it('gives a person-scoped overview whose weekly copy names the person', () => {
+    const view = buildPersonView(result, 'p1')
+    expect(view.personName).toBe('Child A')
+    // Weekly insight either reflects the person or admits insufficient data,
+    // but never says "Household".
+    expect(view.overview.weeklyInsight.detail).not.toMatch(/Household/)
+  })
+})
+
+describe('buildScopedView', () => {
+  const result = analyzeHousehold([p1, p2], { now: NOW, windowDays: 30 })
+
+  it('returns the household view when no person is selected', () => {
+    const view = buildScopedView(result, null)
+    expect(view.personId).toBeNull()
+    expect(view.personName).toBeNull()
+    expect(view.correlations).toBe(result.correlations)
+    expect(view.overview).toBe(result.overview)
+  })
+
+  it('scopes to a single person when selected', () => {
+    const view = buildScopedView(result, 'p1')
+    expect(view.personId).toBe('p1')
+    expect(view.personName).toBe('Child A')
+    expect(
+      view.correlations.every(
+        (c) => c.sourcePersonId === 'p1' || c.targetPersonId === 'p1',
+      ),
+    ).toBe(true)
+  })
+
+  it('falls back to the household view for an unknown person', () => {
+    const view = buildScopedView(result, 'does-not-exist')
+    expect(view.personId).toBeNull()
+    expect(view.correlations).toBe(result.correlations)
   })
 })

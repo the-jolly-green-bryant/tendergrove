@@ -16,7 +16,7 @@ function household(scores: (number | null)[]): DailyHouseholdScore[] {
 }
 
 describe('findTurningPoints', () => {
-  it('detects a sustained increase and where it started', () => {
+  it('detects a sustained rise in well-being and where it started', () => {
     const tps = findTurningPoints(
       household([45, 45, 45, 45, 45, 72, 72, 72, 72, 72, 72, 72]),
     )
@@ -25,22 +25,22 @@ describe('findTurningPoints', () => {
     expect(rise!.beforeAverage).toBe(45)
     expect(rise!.afterAverage).toBe(72)
     expect(rise!.durationDays).toBeGreaterThanOrEqual(3)
-    expect(rise!.summary).toMatch(/rose|watching/i)
+    expect(rise!.summary).toMatch(/improved|hopeful/i)
   })
 
-  it('classifies a drop from an elevated level as a recovery', () => {
+  it('classifies a rise from a low level as a recovery', () => {
     const tps = findTurningPoints(
-      household([70, 70, 70, 70, 70, 45, 45, 45, 45, 45, 45, 45]),
+      household([30, 30, 30, 30, 30, 60, 60, 60, 60, 60, 60, 60]),
     )
     expect(tps.some((t) => t.type === 'recovery')).toBe(true)
   })
 
-  it('detects a one-day spike that returns to baseline', () => {
-    const tps = findTurningPoints(household([30, 30, 30, 65, 30, 30, 30]))
+  it('detects a one-day dip that bounces back', () => {
+    const tps = findTurningPoints(household([70, 70, 70, 35, 70, 70, 70]))
     const spike = tps.find((t) => t.type === 'spike')
     expect(spike).toBeDefined()
     expect(spike!.durationDays).toBe(1)
-    expect(spike!.afterAverage).toBe(65)
+    expect(spike!.afterAverage).toBe(35)
   })
 
   it('ignores small wobble', () => {

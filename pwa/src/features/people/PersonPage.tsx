@@ -561,6 +561,7 @@ function PersonPageLoadedContent({
         <PersonPatternsSection
           personId={person.id}
           personName={person.displayName}
+          personAvatarUrl={person.avatarUrl}
         />
 
         <div className="person-page__footer-actions">

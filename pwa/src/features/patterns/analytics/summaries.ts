@@ -31,22 +31,27 @@ function sumRecent(
   return series.slice(start, end).reduce((sum, d) => sum + d[field], 0)
 }
 
-/** Soft, non-numeric phrasing for the week-over-week trend. */
-function trendClause(trend: TrendResult): string {
+/** Uppercase the first character of a sentence fragment. */
+function capitalize(text: string): string {
+  return text.length === 0 ? text : text[0].toUpperCase() + text.slice(1)
+}
+
+/** Soft, non-numeric phrasing for the week-over-week trend (higher = better). */
+function trendClause(trend: TrendResult, subject: string): string {
   const { direction, delta } = trend
   if (direction === 'insufficient') {
     return 'There isn’t quite enough recent data to call a direction yet'
   }
   if (direction === 'stable') {
-    return 'Household distress is about the same as last week'
+    return `${subject} well-being is about the same as last week`
   }
   const magnitude = delta !== null && Math.abs(delta) < 10 ? 'slightly ' : ''
-  return direction === 'worsening'
-    ? `Household distress is ${magnitude}higher than last week`
-    : `Household distress is ${magnitude}lower than last week`
+  return direction === 'improving'
+    ? `${subject} well-being is ${magnitude}higher than last week`
+    : `${subject} well-being is ${magnitude}lower than last week`
 }
 
-/** Describe the most notable recent movement, if any, as a trailing clause. */
+/** Describe the most notable recent movement, if any, as its own sentence. */
 function movementClause(
   series: DailyHouseholdScore[],
   turningPoints: TurningPointInsight[],
@@ -59,14 +64,14 @@ function movementClause(
     const when = latestTurning ? ` after ${formatDayLabel(latestTurning.date)}` : ''
     return `incidents ticked up${when}`
   }
-  if (latestTurning && latestTurning.type === 'sustainedIncrease') {
+  if (latestTurning && latestTurning.type === 'sustainedDecrease') {
     return `things have felt harder since ${formatDayLabel(latestTurning.date)}`
   }
   if (
     latestTurning &&
-    (latestTurning.type === 'recovery' || latestTurning.type === 'sustainedDecrease')
+    (latestTurning.type === 'recovery' || latestTurning.type === 'sustainedIncrease')
   ) {
-    return `things have been easing since ${formatDayLabel(latestTurning.date)}`
+    return `things have been looking up since ${formatDayLabel(latestTurning.date)}`
   }
   return null
 }
@@ -79,8 +84,8 @@ function toneFromTrend(trend: TrendResult): PatternInsight['tone'] {
 
 function turningPointTitle(tp: TurningPointInsight, positive: boolean): string {
   const when = formatDayLabel(tp.date)
-  if (tp.type === 'spike') return `A rough day around ${when}`
-  return positive ? `Things eased around ${when}` : `A shift around ${when}`
+  if (tp.type === 'spike') return `A hard day around ${when}`
+  return positive ? `Things looked up around ${when}` : `A dip around ${when}`
 }
 
 function turningPointTone(tp: TurningPointInsight, positive: boolean): InsightTone {
@@ -90,7 +95,7 @@ function turningPointTone(tp: TurningPointInsight, positive: boolean): InsightTo
 
 /** A card for one turning point. */
 function turningPointCard(tp: TurningPointInsight): PatternInsight {
-  const positive = tp.type === 'recovery' || tp.type === 'sustainedDecrease'
+  const positive = tp.type === 'sustainedIncrease' || tp.type === 'recovery'
   return {
     id: `tp:${tp.date}`,
     kind: 'change',
@@ -164,18 +169,23 @@ function overallConfidence(
 
 /**
  * Build the overview summary shown at the top of the Patterns section.
+ *
+ * `subjectLabel` opens the weekly sentence ("Household well-being…" or, when
+ * scoped to a person, that person's name) so the copy reads naturally.
  */
 export function buildOverview(params: {
   householdTrend: TrendResult
   householdDailyScores: DailyHouseholdScore[]
   turningPoints: TurningPointInsight[]
   correlations: CorrelationInsight[]
+  subjectLabel?: string
 }): OverviewSummary {
   const { householdTrend, householdDailyScores, turningPoints, correlations } = params
+  const subjectLabel = params.subjectLabel ?? 'Household'
 
-  const clause = trendClause(householdTrend)
+  const clause = trendClause(householdTrend, subjectLabel)
   const movement = movementClause(householdDailyScores, turningPoints)
-  const weeklyDetail = movement ? `${clause}, but ${movement}.` : `${clause}.`
+  const weeklyDetail = movement ? `${clause}. ${capitalize(movement)}.` : `${clause}.`
 
   const noteworthy = buildNoteworthy(householdDailyScores, turningPoints, correlations)
 

@@ -406,7 +406,9 @@ function useWizardAdvance({
       setCurrentIndex(next)
       return
     }
-    if (routeModal.isRouteModal) return routeModal.dismiss()
+    // Honour an explicit ?returnTo= even when shown as a modal (e.g. opened
+    // from the calendar heatmap), so we land back where we came from.
+    if (routeModal.isRouteModal) return routeModal.dismiss(returnPath)
     if (returnPath) return router.push(returnPath, 'back', 'pop')
     if (personId) return router.push(`/person/${personId}`, 'back', 'pop')
     return router.push('/dashboard', 'back', 'pop')

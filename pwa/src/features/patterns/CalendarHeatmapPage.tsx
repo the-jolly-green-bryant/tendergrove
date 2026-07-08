@@ -1,22 +1,25 @@
-import { IonCard, IonCardContent } from '@ionic/react'
+import { IonButton, IonCard, IonCardContent } from '@ionic/react'
 import React, { useMemo, useState } from 'react'
+import { useHistory } from 'react-router-dom'
 
 import { LoadingState } from '../../components/LoadingState'
 import { Page } from '../../components/Page'
-import type { AnalyticsResult, CalendarDayPattern, DistressLevel } from './analytics'
+import { useSelectedDate } from '../../context/SelectedDateContext'
+import type { CalendarDayPattern, WellbeingLevel } from './analytics'
 import { dateKeyToDate, formatDayLabel } from './analytics/dateUtils'
 import { PatternsEmptyState } from './components/PatternsEmptyState'
-import { usePatternsAnalytics } from './usePatternsAnalytics'
+import { PatternsFilterBar } from './components/PatternsFilterBar'
+import { useScopedPatterns } from './useScopedPatterns'
 
 import './patterns.css'
 
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
-const LEVEL_LABEL: Record<DistressLevel, string> = {
-  low: 'Low (0–25)',
-  moderate: 'Moderate (26–60)',
-  high: 'High (61–80)',
-  veryHigh: 'Very high (81–100)',
+const LEVEL_LABEL: Record<WellbeingLevel, string> = {
+  struggling: 'Struggling (0–34)',
+  mixed: 'Mixed (35–59)',
+  good: 'Good (60–79)',
+  thriving: 'Thriving (80–100)',
 }
 
 interface MonthGroup {
@@ -64,7 +67,13 @@ function activityDots(day: CalendarDayPattern): string {
   return ''
 }
 
-function DayDetail({ day }: { readonly day: CalendarDayPattern }): React.JSX.Element {
+function DayDetail({
+  day,
+  onAddCheckIn,
+}: {
+  readonly day: CalendarDayPattern
+  readonly onAddCheckIn: (dateKey: string) => void
+}): React.JSX.Element {
   return (
     <IonCard>
       <IonCardContent>
@@ -75,7 +84,7 @@ function DayDetail({ day }: { readonly day: CalendarDayPattern }): React.JSX.Ele
             <span className="pattern-day-detail__value">
               {day.score === null ? '—' : day.score}
             </span>
-            <span className="pattern-day-detail__label">Distress score</span>
+            <span className="pattern-day-detail__label">Well-being score</span>
           </span>
           <span className="pattern-day-detail__stat">
             <span className="pattern-day-detail__value">{day.checkInCount}</span>
@@ -86,74 +95,101 @@ function DayDetail({ day }: { readonly day: CalendarDayPattern }): React.JSX.Ele
             <span className="pattern-day-detail__label">Incidents</span>
           </span>
         </div>
+
+        <IonButton
+          expand="block"
+          fill={day.checkInCount > 0 ? 'outline' : 'solid'}
+          className="pattern-day-detail__action"
+          onClick={() => onAddCheckIn(day.date)}
+        >
+          {day.checkInCount > 0 ? 'Update check-ins' : 'Add a check-in'}
+        </IonButton>
       </IonCardContent>
     </IonCard>
   )
 }
 
-function CalendarContent({
-  result,
+function MonthGrid({
+  month,
+  selectedDate,
+  onSelect,
 }: {
-  readonly result: AnalyticsResult
+  readonly month: MonthGroup
+  readonly selectedDate: string | undefined
+  readonly onSelect: (day: CalendarDayPattern) => void
 }): React.JSX.Element {
-  const months = useMemo(() => groupByMonth(result.calendar), [result.calendar])
+  return (
+    <section className="pattern-calendar-month">
+      <h2 className="pattern-calendar-heading">{month.label}</h2>
+      <div className="pattern-calendar-grid">
+        {DOW.map((dow) => (
+          <div
+            key={dow}
+            className="pattern-calendar-dow"
+          >
+            {dow}
+          </div>
+        ))}
+        {month.slots.map((day, index) =>
+          day === null ? (
+            <div
+              key={`pad-${index}`}
+              className="pattern-calendar-cell pattern-calendar-cell--empty"
+              aria-hidden="true"
+            />
+          ) : (
+            <button
+              key={day.date}
+              type="button"
+              className={cellClass(day, selectedDate === day.date)}
+              aria-label={`${formatDayLabel(day.date)}: ${day.shortSummary}`}
+              onClick={() => onSelect(day)}
+            >
+              <span className="pattern-calendar-cell__day">
+                {dateKeyToDate(day.date).getDate()}
+              </span>
+              <span
+                className="pattern-calendar-cell__dots"
+                aria-hidden="true"
+              >
+                {activityDots(day)}
+              </span>
+            </button>
+          ),
+        )}
+      </div>
+    </section>
+  )
+}
+
+function CalendarContent({
+  calendar,
+  onAddCheckIn,
+}: {
+  readonly calendar: CalendarDayPattern[]
+  readonly onAddCheckIn: (dateKey: string) => void
+}): React.JSX.Element {
+  const months = useMemo(() => groupByMonth(calendar), [calendar])
   const [selected, setSelected] = useState<CalendarDayPattern | null>(null)
 
   return (
     <>
       <p className="patterns-lede">
-        Each day is coloured by its overall distress. Darker, warmer days may be worth a
-        closer look. Tap a day for details.
+        Each day is coloured by overall well-being — greener is a better day, warmer
+        (redder) is a harder one. Tap a day for details, or to add a check-in.
       </p>
 
       {months.map((month) => (
-        <section
+        <MonthGrid
           key={month.key}
-          className="pattern-calendar-month"
-        >
-          <h2 className="pattern-calendar-heading">{month.label}</h2>
-          <div className="pattern-calendar-grid">
-            {DOW.map((dow) => (
-              <div
-                key={dow}
-                className="pattern-calendar-dow"
-              >
-                {dow}
-              </div>
-            ))}
-            {month.slots.map((day, index) =>
-              day === null ? (
-                <div
-                  key={`pad-${index}`}
-                  className="pattern-calendar-cell pattern-calendar-cell--empty"
-                  aria-hidden="true"
-                />
-              ) : (
-                <button
-                  key={day.date}
-                  type="button"
-                  className={cellClass(day, selected?.date === day.date)}
-                  aria-label={`${formatDayLabel(day.date)}: ${day.shortSummary}`}
-                  onClick={() => setSelected(day)}
-                >
-                  <span className="pattern-calendar-cell__day">
-                    {dateKeyToDate(day.date).getDate()}
-                  </span>
-                  <span
-                    className="pattern-calendar-cell__dots"
-                    aria-hidden="true"
-                  >
-                    {activityDots(day)}
-                  </span>
-                </button>
-              ),
-            )}
-          </div>
-        </section>
+          month={month}
+          selectedDate={selected?.date}
+          onSelect={setSelected}
+        />
       ))}
 
       <div className="pattern-legend">
-        {(Object.keys(LEVEL_LABEL) as DistressLevel[]).map((level) => (
+        {(Object.keys(LEVEL_LABEL) as WellbeingLevel[]).map((level) => (
           <span
             key={level}
             className="pattern-legend__item"
@@ -166,16 +202,35 @@ function CalendarContent({
         ))}
       </div>
 
-      {selected && <DayDetail day={selected} />}
+      {selected && (
+        <DayDetail
+          day={selected}
+          onAddCheckIn={onAddCheckIn}
+        />
+      )}
     </>
   )
 }
 
 /**
- * Calendar heatmap page. Consumes: calendar day patterns.
+ * Calendar heatmap page. Consumes: calendar day patterns. Tapping a day lets a
+ * caregiver add or update that day's check-in.
  */
 export default function CalendarHeatmapPage(): React.JSX.Element {
-  const { result, isLoading, hasError } = usePatternsAnalytics()
+  const { view, isLoading, hasError } = useScopedPatterns()
+  const history = useHistory()
+  const { setSelectedDate } = useSelectedDate()
+
+  const addCheckIn = (dateKey: string) => {
+    // Point the shared check-in flow at the chosen day, then open the household
+    // wizard; it returns here when finished.
+    setSelectedDate(dateKeyToDate(dateKey))
+    history.push('/check-in/wizard?returnTo=/patterns/calendar')
+  }
+
+  const emptyMessage = view?.personName
+    ? `Keep logging daily check-ins for ${view.personName} and this calendar will fill in.`
+    : 'We’re still gathering data. Daily check-ins will fill in this calendar.'
 
   return (
     <Page
@@ -185,14 +240,19 @@ export default function CalendarHeatmapPage(): React.JSX.Element {
     >
       {isLoading && <LoadingState />}
       {hasError && <p>We couldn’t load your patterns just now. Please try again.</p>}
-      {!isLoading &&
-        !hasError &&
-        result &&
-        (result.dataQuality.scoredDays === 0 ? (
-          <PatternsEmptyState message={result.dataQuality.message} />
-        ) : (
-          <CalendarContent result={result} />
-        ))}
+      {!isLoading && !hasError && view && (
+        <>
+          <PatternsFilterBar />
+          {view.scoredDays === 0 ? (
+            <PatternsEmptyState message={emptyMessage} />
+          ) : (
+            <CalendarContent
+              calendar={view.calendar}
+              onAddCheckIn={addCheckIn}
+            />
+          )}
+        </>
+      )}
     </Page>
   )
 }

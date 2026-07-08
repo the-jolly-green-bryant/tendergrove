@@ -57,10 +57,10 @@ export function rollingAverage(
   })
 }
 
-/** Direction from a delta, framed around distress (up = worsening). */
+/** Direction from a delta. Well-being: score going UP = improving. */
 function directionFromDelta(delta: number): TrendDirection {
-  if (delta > STABLE_BAND) return 'worsening'
-  if (delta < -STABLE_BAND) return 'improving'
+  if (delta > STABLE_BAND) return 'improving'
+  if (delta < -STABLE_BAND) return 'worsening'
   return 'stable'
 }
 

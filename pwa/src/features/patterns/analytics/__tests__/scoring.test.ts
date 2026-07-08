@@ -11,43 +11,43 @@ import { checkIn, incident, indicator, iso, person } from './fixtures'
 const DAY = '2025-05-10'
 const AT = iso(2025, 5, 10)
 
-describe('scorePersonDay — indicator scoring', () => {
-  it('is null when there is no check-in and no incident (missing data is not "good")', () => {
+describe('scorePersonDay — indicator scoring (higher = better)', () => {
+  it('is null when there is no check-in and no incident (missing data is not a good day)', () => {
     const p = person('p1', { indicators: [indicator('undesired', 'meltdown')] })
     const result = scorePersonDay(p, DAY)
     expect(result.score).toBeNull()
     expect(result.hasData).toBe(false)
   })
 
-  it('scores maximum distress when an undesired indicator occurred', () => {
+  it('scores lowest well-being when an undesired indicator occurred', () => {
     const meltdown = indicator('undesired', 'meltdown')
     const p = person('p1', {
       indicators: [meltdown],
       checkIns: [checkIn(AT, [meltdown.id])],
     })
     const result = scorePersonDay(p, DAY)
-    expect(result.score).toBe(100)
+    expect(result.score).toBe(0)
     expect(result.negativeCount).toBe(1)
     expect(result.positiveCount).toBe(0)
   })
 
-  it('scores minimum distress when an undesired indicator stayed away', () => {
+  it('scores highest well-being when an undesired indicator stayed away', () => {
     const meltdown = indicator('undesired', 'meltdown')
     const p = person('p1', {
       indicators: [meltdown],
       checkIns: [checkIn(AT, [])],
     })
-    expect(scorePersonDay(p, DAY).score).toBe(0)
+    expect(scorePersonDay(p, DAY).score).toBe(100)
   })
 
-  it('scores minimum distress when a desired indicator occurred', () => {
+  it('scores highest well-being when a desired indicator occurred', () => {
     const slept = indicator('desired', 'slept well')
     const p = person('p1', {
       indicators: [slept],
       checkIns: [checkIn(AT, [slept.id])],
     })
     const result = scorePersonDay(p, DAY)
-    expect(result.score).toBe(0)
+    expect(result.score).toBe(100)
     expect(result.positiveCount).toBe(1)
   })
 
@@ -72,8 +72,8 @@ describe('scorePersonDay — indicator scoring', () => {
       ],
     })
     const result = scorePersonDay(p, DAY)
-    // both undesired occurred → both bad → distress 100
-    expect(result.score).toBe(100)
+    // both undesired occurred → both bad → lowest well-being
+    expect(result.score).toBe(0)
     expect(result.checkInCount).toBe(2)
     expect(result.negativeCount).toBe(2)
   })
@@ -86,37 +86,38 @@ describe('scorePersonDay — indicator scoring', () => {
     })
     const result = scorePersonDay(p, DAY)
     expect(result.negativeCount).toBe(1) // ghost not counted
-    expect(result.score).toBe(100)
+    expect(result.score).toBe(0)
   })
 })
 
-describe('scorePersonDay — incidents', () => {
-  it('anchors an incident-only day to a meaningful baseline', () => {
+describe('scorePersonDay — incidents lower well-being', () => {
+  it('anchors an incident-only day to a meaningful (lowered) baseline', () => {
     const p = person('p1', { incidents: [incident(AT)] })
     const result = scorePersonDay(p, DAY)
-    expect(result.score).toBe(INCIDENT_ONLY_BASE + INCIDENT_POINTS) // 55
+    // internal distress = base + points; well-being = 100 - that
+    expect(result.score).toBe(100 - (INCIDENT_ONLY_BASE + INCIDENT_POINTS)) // 45
     expect(result.incidentCount).toBe(1)
     expect(result.hasData).toBe(true)
   })
 
-  it('adds incident weight on top of a low indicator score', () => {
+  it('pulls a high indicator score down by the incident weight', () => {
     const slept = indicator('desired', 'slept well')
     const p = person('p1', {
       indicators: [slept],
-      checkIns: [checkIn(AT, [slept.id])], // indicator distress 0
+      checkIns: [checkIn(AT, [slept.id])], // well-being 100 before incidents
       incidents: [incident(AT)],
     })
-    expect(scorePersonDay(p, DAY).score).toBe(INCIDENT_POINTS) // 0 + 20
+    expect(scorePersonDay(p, DAY).score).toBe(100 - INCIDENT_POINTS) // 80
   })
 
-  it('clamps to 100 when indicators and incidents both pile on', () => {
+  it('clamps to 0 when a bad indicator day and incidents both pile on', () => {
     const meltdown = indicator('undesired', 'meltdown')
     const p = person('p1', {
       indicators: [meltdown],
-      checkIns: [checkIn(AT, [meltdown.id])], // 100
+      checkIns: [checkIn(AT, [meltdown.id])], // 0
       incidents: [incident(AT), incident(AT)],
     })
-    expect(scorePersonDay(p, DAY).score).toBe(100)
+    expect(scorePersonDay(p, DAY).score).toBe(0)
   })
 })
 
@@ -135,12 +136,12 @@ describe('aggregateHouseholdDay', () => {
     const p3 = person('p3', { indicators: [slept] }) // no data this day
 
     const day = aggregateHouseholdDay(DAY, [
-      scorePersonDay(p1, DAY), // 100
-      scorePersonDay(p2, DAY), // 0
+      scorePersonDay(p1, DAY), // 0
+      scorePersonDay(p2, DAY), // 100
       scorePersonDay(p3, DAY), // null
     ])
 
-    expect(day.score).toBe(50) // (100 + 0) / 2
+    expect(day.score).toBe(50) // (0 + 100) / 2
     expect(day.contributingPeople).toBe(2)
   })
 

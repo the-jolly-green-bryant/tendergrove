@@ -1,18 +1,18 @@
 import { describe, expect, it } from 'vitest'
 
-import { buildCalendar, distressLevel } from '../calendarHeatmap'
+import { buildCalendar, wellbeingLevel } from '../calendarHeatmap'
 import type { DailyHouseholdScore } from '../types'
 
-describe('distressLevel', () => {
-  it('maps scores to the mockup bands', () => {
-    expect(distressLevel(0)).toBe('low')
-    expect(distressLevel(25)).toBe('low')
-    expect(distressLevel(26)).toBe('moderate')
-    expect(distressLevel(60)).toBe('moderate')
-    expect(distressLevel(61)).toBe('high')
-    expect(distressLevel(80)).toBe('high')
-    expect(distressLevel(81)).toBe('veryHigh')
-    expect(distressLevel(100)).toBe('veryHigh')
+describe('wellbeingLevel', () => {
+  it('maps scores to well-being bands (higher = better)', () => {
+    expect(wellbeingLevel(0)).toBe('struggling')
+    expect(wellbeingLevel(34)).toBe('struggling')
+    expect(wellbeingLevel(35)).toBe('mixed')
+    expect(wellbeingLevel(59)).toBe('mixed')
+    expect(wellbeingLevel(60)).toBe('good')
+    expect(wellbeingLevel(79)).toBe('good')
+    expect(wellbeingLevel(80)).toBe('thriving')
+    expect(wellbeingLevel(100)).toBe('thriving')
   })
 })
 
@@ -32,9 +32,9 @@ describe('buildCalendar', () => {
     const [cell] = buildCalendar([
       day({ score: 70, checkInCount: 3, incidentCount: 2, positiveCount: 1 }),
     ])
-    expect(cell.level).toBe('high')
+    expect(cell.level).toBe('good')
     expect(cell.incidentCount).toBe(2)
-    expect(cell.shortSummary).toMatch(/Harder day/)
+    expect(cell.shortSummary).toMatch(/A good day/)
     expect(cell.shortSummary).toMatch(/2 incidents/)
   })
 

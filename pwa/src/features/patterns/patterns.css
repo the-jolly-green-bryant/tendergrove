@@ -8,15 +8,55 @@
 /* ------------------------------------------------------------------ */
 
 .patterns-page {
-  --distress-low: #6fae5f;
-  --distress-moderate: #efae45;
-  --distress-high: #e8804d;
-  --distress-veryhigh: #e2594b;
-  --distress-none: #d9d2c6;
+  /* Well-being bands: higher = better = greener. */
+  --wb-thriving: #4e9d5e;
+  --wb-good: #8cbf6a;
+  --wb-mixed: #efae45;
+  --wb-struggling: #e2594b;
+  --wb-none: #d9d2c6;
 }
 
 .patterns-section {
   margin: 0 0 22px;
+}
+
+/* ---- Shared filter bar -------------------------------------------- */
+
+.patterns-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 18px;
+}
+
+.patterns-filter-bar .person-filter-chips {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+}
+
+.patterns-delta-toggle {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--app-border-color);
+  border-radius: 999px;
+  background: var(--ion-card-background);
+  color: var(--app-muted-text);
+  font-weight: 650;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.patterns-delta-toggle--active {
+  background: var(--ion-color-primary);
+  border-color: var(--ion-color-primary);
+  color: var(--ion-color-primary-contrast);
 }
 
 .patterns-lede {
@@ -59,6 +99,13 @@
 
 .pattern-chart__highlight {
   fill: rgba(226, 89, 75, 0.12);
+}
+
+.pattern-chart__baseline {
+  stroke: var(--app-muted-text);
+  stroke-width: 1.25;
+  stroke-dasharray: 2 3;
+  opacity: 0.7;
 }
 
 .pattern-chart__legend {
@@ -277,25 +324,25 @@
 }
 
 .pattern-calendar-cell--nodata {
-  background: var(--distress-none);
+  background: var(--wb-none);
   color: #7d766a;
   font-weight: 500;
 }
 
-.pattern-calendar-cell--low {
-  background: var(--distress-low);
+.pattern-calendar-cell--thriving {
+  background: var(--wb-thriving);
+  color: #fff;
+}
+.pattern-calendar-cell--good {
+  background: var(--wb-good);
   color: #123314;
 }
-.pattern-calendar-cell--moderate {
-  background: var(--distress-moderate);
+.pattern-calendar-cell--mixed {
+  background: var(--wb-mixed);
   color: #4a3400;
 }
-.pattern-calendar-cell--high {
-  background: var(--distress-high);
-  color: #4a2200;
-}
-.pattern-calendar-cell--veryHigh {
-  background: var(--distress-veryhigh);
+.pattern-calendar-cell--struggling {
+  background: var(--wb-struggling);
   color: #fff;
 }
 
@@ -355,6 +402,10 @@
 .pattern-day-detail__label {
   font-size: 0.78rem;
   color: var(--app-muted-text);
+}
+
+.pattern-day-detail__action {
+  margin-top: 14px;
 }
 
 /* ---- Correlation / relationship rows ------------------------------ */
@@ -426,6 +477,36 @@
 
 .person-patterns {
   margin-top: 8px;
+}
+
+.person-patterns__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.person-patterns__avatar {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+}
+
+.person-patterns__household-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--ion-color-secondary);
+  color: var(--ion-color-secondary-contrast);
+  font-size: 1.1rem;
+}
+
+.person-patterns__title {
+  margin: 0;
 }
 
 .person-patterns__scope {

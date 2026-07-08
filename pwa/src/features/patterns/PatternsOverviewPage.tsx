@@ -5,20 +5,22 @@ import {
   flagOutline,
   gitNetworkOutline,
   heartOutline,
+  removeOutline,
   trendingDownOutline,
   trendingUpOutline,
-  removeOutline,
 } from 'ionicons/icons'
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 
 import { LoadingState } from '../../components/LoadingState'
 import { Page } from '../../components/Page'
-import type { AnalyticsResult, TrendDirection } from './analytics'
+import type { ScopedPatternsView, TrendDirection } from './analytics'
 import { InsightCard } from './components/InsightCard'
 import { PatternsEmptyState } from './components/PatternsEmptyState'
-import { TrendChart, type ChartSeries } from './components/TrendChart'
-import { usePatternsAnalytics } from './usePatternsAnalytics'
+import { PatternsFilterBar } from './components/PatternsFilterBar'
+import { TrendChart } from './components/TrendChart'
+import { buildTrendChart } from './components/trendSeries'
+import { useScopedPatterns } from './useScopedPatterns'
 
 import './patterns.css'
 
@@ -26,8 +28,8 @@ import './patterns.css'
 const OVERVIEW_TREND_DAYS = 14
 
 const DIRECTION_ICON: Record<TrendDirection, string> = {
-  improving: trendingDownOutline, // distress down = good
-  worsening: trendingUpOutline,
+  improving: trendingUpOutline, // well-being up = good
+  worsening: trendingDownOutline,
   stable: removeOutline,
   insufficient: removeOutline,
 }
@@ -59,36 +61,12 @@ const DEEPER_PATTERNS = [
   },
 ] as const
 
-/** Build the chart series (daily line + rolling average) from the trend. */
-function overviewSeries(result: AnalyticsResult): {
-  dates: string[]
-  series: ChartSeries[]
-} {
-  const points = result.householdTrend.points.slice(-OVERVIEW_TREND_DAYS)
-  return {
-    dates: points.map((p) => p.date),
-    series: [
-      {
-        label: 'Daily distress',
-        color: 'var(--ion-color-primary)',
-        values: points.map((p) => p.score),
-      },
-      {
-        label: '7-day average',
-        color: 'var(--ion-color-secondary-shade)',
-        values: points.map((p) => p.rollingAverage),
-        dashed: true,
-      },
-    ],
-  }
-}
-
 function TrendSummary({
-  result,
+  view,
 }: {
-  readonly result: AnalyticsResult
+  readonly view: ScopedPatternsView
 }): React.JSX.Element {
-  const { overallTrend } = result.overview
+  const { overallTrend } = view.overview
   const { current, previous } = overallTrend
   const comparison =
     current !== null && previous !== null ? ` (${previous} → ${current})` : ''
@@ -108,11 +86,15 @@ function TrendSummary({
 }
 
 function TrendSection({
-  result,
+  view,
+  showDelta,
 }: {
-  readonly result: AnalyticsResult
+  readonly view: ScopedPatternsView
+  readonly showDelta: boolean
 }): React.JSX.Element {
-  const { dates, series } = overviewSeries(result)
+  const subject = view.personName ? `${view.personName}'s` : 'Household'
+  const points = view.trend.points.slice(-OVERVIEW_TREND_DAYS)
+  const chart = buildTrendChart(points, showDelta)
   return (
     <section
       className="patterns-section"
@@ -122,21 +104,24 @@ function TrendSection({
         id="trend-heading"
         className="pattern-calendar-heading"
       >
-        Household distress trend
+        {subject} well-being trend
       </h2>
       <p className="patterns-lede">
-        Daily average distress score (0 = low, 100 = high). Missing days simply mean no
-        check-in yet.
+        {showDelta
+          ? 'Day-to-day change in well-being. Points above the dashed line are better days than the one before; below it, harder ones.'
+          : 'Daily average well-being score (higher is better). Missing days simply mean no check-in yet.'}
       </p>
       <IonCard>
         <IonCardContent>
           <TrendChart
-            dates={dates}
-            series={series}
+            dates={chart.dates}
+            series={chart.series}
+            clampTo={chart.clampTo}
+            baseline={chart.baseline}
           />
         </IonCardContent>
       </IonCard>
-      <TrendSummary result={result} />
+      {!showDelta && <TrendSummary view={view} />}
     </section>
   )
 }
@@ -176,12 +161,16 @@ function DeeperPatternsNav(): React.JSX.Element {
 }
 
 function OverviewContent({
-  result,
+  view,
+  showDelta,
 }: {
-  readonly result: AnalyticsResult
+  readonly view: ScopedPatternsView
+  readonly showDelta: boolean
 }): React.JSX.Element {
-  const { dates, series } = overviewSeries(result)
-  const hasTrend = dates.some((_, i) => series[0].values[i] !== null)
+  const hasTrend = view.trend.points.some((p) => p.score !== null)
+  const emptyMessage = view.personName
+    ? `Keep logging daily check-ins for ${view.personName} and patterns will appear here.`
+    : 'We’re still gathering data. Keep logging daily check-ins and patterns will appear here — usually within a week or so.'
 
   return (
     <>
@@ -189,23 +178,23 @@ function OverviewContent({
         Discover trends and connections — gently, over time.
       </p>
 
-      {/* Weekly headline insight */}
       <div className="pattern-weekly-wrap patterns-section">
-        <InsightCard insight={{ ...result.overview.weeklyInsight }} />
+        <InsightCard insight={view.overview.weeklyInsight} />
       </div>
 
-      {!result.dataQuality.hasEnoughData && (
-        <PatternsEmptyState message={result.dataQuality.message} />
+      {view.scoredDays === 0 && <PatternsEmptyState message={emptyMessage} />}
+
+      {hasTrend && (
+        <TrendSection
+          view={view}
+          showDelta={showDelta}
+        />
       )}
 
-      {/* One major chart: household distress trend */}
-      {hasTrend && <TrendSection result={result} />}
-
-      {/* Noteworthy changes */}
-      {result.overview.noteworthy.length > 0 && (
+      {view.overview.noteworthy.length > 0 && (
         <section className="patterns-section">
           <h2 className="pattern-calendar-heading">Worth noticing</h2>
-          {result.overview.noteworthy.map((insight) => (
+          {view.overview.noteworthy.map((insight) => (
             <InsightCard
               key={insight.id}
               insight={insight}
@@ -221,10 +210,11 @@ function OverviewContent({
 
 /**
  * Patterns overview — the landing screen for the Patterns section.
- * Consumes: weekly insight, trend chart data, deeper-pattern cards.
+ * Consumes: weekly insight, trend chart data, deeper-pattern cards. The shared
+ * filter scopes everything to Everyone or one person.
  */
 export default function PatternsOverviewPage(): React.JSX.Element {
-  const { result, isLoading, hasError } = usePatternsAnalytics()
+  const { view, isLoading, hasError, showDelta } = useScopedPatterns()
 
   return (
     <Page
@@ -234,7 +224,15 @@ export default function PatternsOverviewPage(): React.JSX.Element {
     >
       {isLoading && <LoadingState />}
       {hasError && <p>We couldn’t load your patterns just now. Please try again.</p>}
-      {!isLoading && !hasError && result && <OverviewContent result={result} />}
+      {!isLoading && !hasError && view && (
+        <>
+          <PatternsFilterBar showDeltaToggle />
+          <OverviewContent
+            view={view}
+            showDelta={showDelta}
+          />
+        </>
+      )}
     </Page>
   )
 }

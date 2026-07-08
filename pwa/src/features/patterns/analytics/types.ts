@@ -1,12 +1,9 @@
 /**
  * Type definitions for the TenderGrove Patterns analytics layer.
  *
- * Everything here is intentionally framed around *distress* (0 = calm/low,
- * 100 = high distress) so the whole Patterns feature reads consistently. This
- * is the inverse of the app's existing "wellness" score in `lib/status.ts`
- * (there, high = doing well). We keep the two separate on purpose: Patterns is
- * about surfacing where things are getting harder, so a high number meaning
- * "more distress" matches the mental model of the screens.
+ * Everything here is framed around *well-being* (0–100, where **higher = doing
+ * better**), matching the app's existing wellness score in `lib/status.ts`. A
+ * higher number always means a better day; a lower number means a harder one.
  *
  * IMPORTANT LANGUAGE RULES (this feature is for overwhelmed caregivers):
  *  - Insights must be human-readable, non-blaming, and non-medical.
@@ -46,10 +43,13 @@ export type PersonRole = 'child' | 'parent' | 'spouse' | 'self' | 'caregiver' | 
  */
 export type Confidence = 'low' | 'moderate' | 'high'
 
-/** Distress bands used by the calendar heatmap (see mockup legend). */
-export type DistressLevel = 'low' | 'moderate' | 'high' | 'veryHigh'
+/**
+ * Well-being bands used by the calendar heatmap, from hardest to best:
+ * struggling → mixed → good → thriving.
+ */
+export type WellbeingLevel = 'struggling' | 'mixed' | 'good' | 'thriving'
 
-/** Direction of a trend over time, framed around distress. */
+/** Direction of a trend over time (well-being rising = improving). */
 export type TrendDirection = 'improving' | 'worsening' | 'stable' | 'insufficient'
 
 /* ------------------------------------------------------------------ */
@@ -108,7 +108,7 @@ export interface AnalyticsInput {
 /* ------------------------------------------------------------------ */
 
 /**
- * One person's distress for one calendar day.
+ * One person's well-being for one calendar day.
  *
  * `score` is `null` when there is no data for the day (no check-in and no
  * incident). Missing data is never treated as good or bad — it is simply
@@ -117,7 +117,7 @@ export interface AnalyticsInput {
 export interface DailyPersonScore {
   personId: string
   date: DateKey
-  /** 0–100 distress, or `null` when the day has no data. */
+  /** 0–100 well-being (higher = better), or `null` when the day has no data. */
   score: number | null
   checkInCount: number
   incidentCount: number
@@ -130,7 +130,7 @@ export interface DailyPersonScore {
 }
 
 /**
- * The household's distress for one calendar day, aggregated across people.
+ * The household's well-being for one calendar day, aggregated across people.
  *
  * The household score is the *average of each contributing person's daily
  * score* — not a sum of raw check-ins. Collapsing every person to a single
@@ -165,7 +165,7 @@ export interface TrendPoint {
 export interface TrendResult {
   current7DayAverage: number | null
   previous7DayAverage: number | null
-  /** `current - previous`; positive means distress rose (worsening). */
+  /** `current - previous`; positive means well-being rose (improving). */
   delta: number | null
   direction: TrendDirection
   /** Full windowed series for charting. */
@@ -181,12 +181,12 @@ export interface TrendResult {
 export interface CalendarDayPattern {
   date: DateKey
   score: number | null
-  level: DistressLevel | null
+  level: WellbeingLevel | null
   checkInCount: number
   incidentCount: number
   positiveCount: number
   negativeCount: number
-  /** Short, non-clinical one-liner for the day (e.g. "Higher distress · 2 incidents"). */
+  /** Short, non-clinical one-liner for the day (e.g. "A harder day · 2 incidents"). */
   shortSummary: string
 }
 
@@ -224,7 +224,7 @@ export interface CorrelationInsight {
 /*  Relationships                                                      */
 /* ------------------------------------------------------------------ */
 
-/** Two aligned distress series for side-by-side charting. */
+/** Two aligned well-being series for side-by-side charting. */
 export interface RelationshipChartPoint {
   date: DateKey
   aScore: number | null
@@ -232,7 +232,7 @@ export interface RelationshipChartPoint {
 }
 
 /**
- * How two people's distress trends move relative to each other. Framed
+ * How two people's well-being trends move relative to each other. Framed
  * carefully so it never reads as one person being "the cause" of another's
  * hard day.
  */
@@ -241,7 +241,7 @@ export interface RelationshipInsight {
   personAName: string
   personBId: string
   personBName: string
-  metric: 'distress'
+  metric: 'wellbeing'
   /** B compared to A shifted by this many days (0 = same day, 1 = next day). */
   lagDays: 0 | 1
   /** Pearson correlation of the two aligned series, -1..1. */
@@ -262,7 +262,7 @@ export type TurningPointType =
   | 'spike'
   | 'recovery'
 
-/** A meaningful, sustained shift in household distress. */
+/** A meaningful, sustained shift in household well-being. */
 export interface TurningPointInsight {
   date: DateKey
   type: TurningPointType

@@ -25,22 +25,22 @@ describe('rollingAverage', () => {
 })
 
 describe('computeTrend', () => {
-  it('reports worsening when recent distress is meaningfully higher', () => {
+  it('reports improving when recent well-being is meaningfully higher', () => {
     const prev = [40, 40, 40, 40, 40, 40, 40]
     const curr = [60, 60, 60, 60, 60, 60, 60]
     const trend = computeTrend(series([...prev, ...curr]))
     expect(trend.previous7DayAverage).toBe(40)
     expect(trend.current7DayAverage).toBe(60)
     expect(trend.delta).toBe(20)
-    expect(trend.direction).toBe('worsening')
+    expect(trend.direction).toBe('improving')
     expect(trend.confidence).toBe('high')
   })
 
-  it('reports improving when recent distress is meaningfully lower', () => {
+  it('reports worsening when recent well-being is meaningfully lower', () => {
     const trend = computeTrend(
       series([70, 70, 70, 70, 70, 70, 70, 45, 45, 45, 45, 45, 45, 45]),
     )
-    expect(trend.direction).toBe('improving')
+    expect(trend.direction).toBe('worsening')
     expect(trend.delta).toBe(-25)
   })
 

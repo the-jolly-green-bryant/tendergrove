@@ -1,12 +1,14 @@
 /**
- * Turning points: meaningful, sustained shifts in household distress.
+ * Turning points: meaningful, sustained shifts in household well-being.
  *
- * The method is deliberately simple and explainable — no change-point models.
- * For each candidate day we compare the rolling average of the days just BEFORE
- * it to the rolling average of the days from it onward. A large enough,
- * sustained gap is a turning point. Tiny wobble is ignored, and a change must
- * persist for several days to count (so a single loud day doesn't masquerade as
- * a lasting shift — that is reported separately as a "spike").
+ * Scores are well-being (higher = better), so a sustained RISE is a positive
+ * change and a sustained DROP is worth watching. The method is deliberately
+ * simple and explainable — no change-point models. For each candidate day we
+ * compare the rolling average of the days just BEFORE it to the rolling average
+ * of the days from it onward. A large enough, sustained gap is a turning point.
+ * Tiny wobble is ignored, and a change must persist for several days to count
+ * (so a single hard day doesn't masquerade as a lasting shift — that is
+ * reported separately as a "spike": one unusually hard day that bounced back).
  */
 
 import { daysBetween, mean, safeRound } from './dateUtils'
@@ -31,11 +33,11 @@ export const MIN_SUSTAINED_DELTA = 15
 /** A sustained change must stay on its new side for at least this many days. */
 export const MIN_PERSIST_DAYS = 3
 
-/** A single day this far above BOTH neighbours (and high) reads as a spike. */
+/** A single day this far BELOW both neighbours (and low) reads as a hard-day spike. */
 export const SPIKE_DELTA = 22
 
-/** Distress at/above this counts as "elevated" (used for spike / recovery). */
-export const ELEVATED = 61
+/** Well-being at/below this counts as "low" (used for spike / recovery). */
+export const LOW_WELLBEING = 40
 
 /** |delta| → severity bands. */
 const SEVERITY_BANDS = { high: 30, moderate: 20 } as const
@@ -80,9 +82,10 @@ function measurePersistence(
 }
 
 function classifySustained(before: number, delta: number): TurningPointType {
-  if (delta > 0) return 'sustainedIncrease'
-  // A decrease from an elevated level is a recovery; otherwise a plain decrease.
-  return before >= ELEVATED ? 'recovery' : 'sustainedDecrease'
+  // A drop in well-being is worth watching.
+  if (delta < 0) return 'sustainedDecrease'
+  // A rise from a low level is a recovery; otherwise a plain improvement.
+  return before <= LOW_WELLBEING ? 'recovery' : 'sustainedIncrease'
 }
 
 /** Pluralize "day"/"days" for a count. */
@@ -98,15 +101,15 @@ function buildSustainedSummary(
   reachedEnd: boolean,
 ): string {
   const tail = reachedEnd
-    ? `and has stayed there for ${days(durationDays)}`
+    ? `and has held there for ${days(durationDays)}`
     : `for about ${days(durationDays)}`
-  if (type === 'sustainedIncrease') {
-    return `Distress rose from around ${before} to ${after} ${tail}. Worth watching.`
+  if (type === 'sustainedDecrease') {
+    return `Well-being dipped from around ${before} to ${after} ${tail}. Worth watching.`
   }
   if (type === 'recovery') {
-    return `Distress eased from around ${before} to ${after} ${tail}. A hopeful change.`
+    return `Well-being bounced back from around ${before} to ${after} ${tail}. A hopeful change.`
   }
-  return `Distress drifted down from around ${before} to ${after} ${tail}.`
+  return `Well-being improved from around ${before} to ${after} ${tail}. A hopeful change.`
 }
 
 /* ------------------------------------------------------------------ */
@@ -181,7 +184,7 @@ function detectSustained(scored: ScoredPoint[]): TurningPointInsight[] {
   return insights
 }
 
-/** Detect one-day spikes that jump above both neighbours and return. */
+/** Detect a single hard day that dips well below both neighbours and returns. */
 function detectSpikes(
   scored: ScoredPoint[],
   covered: Set<DateKey>,
@@ -192,8 +195,8 @@ function detectSpikes(
     if (covered.has(day.date)) continue
     const prev = scored[m - 1].score
     const next = scored[m + 1].score
-    const jump = day.score - Math.max(prev, next)
-    if (jump >= SPIKE_DELTA && day.score >= ELEVATED) {
+    const dip = Math.min(prev, next) - day.score
+    if (dip >= SPIKE_DELTA && day.score <= LOW_WELLBEING) {
       const baseline = safeRound((prev + next) / 2)
       spikes.push({
         date: day.date,
@@ -201,8 +204,8 @@ function detectSpikes(
         beforeAverage: baseline,
         afterAverage: day.score,
         durationDays: 1,
-        severity: severityFromDelta(jump),
-        summary: `Distress spiked to ${day.score} for a day (unusually high) and returned toward its usual level. A rough day rather than a lasting shift.`,
+        severity: severityFromDelta(dip),
+        summary: `Well-being dipped to ${day.score} for a single day and bounced back toward its usual level. A hard day rather than a lasting shift.`,
       })
     }
   }
@@ -214,7 +217,7 @@ function detectSpikes(
 /* ------------------------------------------------------------------ */
 
 /**
- * Find turning points in the household distress series. Returns them in
+ * Find turning points in the household well-being series. Returns them in
  * chronological order. Sustained shifts take priority; spikes are only reported
  * for days not already inside a sustained change.
  */

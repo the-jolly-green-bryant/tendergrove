@@ -103,9 +103,9 @@ describe('runAnalytics / analyzeHousehold', () => {
     expect(result.people).toEqual([{ id: 'p1', displayName: 'Child A', role: 'child' }])
     expect(result.personDailyScores.p1).toHaveLength(30)
 
-    // May 30 had a meltdown → distress 100 on the last day of the window.
+    // May 30 had a meltdown → lowest well-being (0) on the last day of the window.
     const lastDay = result.householdDailyScores.find((d) => d.date === '2025-05-30')
-    expect(lastDay!.score).toBe(100)
+    expect(lastDay!.score).toBe(0)
     expect(result.overview.weeklyInsight.detail).toBeTruthy()
   })
 

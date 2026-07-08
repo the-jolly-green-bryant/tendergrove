@@ -47,12 +47,17 @@ import type {
 export * from './types'
 export { scorePersonDay, aggregateHouseholdDay, buildDailyScores } from './scoring'
 export { computeTrend, rollingAverage } from './trends'
-export { buildCalendar, distressLevel } from './calendarHeatmap'
+export { buildCalendar, wellbeingLevel } from './calendarHeatmap'
 export { findCorrelations } from './correlations'
 export { findRelationships, pearson } from './relationships'
 export { findTurningPoints } from './turningPoints'
 export { buildOverview } from './summaries'
-export { buildPersonView, type PersonAnalyticsView } from './personView'
+export {
+  buildPersonView,
+  buildScopedView,
+  type PersonAnalyticsView,
+  type ScopedPatternsView,
+} from './personView'
 
 /** Default look-back window for the daily score series. */
 export const DEFAULT_WINDOW_DAYS = 30
@@ -97,6 +102,7 @@ export interface RawPerson {
   id: string
   displayName: string
   role?: string | null
+  avatarUrl?: string | null
   archived?: boolean | null
   indicators?: (RawIndicator | null)[] | null
   checkIns?: (RawCheckIn | null)[] | null

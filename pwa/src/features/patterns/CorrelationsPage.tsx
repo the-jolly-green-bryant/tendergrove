@@ -2,27 +2,25 @@ import React from 'react'
 
 import { LoadingState } from '../../components/LoadingState'
 import { Page } from '../../components/Page'
-import type { AnalyticsResult } from './analytics'
+import type { ScopedPatternsView } from './analytics'
 import { CorrelationCard } from './components/CorrelationCard'
 import { PatternsEmptyState } from './components/PatternsEmptyState'
-import { usePatternsAnalytics } from './usePatternsAnalytics'
+import { PatternsFilterBar } from './components/PatternsFilterBar'
+import { useScopedPatterns } from './useScopedPatterns'
 
 import './patterns.css'
 
 function CorrelationsContent({
-  result,
+  view,
 }: {
-  readonly result: AnalyticsResult
+  readonly view: ScopedPatternsView
 }): React.JSX.Element {
-  if (result.correlations.length === 0) {
+  if (view.correlations.length === 0) {
+    const who = view.personName ? `for ${view.personName}` : 'yet'
     return (
       <PatternsEmptyState
         title="No clear connections yet"
-        message={
-          result.dataQuality.hasEnoughData
-            ? 'We didn’t find any strong same-day or next-day connections yet. That’s completely normal — we only surface links we’re reasonably confident about.'
-            : result.dataQuality.message
-        }
+        message={`We didn’t find any strong same-day or next-day connections ${who}. That’s completely normal — we only surface links we’re reasonably confident about.`}
       />
     )
   }
@@ -31,9 +29,9 @@ function CorrelationsContent({
     <>
       <p className="patterns-lede">
         How often one thing appears near another. These are gentle observations, not
-        causes — patterns worth watching, based on the last {result.window.days} days.
+        causes — patterns worth watching.
       </p>
-      {result.correlations.map((correlation) => (
+      {view.correlations.map((correlation) => (
         <CorrelationCard
           key={`${correlation.sourceLabel}-${correlation.targetLabel}-${correlation.lagDays}`}
           correlation={correlation}
@@ -44,10 +42,10 @@ function CorrelationsContent({
 }
 
 /**
- * Correlations page. Consumes: correlation insights.
+ * Correlations page. Consumes: correlation insights (scoped by the shared filter).
  */
 export default function CorrelationsPage(): React.JSX.Element {
-  const { result, isLoading, hasError } = usePatternsAnalytics()
+  const { view, isLoading, hasError } = useScopedPatterns()
 
   return (
     <Page
@@ -57,7 +55,12 @@ export default function CorrelationsPage(): React.JSX.Element {
     >
       {isLoading && <LoadingState />}
       {hasError && <p>We couldn’t load your patterns just now. Please try again.</p>}
-      {!isLoading && !hasError && result && <CorrelationsContent result={result} />}
+      {!isLoading && !hasError && view && (
+        <>
+          <PatternsFilterBar />
+          <CorrelationsContent view={view} />
+        </>
+      )}
     </Page>
   )
 }

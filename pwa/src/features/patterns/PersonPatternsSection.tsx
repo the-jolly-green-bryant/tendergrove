@@ -2,13 +2,16 @@ import {
   IonButton,
   IonCard,
   IonCardContent,
+  IonIcon,
   IonLabel,
   IonSegment,
   IonSegmentButton,
 } from '@ionic/react'
+import { homeOutline } from 'ionicons/icons'
 import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
 
+import { PersonAvatar } from '../../components/PersonAvatar'
 import { buildPersonView, type CorrelationInsight, type TrendResult } from './analytics'
 import { CorrelationCard } from './components/CorrelationCard'
 import { PatternsEmptyState } from './components/PatternsEmptyState'
@@ -38,7 +41,7 @@ function trendSeries(trend: TrendResult): { dates: string[]; series: ChartSeries
     dates: points.map((p) => p.date),
     series: [
       {
-        label: 'Daily distress',
+        label: 'Daily well-being',
         color: 'var(--ion-color-primary)',
         values: points.map((p) => p.score),
       },
@@ -64,9 +67,9 @@ function trendText(trend: TrendResult): string {
   }
   const cmp = current !== null && previous !== null ? ` (${previous} → ${current})` : ''
   if (direction === 'stable') return `About the same as last week${cmp}.`
-  return direction === 'worsening'
-    ? `Trending a little higher than last week${cmp}.`
-    : `Trending lower than last week${cmp}.`
+  return direction === 'improving'
+    ? `Trending higher than last week${cmp} — a good sign.`
+    : `Trending lower than last week${cmp} — worth watching.`
 }
 
 function PatternsBody({
@@ -127,16 +130,18 @@ function PatternsBody({
 }
 
 /**
- * A per-person patterns section for the Person page: distress trend and
+ * A per-person patterns section for the Person page: well-being trend and
  * connections for this person, with a filter to view the whole household
  * instead. Reuses the shared household analytics pass.
  */
 export function PersonPatternsSection({
   personId,
   personName,
+  personAvatarUrl,
 }: {
   readonly personId: string
   readonly personName: string
+  readonly personAvatarUrl?: string | null
 }): React.JSX.Element | null {
   const { result, isLoading, hasError } = usePatternsAnalytics()
   const [scope, setScope] = useState<Scope>('person')
@@ -145,25 +150,44 @@ export function PersonPatternsSection({
   if (isLoading || hasError || !result) return null
 
   const personView = buildPersonView(result, personId)
-  const data: ScopedData =
-    scope === 'person'
-      ? {
-          trend: personView.trend,
-          correlations: personView.correlations,
-          scoredDays: personView.scoredDays,
-        }
-      : {
-          trend: result.householdTrend,
-          correlations: result.correlations,
-          scoredDays: result.dataQuality.scoredDays,
-        }
+  const scopedToPerson = scope === 'person'
+  const data: ScopedData = scopedToPerson
+    ? {
+        trend: personView.trend,
+        correlations: personView.correlations,
+        scoredDays: personView.scoredDays,
+      }
+    : {
+        trend: result.householdTrend,
+        correlations: result.correlations,
+        scoredDays: result.dataQuality.scoredDays,
+      }
 
-  const chartTitle =
-    scope === 'person' ? `${personName}'s distress trend` : 'Household distress trend'
+  const chartTitle = scopedToPerson
+    ? `${personName}'s well-being trend`
+    : 'Household well-being trend'
 
   return (
     <section className="patterns-section person-patterns">
-      <h2 className="pattern-calendar-heading">Patterns</h2>
+      <div className="person-patterns__header">
+        {scopedToPerson ? (
+          <PersonAvatar
+            name={personName}
+            src={personAvatarUrl}
+            className="person-patterns__avatar"
+          />
+        ) : (
+          <span
+            className="person-patterns__household-icon"
+            aria-hidden="true"
+          >
+            <IonIcon icon={homeOutline} />
+          </span>
+        )}
+        <h2 className="pattern-calendar-heading person-patterns__title">
+          {scopedToPerson ? `${personName}’s patterns` : 'Household patterns'}
+        </h2>
+      </div>
       <IonSegment
         value={scope}
         onIonChange={(e) => setScope((e.detail.value as Scope) ?? 'person')}

@@ -1,10 +1,10 @@
 /**
- * Relationships: how two people's distress trends move relative to each other.
+ * Relationships: how two people's well-being trends move relative to each other.
  *
- * We correlate each pair of people's daily distress series (Pearson) at lag 0
+ * We correlate each pair of people's daily well-being series (Pearson) at lag 0
  * (same day) and lag 1 (one person a day ahead of the other). This can surface
- * gentle observations like "when your fatigue rises, Child A's distress tends
- * to rise within a day".
+ * gentle observations like "when you have a harder day, Child A often does too
+ * within a day".
  *
  * Wording is chosen with great care: these are patterns that "appear related"
  * or "seem to coincide". No one is ever framed as the cause of another's hard
@@ -149,13 +149,13 @@ function buildSummary(c: Candidate): string {
 
   if (c.lagDays === 0) {
     return positive
-      ? `${a} and ${b} often seem to have harder days around the same time. Their patterns appear related.`
-      : `${a} and ${b}'s harder days often seem to fall on different days — their patterns seem to move in opposite directions.`
+      ? `${a} and ${b} often seem to have good days — and harder days — around the same time. Their patterns appear related.`
+      : `${a} and ${b}'s good days often seem to fall on different days — their patterns seem to move in opposite directions.`
   }
 
   // lag 1: A leads B by a day.
   return positive
-    ? `When ${a}'s distress rises, ${b}'s distress tends to rise within a day. These appear related — worth watching, gently.`
+    ? `When ${a} has a harder day, ${b} often has one within a day too. These appear related — worth noticing, gently.`
     : `When ${a} has a harder day, ${b} often seems a little steadier the next day. Their patterns seem to move in opposite directions.`
 }
 
@@ -247,7 +247,7 @@ function candidateToInsight(best: Candidate): RelationshipInsight {
     personAName: best.personA.displayName,
     personBId: best.personB.id,
     personBName: best.personB.displayName,
-    metric: 'distress',
+    metric: 'wellbeing',
     lagDays: best.lagDays,
     correlation: Math.round(best.correlation * 100) / 100,
     confidence: best.confidence,

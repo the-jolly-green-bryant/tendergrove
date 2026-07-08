@@ -4,24 +4,24 @@ import React from 'react'
 import { LoadingState } from '../../components/LoadingState'
 import { Page } from '../../components/Page'
 import type {
-  AnalyticsResult,
+  ScopedPatternsView,
   TurningPointInsight,
   TurningPointType,
 } from './analytics'
 import { formatDayLabel } from './analytics/dateUtils'
 import { PatternsEmptyState } from './components/PatternsEmptyState'
-import { usePatternsAnalytics } from './usePatternsAnalytics'
+import { PatternsFilterBar } from './components/PatternsFilterBar'
+import { useScopedPatterns } from './useScopedPatterns'
 
 import './patterns.css'
 
+// className maps to a colour token: --increase = red, --recovery = green,
+// --spike = purple. Well-being rising is the good news, so it gets green.
 const TYPE_TAG: Record<TurningPointType, { label: string; className: string }> = {
-  sustainedIncrease: {
-    label: 'Sustained increase',
-    className: 'pattern-tag--increase',
-  },
-  sustainedDecrease: { label: 'Positive change', className: 'pattern-tag--decrease' },
-  recovery: { label: 'Positive change', className: 'pattern-tag--recovery' },
-  spike: { label: 'One-day spike', className: 'pattern-tag--spike' },
+  sustainedIncrease: { label: 'Positive change', className: 'pattern-tag--recovery' },
+  recovery: { label: 'Bounced back', className: 'pattern-tag--recovery' },
+  sustainedDecrease: { label: 'Worth watching', className: 'pattern-tag--increase' },
+  spike: { label: 'One hard day', className: 'pattern-tag--spike' },
 }
 
 function TurningPointCard({
@@ -46,30 +46,30 @@ function TurningPointCard({
 }
 
 function TurningPointsContent({
-  result,
+  view,
 }: {
-  readonly result: AnalyticsResult
+  readonly view: ScopedPatternsView
 }): React.JSX.Element {
-  if (result.turningPoints.length === 0) {
+  if (view.turningPoints.length === 0) {
+    const subject = view.personName
+      ? `${view.personName}'s well-being has`
+      : 'Things have'
     return (
       <PatternsEmptyState
         title="No big shifts detected"
-        message={
-          result.dataQuality.hasEnoughData
-            ? 'Things have been fairly steady — we haven’t detected any lasting shifts recently. We’ll flag them here if a sustained change appears.'
-            : result.dataQuality.message
-        }
+        message={`${subject} been fairly steady — we haven’t detected any lasting shifts recently. We’ll flag them here if a sustained change appears.`}
       />
     )
   }
 
   // Most recent first — that's usually what a caregiver wants to see.
-  const ordered = [...result.turningPoints].reverse()
+  const ordered = [...view.turningPoints].reverse()
+  const subject = view.personName ? `${view.personName}'s` : 'household'
 
   return (
     <>
       <p className="patterns-lede">
-        Bigger shifts in household distress — moments where things changed and stayed
+        Bigger shifts in {subject} well-being — moments where things changed and stayed
         changed for a while. Everyday ups and downs are left out on purpose.
       </p>
       {ordered.map((turningPoint) => (
@@ -83,10 +83,10 @@ function TurningPointsContent({
 }
 
 /**
- * Turning points page. Consumes: turning point insights.
+ * Turning points page. Consumes: turning point insights (scoped by the filter).
  */
 export default function TurningPointsPage(): React.JSX.Element {
-  const { result, isLoading, hasError } = usePatternsAnalytics()
+  const { view, isLoading, hasError } = useScopedPatterns()
 
   return (
     <Page
@@ -96,7 +96,12 @@ export default function TurningPointsPage(): React.JSX.Element {
     >
       {isLoading && <LoadingState />}
       {hasError && <p>We couldn’t load your patterns just now. Please try again.</p>}
-      {!isLoading && !hasError && result && <TurningPointsContent result={result} />}
+      {!isLoading && !hasError && view && (
+        <>
+          <PatternsFilterBar />
+          <TurningPointsContent view={view} />
+        </>
+      )}
     </Page>
   )
 }

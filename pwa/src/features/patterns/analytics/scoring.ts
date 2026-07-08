@@ -1,17 +1,23 @@
 /**
- * Daily distress scoring.
+ * Daily well-being scoring.
  *
  * These are the foundation every other analytic builds on, so the math is kept
  * deliberately simple, explainable, and deterministic. A caregiver (or a future
  * support person) should be able to read this file and understand exactly why a
  * day scored the way it did.
  *
- * The distress scale is 0–100 where **higher = more distress**:
- *   - undesired indicators that occurred push the score UP
- *   - incidents push the score UP (weighted a little heavier — they matter)
- *   - desired indicators that occurred pull the score DOWN
+ * The scale is 0–100 where **higher = better** (this matches the app's existing
+ * wellness score in `lib/status.ts`):
+ *   - desired indicators that occurred push the score UP
+ *   - undesired indicators that occurred pull the score DOWN
+ *   - incidents pull the score DOWN (weighted a little heavier — they matter)
  *   - a day with no check-in and no incident has NO score (null), never 0.
- *     Missing data is absence, not calm.
+ *     Missing data is absence, not a bad day.
+ *
+ * Internally we compute a "distress" quantity (how much went wrong) and return
+ * its inverse, `100 - distress`, as the well-being score. Keeping the internal
+ * math in distress terms makes the incident/indicator weighting easy to reason
+ * about; the single inversion happens once, at the end of `scorePersonDay`.
  */
 
 import { clamp, isoToDateKey, safeRound } from './dateUtils'
@@ -126,17 +132,21 @@ export function scorePersonDay(
   const fromIndicators =
     dayCheckIns.length > 0 ? indicatorDistress(person.indicators, checkedIds) : null
 
-  let score: number | null
+  // Compute distress (how much went wrong) internally, then invert to well-being.
+  let distress: number | null
   if (fromIndicators !== null) {
-    // Indicator signal exists; incidents push it further up (bounded).
-    score = safeRound(clamp(fromIndicators + incidentDistress, 0, 100))
+    // Indicator signal exists; incidents push distress further up (bounded).
+    distress = safeRound(clamp(fromIndicators + incidentDistress, 0, 100))
   } else if (dayIncidents.length > 0) {
     // Incident(s) but no scoreable check-in: anchor to a meaningful baseline.
-    score = safeRound(clamp(INCIDENT_ONLY_BASE + incidentDistress, 0, 100))
+    distress = safeRound(clamp(INCIDENT_ONLY_BASE + incidentDistress, 0, 100))
   } else {
     // Either no data at all, or a check-in with no scoreable indicators.
-    score = null
+    distress = null
   }
+
+  // Higher = better. A day with no data stays null (never 0).
+  const score = distress === null ? null : 100 - distress
 
   return {
     personId: person.id,
