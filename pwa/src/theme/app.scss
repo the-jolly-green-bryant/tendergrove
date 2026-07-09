@@ -204,18 +204,6 @@ ion-header::after {
   font-weight: 800;
 }
 
-/* Left-align all toolbar titles (override iOS centering) */
-ion-title {
-  --color: #5f6f70;
-  position: absolute;
-  left: 56px;
-  right: 56px;
-  text-align: left;
-  padding: 0;
-  color: #5f6f70;
-  font-weight: 800;
-}
-
 /* Toolbar controls match the dashboard header color. */
 ion-toolbar ion-button,
 ion-toolbar ion-buttons {

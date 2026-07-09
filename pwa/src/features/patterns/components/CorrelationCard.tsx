@@ -1,4 +1,11 @@
-import { IonCard, IonCardContent, IonIcon } from '@ionic/react'
+import {
+  IonCard,
+  IonCardContent,
+  IonIcon,
+  IonItem,
+  IonLabel,
+  IonNote,
+} from '@ionic/react'
 import { arrowForwardOutline } from 'ionicons/icons'
 import React from 'react'
 
@@ -16,23 +23,20 @@ export function CorrelationCard({
   readonly correlation: CorrelationInsight
 }): React.JSX.Element {
   return (
-    <IonCard>
-      <IonCardContent>
-        <div className="pattern-turning-card__head">
-          <h3 className="pattern-row__title">
-            {correlation.sourceLabel}
-            <IonIcon
-              icon={arrowForwardOutline}
-              aria-hidden="true"
-              style={{ margin: '0 6px', verticalAlign: 'middle' }}
-            />
-            {correlation.targetLabel}
-          </h3>
-          <span className="pattern-tag pattern-tag--spike">
-            {lagLabel(correlation.lagDays)}
-          </span>
-        </div>
-      </IonCardContent>
-    </IonCard>
+    <IonItem>
+      <IonLabel>
+        {correlation.sourceLabel}
+
+        <IonIcon
+          icon={arrowForwardOutline}
+          aria-hidden="true"
+          style={{ margin: '0 6px', verticalAlign: 'middle' }}
+        />
+
+        {correlation.targetLabel}
+      </IonLabel>
+
+      <IonNote slot="end">{lagLabel(correlation.lagDays)}</IonNote>
+    </IonItem>
   )
 }

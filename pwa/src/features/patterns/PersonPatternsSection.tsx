@@ -4,6 +4,7 @@ import {
   IonCardContent,
   IonIcon,
   IonLabel,
+  IonList,
   IonSegment,
   IonSegmentButton,
 } from '@ionic/react'
@@ -100,12 +101,15 @@ function PatternsBody({
       {correlations.length > 0 && (
         <>
           <h3 className="pattern-calendar-heading">Connections worth noticing</h3>
-          {correlations.map((c) => (
-            <CorrelationCard
-              key={`${c.sourceLabel}-${c.targetLabel}-${c.lagDays}`}
-              correlation={c}
-            />
-          ))}
+
+          <IonList>
+            {correlations.map((c) => (
+              <CorrelationCard
+                key={`${c.sourceLabel}-${c.targetLabel}-${c.lagDays}`}
+                correlation={c}
+              />
+            ))}
+          </IonList>
         </>
       )}
 

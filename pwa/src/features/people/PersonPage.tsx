@@ -28,7 +28,7 @@ import {
   removeCircle,
 } from 'ionicons/icons'
 import { formatDistanceToNow } from 'date-fns'
-import { useMemo } from 'react'
+import React, { useMemo } from 'react'
 import type { ReactNode } from 'react'
 import { useHistory, useLocation, useParams } from 'react-router-dom'
 
@@ -409,10 +409,7 @@ function PersonPageHeader({
     <IonHeader>
       <IonToolbar>
         <IonButtons slot="start">
-          <IonBackButton
-            defaultHref="/dashboard"
-            text=""
-          />
+          <IonBackButton defaultHref={'/dashboard'} />
         </IonButtons>
 
         {!isTimelineView ? headerElement : <IonTitle>{displayName}</IonTitle>}
@@ -453,50 +450,6 @@ function PersonCheckInPanel({
         onClick={onStartCheckIn}
       />
     </section>
-  )
-}
-
-function PersonNotesCard({
-  viewDate,
-  selectedDateNote,
-  lastNoteCheckIn,
-}: {
-  readonly viewDate: Date
-  readonly selectedDateNote: string | null
-  readonly lastNoteCheckIn: CheckIn | null
-}) {
-  return (
-    <IonCard>
-      <IonCardContent>
-        <div className="section-header">
-          <h2>{formatDateLabel(viewDate)} Notes</h2>
-        </div>
-
-        {selectedDateNote ? (
-          <p className="person-notes">{selectedDateNote}</p>
-        ) : (
-          <>
-            <p className="person-notes person-notes--empty">
-              No notes for {formatDateLabel(viewDate).toLowerCase()}.
-            </p>
-
-            {lastNoteCheckIn && (
-              <div className="person-notes__last">
-                <div className="section-header">
-                  <h3>Last Notes</h3>
-                  <span className="section-header__meta">
-                    {formatDistanceToNow(new Date(lastNoteCheckIn.occurredAt), {
-                      addSuffix: true,
-                    })}
-                  </span>
-                </div>
-                <p className="person-notes">{lastNoteCheckIn.note}</p>
-              </div>
-            )}
-          </>
-        )}
-      </IonCardContent>
-    </IonCard>
   )
 }
 
@@ -666,7 +619,7 @@ function PersonPageLoadedContent({
  * @returns {React.JSX.Element | null}
  * @constructor
  */
-export default function PersonPage() {
+export default function PersonPage(): React.JSX.Element | null {
   const { personId } = useParams<{ personId: string }>()
   const isRealPerson = Boolean(personId && personId !== 'new')
   const {

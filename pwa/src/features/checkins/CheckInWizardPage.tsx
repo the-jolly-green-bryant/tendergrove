@@ -775,11 +775,13 @@ export function CheckInWizardPage({
             <IonButton onClick={() => routeModal.dismiss()}>Close</IonButton>
           </IonButtons>
 
+          <IonTitle>
+            {step?.person?.displayName} - {formatDateLabel(selectedDate)}
+          </IonTitle>
+
           <IonButtons slot="end">
             <IonButton onClick={onSave}>{step.existing ? 'Update' : 'Save'}</IonButton>
           </IonButtons>
-
-          <IonTitle>{title}</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent

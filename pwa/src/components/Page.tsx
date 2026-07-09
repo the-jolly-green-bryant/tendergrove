@@ -9,6 +9,7 @@ import {
   IonLabel,
   IonList,
   IonMenu,
+  IonMenuButton,
   IonMenuToggle,
   IonPage,
   IonTitle,
@@ -26,7 +27,7 @@ import {
   settingsOutline,
   timeOutline,
 } from 'ionicons/icons'
-import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import React, { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 
 import { useAppAuth } from '../auth/AuthContext'
 
@@ -195,53 +196,6 @@ function useHeaderScrollState(
   return { contentRef, isAtTop, updateHeaderPosition }
 }
 
-function HeaderStartControl({
-  backHref,
-  onBackClick,
-}: {
-  readonly backHref?: string
-  readonly onBackClick?: () => void
-}) {
-  let control: ReactNode
-  if (onBackClick) {
-    control = (
-      <IonButton
-        fill="clear"
-        aria-label="Back"
-        onClick={onBackClick}
-      >
-        <IonIcon
-          slot="icon-only"
-          icon={arrowBackOutline}
-        />
-      </IonButton>
-    )
-  } else if (backHref) {
-    control = (
-      <IonBackButton
-        defaultHref={backHref}
-        text=""
-      />
-    )
-  } else {
-    control = (
-      <IonMenuToggle autoHide={false}>
-        <IonButton
-          fill="clear"
-          aria-label="Menu"
-        >
-          <IonIcon
-            slot="icon-only"
-            icon={menuOutline}
-          />
-        </IonButton>
-      </IonMenuToggle>
-    )
-  }
-
-  return <IonButtons slot="start">{control}</IonButtons>
-}
-
 /**
  * A wrapper for a page with a toolbar and content.
  * @param {PageProps} param0
@@ -260,12 +214,10 @@ export function Page({
   subHeaderContent,
   disablePadding,
   className,
-  backHref,
-  onBackClick,
   transparentHeaderUntilScroll,
   transparentHeaderMode = 'scroll',
   forceOverscroll,
-}: PageProps) {
+}: PageProps): React.JSX.Element {
   const { contentRef, isAtTop, updateHeaderPosition } = useHeaderScrollState(
     transparentHeaderUntilScroll,
     transparentHeaderMode,
@@ -294,10 +246,9 @@ export function Page({
             className={toolbarClassName}
             mode={'ios'}
           >
-            <HeaderStartControl
-              backHref={backHref}
-              onBackClick={onBackClick}
-            />
+            <IonButtons slot="start">
+              <IonMenuButton></IonMenuButton>
+            </IonButtons>
             {headerContent ?? <IonTitle>{title}</IonTitle>}
           </IonToolbar>
           {subHeaderContent}
