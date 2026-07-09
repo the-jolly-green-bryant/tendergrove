@@ -1,8 +1,10 @@
 import {
+  IonAvatar,
   IonButton,
   IonCard,
   IonCardContent,
   IonIcon,
+  IonItem,
   IonLabel,
   IonList,
   IonSegment,
@@ -203,38 +205,32 @@ export function PersonPatternsSection({
       <IonSegment
         value={scope}
         onIonChange={(e) => setScope((e.detail.value as Scope) ?? 'person')}
-        className="person-patterns__scope"
       >
         <IonSegmentButton value="person">
-          <IonLabel>
-            <div className="person-patterns__header">
-              <PersonAvatar
-                name={personName}
-                src={personAvatarUrl}
-                className="person-patterns__avatar"
-              />
-
-              <h2 className="pattern-calendar-heading person-patterns__title">
-                {personName}
-              </h2>
-            </div>
-          </IonLabel>
+          <IonItem
+            color={'transparent'}
+            lines={'none'}
+          >
+            <PersonAvatar
+              name={personName}
+              src={personAvatarUrl}
+              slot={'start'}
+            />
+            <IonLabel>{personName}</IonLabel>
+          </IonItem>
         </IonSegmentButton>
-        <IonSegmentButton value="household">
-          <IonLabel>
-            <div className="person-patterns__header">
-              <span
-                className="person-patterns__household-icon"
-                aria-hidden="true"
-              >
-                <IonIcon icon={homeOutline} />
-              </span>
 
-              <h2 className="pattern-calendar-heading person-patterns__title">
-                Household
-              </h2>
-            </div>
-          </IonLabel>
+        <IonSegmentButton value="household">
+          <IonItem
+            color={'transparent'}
+            lines={'none'}
+          >
+            <IonAvatar slot={'start'}>
+              <IonIcon icon={homeOutline} />
+            </IonAvatar>
+
+            <IonLabel>Household</IonLabel>
+          </IonItem>
         </IonSegmentButton>
       </IonSegment>
 

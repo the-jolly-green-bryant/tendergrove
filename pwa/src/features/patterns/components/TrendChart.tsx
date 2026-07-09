@@ -240,15 +240,47 @@ function currentIndex(series: ChartSeries[]): number {
   return index < 0 ? 0 : index
 }
 
+function primarySeries(series: ChartSeries[]): ChartSeries | undefined {
+  return series.find((s) => !s.dashed) ?? series[0]
+}
+
+function nearestDataIndex(
+  targetIndex: number,
+  values: (number | null)[],
+): number | null {
+  let bestIndex: number | null = null
+  let bestDistance = Infinity
+
+  values.forEach((value, index) => {
+    if (value === null) return
+
+    const distance = Math.abs(index - targetIndex)
+    if (distance < bestDistance) {
+      bestIndex = index
+      bestDistance = distance
+    }
+  })
+
+  return bestIndex
+}
+
 /** Track a scrub position from pointer input over the chart. */
-function useScrub(count: number) {
+function useScrub(primaryValues: (number | null)[]) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
+
   const update = (event: React.PointerEvent<SVGSVGElement>) => {
     const rect = event.currentTarget.getBoundingClientRect()
+    const count = primaryValues.length
+
     if (rect.width === 0 || count <= 1) return
+
     const ratio = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width))
-    setActiveIndex(Math.round(ratio * (count - 1)))
+    const rawIndex = Math.round(ratio * (count - 1))
+    const snappedIndex = nearestDataIndex(rawIndex, primaryValues)
+
+    setActiveIndex(snappedIndex)
   }
+
   return { activeIndex, update, clear: () => setActiveIndex(null) }
 }
 
@@ -384,31 +416,6 @@ function ChartCanvas(props: CanvasProps): React.JSX.Element {
   )
 }
 
-/** The legend swatches beneath the chart. */
-function ChartLegend({
-  series,
-}: {
-  readonly series: ChartSeries[]
-}): React.JSX.Element {
-  return (
-    <figcaption className="pattern-chart__legend">
-      {series.map((s) => (
-        <span
-          key={s.label}
-          className="pattern-chart__legend-item"
-        >
-          <span
-            className="pattern-chart__legend-swatch"
-            style={{ background: s.color }}
-            aria-hidden="true"
-          />
-          {s.label}
-        </span>
-      ))}
-    </figcaption>
-  )
-}
-
 /** A small, accessible well-being line chart with scrub-to-read and a
  *  highlighted current value (esomarkettracker-style). */
 export function TrendChart({
@@ -420,8 +427,10 @@ export function TrendChart({
 }: TrendChartProps): React.JSX.Element {
   const count = dates.length
   const domain = useMemo(() => computeDomain(series, clampTo), [series, clampTo])
-  const hasData = series.some((s) => s.values.some((v) => v !== null))
-  const { activeIndex, update, clear } = useScrub(count)
+  const primary = primarySeries(series)
+  const primaryValues = primary?.values ?? []
+  const hasData = primaryValues.some((v) => v !== null)
+  const { activeIndex, update, clear } = useScrub(primaryValues)
   const readoutIndex = activeIndex ?? currentIndex(series)
 
   const highlightRect = useMemo(() => {
