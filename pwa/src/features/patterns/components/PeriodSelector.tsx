@@ -1,4 +1,5 @@
 import React from 'react'
+import { IonLabel, IonSegment, IonSegmentButton } from '@ionic/react'
 
 /** Selectable time ranges, in days. 1M is the default across the app. */
 export const PERIOD_OPTIONS = [
@@ -12,33 +13,22 @@ export const PERIOD_OPTIONS = [
  * A compact 1M / 3M / 6M / 12M range selector (stock-chart style). Drives the
  * analysis window; the chart re-scales to the chosen period.
  */
-export function PeriodSelector({
+export const PeriodSelector = ({
   value,
   onChange,
 }: {
   readonly value: number
   readonly onChange: (days: number) => void
-}): React.JSX.Element {
-  return (
-    <div
-      className="pattern-periods"
-      role="group"
-      aria-label="Time range"
-    >
-      {PERIOD_OPTIONS.map((period) => {
-        const active = value === period.days
-        return (
-          <button
-            key={period.days}
-            type="button"
-            className={`pattern-period${active ? ' pattern-period--active' : ''}`}
-            aria-pressed={active}
-            onClick={() => onChange(period.days)}
-          >
-            {period.label}
-          </button>
-        )
-      })}
-    </div>
-  )
-}
+}): React.JSX.Element => (
+  <IonSegment value={value}>
+    {PERIOD_OPTIONS.map((period) => (
+      <IonSegmentButton
+        value={period.days}
+        key={period.days}
+        onClick={() => onChange(period.days)}
+      >
+        <IonLabel>{period.label}</IonLabel>
+      </IonSegmentButton>
+    ))}
+  </IonSegment>
+)
