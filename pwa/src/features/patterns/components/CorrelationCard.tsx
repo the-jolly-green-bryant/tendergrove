@@ -35,8 +35,6 @@ export function CorrelationCard({
 
         {correlation.targetLabel}
       </IonLabel>
-
-      <IonNote slot="end">{lagLabel(correlation.lagDays)}</IonNote>
     </IonItem>
   )
 }

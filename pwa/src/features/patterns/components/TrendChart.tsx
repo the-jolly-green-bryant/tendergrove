@@ -52,7 +52,7 @@ const PAD_T = 14
 const PAD_B = 30
 
 const EVENT_BASELINE_Y = 181
-const EVENT_MAX_HEIGHT = 18
+const EVENT_MAX_HEIGHT = 36
 
 /** Fewest points the y-axis will ever span, so a flat-ish week isn't over-zoomed. */
 const MIN_SPAN = 12

@@ -99,11 +99,9 @@ function PatternsBody({
         />
       </div>
 
-      <p className="pattern-row__meta">{trendText(data.trend)}</p>
-
       {correlations.length > 0 && (
         <>
-          <h3 className="pattern-calendar-heading">Connections worth noticing</h3>
+          <h3 className="pattern-calendar-heading">Recent Patterns</h3>
 
           <IonList>
             {correlations.map((c) => (
