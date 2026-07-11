@@ -48,14 +48,15 @@ export interface PersonAnalyticsView {
  * single person "contributing people" is simply 1 on days with data.
  */
 function asHouseholdSeries(scores: DailyPersonScore[]): DailyHouseholdScore[] {
-  return scores.map((s) => ({
-    date: s.date,
-    score: s.score,
-    contributingPeople: s.hasData ? 1 : 0,
-    checkInCount: s.checkInCount,
-    incidentCount: s.incidentCount,
-    positiveCount: s.positiveCount,
-    negativeCount: s.negativeCount,
+  return scores.map((score) => ({
+    date: score.date,
+    score: score.score,
+    contributingPeople: score.hasData ? 1 : 0,
+    checkInCount: score.checkInCount,
+    incidentCount: score.incidentCount,
+    eventCount: score.eventCount,
+    positiveCount: score.positiveCount,
+    negativeCount: score.negativeCount,
   }))
 }
 

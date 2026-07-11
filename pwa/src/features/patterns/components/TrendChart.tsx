@@ -41,6 +41,7 @@ interface TrendChartProps {
   readonly clampTo?: [number, number] | null
   /** Draw a slightly bolder reference line at this value (e.g. 0 for deltas). */
   readonly baseline?: number
+  readonly eventCounts: number[]
 }
 
 const VIEW_W = 320
@@ -49,6 +50,9 @@ const PAD_L = 0
 const PAD_R = 0
 const PAD_T = 14
 const PAD_B = 30
+
+const EVENT_BASELINE_Y = 181
+const EVENT_MAX_HEIGHT = 18
 
 /** Fewest points the y-axis will ever span, so a flat-ish week isn't over-zoomed. */
 const MIN_SPAN = 12
@@ -194,6 +198,7 @@ const SeriesLine = ({
         strokeLinejoin="round"
         strokeLinecap="round"
         strokeDasharray={'5 5'}
+        opacity={series.dashed ? 0.5 : 1}
       />
 
       <path
@@ -204,6 +209,7 @@ const SeriesLine = ({
         strokeLinejoin="round"
         strokeLinecap="round"
         strokeDasharray={series.dashed ? '5 5' : undefined}
+        opacity={series.dashed ? 0.5 : 1}
       />
     </>
   )
@@ -378,11 +384,66 @@ function Readout({
   )
 }
 
+interface EventBarsProps {
+  readonly counts: number[]
+  readonly dateCount: number
+}
+
+function EventBars({ counts, dateCount }: EventBarsProps): React.JSX.Element | null {
+  if (dateCount === 0) return null
+
+  const maxCount = Math.max(0, ...counts)
+
+  if (maxCount === 0) return null
+
+  const slotWidth =
+    dateCount > 1 ? (VIEW_W - PAD_L - PAD_R) / (dateCount - 1) : VIEW_W - PAD_L - PAD_R
+
+  const barWidth = Math.max(2, Math.min(6, slotWidth * 0.42))
+
+  return (
+    <g
+      className="pattern-chart__events"
+      aria-hidden="true"
+    >
+      {counts.map((count, index) => {
+        if (count <= 0) return null
+
+        const height = Math.max(3, (count / maxCount) * EVENT_MAX_HEIGHT)
+
+        const centerX = xFor(index, dateCount)
+
+        // Keep the first and last bars inside the SVG bounds.
+        const x = Math.min(VIEW_W - barWidth, Math.max(0, centerX - barWidth / 2))
+
+        return (
+          <rect
+            key={`${index}-${count}`}
+            className="pattern-chart__event-bar"
+            x={x}
+            y={EVENT_BASELINE_Y - height}
+            width={barWidth}
+            height={height}
+            rx={barWidth / 2}
+            fill="var(--ion-color-primary)"
+            opacity={0.3}
+          >
+            <title>
+              {count} {count === 1 ? 'event' : 'events'}
+            </title>
+          </rect>
+        )
+      })}
+    </g>
+  )
+}
+
 interface CanvasProps {
   readonly dates: DateKey[]
   readonly series: ChartSeries[]
   readonly domains: Domain[]
   readonly baseline?: number
+  readonly eventCounts: number[]
   readonly highlightRect: { x: number; width: number } | null
   readonly activeIndex: number | null
   readonly hasData: boolean
@@ -394,6 +455,7 @@ function ChartCanvas({
   series,
   domains,
   baseline,
+  eventCounts,
   highlightRect,
   activeIndex,
   hasData,
@@ -435,6 +497,11 @@ function ChartCanvas({
         />
       ))}
 
+      <EventBars
+        counts={eventCounts}
+        dateCount={dates.length}
+      />
+
       {hasData && activeIndex !== null && (
         <Crosshair
           index={activeIndex}
@@ -453,6 +520,7 @@ export function TrendChart({
   dates,
   series,
   highlight,
+  eventCounts = [],
   clampTo = [0, 100],
   baseline,
 }: TrendChartProps): React.JSX.Element {
@@ -488,6 +556,11 @@ export function TrendChart({
     }
   }, [dates, highlight, count])
 
+  const normalizedEventCounts = useMemo(
+    () => dates.map((_, index) => Math.max(0, eventCounts[index] ?? 0)),
+    [dates, eventCounts],
+  )
+
   return (
     <figure className="pattern-chart">
       {hasData && (
@@ -515,6 +588,7 @@ export function TrendChart({
           dates={dates}
           series={series}
           domains={domains}
+          eventCounts={normalizedEventCounts}
           baseline={baseline}
           highlightRect={highlightRect}
           activeIndex={activeIndex}

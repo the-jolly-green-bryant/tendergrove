@@ -129,6 +129,7 @@ export interface DailyPersonScore {
   negativeCount: number
   /** True when the day had at least one check-in or incident. */
   hasData: boolean
+  eventCount: number
 }
 
 /**
@@ -149,6 +150,7 @@ export interface DailyHouseholdScore {
   incidentCount: number
   positiveCount: number
   negativeCount: number
+  eventCount: number
 }
 
 /* ------------------------------------------------------------------ */
@@ -161,6 +163,7 @@ export interface TrendPoint {
   score: number | null
   /** Trailing rolling average of available scores (null until enough data). */
   rollingAverage: number | null
+  eventCount: number
 }
 
 /** Result of comparing the most recent 7 days to the previous 7 days. */

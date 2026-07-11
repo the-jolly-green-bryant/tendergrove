@@ -147,6 +147,43 @@ export function parseCheckedIds(answersJson: unknown): string[] {
   return []
 }
 
+interface ParsedAnswers {
+  checked: string[]
+  events: string[]
+}
+
+function parseStringIds(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((id): id is string => typeof id === 'string')
+    : []
+}
+
+export function parseAnswers(answersJson: unknown): ParsedAnswers {
+  let value = answersJson
+
+  if (typeof value === 'string') {
+    try {
+      value = JSON.parse(value)
+    } catch {
+      return { checked: [], events: [] }
+    }
+  }
+
+  if (!value || typeof value !== 'object') {
+    return { checked: [], events: [] }
+  }
+
+  const answers = value as {
+    checked?: unknown
+    events?: unknown
+  }
+
+  return {
+    checked: parseStringIds(answers.checked),
+    events: parseStringIds(answers.events),
+  }
+}
+
 function normalizePolarity(polarity: string | null | undefined): Polarity | null {
   return VALID_POLARITIES.includes(polarity as Polarity) ? (polarity as Polarity) : null
 }
@@ -168,10 +205,15 @@ function normalizePerson(raw: RawPerson): AnalyticsPerson {
 
   const checkIns = (raw.checkIns ?? [])
     .filter((c): c is RawCheckIn => c !== null)
-    .map((c) => ({
-      occurredAt: c.occurredAt,
-      checkedIndicatorIds: parseCheckedIds(c.answersJson),
-    }))
+    .map((c) => {
+      const answers = parseAnswers(c.answersJson)
+
+      return {
+        occurredAt: c.occurredAt,
+        checkedIndicatorIds: answers.checked,
+        eventIds: answers.events,
+      }
+    })
 
   const incidents = (raw.events ?? [])
     .filter((e): e is RawEvent => e !== null && e.type === 'incident')
@@ -241,8 +283,18 @@ function buildDataQuality(
 /*  Orchestrator                                                       */
 /* ------------------------------------------------------------------ */
 
-const toScoredDays = (scores: { date: string; score: number | null }[]): ScoredDay[] =>
-  scores.map((s) => ({ date: s.date, score: s.score }))
+const toScoredDays = (
+  scores: {
+    date: string
+    score: number | null
+    eventCount: number
+  }[],
+): ScoredDay[] =>
+  scores.map((score) => ({
+    date: score.date,
+    score: score.score,
+    eventCount: score.eventCount,
+  }))
 
 /**
  * Run the full analytics pass over normalized input. Pure and deterministic:

@@ -21,6 +21,7 @@ import type {
 export interface ScoredDay {
   date: DateKey
   score: number | null
+  eventCount: number
 }
 
 /** Window (in days) used for the "current vs previous" comparison. */
@@ -135,6 +136,7 @@ export function computeTrend(series: ScoredDay[]): TrendResult {
     date: day.date,
     score: day.score,
     rollingAverage: rolling[index],
+    eventCount: day.eventCount,
   }))
 
   const currentSlice = series.slice(-TREND_WINDOW_DAYS)

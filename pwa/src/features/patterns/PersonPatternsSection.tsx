@@ -90,6 +90,7 @@ function PatternsBody({
           dates={chart.dates}
           series={chart.series}
           clampTo={chart.clampTo}
+          eventCounts={data.trend.points.map((point) => point.eventCount)}
         />
 
         <PeriodSelector

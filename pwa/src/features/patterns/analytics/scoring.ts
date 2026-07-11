@@ -148,12 +148,18 @@ export function scorePersonDay(
   // Higher = better. A day with no data stays null (never 0).
   const score = distress === null ? null : 100 - distress
 
+  const eventCount = dayCheckIns.reduce(
+    (total, checkIn) => total + new Set(checkIn.eventIds).size,
+    0,
+  )
+
   return {
     personId: person.id,
     date,
     score,
     checkInCount: dayCheckIns.length,
     incidentCount: dayIncidents.length,
+    eventCount,
     positiveCount,
     negativeCount,
     hasData,
@@ -198,12 +204,15 @@ export function aggregateHouseholdDay(
       ? null
       : safeRound(scored.reduce((sum, p) => sum + (p.score ?? 0), 0) / scored.length)
 
+  const eventCount = personScores.reduce((total, day) => total + day.eventCount, 0)
+
   return {
     date,
     score,
     contributingPeople: scored.length,
     checkInCount,
     incidentCount,
+    eventCount,
     positiveCount,
     negativeCount,
   }
