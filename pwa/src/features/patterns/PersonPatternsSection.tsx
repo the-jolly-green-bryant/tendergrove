@@ -126,39 +126,6 @@ function PatternsBody({
   )
 }
 
-/** Avatar/icon + title reflecting whether the section is scoped to a person. */
-function ScopeHeader({
-  scopedToPerson,
-  personName,
-  personAvatarUrl,
-}: {
-  readonly scopedToPerson: boolean
-  readonly personName: string
-  readonly personAvatarUrl?: string | null
-}): React.JSX.Element {
-  return (
-    <div className="person-patterns__header">
-      {scopedToPerson ? (
-        <PersonAvatar
-          name={personName}
-          src={personAvatarUrl}
-          className="person-patterns__avatar"
-        />
-      ) : (
-        <span
-          className="person-patterns__household-icon"
-          aria-hidden="true"
-        >
-          <IonIcon icon={homeOutline} />
-        </span>
-      )}
-      <h2 className="pattern-calendar-heading person-patterns__title">
-        {scopedToPerson ? `${personName}’s patterns` : 'Household patterns'}
-      </h2>
-    </div>
-  )
-}
-
 /**
  * A per-person patterns section for the Person page: well-being trend and
  * connections for this person, with a filter to view the whole household
@@ -202,6 +169,19 @@ export function PersonPatternsSection({
 
   return (
     <section className="patterns-section person-patterns">
+      <PatternsBody
+        data={data}
+        chartTitle={chartTitle}
+        rangeDays={rangeDays}
+        onRangeChange={setRangeDays}
+        onViewAll={() => {
+          // Carry the current scope into the Patterns section so it opens
+          // pre-filtered to this person (or the whole household).
+          setPerson(scopedToPerson ? personId : null)
+          history.push('/patterns')
+        }}
+      />
+
       <IonSegment
         value={scope}
         onIonChange={(e) => setScope((e.detail.value as Scope) ?? 'person')}
@@ -233,19 +213,6 @@ export function PersonPatternsSection({
           </IonItem>
         </IonSegmentButton>
       </IonSegment>
-
-      <PatternsBody
-        data={data}
-        chartTitle={chartTitle}
-        rangeDays={rangeDays}
-        onRangeChange={setRangeDays}
-        onViewAll={() => {
-          // Carry the current scope into the Patterns section so it opens
-          // pre-filtered to this person (or the whole household).
-          setPerson(scopedToPerson ? personId : null)
-          history.push('/patterns')
-        }}
-      />
     </section>
   )
 }

@@ -2,6 +2,8 @@ import React, { useMemo, useState } from 'react'
 
 import { formatDayLabel } from '../analytics/dateUtils'
 import type { DateKey } from '../analytics'
+import { IonIcon, IonItem, IonLabel, IonNote } from '@ionic/react'
+import { heart } from 'ionicons/icons'
 
 /**
  * A small, accessible well-being line chart (0–100, higher = better).
@@ -92,6 +94,13 @@ function computeDomain(
     }
   }
   return { min: lo, max: hi }
+}
+
+function computeSeriesDomains(
+  series: ChartSeries[],
+  clampTo: [number, number] | null,
+): Domain[] {
+  return series.map((item) => computeDomain([item], clampTo))
 }
 
 /** ~4 evenly spaced, rounded y-axis gridline values across the domain. */
@@ -196,19 +205,6 @@ const SeriesLine = ({
         strokeLinecap="round"
         strokeDasharray={series.dashed ? '5 5' : undefined}
       />
-
-      {!series.dashed &&
-        series.values.map((value, index) =>
-          value === null ? null : (
-            <circle
-              key={`${series.label}-${index}`}
-              cx={xFor(index, count)}
-              cy={yFor(value, domain)}
-              r={2.6}
-              fill={series.color}
-            />
-          ),
-        )}
     </>
   )
 }
@@ -255,6 +251,7 @@ function nearestDataIndex(
     if (value === null) return
 
     const distance = Math.abs(index - targetIndex)
+
     if (distance < bestDistance) {
       bestIndex = index
       bestDistance = distance
@@ -264,7 +261,6 @@ function nearestDataIndex(
   return bestIndex
 }
 
-/** Track a scrub position from pointer input over the chart. */
 function useScrub(primaryValues: (number | null)[]) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
 
@@ -275,28 +271,34 @@ function useScrub(primaryValues: (number | null)[]) {
     if (rect.width === 0 || count <= 1) return
 
     const ratio = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width))
+
     const rawIndex = Math.round(ratio * (count - 1))
     const snappedIndex = nearestDataIndex(rawIndex, primaryValues)
 
     setActiveIndex(snappedIndex)
   }
 
-  return { activeIndex, update, clear: () => setActiveIndex(null) }
+  return {
+    activeIndex,
+    update,
+    clear: () => setActiveIndex(null),
+  }
 }
 
 /** Vertical scan line + dots at the scrubbed index. */
 function Crosshair({
   index,
   series,
-  domain,
+  domains,
   count,
 }: {
   readonly index: number
   readonly series: ChartSeries[]
-  readonly domain: Domain
+  readonly domains: Domain[]
   readonly count: number
 }): React.JSX.Element {
   const x = xFor(index, count)
+
   return (
     <g>
       <line
@@ -306,16 +308,20 @@ function Crosshair({
         y2={VIEW_H - PAD_B}
         className="pattern-chart__crosshair"
       />
-      {series.map((s) => {
-        const value = s.values[index]
-        if (value === null) return null
+
+      {series.map((item, seriesIndex) => {
+        const value = item.values[index]
+        const domain = domains[seriesIndex]
+
+        if (value === null || domain === undefined || item.dashed) return null
+
         return (
           <circle
-            key={s.label}
+            key={item.label}
             cx={x}
             cy={yFor(value, domain)}
             r={4}
-            fill={s.color}
+            fill={item.color}
             stroke="#fff"
             strokeWidth={1.5}
           />
@@ -323,6 +329,14 @@ function Crosshair({
       })}
     </g>
   )
+}
+
+const _numberToStatus = (value: number | null): [string, string, string] => {
+  if (value == null) return ['-', 'gray', '']
+  if (value < 50) return ['Crisis', '#D64F4F', '⛈️']
+  if (value < 70) return ['Elevated', '#D7B13A', '☁️']
+  if (value < 84) return ['Steady', '#63B66F', '🌤️']
+  return ['Settled', '#3FAE72', '☀️']
 }
 
 /** A readout above the chart showing the date + value(s) at the active index. */
@@ -336,36 +350,38 @@ function Readout({
   readonly index: number
 }): React.JSX.Element {
   const solid = series.filter((s) => !s.dashed)
+  const [status, color, emoji] = _numberToStatus(solid[0].values[index])
   return (
-    <div
-      className="pattern-chart__readout"
-      aria-hidden="true"
+    <IonItem
+      color={'transparent'}
+      lines={'none'}
     >
-      <span className="pattern-chart__readout-date">
-        {dates[index] ? formatDayLabel(dates[index]) : ''}
-      </span>
-      <span className="pattern-chart__readout-values">
-        {solid.map((s) => {
-          const value = s.values[index]
-          return (
+      <IonLabel>
+        <h1>
+          {solid.map((s) => (
             <span
               key={s.label}
               className="pattern-chart__readout-value"
               style={{ color: s.color }}
             >
-              {value === null ? '—' : Math.round(value)}
+              {status}
             </span>
-          )
-        })}
-      </span>
-    </div>
+          ))}
+        </h1>
+        <p>as of {dates[index] ? formatDayLabel(dates[index]) : ''}</p>
+      </IonLabel>
+
+      <IonNote slot="end">
+        <h1>{emoji}</h1>
+      </IonNote>
+    </IonItem>
   )
 }
 
 interface CanvasProps {
   readonly dates: DateKey[]
   readonly series: ChartSeries[]
-  readonly domain: Domain
+  readonly domains: Domain[]
   readonly baseline?: number
   readonly highlightRect: { x: number; width: number } | null
   readonly activeIndex: number | null
@@ -373,10 +389,22 @@ interface CanvasProps {
 }
 
 /** The plotted SVG: grid, baseline, lines, axis, current marker and crosshair. */
-function ChartCanvas(props: CanvasProps): React.JSX.Element {
-  const { dates, series, domain, baseline, highlightRect, activeIndex, hasData } = props
+function ChartCanvas({
+  dates,
+  series,
+  domains,
+  baseline,
+  highlightRect,
+  activeIndex,
+  hasData,
+}: CanvasProps): React.JSX.Element {
+  const primaryDomain = domains[0] ?? { min: 0, max: 100 }
+
   const showBaseline =
-    baseline !== undefined && baseline > domain.min && baseline < domain.max
+    baseline !== undefined &&
+    baseline > primaryDomain.min &&
+    baseline < primaryDomain.max
+
   return (
     <>
       {highlightRect && (
@@ -388,27 +416,30 @@ function ChartCanvas(props: CanvasProps): React.JSX.Element {
           className="pattern-chart__highlight"
         />
       )}
+
       {showBaseline && (
         <line
           x1={PAD_L}
           x2={VIEW_W - PAD_R}
-          y1={yFor(baseline as number, domain)}
-          y2={yFor(baseline as number, domain)}
+          y1={yFor(baseline, primaryDomain)}
+          y2={yFor(baseline, primaryDomain)}
           className="pattern-chart__baseline"
         />
       )}
-      {series.map((s) => (
+
+      {series.map((item, index) => (
         <SeriesLine
-          key={s.label}
-          series={s}
-          domain={domain}
+          key={item.label}
+          series={item}
+          domain={domains[index] ?? primaryDomain}
         />
       ))}
+
       {hasData && activeIndex !== null && (
         <Crosshair
           index={activeIndex}
           series={series}
-          domain={domain}
+          domains={domains}
           count={dates.length}
         />
       )}
@@ -426,21 +457,35 @@ export function TrendChart({
   baseline,
 }: TrendChartProps): React.JSX.Element {
   const count = dates.length
-  const domain = useMemo(() => computeDomain(series, clampTo), [series, clampTo])
-  const primary = primarySeries(series)
+
+  const domains = useMemo(
+    () => computeSeriesDomains(series, clampTo),
+    [series, clampTo],
+  )
+
+  const primary = series.find((item) => !item.dashed) ?? series[0]
   const primaryValues = primary?.values ?? []
-  const hasData = primaryValues.some((v) => v !== null)
+
+  const hasData = primaryValues.some((value) => value !== null)
+
   const { activeIndex, update, clear } = useScrub(primaryValues)
   const readoutIndex = activeIndex ?? currentIndex(series)
 
   const highlightRect = useMemo(() => {
     if (!highlight) return null
+
     const startIndex = dates.indexOf(highlight.start)
     const endIndex = dates.indexOf(highlight.end)
+
     if (startIndex < 0 || endIndex < 0) return null
+
     const x1 = xFor(startIndex, count)
     const x2 = xFor(endIndex, count)
-    return { x: x1, width: Math.max(2, x2 - x1) }
+
+    return {
+      x: x1,
+      width: Math.max(2, x2 - x1),
+    }
   }, [dates, highlight, count])
 
   return (
@@ -452,6 +497,7 @@ export function TrendChart({
           index={readoutIndex}
         />
       )}
+
       <svg
         viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
         className="pattern-chart__svg"
@@ -468,7 +514,7 @@ export function TrendChart({
         <ChartCanvas
           dates={dates}
           series={series}
-          domain={domain}
+          domains={domains}
           baseline={baseline}
           highlightRect={highlightRect}
           activeIndex={activeIndex}

@@ -69,16 +69,17 @@ export function buildTrendChart(
     series: [
       {
         label: 'Daily well-being',
-        color: primaryColor,
+
+        color: '#a5a5a5',
         values: points.map((p) => p.score),
+        dashed: true,
       },
       {
         label: '7-day average',
-        color: SECONDARY,
+        color: primaryColor,
         values: points.map((p) => p.rollingAverage),
-        dashed: true,
       },
     ],
-    clampTo: [0, 100],
+    clampTo: null,
   }
 }

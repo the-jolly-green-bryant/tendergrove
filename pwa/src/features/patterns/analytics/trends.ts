@@ -77,6 +77,51 @@ function trendConfidence(currentDays: number, previousDays: number): Confidence 
 }
 
 /**
+ * Calculates an asymmetric rolling weighted average that accounts for anomalous
+ *  results.
+ * @param {TrendResult} trend
+ * @param {{negativeAlpha?: number, positiveAlpha?: number}} param1
+ * @param {number} param1.negativeAlpha
+ * @param {number} param1.positiveAlpha
+ * @returns {TrendResult}
+ */
+const calculateTrend = (
+  trend: TrendResult,
+  {
+    negativeAlpha = 0.55,
+    positiveAlpha = 0.1,
+  }: {
+    negativeAlpha?: number
+    positiveAlpha?: number
+  } = {},
+): TrendResult => {
+  let weightedAverage: number | null = null
+
+  const points = trend.points.map((point) => {
+    if (point.score !== null) {
+      if (weightedAverage === null) {
+        weightedAverage = point.score
+      } else {
+        const isNegativeResult = point.score < weightedAverage
+        const alpha = isNegativeResult ? negativeAlpha : positiveAlpha
+
+        weightedAverage = alpha * point.score + (1 - alpha) * weightedAverage
+      }
+    }
+
+    return {
+      ...point,
+      rollingAverage: weightedAverage === null ? null : Math.round(weightedAverage),
+    }
+  })
+
+  return {
+    ...trend,
+    points,
+  }
+}
+
+/**
  * Compute the trend for a daily series.
  *
  * The series is expected to be contiguous and ascending (one entry per day in
@@ -108,30 +153,30 @@ export function computeTrend(series: ScoredDay[]): TrendResult {
   const previous7DayAverage = previousAvgRaw === null ? null : safeRound(previousAvgRaw)
 
   let delta: number | null = null
-  let direction: TrendDirection
+  const currentTrend = points.at(-1)?.rollingAverage ?? null
 
-  if (currentScores.length < MIN_DAYS_FOR_DIRECTION) {
-    // Not enough recent data to responsibly claim any direction.
-    direction = 'insufficient'
-  } else if (currentAvgRaw === null || previousAvgRaw === null) {
-    // We have a current reading but nothing to compare against yet.
-    direction = 'insufficient'
-  } else {
-    delta = safeRound(currentAvgRaw - previousAvgRaw)
-    direction = directionFromDelta(delta)
-  }
+  const historicalAverage = mean(
+    points
+      .slice(0, -TREND_WINDOW_DAYS)
+      .map((p) => p.rollingAverage)
+      .filter((v): v is number => v !== null),
+  )
 
-  return {
+  const direction: TrendDirection =
+    currentTrend !== null &&
+    historicalAverage !== null &&
+    currentTrend >= historicalAverage
+      ? 'improving'
+      : 'worsening'
+
+  return calculateTrend({
     current7DayAverage,
     previous7DayAverage,
     delta,
     direction,
     points,
-    confidence:
-      direction === 'insufficient'
-        ? 'low'
-        : trendConfidence(currentScores.length, previousScores.length),
-  }
+    confidence: trendConfidence(currentScores.length, previousScores.length),
+  })
 }
 
 /* ------------------------------------------------------------------ */
