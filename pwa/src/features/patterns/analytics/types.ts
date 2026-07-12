@@ -99,6 +99,7 @@ export interface AnalyticsPerson {
 /** The full, normalized input to the analytics engine. */
 export interface AnalyticsInput {
   people: AnalyticsPerson[]
+  lifeEvents: AnalyticsLifeEvent[]
   /** "Now" is injected so every calculation is deterministic and testable. */
   now: Date
   /** How many days back to build the daily score window. */
@@ -408,6 +409,81 @@ export interface EventImpact {
   sampleSize: number
 }
 
+export interface AnomalyBaseline {
+  medianScore: number
+  thresholdScore: number
+  anomalousDays: number
+  scoredDays: number
+}
+
+export interface AnomalyRateItem {
+  id: string
+  label: string
+
+  /** Percentage of harder-than-usual days where this signal appeared. */
+  anomalyRate: number
+
+  /** Percentage of typical days where this signal appeared. */
+  typicalRate: number
+
+  /** Number of anomaly-day occurrences. */
+  anomalyOccurrences: number
+
+  /** Number of measurable anomalous days. */
+  anomalyOpportunities: number
+
+  /** Number of typical-day occurrences. */
+  typicalOccurrences: number
+
+  /** Number of measurable typical days. */
+  typicalOpportunities: number
+}
+
+export interface AnomalyWeekdayBucket {
+  weekday: number
+  label: string
+  anomalyRate: number | null
+  anomalousDays: number
+  scoredDays: number
+}
+
+export interface AnomalyWeekdayPattern {
+  weekday: number
+  label: string
+  anomalyRate: number
+  otherDaysRate: number
+  sampleSize: number
+  buckets: AnomalyWeekdayBucket[]
+}
+
+export interface AnomalyEventPattern {
+  top: AnomalyRateItem
+  items: AnomalyRateItem[]
+}
+
+export interface AnomalyOtherPersonItem extends AnomalyRateItem {
+  personId: string
+  personName: string
+  kind: 'behavior' | 'incident'
+}
+
+export interface AnomalyOtherPeoplePattern {
+  top: AnomalyOtherPersonItem
+  items: AnomalyOtherPersonItem[]
+}
+
+export interface AnomalyPatterns {
+  baseline: AnomalyBaseline | null
+  weekday: AnomalyWeekdayPattern | null
+  events: AnomalyEventPattern | null
+  otherPeople: AnomalyOtherPeoplePattern | null
+}
+
+export interface AnalyticsLifeEvent {
+  id: string
+  label: string
+}
+
 /** Direction + how long the current well-being trend has held. */
 export type TrendStatusState =
   | 'improving'
@@ -488,6 +564,7 @@ export interface AnalyticsResult {
   relationships: RelationshipInsight[]
   turningPoints: TurningPointInsight[]
   overview: OverviewSummary
+  personAnomalyPatterns: Record<string, AnomalyPatterns>
   /** Household timing (day-of-week, time-of-day, heatmap, indicator↔outcome). */
   timing: TimingAnalysis
   /** Timing per person, keyed by person id. */

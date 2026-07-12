@@ -35,8 +35,10 @@ import { buildOverview } from './summaries'
 import { buildTiming } from './timing'
 import { computeTrend, type ScoredDay } from './trends'
 import { findTurningPoints } from './turningPoints'
+import { buildAnomalyPatterns } from './anomalyPatterns'
 import type {
   AnalyticsInput,
+  AnalyticsLifeEvent,
   AnalyticsPerson,
   AnalyticsPersonRef,
   AnalyticsResult,
@@ -57,6 +59,7 @@ export { findTurningPoints } from './turningPoints'
 export { buildOverview } from './summaries'
 export { buildTiming, buildDayOfWeek, buildTimeOfDay } from './timing'
 export { buildGeneratedInsights } from './generatedInsights'
+export { buildAnomalyPatterns } from './anomalyPatterns'
 export {
   buildPersonView,
   buildScopedView,
@@ -100,6 +103,12 @@ export interface RawEvent {
   occurredAt: string
   type?: string | null
   title?: string | null
+}
+
+export interface RawLifeEvent {
+  id: string
+  label?: string | null
+  archived?: boolean | null
 }
 
 /** Loose shape of a `Person` record (with related records) from the API. */
@@ -165,12 +174,18 @@ export function parseAnswers(answersJson: unknown): ParsedAnswers {
     try {
       value = JSON.parse(value)
     } catch {
-      return { checked: [], events: [] }
+      return {
+        checked: [],
+        events: [],
+      }
     }
   }
 
   if (!value || typeof value !== 'object') {
-    return { checked: [], events: [] }
+    return {
+      checked: [],
+      events: [],
+    }
   }
 
   const answers = value as {
@@ -204,12 +219,12 @@ function normalizePerson(raw: RawPerson): AnalyticsPerson {
     }))
 
   const checkIns = (raw.checkIns ?? [])
-    .filter((c): c is RawCheckIn => c !== null)
-    .map((c) => {
-      const answers = parseAnswers(c.answersJson)
+    .filter((checkIn): checkIn is RawCheckIn => checkIn !== null)
+    .map((checkIn) => {
+      const answers = parseAnswers(checkIn.answersJson)
 
       return {
-        occurredAt: c.occurredAt,
+        occurredAt: checkIn.occurredAt,
         checkedIndicatorIds: answers.checked,
         eventIds: answers.events,
       }
@@ -229,23 +244,45 @@ function normalizePerson(raw: RawPerson): AnalyticsPerson {
   }
 }
 
+export interface NormalizeHouseholdOptions {
+  now?: Date
+  windowDays?: number
+  includeArchived?: boolean
+  lifeEvents?: RawLifeEvent[]
+}
+
 /**
  * Normalize the household's fetched data into a deterministic analytics input.
  * Archived people are excluded by default.
  */
 export function normalizeHousehold(
   rawPeople: RawPerson[],
-  options: { now?: Date; windowDays?: number; includeArchived?: boolean } = {},
+  options: NormalizeHouseholdOptions = {},
 ): AnalyticsInput {
   const {
     now = new Date(),
     windowDays = DEFAULT_WINDOW_DAYS,
     includeArchived = false,
+    lifeEvents: rawLifeEvents = [],
   } = options
+
   const people = rawPeople
-    .filter((p) => includeArchived || p.archived !== true)
+    .filter((person) => includeArchived || person.archived !== true)
     .map(normalizePerson)
-  return { people, now, windowDays }
+
+  const lifeEvents: AnalyticsLifeEvent[] = rawLifeEvents
+    .filter((event) => event.archived !== true)
+    .map((event) => ({
+      id: event.id,
+      label: event.label?.trim() || 'Event',
+    }))
+
+  return {
+    people,
+    lifeEvents,
+    now,
+    windowDays,
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -316,6 +353,18 @@ export function runAnalytics(input: AnalyticsInput): AnalyticsResult {
     window,
   )
 
+  const personAnomalyPatterns: AnalyticsResult['personAnomalyPatterns'] = {}
+
+  for (const person of input.people) {
+    personAnomalyPatterns[person.id] = buildAnomalyPatterns({
+      person,
+      people: input.people,
+      dailyScores: personDailyScores[person.id] ?? [],
+      personDailyScores,
+      lifeEvents: input.lifeEvents,
+    })
+  }
+
   const householdTrend = computeTrend(toScoredDays(householdDailyScores))
   const personTrends: Record<string, TrendResult> = {}
   for (const person of input.people) {
@@ -357,7 +406,11 @@ export function runAnalytics(input: AnalyticsInput): AnalyticsResult {
   ).length
 
   return {
-    window: { startDate, endDate, days: input.windowDays },
+    window: {
+      startDate,
+      endDate,
+      days: input.windowDays,
+    },
     dataQuality: buildDataQuality(input.people, scoredDays, peopleWithData),
     people,
     householdDailyScores,
@@ -373,6 +426,7 @@ export function runAnalytics(input: AnalyticsInput): AnalyticsResult {
     personTiming: timing.perPerson,
     generatedInsights,
     personGeneratedInsights,
+    personAnomalyPatterns,
   }
 }
 
@@ -382,7 +436,7 @@ export function runAnalytics(input: AnalyticsInput): AnalyticsResult {
  */
 export function analyzeHousehold(
   rawPeople: RawPerson[],
-  options?: { now?: Date; windowDays?: number; includeArchived?: boolean },
+  options?: NormalizeHouseholdOptions,
 ): AnalyticsResult {
   return runAnalytics(normalizeHousehold(rawPeople, options))
 }

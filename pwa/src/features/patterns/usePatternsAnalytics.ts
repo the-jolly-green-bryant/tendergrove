@@ -23,7 +23,12 @@ export function usePatternsAnalytics(windowDays?: number): PatternsAnalytics {
 
   const result = useMemo(() => {
     if (!data) return null
-    return analyzeHousehold(data, { now: new Date(), windowDays })
+
+    return analyzeHousehold(data.people, {
+      now: new Date(),
+      windowDays,
+      lifeEvents: data.lifeEvents,
+    })
   }, [data, windowDays])
 
   return { result, isLoading, hasError: Boolean(error) }

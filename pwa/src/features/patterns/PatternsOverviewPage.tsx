@@ -26,6 +26,7 @@ import { TrendChart } from './components/TrendChart'
 import { buildTrendChart, trendLineColor } from './components/trendSeries'
 import { usePatternsFilterStore } from './patternsFilterStore'
 import { useScopedPatterns } from './useScopedPatterns'
+import { AnomalyPatternsSection } from './components/AnomalyPatternsSection'
 
 import './patterns.scss'
 
@@ -219,16 +220,11 @@ function OverviewContent({
         />
       )}
 
-      {view.overview.noteworthy.length > 0 && (
-        <section className="patterns-section">
-          <h2 className="pattern-calendar-heading">Worth noticing</h2>
-          {view.overview.noteworthy.map((insight) => (
-            <InsightCard
-              key={insight.id}
-              insight={insight}
-            />
-          ))}
-        </section>
+      {view.personName && view.anomalyPatterns && (
+        <AnomalyPatternsSection
+          personName={view.personName}
+          patterns={view.anomalyPatterns}
+        />
       )}
 
       <DeeperPatternsNav />

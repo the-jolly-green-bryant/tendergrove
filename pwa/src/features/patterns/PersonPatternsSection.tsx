@@ -15,7 +15,6 @@ import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
 
 import { PersonAvatar } from '../../components/PersonAvatar'
-import { buildPersonView, type CorrelationInsight, type TrendResult } from './analytics'
 import { CorrelationCard } from './components/CorrelationCard'
 import { PatternsEmptyState } from './components/PatternsEmptyState'
 import { PeriodSelector } from './components/PeriodSelector'
@@ -25,6 +24,14 @@ import { usePatternsAnalytics } from './usePatternsAnalytics'
 import { usePatternsFilterStore } from './patternsFilterStore'
 
 import './patterns.scss'
+import { AnomalyPatternsSection } from './components/AnomalyPatternsSection'
+
+import {
+  buildPersonView,
+  type AnomalyPatterns,
+  type CorrelationInsight,
+  type TrendResult,
+} from './analytics'
 
 /** Most correlations to surface inline before linking to the full page. */
 const MAX_INLINE_CORRELATIONS = 3
@@ -35,6 +42,8 @@ interface ScopedData {
   trend: TrendResult
   correlations: CorrelationInsight[]
   scoredDays: number
+  anomalyPatterns: AnomalyPatterns | null
+  subjectName: string | null
 }
 
 /** A short, gentle sentence describing the trend direction. */
@@ -99,6 +108,13 @@ function PatternsBody({
         />
       </div>
 
+      {data.subjectName && data.anomalyPatterns && (
+        <AnomalyPatternsSection
+          personName={data.subjectName}
+          patterns={data.anomalyPatterns}
+        />
+      )}
+
       {correlations.length > 0 && (
         <>
           <h3 className="pattern-calendar-heading">Recent Patterns</h3>
@@ -155,11 +171,15 @@ export function PersonPatternsSection({
         trend: personView.trend,
         correlations: personView.correlations,
         scoredDays: personView.scoredDays,
+        anomalyPatterns: personView.anomalyPatterns,
+        subjectName: personName,
       }
     : {
         trend: result.householdTrend,
         correlations: result.correlations,
         scoredDays: result.dataQuality.scoredDays,
+        anomalyPatterns: null,
+        subjectName: null,
       }
 
   const chartTitle = scopedToPerson

@@ -58,10 +58,14 @@ export function useScopedPatterns(): ScopedPatterns {
   const result = useMemo(() => {
     if (!data) return null
     const subset = personIds.length
-      ? data.filter((p) => personIds.includes(p.id))
-      : data
+      ? data.people.filter((person) => personIds.includes(person.id))
+      : data.people
     const { now, windowDays } = deriveWindow(rangeDays, customRange)
-    return analyzeHousehold(subset, { now, windowDays })
+    return analyzeHousehold(subset, {
+      now,
+      windowDays,
+      lifeEvents: data.lifeEvents,
+    })
   }, [data, personIds, rangeDays, customRange])
 
   const view = useMemo(() => {

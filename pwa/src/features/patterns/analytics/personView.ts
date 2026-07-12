@@ -12,6 +12,7 @@ import { buildOverview } from './summaries'
 import { findTurningPoints } from './turningPoints'
 import type {
   AnalyticsResult,
+  AnomalyPatterns,
   CalendarDayPattern,
   CorrelationInsight,
   DailyHouseholdScore,
@@ -40,6 +41,7 @@ export interface PersonAnalyticsView {
   overview: OverviewSummary
   /** Days in the window with a score for this person. */
   scoredDays: number
+  anomalyPatterns: AnomalyPatterns
 }
 
 /**
@@ -104,6 +106,12 @@ export function buildPersonView(
       subjectName: personName,
     }),
     scoredDays: dailyScores.filter((d) => d.score !== null).length,
+    anomalyPatterns: result.personAnomalyPatterns[personId] ?? {
+      baseline: null,
+      weekday: null,
+      events: null,
+      otherPeople: null,
+    },
   }
 }
 
@@ -126,6 +134,7 @@ export interface ScopedPatternsView {
   timing: TimingAnalysis
   generatedInsights: GeneratedInsight[]
   scoredDays: number
+  anomalyPatterns: AnomalyPatterns | null
 }
 
 /**
@@ -150,6 +159,7 @@ export function buildScopedView(
       timing: result.timing,
       generatedInsights: result.generatedInsights,
       scoredDays: result.dataQuality.scoredDays,
+      anomalyPatterns: null,
     }
   }
 
@@ -166,5 +176,6 @@ export function buildScopedView(
     timing: result.personTiming[personId],
     generatedInsights: result.personGeneratedInsights[personId] ?? [],
     scoredDays: view.scoredDays,
+    anomalyPatterns: view.anomalyPatterns,
   }
 }
