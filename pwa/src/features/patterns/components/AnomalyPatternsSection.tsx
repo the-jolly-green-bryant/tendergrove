@@ -217,7 +217,7 @@ export function AnomalyPatternsSection({
                 <h3>{patterns.weekday.label}s are hard!</h3>
 
                 <p className="anomaly-pattern-card__description">
-                  Check-ins on {patterns.weekday.label}s are higher severity{' '}
+                  {patterns.weekday.label}s spike in severity severity{' '}
                   <strong>{patterns.weekday.anomalyRate}%</strong> of the time, compared
                   with <strong>{patterns.weekday.otherDaysRate}%</strong> on other days.
                 </p>
@@ -248,11 +248,10 @@ export function AnomalyPatternsSection({
                 <h3>{patterns.events.top.label} often happens on harder days</h3>
 
                 <p className="anomaly-pattern-card__description">
-                  {patterns.events.top.label} was present in{' '}
-                  <strong>{patterns.events.top.anomalyRate}%</strong> of
-                  harder-than-usual check-ins, compared with{' '}
-                  <strong>{patterns.events.top.typicalRate}%</strong> on more typical
-                  days.
+                  Days where {patterns.events.top.label} is present spike in severity{' '}
+                  <strong>{patterns.events.top.anomalyRate}%</strong> of the time,
+                  compared with <strong>{patterns.events.top.typicalRate}%</strong> on
+                  more typical days.
                 </p>
               </div>
 
@@ -285,9 +284,9 @@ export function AnomalyPatternsSection({
                 </h3>
 
                 <p className="anomaly-pattern-card__description">
-                  When {patterns.otherPeople.top.personName} showed{' '}
-                  {patterns.otherPeople.top.label.toLowerCase()}, {personName} had a
-                  harder-than-usual check-in on{' '}
+                  Days when {patterns.otherPeople.top.personName} shows{' '}
+                  {patterns.otherPeople.top.label.toLowerCase()} see spikes in severity
+                  for {personName} on{' '}
                   <strong>{patterns.otherPeople.top.anomalyRate}%</strong> of measurable
                   days.
                 </p>
