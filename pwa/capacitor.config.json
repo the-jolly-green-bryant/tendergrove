@@ -1,0 +1,11 @@
+{
+  "appId": "com.tendergrove.app",
+  "appName": "Tendergrove",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "appendUrlToDeepLink": false
+  }
+}
