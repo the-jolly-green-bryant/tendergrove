@@ -5,6 +5,10 @@ import globals from 'globals'
 import sonarjs from 'eslint-plugin-sonarjs'
 import prettier from 'eslint-plugin-prettier'
 import prettierConfig from 'eslint-config-prettier'
+import unicorn from 'eslint-plugin-unicorn'
+import react from 'eslint-plugin-react'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
 
 export default [
   {
@@ -46,6 +50,10 @@ export default [
     plugins: {
       jsdoc,
       prettier,
+      unicorn,
+      react,
+      'react-hooks': reactHooks,
+      'react-refresh': reactRefresh,
     },
 
     rules: {
@@ -55,6 +63,38 @@ export default [
       'max-lines-per-function': ['error', 80],
       '@typescript-eslint/no-unused-expressions': 'off',
       'sonarjs/no-misleading-array-reverse': 'off',
+      'unicorn/consistent-function-scoping': 'error',
+      'prefer-arrow-callback': [
+        'error',
+        {
+          allowNamedFunctions: false,
+          allowUnboundThis: false,
+        },
+      ],
+      'react/function-component-definition': [
+        'error',
+        {
+          namedComponents: 'arrow-function',
+          unnamedComponents: 'arrow-function',
+        },
+      ],
+      'react/jsx-boolean-value': ['error', 'never'],
+
+      'react/self-closing-comp': 'error',
+
+      'react/jsx-no-useless-fragment': 'error',
+
+      'react/no-array-index-key': 'warn',
+      'prefer-const': 'error',
+      'prefer-template': 'error',
+      'no-useless-return': 'error',
+      'func-style': [
+        'error',
+        'expression',
+        {
+          allowArrowFunctions: true,
+        },
+      ],
       '@typescript-eslint/no-unused-vars': [
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },

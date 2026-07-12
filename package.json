@@ -22,6 +22,8 @@
     "@aws-amplify/backend-cli": "^1.8.3",
     "@playwright/test": "^1.61.1",
     "esbuild": "^0.28.1",
+    "eslint-plugin-react-refresh": "^0.5.3",
+    "eslint-plugin-unicorn": "^71.1.0",
     "playwright": "^1.61.1",
     "sass-embedded": "^1.100.0",
     "typescript": "^6.0.3"
