@@ -7,6 +7,7 @@ function series(scores: (number | null)[]): ScoredDay[] {
   return scores.map((score, i) => ({
     date: `2025-05-${String(i + 1).padStart(2, '0')}`,
     score,
+    eventCount: 0,
   }))
 }
 

@@ -110,7 +110,12 @@ describe('runAnalytics / analyzeHousehold', () => {
   })
 
   it('reports low-confidence, gentle copy when there is too little data', () => {
-    const result = runAnalytics({ people: [], now: NOW, windowDays: 30 })
+    const result = runAnalytics({
+      people: [],
+      now: NOW,
+      windowDays: 30,
+      lifeEvents: [],
+    })
     expect(result.dataQuality.hasEnoughData).toBe(false)
     expect(result.dataQuality.message).toMatch(/still gathering/i)
     expect(result.correlations).toHaveLength(0)

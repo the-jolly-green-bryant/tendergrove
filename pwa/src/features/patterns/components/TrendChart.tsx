@@ -41,7 +41,7 @@ interface TrendChartProps {
   readonly clampTo?: [number, number] | null
   /** Draw a slightly bolder reference line at this value (e.g. 0 for deltas). */
   readonly baseline?: number
-  readonly eventCounts: number[]
+  readonly eventCounts?: number[]
 }
 
 const VIEW_W = 320

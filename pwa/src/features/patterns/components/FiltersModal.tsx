@@ -26,6 +26,8 @@ import { usePatternsData } from '../usePatternsData'
 import { usePatternsFilterStore, type AnalyticsType } from '../patternsFilterStore'
 
 import '../patterns.scss'
+import { FilterablePerson } from '../../../components/PersonFilterChips'
+import { RawPerson } from '../analytics'
 
 const TYPE_OPTIONS: { value: AnalyticsType; label: string }[] = [
   { value: 'all', label: 'All' },
@@ -106,7 +108,10 @@ function PeopleSection(): React.JSX.Element {
   const { data } = usePatternsData()
   const personIds = usePatternsFilterStore((s) => s.personIds)
   const setPersonIds = usePatternsFilterStore((s) => s.setPersonIds)
-  const people = useMemo(() => (data ?? []).filter((p) => p.archived !== true), [data])
+  const people = useMemo(
+    () => ((data ?? []) as RawPerson[]).filter((p) => p.archived !== true),
+    [data],
+  )
 
   const toggle = (id: string) => {
     setPersonIds(
@@ -125,7 +130,7 @@ function PeopleSection(): React.JSX.Element {
         >
           Everyone
         </IonChip>
-        {people.map((person) => {
+        {people.map((person: RawPerson) => {
           const active = personIds.includes(person.id)
           return (
             <IonChip
@@ -154,7 +159,7 @@ function IndicatorsSection(): React.JSX.Element {
   const setIndicatorMode = usePatternsFilterStore((s) => s.setIndicatorMode)
   const setIndicatorIds = usePatternsFilterStore((s) => s.setIndicatorIds)
 
-  const indicators = useMemo(() => collectIndicators(data), [data])
+  const indicators = useMemo(() => collectIndicators(data?.people ?? []), [data])
   const toggle = (id: string) =>
     setIndicatorIds(
       indicatorIds.includes(id)
@@ -247,11 +252,9 @@ interface IndicatorOption {
   personName: string
 }
 
-function collectIndicators(
-  data: ReturnType<typeof usePatternsData>['data'],
-): IndicatorOption[] {
+function collectIndicators(data: RawPerson[]): IndicatorOption[] {
   const options: IndicatorOption[] = []
-  for (const person of (data ?? []).filter((p) => p.archived !== true)) {
+  for (const person of (data ?? []).filter((p: RawPerson) => p.archived !== true)) {
     for (const indicator of person.indicators ?? []) {
       if (indicator && indicator.active !== false) {
         options.push({

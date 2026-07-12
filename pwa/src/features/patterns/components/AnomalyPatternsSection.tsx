@@ -136,7 +136,7 @@ function CardFooter({
   action,
   onClick,
 }: {
-  readonly icon
+  readonly icon: React.ComponentProps<typeof IonIcon>['icon']
   readonly action: string
   readonly onClick: () => void
 }): React.JSX.Element {

@@ -12,6 +12,7 @@ function household(scores: (number | null)[]): DailyHouseholdScore[] {
     incidentCount: 0,
     positiveCount: 0,
     negativeCount: 0,
+    eventCount: 0,
   }))
 }
 

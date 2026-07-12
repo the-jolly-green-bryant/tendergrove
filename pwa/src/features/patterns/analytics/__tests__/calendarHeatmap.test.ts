@@ -26,6 +26,7 @@ describe('buildCalendar', () => {
     positiveCount: 0,
     negativeCount: 0,
     ...over,
+    eventCount: over['eventCount'] ?? 0,
   })
 
   it('carries counts and assigns a level and summary', () => {

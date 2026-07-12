@@ -19,8 +19,8 @@ describe('toDelta', () => {
 
 describe('buildTrendChart', () => {
   const points: TrendPoint[] = [
-    { date: '2025-05-01', score: 50, rollingAverage: 50 },
-    { date: '2025-05-02', score: 60, rollingAverage: 55 },
+    { date: '2025-05-01', score: 50, rollingAverage: 50, eventCount: 2 },
+    { date: '2025-05-02', score: 60, rollingAverage: 55, eventCount: 0 },
   ]
 
   it('shows daily + rolling series clamped to 0–100 by default', () => {

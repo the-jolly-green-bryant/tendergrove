@@ -13,6 +13,7 @@ function dailyScores(personId: string, scores: (number | null)[]): DailyPersonSc
     positiveCount: 0,
     negativeCount: 0,
     hasData: score !== null,
+    eventCount: 0,
   }))
 }
 

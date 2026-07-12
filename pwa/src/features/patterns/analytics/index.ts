@@ -48,6 +48,7 @@ import type {
   PersonRole,
   TrendResult,
 } from './types'
+import { buildEventImpacts } from './eventImpacts'
 
 export * from './types'
 export { scorePersonDay, aggregateHouseholdDay, buildDailyScores } from './scoring'
@@ -353,6 +354,11 @@ export function runAnalytics(input: AnalyticsInput): AnalyticsResult {
     window,
   )
 
+  const { household: eventImpacts, perPerson: personEventImpacts } = buildEventImpacts(
+    input.people,
+    personDailyScores,
+  )
+
   const personAnomalyPatterns: AnalyticsResult['personAnomalyPatterns'] = {}
 
   for (const person of input.people) {
@@ -424,6 +430,8 @@ export function runAnalytics(input: AnalyticsInput): AnalyticsResult {
     overview,
     timing: timing.household,
     personTiming: timing.perPerson,
+    eventImpacts,
+    personEventImpacts,
     generatedInsights,
     personGeneratedInsights,
     personAnomalyPatterns,

@@ -43,7 +43,7 @@ export function checkIn(
   occurredAt: string,
   checkedIndicatorIds: string[],
 ): AnalyticsCheckIn {
-  return { occurredAt, checkedIndicatorIds }
+  return { occurredAt, checkedIndicatorIds, eventIds: [] }
 }
 
 /** Build an incident at the given time. */

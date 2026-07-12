@@ -147,6 +147,7 @@ function TrendSection({
             series={chart.series}
             clampTo={chart.clampTo}
             baseline={chart.baseline}
+            eventCounts={view.trend.points.map((point) => point.eventCount)}
           />
         </IonCardContent>
       </IonCard>
