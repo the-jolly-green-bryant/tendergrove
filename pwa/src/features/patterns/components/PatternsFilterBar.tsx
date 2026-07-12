@@ -49,7 +49,7 @@ export function PatternsFilterBar({
   const toggleDelta = usePatternsFilterStore((s) => s.toggleDelta)
   const [filtersOpen, setFiltersOpen] = useState(false)
 
-  const people = useMemo(() => toFilterablePeople(data), [data])
+  const people = useMemo(() => toFilterablePeople(data?.people), [data])
   const selectedPeople = useMemo(() => new Set(personIds), [personIds])
 
   return (

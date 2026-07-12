@@ -115,21 +115,6 @@ function PatternsBody({
         />
       )}
 
-      {correlations.length > 0 && (
-        <>
-          <h3 className="pattern-calendar-heading">Recent Patterns</h3>
-
-          <IonList>
-            {correlations.map((c) => (
-              <CorrelationCard
-                key={`${c.sourceLabel}-${c.targetLabel}-${c.lagDays}`}
-                correlation={c}
-              />
-            ))}
-          </IonList>
-        </>
-      )}
-
       <IonButton
         expand="block"
         fill="clear"
