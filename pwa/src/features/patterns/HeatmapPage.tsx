@@ -30,12 +30,7 @@ interface SelectedCell {
   sampleSize: number
 }
 
-/** Group heatmap cells into per-indicator rows, filtered to one polarity. */
-function buildRows(
-  cells: HeatmapCell[],
-  polarity: Polarity,
-  filters: DisplayFilters,
-): { rows: HeatmapRow[]; cellIndex: Map<string, HeatmapCell[]> } {
+const buildRows = (cells: HeatmapCell[], polarity: Polarity, filters: DisplayFilters): { rows: HeatmapRow[]; cellIndex: Map<string, HeatmapCell[]> } => {
   const rows = new Map<string, HeatmapRow>()
   const cellIndex = new Map<string, HeatmapCell[]>()
   const allowCustom = filters.indicatorMode === 'custom'
@@ -63,7 +58,7 @@ function rowPeak(row: HeatmapRow): number {
   return row.values.reduce((max: number, v) => (v !== null && v > max ? v : max), 0)
 }
 
-function CellDetail({ cell }: { readonly cell: SelectedCell }): React.JSX.Element {
+const CellDetail = ({ cell }: { readonly cell: SelectedCell }): React.JSX.Element => {
   const count = Math.round((cell.probability / 100) * cell.sampleSize)
   return (
     <IonCard>
@@ -78,11 +73,11 @@ function CellDetail({ cell }: { readonly cell: SelectedCell }): React.JSX.Elemen
   )
 }
 
-function HeatmapLegend({
+const HeatmapLegend = ({
   scale,
 }: {
   readonly scale: 'rose' | 'green'
-}): React.JSX.Element {
+}): React.JSX.Element => {
   return (
     <div className="pattern-heatmap-legend">
       <span>Less often</span>
@@ -94,7 +89,7 @@ function HeatmapLegend({
   )
 }
 
-function HeatmapTip(): React.JSX.Element {
+const HeatmapTip = (): React.JSX.Element => {
   return (
     <IonCard className="pattern-insight pattern-insight--neutral">
       <IonCardContent>
@@ -115,13 +110,13 @@ function HeatmapTip(): React.JSX.Element {
   )
 }
 
-function HeatmapContent({
+const HeatmapContent = ({
   cells,
   filters,
 }: {
   readonly cells: HeatmapCell[]
   readonly filters: DisplayFilters
-}): React.JSX.Element {
+}): React.JSX.Element => {
   const polarity: Polarity = filters.type === 'positive' ? 'desired' : 'undesired'
   const scale = polarity === 'desired' ? 'green' : 'rose'
   const { rows, cellIndex } = useMemo(
@@ -178,11 +173,7 @@ function HeatmapContent({
   )
 }
 
-/**
- * Patterns heatmap page. Consumes the scoped `timing.heatmap` (indicator ×
- * weekday likelihood).
- */
-export default function HeatmapPage(): React.JSX.Element {
+const HeatmapPage = (): React.JSX.Element => {
   const { view, isLoading, hasError, filters } = useScopedPatterns()
 
   return (
@@ -206,3 +197,5 @@ export default function HeatmapPage(): React.JSX.Element {
     </Page>
   )
 }
+
+export default HeatmapPage

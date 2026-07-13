@@ -46,8 +46,7 @@ interface ScopedData {
   subjectName: string | null
 }
 
-/** A short, gentle sentence describing the trend direction. */
-function trendText(trend: TrendResult): string {
+const trendText = (trend: TrendResult): string => {
   const {
     direction,
     current7DayAverage: current,
@@ -63,7 +62,7 @@ function trendText(trend: TrendResult): string {
     : `Trending lower than last week${cmp} — worth watching.`
 }
 
-function PatternsBody({
+const PatternsBody = ({
   data,
   chartTitle,
   rangeDays,
@@ -75,7 +74,7 @@ function PatternsBody({
   readonly rangeDays: number
   readonly onRangeChange: (days: number) => void
   readonly onViewAll: () => void
-}): React.JSX.Element {
+}): React.JSX.Element => {
   if (data.scoredDays === 0) {
     return (
       <PatternsEmptyState
@@ -126,12 +125,7 @@ function PatternsBody({
   )
 }
 
-/**
- * A per-person patterns section for the Person page: well-being trend and
- * connections for this person, with a filter to view the whole household
- * instead. Reuses the shared household analytics pass.
- */
-export function PersonPatternsSection({
+export const PersonPatternsSection = ({
   personId,
   personName,
   personAvatarUrl,
@@ -139,7 +133,7 @@ export function PersonPatternsSection({
   readonly personId: string
   readonly personName: string
   readonly personAvatarUrl?: string | null
-}): React.JSX.Element | null {
+}): React.JSX.Element | null => {
   const [scope, setScope] = useState<Scope>('person')
   const [rangeDays, setRangeDays] = useState(30)
   const { result, isLoading, hasError } = usePatternsAnalytics(rangeDays)
@@ -153,19 +147,19 @@ export function PersonPatternsSection({
   const scopedToPerson = scope === 'person'
   const data: ScopedData = scopedToPerson
     ? {
-        trend: personView.trend,
-        correlations: personView.correlations,
-        scoredDays: personView.scoredDays,
-        anomalyPatterns: personView.anomalyPatterns,
-        subjectName: personName,
-      }
+      trend: personView.trend,
+      correlations: personView.correlations,
+      scoredDays: personView.scoredDays,
+      anomalyPatterns: personView.anomalyPatterns,
+      subjectName: personName,
+    }
     : {
-        trend: result.householdTrend,
-        correlations: result.correlations,
-        scoredDays: result.dataQuality.scoredDays,
-        anomalyPatterns: null,
-        subjectName: null,
-      }
+      trend: result.householdTrend,
+      correlations: result.correlations,
+      scoredDays: result.dataQuality.scoredDays,
+      anomalyPatterns: null,
+      subjectName: null,
+    }
 
   const chartTitle = scopedToPerson
     ? `${personName}'s well-being trend`

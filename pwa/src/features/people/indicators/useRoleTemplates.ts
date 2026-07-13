@@ -8,12 +8,7 @@ import {
   type TemplateIndicator,
 } from './roleTemplates'
 
-/**
- * Fetches the indicator template for a role from DynamoDB.
- * Falls back to the local code-defined template if the remote
- * fetch fails or returns nothing.
- */
-export function useRoleTemplate(role: PersonRole | undefined) {
+export const useRoleTemplate = (role: PersonRole | undefined) => {
   return useQuery({
     enabled: Boolean(role),
     queryKey: ['roleTemplate', role],

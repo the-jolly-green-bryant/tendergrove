@@ -27,8 +27,7 @@ const preferencesStore: KVStore = {
 
 const CACHE_PREFIX = 'patterns:insights:'
 
-/** Stable djb2 hash → short base-36 string. */
-function hash(input: string): string {
+const hash = (input: string): string => {
   let h = 5381
   for (let i = 0; i < input.length; i++) {
     h = ((h << 5) + h + input.charCodeAt(i)) | 0
@@ -36,20 +35,12 @@ function hash(input: string): string {
   return (h >>> 0).toString(36)
 }
 
-/**
- * A signature that changes only when the insights' content changes, scoped by
- * who they're about (so household and per-person caches don't collide).
- */
-export function signInsights(scopeKey: string, insights: GeneratedInsight[]): string {
+export const signInsights = (scopeKey: string, insights: GeneratedInsight[]): string => {
   const basis = insights.map((i) => `${i.id}|${i.title}|${i.description}`).join('~')
   return `${scopeKey}:${hash(basis)}`
 }
 
-/** Read cached insights for a signature, or null on miss / parse failure. */
-export async function readInsightCache(
-  signature: string,
-  store: KVStore = preferencesStore,
-): Promise<GeneratedInsight[] | null> {
+export const readInsightCache = async (signature: string, store: KVStore = preferencesStore): Promise<GeneratedInsight[] | null> => {
   const raw = await store.get(CACHE_PREFIX + signature)
   if (!raw) return null
   try {
@@ -59,11 +50,6 @@ export async function readInsightCache(
   }
 }
 
-/** Persist insights for a signature. */
-export async function writeInsightCache(
-  signature: string,
-  insights: GeneratedInsight[],
-  store: KVStore = preferencesStore,
-): Promise<void> {
+export const writeInsightCache = async (signature: string, insights: GeneratedInsight[], store: KVStore = preferencesStore): Promise<void> => {
   await store.set(CACHE_PREFIX + signature, JSON.stringify(insights))
 }

@@ -1,17 +1,12 @@
 import React from 'react'
 
-/**
- * The gentle low-data state. We never leave a caregiver staring at an empty
- * chart wondering if they did something wrong — we explain what's happening and
- * what will help, warmly.
- */
-export function PatternsEmptyState({
+export const PatternsEmptyState = ({
   title = 'Patterns are still taking shape',
   message,
 }: {
   readonly title?: string
   readonly message: string
-}): React.JSX.Element {
+}): React.JSX.Element => {
   return (
     <div className="pattern-empty">
       <span

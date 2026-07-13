@@ -9,20 +9,11 @@ interface PastDataNoticeProps {
   readonly className?: string
 }
 
-/**
- * Calls out that the current view is showing older household data.
- * @param {PastDataNoticeProps} param0
- * @param {string} param0.selectedDateLabel
- * @param {() => void} param0.onReturnToToday
- * @param {string | undefined} param0.className
- * @returns {React.JSX.Element}
- * @constructor
- */
-export function PastDataNotice({
+export const PastDataNotice = ({
   selectedDateLabel,
   onReturnToToday,
   className,
-}: PastDataNoticeProps): React.JSX.Element {
+}: PastDataNoticeProps): React.JSX.Element => {
   const rootClassName = ['past-data-notice', className].filter(Boolean).join(' ')
 
   return (

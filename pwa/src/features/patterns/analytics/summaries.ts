@@ -21,23 +21,13 @@ import type {
   TurningPointInsight,
 } from './types'
 
-/** Sum a field across the last `n` days of the series (most recent slice). */
-function sumRecent(
-  series: DailyHouseholdScore[],
-  n: number,
-  field: 'incidentCount' | 'positiveCount' | 'negativeCount',
-  offset = 0,
-): number {
+const sumRecent = (series: DailyHouseholdScore[], n: number, field: 'incidentCount' | 'positiveCount' | 'negativeCount', offset = 0): number => {
   const end = series.length - offset
   const start = Math.max(0, end - n)
   return series.slice(start, end).reduce((sum, d) => sum + d[field], 0)
 }
 
-/** Identify the most notable recent movement, if any, as structured facts. */
-function detectMovement(
-  series: DailyHouseholdScore[],
-  turningPoints: TurningPointInsight[],
-): MovementFact | null {
+const detectMovement = (series: DailyHouseholdScore[], turningPoints: TurningPointInsight[]): MovementFact | null => {
   const recentIncidents = sumRecent(series, 7, 'incidentCount')
   const priorIncidents = sumRecent(series, 7, 'incidentCount', 7)
   const latestTurning = turningPoints[turningPoints.length - 1]
@@ -58,25 +48,24 @@ function detectMovement(
   return null
 }
 
-function toneFromTrend(trend: TrendResult): PatternInsight['tone'] {
+const toneFromTrend = (trend: TrendResult): PatternInsight['tone'] => {
   if (trend.direction === 'worsening') return 'watch'
   if (trend.direction === 'improving') return 'positive'
   return 'neutral'
 }
 
-function turningPointTitle(tp: TurningPointInsight, positive: boolean): string {
+const turningPointTitle = (tp: TurningPointInsight, positive: boolean): string => {
   const when = formatDayLabel(tp.date)
   if (tp.type === 'spike') return `A hard day around ${when}`
   return positive ? `Things looked up around ${when}` : `A dip around ${when}`
 }
 
-function turningPointTone(tp: TurningPointInsight, positive: boolean): InsightTone {
+const turningPointTone = (tp: TurningPointInsight, positive: boolean): InsightTone => {
   if (tp.type === 'spike') return 'neutral'
   return positive ? 'positive' : 'watch'
 }
 
-/** A card for one turning point. */
-function turningPointCard(tp: TurningPointInsight): PatternInsight {
+const turningPointCard = (tp: TurningPointInsight): PatternInsight => {
   const positive = tp.type === 'sustainedIncrease' || tp.type === 'recovery'
   return {
     id: `tp:${tp.date}`,
@@ -88,8 +77,7 @@ function turningPointCard(tp: TurningPointInsight): PatternInsight {
   }
 }
 
-/** A week-over-week incident movement card, or null when it isn't notable. */
-function incidentCard(series: DailyHouseholdScore[]): PatternInsight | null {
+const incidentCard = (series: DailyHouseholdScore[]): PatternInsight | null => {
   const recent = sumRecent(series, 7, 'incidentCount')
   const prior = sumRecent(series, 7, 'incidentCount', 7)
   if (recent === prior || recent + prior < 2) return null
@@ -107,8 +95,7 @@ function incidentCard(series: DailyHouseholdScore[]): PatternInsight | null {
   }
 }
 
-/** A card for the strongest solid correlation, or null when none qualifies. */
-function correlationCard(correlations: CorrelationInsight[]): PatternInsight | null {
+const correlationCard = (correlations: CorrelationInsight[]): PatternInsight | null => {
   const top = correlations.find((c) => c.confidence !== 'low')
   if (!top) return null
   return {
@@ -121,12 +108,7 @@ function correlationCard(correlations: CorrelationInsight[]): PatternInsight | n
   }
 }
 
-/** Build the noteworthy change cards (2–4), strongest signal first. */
-function buildNoteworthy(
-  series: DailyHouseholdScore[],
-  turningPoints: TurningPointInsight[],
-  correlations: CorrelationInsight[],
-): PatternInsight[] {
+const buildNoteworthy = (series: DailyHouseholdScore[], turningPoints: TurningPointInsight[], correlations: CorrelationInsight[]): PatternInsight[] => {
   const cards: (PatternInsight | null)[] = [
     ...[...turningPoints].reverse().slice(0, 2).map(turningPointCard),
     incidentCard(series),
@@ -137,11 +119,7 @@ function buildNoteworthy(
   return cards.filter((c): c is PatternInsight => c !== null).slice(0, 4)
 }
 
-/** Overall confidence: blend the trend confidence with how much moved. */
-function overallConfidence(
-  trend: TrendResult,
-  noteworthy: PatternInsight[],
-): Confidence {
+const overallConfidence = (trend: TrendResult, noteworthy: PatternInsight[]): Confidence => {
   if (trend.direction === 'insufficient') return 'low'
   const hasHigh = noteworthy.some((c) => c.confidence === 'high')
   if (trend.confidence === 'high' && hasHigh) return 'high'
@@ -149,20 +127,13 @@ function overallConfidence(
   return 'moderate'
 }
 
-/**
- * Build the overview summary shown at the top of the Patterns section.
- *
- * `subjectName` (a person's display name) scopes the spoken copy to that
- * person; omit it for the household. The prose itself is produced by
- * `observations.ts`, which is where an LLM could later take over.
- */
-export function buildOverview(params: {
+export const buildOverview = (params: {
   householdTrend: TrendResult
   householdDailyScores: DailyHouseholdScore[]
   turningPoints: TurningPointInsight[]
   correlations: CorrelationInsight[]
   subjectName?: string | null
-}): OverviewSummary {
+}): OverviewSummary => {
   const { householdTrend, householdDailyScores, turningPoints, correlations } = params
   const subjectName = params.subjectName ?? null
 

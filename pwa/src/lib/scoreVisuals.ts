@@ -21,24 +21,20 @@ export const SCORE_VISUAL_ASSET_COLORS: Record<ScoreVisualLevel, string> = {
   stable: 'green',
 }
 
-/** Returns the visual band for a score. */
-export function scoreVisualLevel(score: number): ScoreVisualLevel {
+export const scoreVisualLevel = (score: number): ScoreVisualLevel => {
   if (score < SCORE_VISUAL_THRESHOLDS.crisis) return 'crisis'
   if (score < SCORE_VISUAL_THRESHOLDS.watch) return 'watch'
   return 'stable'
 }
 
-/** Returns the visual hex color for a score. */
-export function scoreVisualColor(score: number): string {
+export const scoreVisualColor = (score: number): string => {
   return SCORE_VISUAL_COLORS[scoreVisualLevel(score)]
 }
 
-/** Returns the artwork asset color suffix for a score. */
-export function scoreVisualAssetColor(score: number): string {
+export const scoreVisualAssetColor = (score: number): string => {
   return SCORE_VISUAL_ASSET_COLORS[scoreVisualLevel(score)]
 }
 
-/** Returns whether a score is in the crisis visual band. */
-export function isCrisisScore(score: number): boolean {
+export const isCrisisScore = (score: number): boolean => {
   return scoreVisualLevel(score) === 'crisis'
 }

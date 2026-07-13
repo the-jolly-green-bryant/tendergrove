@@ -12,10 +12,7 @@ export interface CheckInInput {
   note?: string
 }
 
-/**
- *
- */
-export function useCheckInMutations(personId: string | undefined) {
+export const useCheckInMutations = (personId: string | undefined) => {
   const queryClient = useQueryClient()
 
   async function invalidate() {

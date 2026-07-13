@@ -18,8 +18,7 @@ export const WELLBEING_LEVEL_THRESHOLDS = {
   mixed: 35,
 } as const
 
-/** Map a 0–100 well-being score to a band. */
-export function wellbeingLevel(score: number): WellbeingLevel {
+export const wellbeingLevel = (score: number): WellbeingLevel => {
   if (score >= WELLBEING_LEVEL_THRESHOLDS.thriving) return 'thriving'
   if (score >= WELLBEING_LEVEL_THRESHOLDS.good) return 'good'
   if (score >= WELLBEING_LEVEL_THRESHOLDS.mixed) return 'mixed'
@@ -34,8 +33,7 @@ const LEVEL_WORD: Record<WellbeingLevel, string> = {
   struggling: 'A harder day',
 }
 
-/** Build a short, human summary for a day cell. */
-function buildShortSummary(day: DailyHouseholdScore): string {
+const buildShortSummary = (day: DailyHouseholdScore): string => {
   if (day.score === null) {
     return day.checkInCount === 0 && day.incidentCount === 0
       ? 'No check-ins yet'
@@ -52,10 +50,7 @@ function buildShortSummary(day: DailyHouseholdScore): string {
   return parts.join(' · ')
 }
 
-/** Turn household daily scores into calendar day patterns. */
-export function buildCalendar(
-  householdDailyScores: DailyHouseholdScore[],
-): CalendarDayPattern[] {
+export const buildCalendar = (householdDailyScores: DailyHouseholdScore[]): CalendarDayPattern[] => {
   return householdDailyScores.map((day) => ({
     date: day.date,
     score: day.score,

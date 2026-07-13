@@ -1,10 +1,7 @@
 import { usePeople } from '../features/people/usePeople'
 import { householdGreetingText } from '../lib/greeting'
 
-/**
- *
- */
-export function Greeting() {
+export const Greeting = () => {
   const people = usePeople()
   const selfPerson = people.data?.find((p) => p.role === 'self')
 

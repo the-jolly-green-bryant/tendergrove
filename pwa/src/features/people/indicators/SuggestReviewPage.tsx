@@ -57,9 +57,8 @@ const sections: ReviewSectionMeta[] = [
   },
 ]
 
-function polarityForType(type: IndicatorType): Polarity {
-  return type === 'positive' ? 'desired' : 'undesired'
-}
+const polarityForType = (type: IndicatorType): Polarity =>
+  type === 'positive' ? 'desired' : 'undesired'
 
 const matchKey = (polarity: Polarity, name: string) =>
   `${polarity}|${name.trim().toLowerCase()}`
@@ -69,7 +68,7 @@ const matchKey = (polarity: Polarity, name: string) =>
  * into one checklist. Exact matches (same polarity + name) collapse into a
  * single existing row so nothing is duplicated.
  */
-function buildReviewItems(existing: Indicator[], roleKey: RoleKey): ReviewItem[] {
+const buildReviewItems = (existing: Indicator[], roleKey: RoleKey): ReviewItem[] => {
   const items: ReviewItem[] = existing.map((indicator) => ({
     key: `existing-${indicator.id}`,
     name: indicator.name,
@@ -100,7 +99,7 @@ function buildReviewItems(existing: Indicator[], roleKey: RoleKey): ReviewItem[]
   return items
 }
 
-function useReviewItems(personId: string, roleKey: RoleKey) {
+const useReviewItems = (personId: string, roleKey: RoleKey) => {
   const { data: existing, isLoading } = useIndicators(personId)
   const { create, remove } = useIndicatorMutations(personId)
   const [items, setItems] = useState<ReviewItem[]>([])
@@ -151,7 +150,7 @@ function useReviewItems(personId: string, roleKey: RoleKey) {
   }
 }
 
-function ReviewSection({
+const ReviewSection = ({
   section,
   items,
   onToggle,
@@ -159,49 +158,47 @@ function ReviewSection({
   readonly section: ReviewSectionMeta
   readonly items: ReviewItem[]
   readonly onToggle: (key: string) => void
-}) {
-  return (
-    <section className="indicator-group">
-      <div className="section-header">
-        <h2>{section.title}</h2>
-      </div>
+}) => (
+  <section className="indicator-group">
+    <div className="section-header">
+      <h2>{section.title}</h2>
+    </div>
 
-      {items.length === 0 ? (
-        <p className="section-empty">Nothing to suggest here.</p>
-      ) : (
-        <IonList
-          lines="none"
-          className="indicator-list"
-        >
-          {items.map((item) => (
-            <IonItem
-              key={item.key}
-              className="indicator-row"
-            >
-              <IonIcon
-                slot="start"
-                icon={section.icon}
-                color={section.color}
-              />
-              <IonLabel>{item.name}</IonLabel>
-              {item.suggested && !item.existingId && (
-                <span className="suggested-row__badge">Suggested</span>
-              )}
-              <IonCheckbox
-                slot="end"
-                checked={item.checked}
-                color={section.color}
-                onIonChange={() => onToggle(item.key)}
-              />
-            </IonItem>
-          ))}
-        </IonList>
-      )}
-    </section>
-  )
-}
+    {items.length === 0 ? (
+      <p className="section-empty">Nothing to suggest here.</p>
+    ) : (
+      <IonList
+        lines="none"
+        className="indicator-list"
+      >
+        {items.map((item) => (
+          <IonItem
+            key={item.key}
+            className="indicator-row"
+          >
+            <IonIcon
+              slot="start"
+              icon={section.icon}
+              color={section.color}
+            />
+            <IonLabel>{item.name}</IonLabel>
+            {item.suggested && !item.existingId && (
+              <span className="suggested-row__badge">Suggested</span>
+            )}
+            <IonCheckbox
+              slot="end"
+              checked={item.checked}
+              color={section.color}
+              onIonChange={() => onToggle(item.key)}
+            />
+          </IonItem>
+        ))}
+      </IonList>
+    )}
+  </section>
+)
 
-function saveLabel(addCount: number, removeCount: number): string {
+const saveLabel = (addCount: number, removeCount: number): string => {
   if (addCount === 0 && removeCount === 0) return 'Done'
   const parts: string[] = []
   if (addCount > 0) parts.push(`Add ${addCount}`)
@@ -214,7 +211,7 @@ function saveLabel(addCount: number, removeCount: number): string {
  * person should end up with, then apply the changes.
  * @returns Suggested-indicator review page.
  */
-export default function SuggestReviewPage() {
+const SuggestReviewPage = () => {
   const router = useIonRouter()
   const { personId, roleKey } = useParams<{ personId: string; roleKey: RoleKey }>()
   const template = roleTemplates[roleKey]
@@ -283,3 +280,5 @@ export default function SuggestReviewPage() {
     </IonPage>
   )
 }
+
+export default SuggestReviewPage

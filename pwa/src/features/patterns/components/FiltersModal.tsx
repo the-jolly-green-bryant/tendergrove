@@ -39,7 +39,7 @@ const TYPE_OPTIONS: { value: AnalyticsType; label: string }[] = [
 /*  Sections                                                           */
 /* ------------------------------------------------------------------ */
 
-function DateRangeSection(): React.JSX.Element {
+const DateRangeSection = (): React.JSX.Element => {
   const rangeDays = usePatternsFilterStore((s) => s.rangeDays)
   const customRange = usePatternsFilterStore((s) => s.customRange)
   const setRangeDays = usePatternsFilterStore((s) => s.setRangeDays)
@@ -104,7 +104,7 @@ function DateRangeSection(): React.JSX.Element {
   )
 }
 
-function PeopleSection(): React.JSX.Element {
+const PeopleSection = (): React.JSX.Element => {
   const { data } = usePatternsData()
   const personIds = usePatternsFilterStore((s) => s.personIds)
   const setPersonIds = usePatternsFilterStore((s) => s.setPersonIds)
@@ -152,7 +152,7 @@ function PeopleSection(): React.JSX.Element {
   )
 }
 
-function IndicatorsSection(): React.JSX.Element {
+const IndicatorsSection = (): React.JSX.Element => {
   const { data } = usePatternsData()
   const indicatorMode = usePatternsFilterStore((s) => s.indicatorMode)
   const indicatorIds = usePatternsFilterStore((s) => s.indicatorIds)
@@ -208,7 +208,7 @@ function IndicatorsSection(): React.JSX.Element {
   )
 }
 
-function TypeSection(): React.JSX.Element {
+const TypeSection = (): React.JSX.Element => {
   const type = usePatternsFilterStore((s) => s.type)
   const setType = usePatternsFilterStore((s) => s.setType)
   return (
@@ -272,19 +272,13 @@ function collectIndicators(data: RawPerson[]): IndicatorOption[] {
 /*  Modal                                                              */
 /* ------------------------------------------------------------------ */
 
-/**
- * Global analytics filters as a bottom-sheet modal. Selections update the
- * shared store immediately, so "Apply" (and swipe-down / close) simply dismiss
- * — the caregiver lands back on exactly the page they opened it from. Because
- * it's a modal, dismissing pops it without touching the navigation stack.
- */
-export function FiltersModal({
+export const FiltersModal = ({
   isOpen,
   onDismiss,
 }: {
   readonly isOpen: boolean
   readonly onDismiss: () => void
-}): React.JSX.Element {
+}): React.JSX.Element => {
   const reset = usePatternsFilterStore((s) => s.reset)
 
   return (

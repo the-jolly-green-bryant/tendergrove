@@ -53,30 +53,11 @@ export const INCIDENT_ONLY_BASE = 35
 /*  Per-day, per-person scoring                                        */
 /* ------------------------------------------------------------------ */
 
-/** Active indicators that have a usable polarity. */
-function scoreableIndicators(indicators: AnalyticsIndicator[]): AnalyticsIndicator[] {
+const scoreableIndicators = (indicators: AnalyticsIndicator[]): AnalyticsIndicator[] => {
   return indicators.filter((i) => i.active !== false && i.polarity !== null)
 }
 
-/**
- * Distress contributed by the indicator checklist on a day, 0–100, or `null`
- * when there is nothing to score (no check-in, or no scoreable indicators).
- *
- * We reuse the app's established four-quadrant reading of a checklist so
- * Patterns stays consistent with the wellness score elsewhere in the app:
- *   - desired   + occurred   → good  (distress-lowering)
- *   - desired   + not occurred → bad  (we hoped for it; it didn't happen)
- *   - undesired + occurred   → bad   (the thing we watch for happened)
- *   - undesired + not occurred → good (the hard thing stayed away)
- *
- * wellness = good / total × 100, and indicator distress is simply its inverse.
- * This means a quiet day (undesired things absent) reads as low distress, which
- * is exactly right for behaviour checklists.
- */
-function indicatorDistress(
-  indicators: AnalyticsIndicator[],
-  checkedIds: Set<string>,
-): number | null {
+const indicatorDistress = (indicators: AnalyticsIndicator[], checkedIds: Set<string>): number | null => {
   const active = scoreableIndicators(indicators)
   if (active.length === 0) return null
 
@@ -91,18 +72,7 @@ function indicatorDistress(
   return 100 - wellness
 }
 
-/**
- * Score a single person for a single day.
- *
- * `dayCheckIns` and `dayIncidents` must already be filtered to the target day.
- * When a person checks in multiple times in a day we take the UNION of checked
- * indicators — one honest picture of the day rather than letting repeat
- * check-ins inflate anything.
- */
-export function scorePersonDay(
-  person: AnalyticsPerson,
-  date: DateKey,
-): DailyPersonScore {
+export const scorePersonDay = (person: AnalyticsPerson, date: DateKey): DailyPersonScore => {
   const dayCheckIns = person.checkIns.filter((c) => isoToDateKey(c.occurredAt) === date)
   const dayIncidents = person.incidents.filter(
     (e) => isoToDateKey(e.occurredAt) === date,
@@ -169,11 +139,7 @@ export function scorePersonDay(
   }
 }
 
-/** Score one person across every day in the window. */
-export function scorePersonWindow(
-  person: AnalyticsPerson,
-  window: DateKey[],
-): DailyPersonScore[] {
+export const scorePersonWindow = (person: AnalyticsPerson, window: DateKey[]): DailyPersonScore[] => {
   return window.map((date) => scorePersonDay(person, date))
 }
 
@@ -181,20 +147,7 @@ export function scorePersonWindow(
 /*  Household aggregation                                              */
 /* ------------------------------------------------------------------ */
 
-/**
- * Aggregate per-person daily scores into a household daily score.
- *
- * The household score for a day is the AVERAGE of each person's daily score
- * (people with no data that day are skipped). Because every person is already
- * collapsed to one number per day, a person who checks in many times cannot
- * dominate the household view — everyone counts once.
- *
- * `personScoresByDate` maps each day key to that day's per-person scores.
- */
-export function aggregateHouseholdDay(
-  date: DateKey,
-  personScores: DailyPersonScore[],
-): DailyHouseholdScore {
+export const aggregateHouseholdDay = (date: DateKey, personScores: DailyPersonScore[]): DailyHouseholdScore => {
   const scored = personScores.filter((p) => p.score !== null)
 
   const checkInCount = personScores.reduce((sum, p) => sum + p.checkInCount, 0)
@@ -221,18 +174,10 @@ export function aggregateHouseholdDay(
   }
 }
 
-/**
- * Build both the per-person and household daily score series for the window.
- * Returned together because the household series is just an aggregation of the
- * per-person one, and computing them in one pass keeps them consistent.
- */
-export function buildDailyScores(
-  people: AnalyticsPerson[],
-  window: DateKey[],
-): {
+export const buildDailyScores = (people: AnalyticsPerson[], window: DateKey[]): {
   personDailyScores: Record<string, DailyPersonScore[]>
   householdDailyScores: DailyHouseholdScore[]
-} {
+} => {
   const personDailyScores: Record<string, DailyPersonScore[]> = {}
   for (const person of people) {
     personDailyScores[person.id] = scorePersonWindow(person, window)

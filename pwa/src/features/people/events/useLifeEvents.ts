@@ -2,15 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import { client } from '../../../lib/api'
 
-/**
- * Fetch the household's shared pool of life events (School, Therapy, …), ordered
- * for display. Missing `sortOrder` falls back to creation time.
- *
- * Resilient by design: if the LifeEvent table isn't deployed yet (or the request
- * otherwise fails) it returns an empty list rather than throwing, so the
- * check-in and the rest of the app keep working until the backend is deployed.
- */
-export function useHouseholdLifeEvents(householdId: string | undefined) {
+export const useHouseholdLifeEvents = (householdId: string | undefined) => {
   return useQuery({
     enabled: Boolean(householdId),
     queryKey: ['lifeEvents', householdId],

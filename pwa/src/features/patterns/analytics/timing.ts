@@ -56,8 +56,7 @@ interface ScoredDay {
 /*  Day of week                                                        */
 /* ------------------------------------------------------------------ */
 
-/** Per-weekday likelihood of a challenging / positive day, from daily scores. */
-export function buildDayOfWeek(scores: ScoredDay[]): DayOfWeekBucket[] {
+export const buildDayOfWeek = (scores: ScoredDay[]): DayOfWeekBucket[] => {
   const challenging = new Array(7).fill(0)
   const positive = new Array(7).fill(0)
   const sample = new Array(7).fill(0)
@@ -85,11 +84,10 @@ export function buildDayOfWeek(scores: ScoredDay[]): DayOfWeekBucket[] {
 /*  Time of day (incidents only)                                       */
 /* ------------------------------------------------------------------ */
 
-/** Distribution of incidents across the 24 hours of the day. */
-export function buildTimeOfDay(incidents: { occurredAt: string }[]): {
+export const buildTimeOfDay = (incidents: { occurredAt: string }[]): {
   buckets: TimeOfDayBucket[]
   total: number
-} {
+} => {
   const counts = new Array(24).fill(0)
   for (const incident of incidents) {
     counts[new Date(incident.occurredAt).getHours()]++
@@ -114,11 +112,11 @@ interface IndicatorDays {
   byIndicator: Map<string, Set<string>>
 }
 
-function activeIndicators(person: AnalyticsPerson): AnalyticsPerson['indicators'] {
+const activeIndicators = (person: AnalyticsPerson): AnalyticsPerson['indicators'] => {
   return person.indicators.filter((i) => i.active !== false && i.polarity !== null)
 }
 
-function collectIndicatorDays(person: AnalyticsPerson): IndicatorDays {
+const collectIndicatorDays = (person: AnalyticsPerson): IndicatorDays => {
   const checkInDays = new Set<string>()
   const byIndicator = new Map<string, Set<string>>()
   for (const indicator of activeIndicators(person)) {
@@ -138,10 +136,7 @@ function collectIndicatorDays(person: AnalyticsPerson): IndicatorDays {
 /*  Heatmap                                                            */
 /* ------------------------------------------------------------------ */
 
-function buildPersonHeatmap(
-  person: AnalyticsPerson,
-  days: IndicatorDays,
-): HeatmapCell[] {
+const buildPersonHeatmap = (person: AnalyticsPerson, days: IndicatorDays): HeatmapCell[] => {
   const checkInsByWeekday = new Array(7).fill(0)
   for (const day of days.checkInDays) {
     checkInsByWeekday[dateKeyToDate(day).getDay()]++
@@ -173,29 +168,21 @@ function buildPersonHeatmap(
 /*  Indicator ↔ well-being correlations                                */
 /* ------------------------------------------------------------------ */
 
-function confidenceFromR(r: number): Confidence {
+const confidenceFromR = (r: number): Confidence => {
   const abs = Math.abs(r)
   if (abs >= CORRELATION_BANDS.high) return 'high'
   if (abs >= CORRELATION_BANDS.moderate) return 'moderate'
   return 'low'
 }
 
-function correlationSummary(
-  label: string,
-  personName: string,
-  correlation: number,
-): string {
+const correlationSummary = (label: string, personName: string, correlation: number): string => {
   const direction = correlation > 0 ? 'better' : 'harder'
   const nudge =
     correlation > 0 ? 'a habit worth encouraging' : 'something worth gently watching'
   return `${label} (${personName}) tends to appear on ${direction} days. These appear related — ${nudge}.`
 }
 
-function buildPersonIndicatorCorrelations(
-  person: AnalyticsPerson,
-  scores: DailyPersonScore[],
-  days: IndicatorDays,
-): IndicatorOutcomeCorrelation[] {
+const buildPersonIndicatorCorrelations = (person: AnalyticsPerson, scores: DailyPersonScore[], days: IndicatorDays): IndicatorOutcomeCorrelation[] => {
   const scoredDays = scores.filter((d) => d.score !== null && d.checkInCount > 0)
   const results: IndicatorOutcomeCorrelation[] = []
 
@@ -228,10 +215,7 @@ function buildPersonIndicatorCorrelations(
 /*  Orchestration                                                      */
 /* ------------------------------------------------------------------ */
 
-function buildPersonTiming(
-  person: AnalyticsPerson,
-  scores: DailyPersonScore[],
-): TimingAnalysis {
+const buildPersonTiming = (person: AnalyticsPerson, scores: DailyPersonScore[]): TimingAnalysis => {
   const days = collectIndicatorDays(person)
   const { buckets, total } = buildTimeOfDay(person.incidents)
   return {
@@ -243,17 +227,7 @@ function buildPersonTiming(
   }
 }
 
-/**
- * Build timing analytics for the whole household and for each person. The
- * household heatmap and correlations are the union of every person's (each row
- * carries the person's name); household day-of-week and time-of-day aggregate
- * across everyone.
- */
-export function buildTiming(
-  people: AnalyticsPerson[],
-  personDailyScores: Record<string, DailyPersonScore[]>,
-  householdDailyScores: ScoredDay[],
-): { household: TimingAnalysis; perPerson: Record<string, TimingAnalysis> } {
+export const buildTiming = (people: AnalyticsPerson[], personDailyScores: Record<string, DailyPersonScore[]>, householdDailyScores: ScoredDay[]): { household: TimingAnalysis; perPerson: Record<string, TimingAnalysis> } => {
   const perPerson: Record<string, TimingAnalysis> = {}
   for (const person of people) {
     perPerson[person.id] = buildPersonTiming(person, personDailyScores[person.id] ?? [])

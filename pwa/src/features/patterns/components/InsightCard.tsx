@@ -10,17 +10,13 @@ const TONE_ICON: Record<PatternInsight['tone'], string> = {
   neutral: '🔎',
 }
 
-/**
- * A single human-readable insight. Deliberately roomy text, generous tap/read
- * target, no dense data — this is meant to be calmly read, not scanned.
- */
-export function InsightCard({
+export const InsightCard = ({
   insight,
   showConfidence = true,
 }: {
   readonly insight: PatternInsight
   readonly showConfidence?: boolean
-}): React.JSX.Element {
+}): React.JSX.Element => {
   return (
     <IonCard className={`pattern-insight pattern-insight--${insight.tone}`}>
       <IonCardContent>

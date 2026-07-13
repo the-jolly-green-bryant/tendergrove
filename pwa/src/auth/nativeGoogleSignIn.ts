@@ -42,7 +42,7 @@ const capacitorAuthSessionOpener = (url: string): Promise<OpenAuthSessionResult>
     const urlSub = CapApp.addListener('appUrlOpen', ({ url: openedUrl }) => {
       if (!openedUrl.startsWith(CALLBACK_SCHEME)) return
       finish({ type: 'success', url: openedUrl })
-      void Browser.close().catch(() => {})
+      void Browser.close().catch(() => { })
     })
 
     // The Custom Tab also closes as part of the redirect, so don't treat a
@@ -56,8 +56,7 @@ const capacitorAuthSessionOpener = (url: string): Promise<OpenAuthSessionResult>
     })
   })
 
-/** Start the Google OAuth flow on a native (Capacitor) platform. */
-export async function signInWithGoogleNative(): Promise<void> {
+export const signInWithGoogleNative = async (): Promise<void> => {
   await signInWithRedirect({
     provider: 'Google',
     // authSessionOpener is a real signInWithRedirect option but is not in the

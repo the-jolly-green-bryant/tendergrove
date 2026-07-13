@@ -8,23 +8,17 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-/**
- *
- */
-export function AuthProvider({
+export const AuthProvider = ({
   user,
   signOut,
   children,
-}: AuthContextValue & { children: ReactNode }) {
+}: AuthContextValue & { children: ReactNode }) => {
   return (
     <AuthContext.Provider value={{ user, signOut }}>{children}</AuthContext.Provider>
   )
 }
 
-/**
- *
- */
-export function useAppAuth() {
+export const useAppAuth = () => {
   const context = useContext(AuthContext)
 
   if (!context) {

@@ -14,16 +14,15 @@ import {
   useIonRouter,
 } from '@ionic/react'
 import { trashOutline } from 'ionicons/icons'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
 import { useIndicators } from './useIndicators'
 import { type IndicatorInput, useIndicatorMutations } from './useIndicatorMutations'
 import { polarityMeta, type Polarity } from './indicatorMeta'
 
-function isPolarity(value: string | undefined): value is Polarity {
-  return value === 'undesired' || value === 'desired'
-}
+const isPolarity = (value: string | undefined): value is Polarity =>
+  value === 'undesired' || value === 'desired'
 
 const renderDeleteButton = (deleteIndicator: () => void) => (
   <IonButtons slot="end">
@@ -48,27 +47,25 @@ interface IndicatorFormHeaderProps {
   readonly title: string
 }
 
-function IndicatorFormHeader({
+const IndicatorFormHeader = ({
   deleteIndicator,
   isEditing,
   personId,
   title,
-}: IndicatorFormHeaderProps) {
-  return (
-    <IonHeader translucent>
-      <IonToolbar>
-        <IonButtons slot="start">
-          <IonBackButton
-            defaultHref={`/person/${personId}/indicators`}
-            text=""
-          />
-        </IonButtons>
-        <IonTitle>{title}</IonTitle>
-        {isEditing && renderDeleteButton(deleteIndicator)}
-      </IonToolbar>
-    </IonHeader>
-  )
-}
+}: IndicatorFormHeaderProps) => (
+  <IonHeader translucent>
+    <IonToolbar>
+      <IonButtons slot="start">
+        <IonBackButton
+          defaultHref={`/person/${personId}/indicators`}
+          text=""
+        />
+      </IonButtons>
+      <IonTitle>{title}</IonTitle>
+      {isEditing && renderDeleteButton(deleteIndicator)}
+    </IonToolbar>
+  </IonHeader>
+)
 
 interface IndicatorFormContentProps {
   readonly exampleText: string
@@ -81,7 +78,7 @@ interface IndicatorFormContentProps {
   readonly setName: (name: string) => void
 }
 
-function IndicatorFormContent({
+const IndicatorFormContent = ({
   exampleText,
   icon,
   color,
@@ -90,63 +87,59 @@ function IndicatorFormContent({
   saving,
   save,
   setName,
-}: IndicatorFormContentProps) {
-  return (
-    <IonContent
-      fullscreen
-      className="ion-padding safe-content"
-    >
-      <div className="indicator-form__icon">
-        <IonIcon
-          icon={icon}
-          color={color}
+}: IndicatorFormContentProps) => (
+  <IonContent
+    fullscreen
+    className="ion-padding safe-content"
+  >
+    <div className="indicator-form__icon">
+      <IonIcon
+        icon={icon}
+        color={color}
+      />
+    </div>
+
+    <p>{blurb}</p>
+
+    <IonList lines="none">
+      <IonItem>
+        <IonInput
+          label="Behavior"
+          labelPlacement="stacked"
+          placeholder={`e.g. ${exampleText}`}
+          value={name}
+          onIonInput={(event) => setName(event.detail.value ?? '')}
         />
-      </div>
+      </IonItem>
+    </IonList>
 
-      <p>{blurb}</p>
+    <IonButton
+      expand="block"
+      disabled={!name.trim() || saving}
+      onClick={save}
+    >
+      Save Indicator
+    </IonButton>
+  </IonContent>
+)
 
-      <IonList lines="none">
-        <IonItem>
-          <IonInput
-            label="Behavior"
-            labelPlacement="stacked"
-            placeholder={`e.g. ${exampleText}`}
-            value={name}
-            onIonInput={(event) => setName(event.detail.value ?? '')}
-          />
-        </IonItem>
-      </IonList>
-
-      <IonButton
-        expand="block"
-        disabled={!name.trim() || saving}
-        onClick={save}
-      >
-        Save Indicator
-      </IonButton>
-    </IonContent>
-  )
-}
-
-function createIndicatorPayload(
+const createIndicatorPayload = (
   name: string,
   description: string,
   notes: string,
   polarity: Polarity,
-): IndicatorInput {
-  return {
-    name,
-    description: description.trim() || undefined,
-    notes: notes.trim() || undefined,
-    polarity,
-    inputType: 'boolean',
-  }
-}
+): IndicatorInput => ({
+  name,
+  description: description.trim() || undefined,
+  notes: notes.trim() || undefined,
+  polarity,
+  inputType: 'boolean',
+})
 
 type ExistingIndicator = NonNullable<ReturnType<typeof useIndicators>['data']>[number]
 type IndicatorMutations = ReturnType<typeof useIndicatorMutations>
 
-function useIndicatorDraft(existing: ExistingIndicator | undefined) {
+const useIndicatorDraft = (existing: ExistingIndicator | undefined) => {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [notes, setNotes] = useState('')
@@ -171,7 +164,7 @@ interface IndicatorActionsParams {
   readonly router: ReturnType<typeof useIonRouter>
 }
 
-function useIndicatorActions({
+const useIndicatorActions = ({
   draft,
   indicatorId,
   isEditing,
@@ -179,7 +172,7 @@ function useIndicatorActions({
   personId,
   polarity,
   router,
-}: IndicatorActionsParams) {
+}: IndicatorActionsParams) => {
   const [saving, setSaving] = useState(false)
   const returnToList = () =>
     router.push(`/person/${personId}/indicators`, 'back', 'pop')
@@ -224,7 +217,7 @@ function useIndicatorActions({
  * @returns {React.JSX.Element}
  * @constructor
  */
-export default function IndicatorFormPage() {
+const IndicatorFormPage = (): React.JSX.Element => {
   const router = useIonRouter()
   const {
     personId,
@@ -280,3 +273,5 @@ export default function IndicatorFormPage() {
     </IonPage>
   )
 }
+
+export default IndicatorFormPage

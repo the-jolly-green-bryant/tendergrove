@@ -23,13 +23,13 @@ const levelColors: Record<Status['color'], string> = {
 
 const AVATAR_COLORS = ['4A2D8B', 'E8453C', '7B5EBF', '2FAE60', '3D2575', '5C3F9E']
 
-function colorForName(name: string): string {
+const colorForName = (name: string): string => {
   let hash = 0
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length]
 }
 
-function fallbackAvatarUrl(name: string): string {
+const fallbackAvatarUrl = (name: string): string => {
   const bg = colorForName(name)
   return `https://ui-avatars.com/api/?background=${bg}&color=fff&bold=true&name=${encodeURIComponent(name || '?')}`
 }

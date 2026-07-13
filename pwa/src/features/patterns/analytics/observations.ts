@@ -19,28 +19,21 @@
 
 import type { MovementFact, TrendDirection, WeeklyFacts } from './types'
 
-/**
- * Deterministically pick one phrasing variant from a list, seeded by a number,
- * so the copy has some human variety but stays stable for the same data.
- */
-function pick(variants: string[], seed: number): string {
+const pick = (variants: string[], seed: number): string => {
   const index = Math.abs(Math.round(seed)) % variants.length
   return variants[index]
 }
 
-/** How much a change is "worth mentioning loudly": small vs clear. */
-function magnitudeWord(delta: number | null): string {
+const magnitudeWord = (delta: number | null): string => {
   if (delta === null) return ''
   return Math.abs(delta) < 10 ? 'a little ' : ''
 }
 
-/** Trailing "… for {name}" when scoped to a person. */
-function forWhom(subjectName: string | null): string {
+const forWhom = (subjectName: string | null): string => {
   return subjectName ? ` for ${subjectName}` : ''
 }
 
-/** The opening, spoken-sounding line about the week's direction. */
-function openingLine(facts: WeeklyFacts): string {
+const openingLine = (facts: WeeklyFacts): string => {
   const who = forWhom(facts.subjectName)
   const seed = facts.delta ?? facts.currentAverage ?? 0
   const soft = magnitudeWord(facts.delta)
@@ -81,8 +74,7 @@ function openingLine(facts: WeeklyFacts): string {
   )
 }
 
-/** The follow-on clause about a notable recent movement. */
-function movementLine(movement: MovementFact, seed: number): string {
+const movementLine = (movement: MovementFact, seed: number): string => {
   const when = movement.dateLabel ? ` since ${movement.dateLabel}` : ''
   const after = movement.dateLabel ? ` after ${movement.dateLabel}` : ''
   if (movement.kind === 'incidents-up') {
@@ -103,12 +95,7 @@ function movementLine(movement: MovementFact, seed: number): string {
   )
 }
 
-/**
- * Compose the spoken weekly headline. When both an overall direction and a
- * notable movement exist, we join them so it reads like something a person
- * would actually say.
- */
-export function composeWeeklyObservation(facts: WeeklyFacts): string {
+export const composeWeeklyObservation = (facts: WeeklyFacts): string => {
   const seed = facts.delta ?? facts.currentAverage ?? 0
   const opening = openingLine(facts)
   if (!facts.movement) return `${opening}.`
@@ -123,11 +110,7 @@ export function composeWeeklyObservation(facts: WeeklyFacts): string {
   return `${opening}${joiner}${movement}.`
 }
 
-/** The concise clause used beside the numeric comparison in the trend strip. */
-export function composeTrendSummary(
-  direction: TrendDirection,
-  subjectName: string | null,
-): string {
+export const composeTrendSummary = (direction: TrendDirection, subjectName: string | null): string => {
   const subject = subjectName ? `${subjectName}'s` : 'Household'
   if (direction === 'improving') return `${subject} well-being is trending up`
   if (direction === 'worsening') return `${subject} well-being is trending down`

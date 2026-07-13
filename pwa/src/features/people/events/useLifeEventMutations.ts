@@ -6,11 +6,7 @@ import { client } from '../../../lib/api'
 export const EVENTS_UNAVAILABLE_MESSAGE =
   'Events aren’t available yet. Deploy the latest backend (run “ampx sandbox”) to start using them.'
 
-/**
- * Add / rename / remove events in a household's shared pool. Kept deliberately
- * tiny — an event is just a label and its display order.
- */
-export function useLifeEventMutations(householdId: string | undefined) {
+export const useLifeEventMutations = (householdId: string | undefined) => {
   const queryClient = useQueryClient()
 
   async function invalidate() {

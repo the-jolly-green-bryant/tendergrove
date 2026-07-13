@@ -19,10 +19,7 @@ const RELATIONSHIP_CHART_DAYS = 14
 const PERSON_A_COLOR = 'var(--ion-color-primary)'
 const PERSON_B_COLOR = '#7B5EBF'
 
-function relationshipSeries(
-  rel: RelationshipInsight,
-  showDelta: boolean,
-): { dates: string[]; series: ChartSeries[] } {
+const relationshipSeries = (rel: RelationshipInsight, showDelta: boolean): { dates: string[]; series: ChartSeries[] } => {
   const points = rel.chartData.slice(-RELATIONSHIP_CHART_DAYS)
   const aRaw = points.map((p) => p.aScore)
   const bRaw = points.map((p) => p.bScore)
@@ -43,13 +40,13 @@ function relationshipSeries(
   }
 }
 
-function RelationshipCard({
+const RelationshipCard = ({
   relationship,
   showDelta,
 }: {
   readonly relationship: RelationshipInsight
   readonly showDelta: boolean
-}): React.JSX.Element {
+}): React.JSX.Element => {
   const { dates, series } = relationshipSeries(relationship, showDelta)
   return (
     <section className="patterns-section">
@@ -73,13 +70,13 @@ function RelationshipCard({
   )
 }
 
-function RelationshipsContent({
+const RelationshipsContent = ({
   view,
   showDelta,
 }: {
   readonly view: ScopedPatternsView
   readonly showDelta: boolean
-}): React.JSX.Element {
+}): React.JSX.Element => {
   if (view.relationships.length === 0) {
     const who = view.personName
       ? `involving ${view.personName}`
@@ -109,11 +106,7 @@ function RelationshipsContent({
   )
 }
 
-/**
- * Relationships page. Consumes: relationship insights (scoped by the shared
- * filter; the delta toggle plots day-to-day change).
- */
-export default function RelationshipsPage(): React.JSX.Element {
+const RelationshipsPage = (): React.JSX.Element => {
   const { view, isLoading, hasError, showDelta } = useScopedPatterns()
 
   return (
@@ -136,3 +129,5 @@ export default function RelationshipsPage(): React.JSX.Element {
     </Page>
   )
 }
+
+export default RelationshipsPage

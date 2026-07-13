@@ -349,9 +349,5 @@ export const roleTemplates: RoleTemplate[] = [
 ]
 
 /** Get the template for a given role, falling back to 'other' */
-export function getTemplateForRole(role: PersonRole): RoleTemplate {
-  return (
-    roleTemplates.find((t) => t.role === role) ??
-    roleTemplates[roleTemplates.length - 1]
-  )
-}
+export const getTemplateForRole = (role: PersonRole): RoleTemplate =>
+  roleTemplates.find((t) => t.role === role) ?? roleTemplates[roleTemplates.length - 1]

@@ -29,14 +29,13 @@ const MIN_WEEKDAY_SAMPLE = 2
 /** A weekday must be at least this challenging/positive to be worth mentioning. */
 const NOTABLE_RATE = 40
 
-/** Format an hour (0–23) as a friendly label, e.g. 17 → "5 PM". */
-function formatHour(hour: number): string {
+const formatHour = (hour: number): string => {
   const period = hour < 12 ? 'AM' : 'PM'
   const h12 = hour % 12 === 0 ? 12 : hour % 12
   return `${h12} ${period}`
 }
 
-function withWho(text: string, personName: string | null): string {
+const withWho = (text: string, personName: string | null): string => {
   return personName ? `${text} for ${personName}` : text
 }
 
@@ -44,10 +43,7 @@ function withWho(text: string, personName: string | null): string {
 /*  Individual insight builders (each returns one insight or null)     */
 /* ------------------------------------------------------------------ */
 
-function hardestWeekdayInsight(
-  dayOfWeek: DayOfWeekBucket[],
-  personName: string | null,
-): GeneratedInsight | null {
+const hardestWeekdayInsight = (dayOfWeek: DayOfWeekBucket[], personName: string | null): GeneratedInsight | null => {
   const eligible = dayOfWeek.filter(
     (d) => d.sampleSize >= MIN_WEEKDAY_SAMPLE && d.challengingRate !== null,
   )
@@ -72,10 +68,7 @@ function hardestWeekdayInsight(
   }
 }
 
-function calmestWeekdayInsight(
-  dayOfWeek: DayOfWeekBucket[],
-  personName: string | null,
-): GeneratedInsight | null {
+const calmestWeekdayInsight = (dayOfWeek: DayOfWeekBucket[], personName: string | null): GeneratedInsight | null => {
   const eligible = dayOfWeek.filter(
     (d) => d.sampleSize >= MIN_WEEKDAY_SAMPLE && d.positiveRate !== null,
   )
@@ -100,11 +93,7 @@ function calmestWeekdayInsight(
   }
 }
 
-/** The strongest 4-hour incident window, if incidents cluster. */
-function timeOfDayInsight(
-  timeOfDay: TimeOfDayBucket[],
-  totalIncidents: number,
-): GeneratedInsight | null {
+const timeOfDayInsight = (timeOfDay: TimeOfDayBucket[], totalIncidents: number): GeneratedInsight | null => {
   if (totalIncidents < 5) return null
   let bestStart = 0
   let bestShare = 0
@@ -130,10 +119,7 @@ function timeOfDayInsight(
   }
 }
 
-function correlationInsight(
-  correlations: IndicatorOutcomeCorrelation[],
-  wantPositive: boolean,
-): GeneratedInsight | null {
+const correlationInsight = (correlations: IndicatorOutcomeCorrelation[], wantPositive: boolean): GeneratedInsight | null => {
   const match = correlations.find(
     (c) =>
       c.confidence !== 'low' && (wantPositive ? c.correlation > 0 : c.correlation < 0),
@@ -155,10 +141,7 @@ function correlationInsight(
   }
 }
 
-function trendInsight(
-  trend: TrendResult,
-  personName: string | null,
-): GeneratedInsight | null {
+const trendInsight = (trend: TrendResult, personName: string | null): GeneratedInsight | null => {
   if (trend.direction === 'improving') {
     return {
       id: 'trend',
@@ -190,15 +173,11 @@ function trendInsight(
 /*  Public entry point                                                 */
 /* ------------------------------------------------------------------ */
 
-/**
- * Build the ordered set of generated insights for a scope. `personName` is
- * non-null when scoped to one person, so copy can address them directly.
- */
-export function buildGeneratedInsights(params: {
+export const buildGeneratedInsights = (params: {
   timing: TimingAnalysis
   trend: TrendResult
   personName?: string | null
-}): GeneratedInsight[] {
+}): GeneratedInsight[] => {
   const { timing, trend } = params
   const personName = params.personName ?? null
 

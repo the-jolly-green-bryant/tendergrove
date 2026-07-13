@@ -9,15 +9,11 @@ const LABEL: Record<Confidence, string> = {
   low: 'Low confidence',
 }
 
-/**
- * A small, reassuring confidence label. We always tell caregivers how sure we
- * are so a low-data guess never reads as fact.
- */
-export function ConfidenceBadge({
+export const ConfidenceBadge = ({
   confidence,
 }: {
   readonly confidence: Confidence
-}): React.JSX.Element {
+}): React.JSX.Element => {
   return (
     <IonChip className={`pattern-confidence pattern-confidence--${confidence}`}>
       {LABEL[confidence]}

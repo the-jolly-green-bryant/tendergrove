@@ -40,7 +40,7 @@ import { parseAnswers } from '../people/checkin/checkInUtils'
 import { useCheckInMutations } from '../people/checkin/useCheckInMutations'
 import { PersonCheckInButton } from '../people/PersonPage'
 
-function isSameDay(occurredAt: string, date: Date): boolean {
+const isSameDay = (occurredAt: string, date: Date): boolean => {
   const d = new Date(occurredAt)
   return (
     d.getFullYear() === date.getFullYear() &&
@@ -49,7 +49,7 @@ function isSameDay(occurredAt: string, date: Date): boolean {
   )
 }
 
-function formatDateLabel(date: Date): string {
+const formatDateLabel = (date: Date): string => {
   const today = new Date()
   if (
     date.getFullYear() === today.getFullYear() &&
@@ -83,14 +83,14 @@ type WizardStepProps = {
   readonly step: StepState
 }
 
-function returnPathFromSearch(search: string): string | undefined {
+const returnPathFromSearch = (search: string): string | undefined => {
   const returnTo = new URLSearchParams(search).get('returnTo')
   if (!returnTo?.startsWith('/')) return undefined
   if (returnTo.startsWith('//')) return undefined
   return returnTo
 }
 
-function ChecklistGroup({
+const ChecklistGroup = ({
   title,
   items,
   icon,
@@ -104,7 +104,7 @@ function ChecklistGroup({
   readonly color: string
   readonly checked: CheckedIndicators
   readonly onToggle: (id: string) => void
-}) {
+}) => {
   if (items.length === 0) return null
 
   return (
@@ -137,12 +137,11 @@ function ChecklistGroup({
   )
 }
 
-/** Map indicators / life events into the generic checklist shape. */
-function indicatorItems(indicators: Indicator[]): ChecklistItem[] {
+const indicatorItems = (indicators: Indicator[]): ChecklistItem[] => {
   return indicators.map((i) => ({ id: i.id, label: i.name }))
 }
 
-function EmptyIndicatorsMessage({ personId }: { readonly personId: string }) {
+const EmptyIndicatorsMessage = ({ personId }: { readonly personId: string }) => {
   const router = useIonRouter()
   const indicatorPath = `/person/${personId}/indicators/new`
 
@@ -163,7 +162,7 @@ function EmptyIndicatorsMessage({ personId }: { readonly personId: string }) {
   )
 }
 
-function CheckInNotes({
+const CheckInNotes = ({
   note,
   existing,
   dateLabel,
@@ -173,7 +172,7 @@ function CheckInNotes({
   readonly existing: unknown
   readonly dateLabel: string
   readonly onNoteChange: (note: string) => void
-}) {
+}) => {
   const lowerDateLabel = dateLabel.toLowerCase()
 
   return (
@@ -203,7 +202,7 @@ function CheckInNotes({
   )
 }
 
-function WizardActions({
+const WizardActions = ({
   existing,
   saving,
   canSave,
@@ -217,7 +216,7 @@ function WizardActions({
   readonly hasNext: boolean
   readonly onSkip: () => void
   readonly onSave: () => void
-}) {
+}) => {
   const saveLabel = `${existing ? 'Update' : 'Save'}${hasNext ? ' & Next' : ''}`
 
   return (
@@ -231,12 +230,7 @@ function WizardActions({
   )
 }
 
-function buildCheckInPayload(
-  selectedDate: Date,
-  checkedIndicatorIds: string[],
-  checkedEventIds: string[],
-  note: string,
-) {
+const buildCheckInPayload = (selectedDate: Date, checkedIndicatorIds: string[], checkedEventIds: string[], note: string) => {
   const occurDate = new Date(selectedDate)
   occurDate.setHours(12, 0, 0, 0)
 
@@ -247,8 +241,7 @@ function buildCheckInPayload(
   }
 }
 
-/** Active life events, in display order, as checklist items. */
-function activeLifeEvents(events: LifeEvent[]): ChecklistItem[] {
+const activeLifeEvents = (events: LifeEvent[]): ChecklistItem[] => {
   return [...events]
     .filter((e) => e.archived !== true)
     .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
@@ -263,25 +256,14 @@ const activeIndicators = (list: Indicator[]): Indicator[] =>
 
 type CheckInMutations = ReturnType<typeof useCheckInMutations>
 
-/** Create or update the day's check-in with the built payload. */
-async function commitCheckIn(
-  mutations: CheckInMutations,
-  existing: { id: string } | undefined,
-  payload: ReturnType<typeof buildCheckInPayload>,
-): Promise<void> {
+const commitCheckIn = async (mutations: CheckInMutations, existing: { id: string } | undefined, payload: ReturnType<typeof buildCheckInPayload>): Promise<void> => {
   if (existing) await mutations.update(existing.id, payload)
   else await mutations.create(payload)
 }
 
 type ExistingCheckIn = { id: string; answersJson?: unknown; note?: string | null }
 
-/** Local editable draft (checked indicators/events + note), prefilled from an
- *  existing check-in and reset whenever the person or date changes. */
-function useCheckInDraft(
-  personId: string,
-  selectedDate: Date,
-  existing: ExistingCheckIn | undefined,
-) {
+const useCheckInDraft = (personId: string, selectedDate: Date, existing: ExistingCheckIn | undefined) => {
   const [checked, setChecked] = useState<CheckedIndicators>({})
   const [checkedEvents, setCheckedEvents] = useState<CheckedIndicators>({})
   const [note, setNote] = useState('')
@@ -314,10 +296,10 @@ function useCheckInDraft(
   }
 }
 
-function useWizardStepState({
+const useWizardStepState = ({
   personId,
   selectedDate,
-}: Pick<WizardStepProps, 'personId' | 'selectedDate'>) {
+}: Pick<WizardStepProps, 'personId' | 'selectedDate'>) => {
   const { data: person, isLoading } = usePerson(personId)
   const indicatorsQuery = useIndicators(personId)
   const lifeEventsQuery = useHouseholdLifeEvents(person?.householdId)
@@ -370,7 +352,7 @@ function useWizardStepState({
   }
 }
 
-function WizardHero({ person }: { readonly person: Person }) {
+const WizardHero = ({ person }: { readonly person: Person }) => {
   return (
     <div className="wizard-step__hero">
       <PersonAvatar
@@ -383,8 +365,7 @@ function WizardHero({ person }: { readonly person: Person }) {
   )
 }
 
-/** One reviewed section: heading + count + the ticked items. */
-function ReviewGroup({
+const ReviewGroup = ({
   title,
   color,
   items,
@@ -392,7 +373,7 @@ function ReviewGroup({
   readonly title: string
   readonly color: string
   readonly items: ChecklistItem[]
-}) {
+}) => {
   if (items.length === 0) return null
   return (
     <div className={`check-in-review__group check-in-review__group--${color}`}>
@@ -416,8 +397,7 @@ function ReviewGroup({
   )
 }
 
-/** The post-save review: what was logged, grouped and easy to scan. */
-function WizardReview({
+const WizardReview = ({
   person,
   groups,
   note,
@@ -435,7 +415,7 @@ function WizardReview({
   readonly saving: boolean
   readonly onDone: () => void
   readonly onEdit: () => void
-}) {
+}) => {
   const nothing =
     groups.challenges.length + groups.positives.length + groups.events.length === 0
   return (
@@ -490,12 +470,7 @@ function WizardReview({
  */
 type StepState = ReturnType<typeof useWizardStepState>
 
-/**
- * "Events that occurred" — the shared household pool as checkboxes, plus an
- * inline "Add event" that adds to the pool (and ticks it). No delete here: the
- * pool is shared, so removing an event is left to the Events management page.
- */
-function EventsSection({
+const EventsSection = ({
   events,
   checked,
   householdId,
@@ -505,7 +480,7 @@ function EventsSection({
   readonly checked: CheckedIndicators
   readonly householdId: string | undefined
   readonly onToggle: (id: string) => void
-}) {
+}) => {
   const { create } = useLifeEventMutations(householdId)
   const [presentAlert] = useIonAlert()
 
@@ -601,8 +576,7 @@ function CheckboxList({
   )
 }
 
-/** The check-in form's three checklist sections plus the notes field. */
-function CheckInSections({
+const CheckInSections = ({
   step,
   challenges,
   positives,
@@ -612,7 +586,7 @@ function CheckInSections({
   readonly challenges: ChecklistItem[]
   readonly positives: ChecklistItem[]
   readonly selectedDate: Date
-}) {
+}) => {
   return (
     <>
       <ChecklistGroup
@@ -647,7 +621,7 @@ function CheckInSections({
   )
 }
 
-function WizardStep({ personId, selectedDate, step }: WizardStepProps) {
+const WizardStep = ({ personId, selectedDate, step }: WizardStepProps) => {
   const challenges = indicatorItems(
     step.indicators.filter((i) => i.polarity === 'undesired'),
   )
@@ -681,17 +655,14 @@ function WizardStep({ personId, selectedDate, step }: WizardStepProps) {
   )
 }
 
-function useWizardPeople(
-  personId: string | undefined,
-  people: ReturnType<typeof usePeople>,
-) {
+const useWizardPeople = (personId: string | undefined, people: ReturnType<typeof usePeople>) => {
   return useMemo(() => {
     if (personId) return [{ id: personId }]
     return (people.data ?? []).filter((p) => !p.archived)
   }, [people.data, personId])
 }
 
-function useWizardAdvance({
+const useWizardAdvance = ({
   activePeopleLength,
   currentIndex,
   personId,
@@ -707,7 +678,7 @@ function useWizardAdvance({
   readonly routeModal: ReturnType<typeof useRouteModal>
   readonly router: ReturnType<typeof useIonRouter>
   readonly setCurrentIndex: (index: number) => void
-}) {
+}) => {
   return () => {
     const next = currentIndex + 1
     if (next < activePeopleLength) {
@@ -723,16 +694,11 @@ function useWizardAdvance({
   }
 }
 
-/**
- * Allows users to create a check-in for a person.
- * @returns {React.JSX.Element}
- * @constructor
- */
-export function CheckInWizardPage({
+export const CheckInWizardPage = ({
   personIdOverride,
 }: {
   readonly personIdOverride?: string
-} = {}) {
+} = {}) => {
   const router = useIonRouter()
   const { personId: routePersonId } = useParams<{ personId: string }>()
   const personId = personIdOverride ?? routePersonId

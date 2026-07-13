@@ -21,11 +21,11 @@ import './patterns.scss'
 
 type View = 'strength' | 'sequence'
 
-function StrengthRow({
+const StrengthRow = ({
   correlation,
 }: {
   readonly correlation: IndicatorOutcomeCorrelation
-}): React.JSX.Element {
+}): React.JSX.Element => {
   const positive = correlation.correlation > 0
   const sign = positive ? '+' : '−'
   return (
@@ -47,11 +47,11 @@ function StrengthRow({
   )
 }
 
-function StrengthList({
+const StrengthList = ({
   view,
 }: {
   readonly view: ScopedPatternsView
-}): React.JSX.Element {
+}): React.JSX.Element => {
   const rows = view.timing.indicatorCorrelations
   if (rows.length === 0) {
     return (
@@ -77,11 +77,11 @@ function StrengthList({
   )
 }
 
-function SequenceList({
+const SequenceList = ({
   view,
 }: {
   readonly view: ScopedPatternsView
-}): React.JSX.Element {
+}): React.JSX.Element => {
   if (view.correlations.length === 0) {
     return (
       <PatternsEmptyState
@@ -106,11 +106,7 @@ function SequenceList({
   )
 }
 
-/**
- * Correlations page. "Strength" shows signed indicator↔well-being links;
- * "Sequence" shows same-/next-day co-occurrences. Both scoped by the filter.
- */
-export default function CorrelationsPage(): React.JSX.Element {
+const CorrelationsPage = (): React.JSX.Element => {
   const { view, isLoading, hasError } = useScopedPatterns()
   const [tab, setTab] = useState<View>('strength')
 
@@ -148,3 +144,5 @@ export default function CorrelationsPage(): React.JSX.Element {
     </Page>
   )
 }
+
+export default CorrelationsPage

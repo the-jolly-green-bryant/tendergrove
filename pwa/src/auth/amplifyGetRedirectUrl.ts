@@ -12,11 +12,7 @@
 // upgrade (see getRedirectUrl.ts in @aws-amplify/auth).
 import { Capacitor } from '@capacitor/core'
 
-/** @internal */
-export function getRedirectUrl(
-  redirects: string[],
-  preferredRedirectUrl?: string,
-): string {
+export const getRedirectUrl = (redirects: string[], preferredRedirectUrl?: string): string => {
   if (Capacitor.isNativePlatform()) {
     const appScheme = redirects?.find(
       (redirect) => !redirect.startsWith('http://') && !redirect.startsWith('https://'),

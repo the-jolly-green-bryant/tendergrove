@@ -15,8 +15,7 @@ export interface CheckInAnswers {
   events: string[]
 }
 
-/** True when an ISO datetime falls on the same local calendar day as now. */
-export function isToday(occurredAt: string): boolean {
+export const isToday = (occurredAt: string): boolean => {
   const date = new Date(occurredAt)
   const now = new Date()
   return (
@@ -26,17 +25,13 @@ export function isToday(occurredAt: string): boolean {
   )
 }
 
-/** The most recent check-in that happened today, if any. */
-export function findTodaysCheckIn(checkIns: CheckIn[]): CheckIn | undefined {
+export const findTodaysCheckIn = (checkIns: CheckIn[]): CheckIn | undefined => {
   return [...checkIns]
     .filter((checkIn) => isToday(checkIn.occurredAt))
     .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))[0]
 }
 
-/** Safely read the checked indicator ids out of a check-in's answers blob.
- *  Accepts either a parsed object or a JSON string (AWSJSON round-trips can
- *  surface either depending on the client path). */
-export function parseAnswers(answersJson: unknown): CheckInAnswers {
+export const parseAnswers = (answersJson: unknown): CheckInAnswers => {
   let value = answersJson
   if (typeof value === 'string') {
     try {

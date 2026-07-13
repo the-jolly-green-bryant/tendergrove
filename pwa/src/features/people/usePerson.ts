@@ -22,11 +22,8 @@ const personSelectionSet = [
   'checkIns.note',
 ] as const
 
-/**
- *
- */
-export function usePerson(personId: string | undefined) {
-  return useQuery({
+export const usePerson = (personId: string | undefined): ReturnType<typeof useQuery> =>
+  useQuery({
     enabled: Boolean(personId),
     queryKey: ['person', personId],
     queryFn: async () => {
@@ -42,4 +39,3 @@ export function usePerson(personId: string | undefined) {
       return result.data
     },
   })
-}

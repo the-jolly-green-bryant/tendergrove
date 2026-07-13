@@ -130,7 +130,7 @@ const getHouseholdNarrative = (
   }
 }
 
-function SliceClip({
+const SliceClip = ({
   index,
   isSinglePerson,
   sliceSize,
@@ -138,7 +138,7 @@ function SliceClip({
   readonly index: number
   readonly isSinglePerson: boolean
   readonly sliceSize: number
-}) {
+}) => {
   const angles = getSliceAngles(index, sliceSize)
 
   return (
@@ -156,13 +156,13 @@ function SliceClip({
   )
 }
 
-function TreeSlice({
+const TreeSlice = ({
   person,
   index,
 }: {
   readonly person: Person
   readonly index: number
-}) {
+}) => {
   const score = clampScore(person.energy)
   const stage = getTreeStage(score)
   const imageSize = 92
@@ -190,7 +190,7 @@ function TreeSlice({
   )
 }
 
-function TreePie({
+const TreePie = ({
   people,
   isSinglePerson,
   sliceSize,
@@ -198,7 +198,7 @@ function TreePie({
   readonly people: Person[]
   readonly isSinglePerson: boolean
   readonly sliceSize: number
-}) {
+}) => {
   const ariaLabel = isSinglePerson
     ? `${people[0].displayName}'s wellbeing tree`
     : 'Household wellbeing trees by person'
@@ -304,7 +304,7 @@ function TreePieDividers({
   })
 }
 
-function EmptyTree({ stage }: { readonly stage: number }) {
+const EmptyTree = ({ stage }: { readonly stage: number }) => {
   return (
     <div className="tree-image-wrapper">
       <img
@@ -316,7 +316,7 @@ function EmptyTree({ stage }: { readonly stage: number }) {
   )
 }
 
-function SinglePersonTree({ stage }: { readonly stage: number }) {
+const SinglePersonTree = ({ stage }: { readonly stage: number }) => {
   return (
     <div className="single-person-tree">
       <img
@@ -328,7 +328,7 @@ function SinglePersonTree({ stage }: { readonly stage: number }) {
   )
 }
 
-function AvatarMarker({
+const AvatarMarker = ({
   person,
   index,
   isSinglePerson,
@@ -340,7 +340,7 @@ function AvatarMarker({
   readonly isSinglePerson: boolean
   readonly sliceSize: number
   readonly onPersonClick?: (personId: string) => void
-}) {
+}) => {
   const score = clampScore(person.energy)
   const position = polarPoint(
     getSliceAngles(index, sliceSize).mid,
@@ -384,7 +384,7 @@ function AvatarMarker({
   )
 }
 
-function TreeArtwork({
+const TreeArtwork = ({
   people,
   stage,
   isSinglePerson,
@@ -394,7 +394,7 @@ function TreeArtwork({
   readonly stage: number
   readonly isSinglePerson: boolean
   readonly sliceSize: number
-}) {
+}) => {
   if (isSinglePerson) {
     return <SinglePersonTree stage={stage} />
   }
@@ -411,7 +411,7 @@ function TreeArtwork({
   )
 }
 
-function TreeVisual({
+const TreeVisual = ({
   people,
   stage,
   isSinglePerson,
@@ -423,14 +423,13 @@ function TreeVisual({
   readonly isSinglePerson: boolean
   readonly isTimeTravel: boolean
   readonly onPersonClick?: (personId: string) => void
-}) {
+}) => {
   const sliceSize = people.length > 0 ? 360 / people.length : 360
 
   return (
     <div
-      className={`tree-visualization tree-stage${
-        isTimeTravel ? ' tree-stage--time-travel' : ''
-      }`}
+      className={`tree-visualization tree-stage${isTimeTravel ? ' tree-stage--time-travel' : ''
+        }`}
     >
       <TreeArtwork
         people={people}
@@ -466,7 +465,7 @@ function TreeVisual({
   )
 }
 
-function HouseholdRecapTeaser({
+const HouseholdRecapTeaser = ({
   recap,
   isTimeTravel,
   emptyPastDate,
@@ -476,7 +475,7 @@ function HouseholdRecapTeaser({
   readonly isTimeTravel: boolean
   readonly emptyPastDate: boolean
   readonly onRecapClick?: () => void
-}) {
+}) => {
   const featured = recap.featuredPerson
   const eyebrow = (() => {
     if (!isTimeTravel) return recap.eyebrow
@@ -512,7 +511,7 @@ function HouseholdRecapTeaser({
   )
 }
 
-function HouseholdSummary({
+const HouseholdSummary = ({
   people,
   score,
   narrative,
@@ -520,7 +519,7 @@ function HouseholdSummary({
   readonly people: Person[]
   readonly score: number
   readonly narrative: { status: string; insight: string }
-}) {
+}) => {
   return (
     <div className="household-summary">
       <div className="household-wellbeing-label">

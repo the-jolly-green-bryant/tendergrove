@@ -63,16 +63,7 @@ interface Domain {
   max: number
 }
 
-/**
- * Auto-scale the y-axis to just beyond the data's low and high points, padded
- * a little on each side. This makes real movement obvious without exaggerating
- * noise on a nearly-flat week. `clampTo` bounds the axis for absolute scores
- * (0–100); pass `null` to allow negatives (delta charts).
- */
-function computeDomain(
-  series: ChartSeries[],
-  clampTo: [number, number] | null,
-): Domain {
+const computeDomain = (series: ChartSeries[], clampTo: [number, number] | null): Domain => {
   const values = series.flatMap((s) => s.values).filter((v): v is number => v !== null)
   if (values.length === 0)
     return clampTo ? { min: clampTo[0], max: clampTo[1] } : { min: 0, max: 1 }
@@ -100,15 +91,11 @@ function computeDomain(
   return { min: lo, max: hi }
 }
 
-function computeSeriesDomains(
-  series: ChartSeries[],
-  clampTo: [number, number] | null,
-): Domain[] {
+const computeSeriesDomains = (series: ChartSeries[], clampTo: [number, number] | null): Domain[] => {
   return series.map((item) => computeDomain([item], clampTo))
 }
 
-/** ~4 evenly spaced, rounded y-axis gridline values across the domain. */
-function gridValuesFor({ min, max }: Domain): number[] {
+const gridValuesFor = ({ min, max }: Domain): number[] => {
   const steps = 3
   const values: number[] = []
   for (let i = 0; i <= steps; i++) {
@@ -117,24 +104,19 @@ function gridValuesFor({ min, max }: Domain): number[] {
   return Array.from(new Set(values))
 }
 
-function xFor(index: number, count: number): number {
+const xFor = (index: number, count: number): number => {
   if (count <= 1) return PAD_L
   const span = VIEW_W - PAD_L - PAD_R
   return PAD_L + (index / (count - 1)) * span
 }
 
-function yFor(value: number, domain: Domain): number {
+const yFor = (value: number, domain: Domain): number => {
   const span = VIEW_H - PAD_T - PAD_B
   const range = domain.max - domain.min || 1
   return PAD_T + (1 - (value - domain.min) / range) * span
 }
 
-/**
- * Build one polyline path. Missing values are skipped rather than breaking the
- * line, so the line bridges gaps by connecting the last known point straight to
- * the next one. (Dots are still drawn only at real data points.)
- */
-function buildPath(values: (number | null)[], domain: Domain): string {
+const buildPath = (values: (number | null)[], domain: Domain): string => {
   let path = ''
   let penDown = false
   values.forEach((value, index) => {
@@ -146,8 +128,7 @@ function buildPath(values: (number | null)[], domain: Domain): string {
   return path.trim()
 }
 
-/** Pick ~3 evenly spaced x labels so the axis never gets crowded. */
-function axisLabelIndexes(count: number): number[] {
+const axisLabelIndexes = (count: number): number[] => {
   if (count <= 1) return [0]
   if (count <= 3) return dates0toN(count)
   return [0, Math.floor((count - 1) / 2), count - 1]
@@ -157,8 +138,7 @@ function dates0toN(count: number): number[] {
   return Array.from({ length: count }, (_, i) => i)
 }
 
-/** Horizontal grid lines with their y-axis value labels. */
-function ChartGrid({ domain }: { readonly domain: Domain }): React.JSX.Element {
+const ChartGrid = ({ domain }: { readonly domain: Domain }): React.JSX.Element => {
   return (
     <>
       {gridValuesFor(domain).map((value) => (
@@ -215,8 +195,7 @@ const SeriesLine = ({
   )
 }
 
-/** A short spoken summary of the series, for screen readers. */
-function describeSeries(series: ChartSeries[]): string {
+const describeSeries = (series: ChartSeries[]): string => {
   return series
     .map((s) => {
       const known = s.values.filter((v): v is number => v !== null)
@@ -227,29 +206,24 @@ function describeSeries(series: ChartSeries[]): string {
     .join('; ')
 }
 
-/** Index of the last non-null value in a series, or -1. */
-function lastValueIndex(values: (number | null)[]): number {
+const lastValueIndex = (values: (number | null)[]): number => {
   for (let i = values.length - 1; i >= 0; i--) {
     if (values[i] !== null) return i
   }
   return -1
 }
 
-/** The x-index the readout/current marker anchors to by default (latest data). */
-function currentIndex(series: ChartSeries[]): number {
+const currentIndex = (series: ChartSeries[]): number => {
   const primary = series.find((s) => !s.dashed) ?? series[0]
   const index = primary ? lastValueIndex(primary.values) : -1
   return index < 0 ? 0 : index
 }
 
-function primarySeries(series: ChartSeries[]): ChartSeries | undefined {
+const primarySeries = (series: ChartSeries[]): ChartSeries | undefined => {
   return series.find((s) => !s.dashed) ?? series[0]
 }
 
-function nearestDataIndex(
-  targetIndex: number,
-  values: (number | null)[],
-): number | null {
+const nearestDataIndex = (targetIndex: number, values: (number | null)[]): number | null => {
   let bestIndex: number | null = null
   let bestDistance = Infinity
 
@@ -267,7 +241,7 @@ function nearestDataIndex(
   return bestIndex
 }
 
-function useScrub(primaryValues: (number | null)[]) {
+const useScrub = (primaryValues: (number | null)[]) => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
 
   const update = (event: React.PointerEvent<SVGSVGElement>) => {
@@ -291,8 +265,7 @@ function useScrub(primaryValues: (number | null)[]) {
   }
 }
 
-/** Vertical scan line + dots at the scrubbed index. */
-function Crosshair({
+const Crosshair = ({
   index,
   series,
   domains,
@@ -302,7 +275,7 @@ function Crosshair({
   readonly series: ChartSeries[]
   readonly domains: Domain[]
   readonly count: number
-}): React.JSX.Element {
+}): React.JSX.Element => {
   const x = xFor(index, count)
 
   return (
@@ -345,8 +318,7 @@ const _numberToStatus = (value: number | null): [string, string, string] => {
   return ['Settled', '#3FAE72', '☀️']
 }
 
-/** A readout above the chart showing the date + value(s) at the active index. */
-function Readout({
+const Readout = ({
   dates,
   series,
   index,
@@ -354,7 +326,7 @@ function Readout({
   readonly dates: DateKey[]
   readonly series: ChartSeries[]
   readonly index: number
-}): React.JSX.Element {
+}): React.JSX.Element => {
   const solid = series.filter((s) => !s.dashed)
   const [status, color, emoji] = _numberToStatus(solid[0].values[index])
   return (
@@ -389,7 +361,7 @@ interface EventBarsProps {
   readonly dateCount: number
 }
 
-function EventBars({ counts, dateCount }: EventBarsProps): React.JSX.Element | null {
+const EventBars = ({ counts, dateCount }: EventBarsProps): React.JSX.Element | null => {
   if (dateCount === 0) return null
 
   const maxCount = Math.max(0, ...counts)
@@ -449,8 +421,7 @@ interface CanvasProps {
   readonly hasData: boolean
 }
 
-/** The plotted SVG: grid, baseline, lines, axis, current marker and crosshair. */
-function ChartCanvas({
+const ChartCanvas = ({
   dates,
   series,
   domains,
@@ -459,7 +430,7 @@ function ChartCanvas({
   highlightRect,
   activeIndex,
   hasData,
-}: CanvasProps): React.JSX.Element {
+}: CanvasProps): React.JSX.Element => {
   const primaryDomain = domains[0] ?? { min: 0, max: 100 }
 
   const showBaseline =
@@ -514,16 +485,14 @@ function ChartCanvas({
   )
 }
 
-/** A small, accessible well-being line chart with scrub-to-read and a
- *  highlighted current value (esomarkettracker-style). */
-export function TrendChart({
+export const TrendChart = ({
   dates,
   series,
   highlight,
   eventCounts = [],
   clampTo = [0, 100],
   baseline,
-}: TrendChartProps): React.JSX.Element {
+}: TrendChartProps): React.JSX.Element => {
   const count = dates.length
 
   const domains = useMemo(

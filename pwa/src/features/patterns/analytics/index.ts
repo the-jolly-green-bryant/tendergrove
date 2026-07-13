@@ -134,12 +134,7 @@ const VALID_ROLES: PersonRole[] = [
   'other',
 ]
 
-/**
- * Read the checked indicator ids out of a check-in's answers blob. Mirrors
- * `features/people/checkin/checkInUtils.parseAnswers` but inlined so the
- * analytics engine has zero app imports (and can move to a backend as-is).
- */
-export function parseCheckedIds(answersJson: unknown): string[] {
+export const parseCheckedIds = (answersJson: unknown): string[] => {
   let value = answersJson
   if (typeof value === 'string') {
     try {
@@ -162,13 +157,13 @@ interface ParsedAnswers {
   events: string[]
 }
 
-function parseStringIds(value: unknown): string[] {
+const parseStringIds = (value: unknown): string[] => {
   return Array.isArray(value)
     ? value.filter((id): id is string => typeof id === 'string')
     : []
 }
 
-export function parseAnswers(answersJson: unknown): ParsedAnswers {
+export const parseAnswers = (answersJson: unknown): ParsedAnswers => {
   let value = answersJson
 
   if (typeof value === 'string') {
@@ -200,16 +195,15 @@ export function parseAnswers(answersJson: unknown): ParsedAnswers {
   }
 }
 
-function normalizePolarity(polarity: string | null | undefined): Polarity | null {
+const normalizePolarity = (polarity: string | null | undefined): Polarity | null => {
   return VALID_POLARITIES.includes(polarity as Polarity) ? (polarity as Polarity) : null
 }
 
-function normalizeRole(role: string | null | undefined): PersonRole | null {
+const normalizeRole = (role: string | null | undefined): PersonRole | null => {
   return VALID_ROLES.includes(role as PersonRole) ? (role as PersonRole) : null
 }
 
-/** Convert one raw person into the analytics shape. */
-function normalizePerson(raw: RawPerson): AnalyticsPerson {
+const normalizePerson = (raw: RawPerson): AnalyticsPerson => {
   const indicators = (raw.indicators ?? [])
     .filter((i): i is RawIndicator => i !== null)
     .map((i) => ({
@@ -252,14 +246,7 @@ export interface NormalizeHouseholdOptions {
   lifeEvents?: RawLifeEvent[]
 }
 
-/**
- * Normalize the household's fetched data into a deterministic analytics input.
- * Archived people are excluded by default.
- */
-export function normalizeHousehold(
-  rawPeople: RawPerson[],
-  options: NormalizeHouseholdOptions = {},
-): AnalyticsInput {
+export const normalizeHousehold = (rawPeople: RawPerson[], options: NormalizeHouseholdOptions = {}): AnalyticsInput => {
   const {
     now = new Date(),
     windowDays = DEFAULT_WINDOW_DAYS,
@@ -290,7 +277,7 @@ export function normalizeHousehold(
 /*  Data quality                                                       */
 /* ------------------------------------------------------------------ */
 
-function readyMessage(scoredDays: number, peopleWithData: number): string {
+const readyMessage = (scoredDays: number, peopleWithData: number): string => {
   const dayWord = scoredDays === 1 ? 'day' : 'days'
   const personWord = peopleWithData === 1 ? 'person' : 'people'
   return `Based on ${scoredDays} ${dayWord} of check-ins across ${peopleWithData} ${personWord}.`
@@ -299,11 +286,7 @@ function readyMessage(scoredDays: number, peopleWithData: number): string {
 const GATHERING_MESSAGE =
   'We’re still gathering data. Keep logging daily check-ins and patterns will start to appear here — usually within a week or so.'
 
-function buildDataQuality(
-  people: AnalyticsPerson[],
-  scoredDays: number,
-  peopleWithData: number,
-): DataQuality {
+const buildDataQuality = (people: AnalyticsPerson[], scoredDays: number, peopleWithData: number): DataQuality => {
   const hasEnoughData = scoredDays >= MIN_SCORED_DAYS_FOR_CONFIDENCE
   const message = hasEnoughData
     ? readyMessage(scoredDays, peopleWithData)
@@ -334,11 +317,7 @@ const toScoredDays = (
     eventCount: score.eventCount,
   }))
 
-/**
- * Run the full analytics pass over normalized input. Pure and deterministic:
- * the same input always yields the same result.
- */
-export function runAnalytics(input: AnalyticsInput): AnalyticsResult {
+export const runAnalytics = (input: AnalyticsInput): AnalyticsResult => {
   const window = buildDateWindow(input.now, input.windowDays)
   const startDate = window[0]
   const endDate = window[window.length - 1]
@@ -438,18 +417,10 @@ export function runAnalytics(input: AnalyticsInput): AnalyticsResult {
   }
 }
 
-/**
- * Convenience: normalize the app's fetched people and run analytics in one call.
- * This is what the `usePatternsAnalytics` hook uses.
- */
-export function analyzeHousehold(
-  rawPeople: RawPerson[],
-  options?: NormalizeHouseholdOptions,
-): AnalyticsResult {
+export const analyzeHousehold = (rawPeople: RawPerson[], options?: NormalizeHouseholdOptions): AnalyticsResult => {
   return runAnalytics(normalizeHousehold(rawPeople, options))
 }
 
-/** Range label for the current window, e.g. "May 4 – Jun 2". */
-export function windowRangeLabel(result: AnalyticsResult): string {
+export const windowRangeLabel = (result: AnalyticsResult): string => {
   return formatRangeLabel(result.window.startDate, result.window.endDate)
 }

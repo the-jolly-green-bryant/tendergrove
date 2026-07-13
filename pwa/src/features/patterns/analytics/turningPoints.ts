@@ -62,24 +62,14 @@ interface ScoredPoint {
   score: number
 }
 
-function severityFromDelta(delta: number): Confidence {
+const severityFromDelta = (delta: number): Confidence => {
   const abs = Math.abs(delta)
   if (abs >= SEVERITY_BANDS.high) return 'high'
   if (abs >= SEVERITY_BANDS.moderate) return 'moderate'
   return 'low'
 }
 
-/**
- * How many days the new level persists from `startIndex`, counting only while
- * scores stay on the new side of the midpoint between before and after.
- * Returns both the calendar-day span and whether it ran to the end of the data.
- */
-function measurePersistence(
-  scored: ScoredPoint[],
-  startIndex: number,
-  before: number,
-  after: number,
-): { durationDays: number; reachedEnd: boolean } {
+const measurePersistence = (scored: ScoredPoint[], startIndex: number, before: number, after: number): { durationDays: number; reachedEnd: boolean } => {
   const midpoint = (before + after) / 2
   const rising = after > before
   let lastIndex = startIndex
@@ -92,25 +82,18 @@ function measurePersistence(
   return { durationDays, reachedEnd: lastIndex === scored.length - 1 }
 }
 
-function classifySustained(before: number, delta: number): TurningPointType {
+const classifySustained = (before: number, delta: number): TurningPointType => {
   // A drop in well-being is worth watching.
   if (delta < 0) return 'sustainedDecrease'
   // A rise from a low level is a recovery; otherwise a plain improvement.
   return before <= LOW_WELLBEING ? 'recovery' : 'sustainedIncrease'
 }
 
-/** Pluralize "day"/"days" for a count. */
-function days(count: number): string {
+const days = (count: number): string => {
   return `${count} day${count === 1 ? '' : 's'}`
 }
 
-function buildSustainedSummary(
-  type: TurningPointType,
-  before: number,
-  after: number,
-  durationDays: number,
-  reachedEnd: boolean,
-): string {
+const buildSustainedSummary = (type: TurningPointType, before: number, after: number, durationDays: number, reachedEnd: boolean): string => {
   const tail = reachedEnd
     ? `and has held there for ${days(durationDays)}`
     : `for about ${days(durationDays)}`
@@ -127,8 +110,7 @@ function buildSustainedSummary(
 /*  Detection                                                          */
 /* ------------------------------------------------------------------ */
 
-/** Detect sustained increases/decreases via before/after rolling averages. */
-function detectSustained(scored: ScoredPoint[]): TurningPointInsight[] {
+const detectSustained = (scored: ScoredPoint[]): TurningPointInsight[] => {
   const W = COMPARE_WINDOW
   if (scored.length < 2 * W) return []
 
@@ -195,11 +177,7 @@ function detectSustained(scored: ScoredPoint[]): TurningPointInsight[] {
   return insights
 }
 
-/** Detect a single hard day that dips well below both neighbours and returns. */
-function detectSpikes(
-  scored: ScoredPoint[],
-  covered: Set<DateKey>,
-): TurningPointInsight[] {
+const detectSpikes = (scored: ScoredPoint[], covered: Set<DateKey>): TurningPointInsight[] => {
   const spikes: TurningPointInsight[] = []
   for (let m = 1; m < scored.length - 1; m++) {
     const day = scored[m]
@@ -227,20 +205,14 @@ function detectSpikes(
 /*  Drift: gradual, sustained trends                                   */
 /* ------------------------------------------------------------------ */
 
-/** Trailing rolling average of the scores, aligned to `scored`. */
-function smoothScores(scored: ScoredPoint[], window: number): number[] {
+const smoothScores = (scored: ScoredPoint[], window: number): number[] => {
   return scored.map((_, i) => {
     const slice = scored.slice(Math.max(0, i - window + 1), i + 1)
     return slice.reduce((sum, p) => sum + p.score, 0) / slice.length
   })
 }
 
-/**
- * Follow a run from `start` as long as the smoothed line keeps heading one way,
- * allowing it to retrace up to DRIFT_TOLERANCE from its running extreme (so a
- * single good/bad day doesn't end the run). Returns the last index of the run.
- */
-function extendRun(smooth: number[], start: number): number {
+const extendRun = (smooth: number[], start: number): number => {
   let direction = 0
   let extreme = smooth[start]
   let end = start
@@ -264,12 +236,7 @@ function extendRun(smooth: number[], start: number): number {
   return end
 }
 
-function driftInsight(
-  scored: ScoredPoint[],
-  startIndex: number,
-  endIndex: number,
-  smooth: number[],
-): TurningPointInsight {
+const driftInsight = (scored: ScoredPoint[], startIndex: number, endIndex: number, smooth: number[]): TurningPointInsight => {
   const before = safeRound(smooth[startIndex])
   const after = safeRound(smooth[endIndex])
   const durationDays = daysBetween(scored[endIndex].date, scored[startIndex].date) + 1
@@ -286,8 +253,7 @@ function driftInsight(
   }
 }
 
-/** Detect gradual, sustained drift (e.g. a steady multi-day slide). */
-function detectDrift(scored: ScoredPoint[]): TurningPointInsight[] {
+const detectDrift = (scored: ScoredPoint[]): TurningPointInsight[] => {
   if (scored.length < DRIFT_MIN_DAYS) return []
   const smooth = smoothScores(scored, DRIFT_SMOOTH_WINDOW)
   const insights: TurningPointInsight[] = []
@@ -313,8 +279,7 @@ function detectDrift(scored: ScoredPoint[]): TurningPointInsight[] {
 /** Fewest days apart two sustained shifts must be to both be reported. */
 const MERGE_GAP_DAYS = 5
 
-/** Keep the strongest shift among any that start within a few days of each other. */
-function dedupeByProximity(items: TurningPointInsight[]): TurningPointInsight[] {
+const dedupeByProximity = (items: TurningPointInsight[]): TurningPointInsight[] => {
   const byStrength = [...items].sort(
     (a, b) =>
       Math.abs(b.afterAverage - b.beforeAverage) -
@@ -330,8 +295,7 @@ function dedupeByProximity(items: TurningPointInsight[]): TurningPointInsight[] 
   return kept
 }
 
-/** Every calendar day spanned by the given sustained shifts. */
-function coveredDates(items: TurningPointInsight[]): Set<DateKey> {
+const coveredDates = (items: TurningPointInsight[]): Set<DateKey> => {
   const set = new Set<DateKey>()
   for (const item of items) {
     for (let d = 0; d < item.durationDays; d++) set.add(addDaysToKey(item.date, d))
@@ -343,15 +307,7 @@ function coveredDates(items: TurningPointInsight[]): Set<DateKey> {
 /*  Public entry point                                                 */
 /* ------------------------------------------------------------------ */
 
-/**
- * Find turning points in the household well-being series. We report both sharp
- * shifts and gradual drift (a steady multi-day slide counts, even if one day
- * bucked it), deduped so we don't double-report the same period. Spikes are
- * only reported for days not already inside a sustained change.
- */
-export function findTurningPoints(
-  householdDailyScores: DailyHouseholdScore[],
-): TurningPointInsight[] {
+export const findTurningPoints = (householdDailyScores: DailyHouseholdScore[]): TurningPointInsight[] => {
   const scored: ScoredPoint[] = householdDailyScores
     .filter((d): d is DailyHouseholdScore & { score: number } => d.score !== null)
     .map((d) => ({ date: d.date, score: d.score }))

@@ -29,8 +29,7 @@ interface MonthGroup {
   slots: (CalendarDayPattern | null)[]
 }
 
-/** Group calendar days into month grids with correct weekday alignment. */
-function groupByMonth(calendar: CalendarDayPattern[]): MonthGroup[] {
+const groupByMonth = (calendar: CalendarDayPattern[]): MonthGroup[] => {
   const months = new Map<string, CalendarDayPattern[]>()
   for (const day of calendar) {
     const key = day.date.slice(0, 7)
@@ -53,27 +52,26 @@ function groupByMonth(calendar: CalendarDayPattern[]): MonthGroup[] {
     })
 }
 
-function cellClass(day: CalendarDayPattern, selected: boolean): string {
+const cellClass = (day: CalendarDayPattern, selected: boolean): string => {
   const level = day.level
     ? `pattern-calendar-cell--${day.level}`
     : 'pattern-calendar-cell--nodata'
   return `pattern-calendar-cell ${level}${selected ? ' pattern-calendar-cell--selected' : ''}`
 }
 
-/** Small dots hint at activity (check-ins / incidents) without adding numbers. */
-function activityDots(day: CalendarDayPattern): string {
+const activityDots = (day: CalendarDayPattern): string => {
   if (day.incidentCount > 0) return '⚠'
   if (day.checkInCount > 0) return '•'
   return ''
 }
 
-function DayDetail({
+const DayDetail = ({
   day,
   onAddCheckIn,
 }: {
   readonly day: CalendarDayPattern
   readonly onAddCheckIn: (dateKey: string) => void
-}): React.JSX.Element {
+}): React.JSX.Element => {
   return (
     <IonCard>
       <IonCardContent>
@@ -109,7 +107,7 @@ function DayDetail({
   )
 }
 
-function MonthGrid({
+const MonthGrid = ({
   month,
   selectedDate,
   onSelect,
@@ -117,7 +115,7 @@ function MonthGrid({
   readonly month: MonthGroup
   readonly selectedDate: string | undefined
   readonly onSelect: (day: CalendarDayPattern) => void
-}): React.JSX.Element {
+}): React.JSX.Element => {
   return (
     <section className="pattern-calendar-month">
       <h2 className="pattern-calendar-heading">{month.label}</h2>
@@ -162,13 +160,13 @@ function MonthGrid({
   )
 }
 
-function CalendarContent({
+const CalendarContent = ({
   calendar,
   onAddCheckIn,
 }: {
   readonly calendar: CalendarDayPattern[]
   readonly onAddCheckIn: (dateKey: string) => void
-}): React.JSX.Element {
+}): React.JSX.Element => {
   const months = useMemo(() => groupByMonth(calendar), [calendar])
   const [selected, setSelected] = useState<CalendarDayPattern | null>(null)
 
@@ -212,11 +210,7 @@ function CalendarContent({
   )
 }
 
-/**
- * Calendar heatmap page. Consumes: calendar day patterns. Tapping a day lets a
- * caregiver add or update that day's check-in.
- */
-export default function CalendarHeatmapPage(): React.JSX.Element {
+const CalendarHeatmapPage = (): React.JSX.Element => {
   const { view, isLoading, hasError } = useScopedPatterns()
   const history = useHistory()
   const { setSelectedDate } = useSelectedDate()
@@ -256,3 +250,5 @@ export default function CalendarHeatmapPage(): React.JSX.Element {
     </Page>
   )
 }
+
+export default CalendarHeatmapPage

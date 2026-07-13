@@ -1,11 +1,7 @@
 import { IonCard, IonCardContent, IonSkeletonText } from '@ionic/react'
 import React from 'react'
 
-/**
- * A calm loading placeholder shaped like the analytics cards, so the page
- * doesn't jump when data arrives. Prefer this over a bare spinner.
- */
-export function AnalyticsLoadingSkeleton(): React.JSX.Element {
+export const AnalyticsLoadingSkeleton = (): React.JSX.Element => {
   return (
     <div
       className="pattern-skeleton"

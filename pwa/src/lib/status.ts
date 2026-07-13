@@ -47,21 +47,7 @@ interface CheckInLike {
 /*  Core scoring                                                       */
 /* ------------------------------------------------------------------ */
 
-/**
- * Compute a 0–100 day-quality score from a single check-in.
- *
- * For every active indicator we ask: "Did something *good* happen?"
- *   • desired   + checked   → positive  (good)
- *   • desired   + unchecked → negative  (bad — we wanted it but didn't see it)
- *   • undesired + checked   → negative  (bad — we saw something we didn't want)
- *   • undesired + unchecked → positive  (good — the bad thing didn't happen)
- *
- * score = positives / total × 100
- */
-export function computeScore(
-  indicators: IndicatorLike[],
-  checkIn: CheckInLike,
-): number | null {
+export const computeScore = (indicators: IndicatorLike[], checkIn: CheckInLike): number | null => {
   const active = indicators.filter((i) => i.active !== false)
   if (active.length === 0) return null
 
@@ -84,20 +70,7 @@ export function computeScore(
 /*  Weighted average over a lookback window                            */
 /* ------------------------------------------------------------------ */
 
-/**
- * Compute a weighted average score over the past `lookbackDays` days.
- *
- * Weight scheme: today = 1, yesterday = (n-1)/n, … , `lookbackDays` ago = 1/n.
- * Days without a check-in are simply skipped (they don't count against or for).
- *
- * Returns `null` when there are no scoreable check-ins in the window.
- */
-export function computeWeightedScore(
-  indicators: IndicatorLike[],
-  checkIns: CheckInLike[],
-  now: Date = new Date(),
-  lookbackDays: number = STATUS_LOOKBACK_DAYS,
-): number | null {
+export const computeWeightedScore = (indicators: IndicatorLike[], checkIns: CheckInLike[], now: Date = new Date(), lookbackDays: number = STATUS_LOOKBACK_DAYS): number | null => {
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
   let weightedSum = 0
@@ -130,10 +103,7 @@ export function computeWeightedScore(
 /*  Level / label derivation                                           */
 /* ------------------------------------------------------------------ */
 
-/**
- *
- */
-export function levelFromScore(score: number): StatusLevel {
+export const levelFromScore = (score: number): StatusLevel => {
   if (score >= STATUS_THRESHOLDS.good) return 'good'
   if (score >= STATUS_THRESHOLDS.trouble) return 'trouble'
   return 'at-risk'
@@ -146,10 +116,7 @@ const levelMeta: Record<StatusLevel, { label: string; color: Status['color'] }> 
   unknown: { label: 'No Data', color: 'medium' },
 }
 
-/**
- *
- */
-export function statusFromScore(score: number | null): Status {
+export const statusFromScore = (score: number | null): Status => {
   if (score === null) {
     return { score: null, level: 'unknown', ...levelMeta.unknown }
   }
@@ -161,18 +128,7 @@ export function statusFromScore(score: number | null): Status {
 /*  Today's mood emoji                                                 */
 /* ------------------------------------------------------------------ */
 
-/**
- * Return an emoji reflecting *only* today's check-in data.
- *
- * • good   → positive emoji
- * • trouble → neutral/concerned emoji
- * • at-risk → negative emoji
- * • no data → null (don't show anything)
- */
-/**
- * Simple string hash (djb2) → deterministic non-negative integer.
- */
-function hashCode(str: string): number {
+const hashCode = (str: string): number => {
   let hash = 5381
   for (let i = 0; i < str.length; i++) {
     hash = ((hash << 5) + hash + str.charCodeAt(i)) | 0
@@ -180,15 +136,7 @@ function hashCode(str: string): number {
   return Math.abs(hash)
 }
 
-/**
- *
- */
-export function todayEmoji(
-  indicators: IndicatorLike[],
-  checkIns: CheckInLike[],
-  now: Date = new Date(),
-  personId = '',
-): string | null {
+export const todayEmoji = (indicators: IndicatorLike[], checkIns: CheckInLike[], now: Date = new Date(), personId = ''): string | null => {
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
   const todayCheckIns = checkIns.filter((ci) => {
@@ -229,13 +177,6 @@ export function todayEmoji(
 /*  Convenience: derive status for a person given their data           */
 /* ------------------------------------------------------------------ */
 
-/**
- *
- */
-export function derivePersonStatus(
-  indicators: IndicatorLike[],
-  checkIns: CheckInLike[],
-  now?: Date,
-): Status {
+export const derivePersonStatus = (indicators: IndicatorLike[], checkIns: CheckInLike[], now?: Date): Status => {
   return statusFromScore(computeWeightedScore(indicators, checkIns, now))
 }

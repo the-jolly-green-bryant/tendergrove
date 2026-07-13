@@ -86,7 +86,7 @@ const menuItems = [
   },
 ] as const
 
-function MenuLink({ href, direction, icon, label }: (typeof menuItems)[number]) {
+const MenuLink = ({ href, direction, icon, label }: (typeof menuItems)[number]) => {
   return (
     <IonMenuToggle autoHide={false}>
       <IonItem
@@ -138,11 +138,7 @@ const renderMenu = () => {
   )
 }
 
-function useHeaderScrollState(
-  transparentHeaderUntilScroll: boolean | undefined,
-  transparentHeaderMode: PageProps['transparentHeaderMode'],
-  className: string | undefined,
-) {
+const useHeaderScrollState = (transparentHeaderUntilScroll: boolean | undefined, transparentHeaderMode: PageProps['transparentHeaderMode'], className: string | undefined) => {
   const [isAtTop, setIsAtTop] = useState(true)
   const contentRef = useRef<HTMLIonContentElement | null>(null)
   const updateHeaderPosition = useCallback(
@@ -196,18 +192,7 @@ function useHeaderScrollState(
   return { contentRef, isAtTop, updateHeaderPosition }
 }
 
-/**
- * A wrapper for a page with a toolbar and content.
- * @param {PageProps} param0
- * @param {string} param0.title
- * @param {React.ReactNode} param0.children
- * @param {React.ReactNode} param0.headerContent
- * @param {React.ReactNode} param0.subHeaderContent
- * @param {boolean} param0.disablePadding
- * @returns {React.JSX.Element}
- * @constructor
- */
-export function Page({
+export const Page = ({
   title,
   children,
   headerContent,
@@ -217,7 +202,7 @@ export function Page({
   transparentHeaderUntilScroll,
   transparentHeaderMode = 'scroll',
   forceOverscroll,
-}: PageProps): React.JSX.Element {
+}: PageProps): React.JSX.Element => {
   const { contentRef, isAtTop, updateHeaderPosition } = useHeaderScrollState(
     transparentHeaderUntilScroll,
     transparentHeaderMode,

@@ -50,11 +50,7 @@ interface Signal {
   days: Set<DateKey>
 }
 
-/**
- * Extract every signal for a person: one per active indicator (fires on days it
- * was checked) plus one aggregate "incident" signal (fires on incident days).
- */
-function signalsForPerson(person: AnalyticsPerson): Signal[] {
+const signalsForPerson = (person: AnalyticsPerson): Signal[] => {
   const signals: Signal[] = []
 
   const activeIndicators = person.indicators.filter(
@@ -108,7 +104,7 @@ function signalsForPerson(person: AnalyticsPerson): Signal[] {
 /*  Pair scoring                                                       */
 /* ------------------------------------------------------------------ */
 
-function confidenceFromRatio(ratio: number, opportunities: number): Confidence {
+const confidenceFromRatio = (ratio: number, opportunities: number): Confidence => {
   if (ratio >= CONFIDENCE_RATIO.high && opportunities >= MIN_OPPORTUNITIES + 1) {
     return 'high'
   }
@@ -116,16 +112,7 @@ function confidenceFromRatio(ratio: number, opportunities: number): Confidence {
   return 'low'
 }
 
-/**
- * Count opportunities/occurrences for "target follows source by `lag` days".
- * Opportunities are source days; occurrences are source days where the target
- * fired `lag` days later.
- */
-function scorePair(
-  source: Signal,
-  target: Signal,
-  lag: 0 | 1,
-): { opportunities: number; occurrences: number } {
+const scorePair = (source: Signal, target: Signal, lag: 0 | 1): { opportunities: number; occurrences: number } => {
   let occurrences = 0
   for (const day of source.days) {
     const targetDay = lag === 0 ? day : addDaysToKey(day, lag)
@@ -134,12 +121,7 @@ function scorePair(
   return { opportunities: source.days.size, occurrences }
 }
 
-/** A gentle, non-causal summary line for a correlation. */
-function buildSummary(
-  source: Signal,
-  target: Signal,
-  insight: CorrelationInsight,
-): string {
+const buildSummary = (source: Signal, target: Signal, insight: CorrelationInsight): string => {
   const src = phraseFor(source)
   const tgt = phraseFor(target)
   const timing =
@@ -164,16 +146,7 @@ function capitalize(text: string): string {
 /*  Public entry point                                                 */
 /* ------------------------------------------------------------------ */
 
-/**
- * Score one ordered (source → target) pair at a lag, returning an insight only
- * if it clears every conservative threshold. Same-day mirrors are skipped by
- * key order so we never emit both A→B and B→A of one coincidence.
- */
-function evaluatePair(
-  source: Signal,
-  target: Signal,
-  lag: 0 | 1,
-): CorrelationInsight | null {
+const evaluatePair = (source: Signal, target: Signal, lag: 0 | 1): CorrelationInsight | null => {
   if (source.key === target.key) return null
   if (lag === 0 && source.key >= target.key) return null
 
@@ -201,14 +174,7 @@ function evaluatePair(
   return insight
 }
 
-/**
- * Find conservative same-day and next-day correlations across all people.
- *
- * We consider ordered pairs at lag 0 (same day) and lag 1 (target the next
- * day). For lag 0 we keep only the stronger direction of each unordered pair to
- * avoid showing the mirror twice. Everything below threshold is dropped.
- */
-export function findCorrelations(people: AnalyticsPerson[]): CorrelationInsight[] {
+export const findCorrelations = (people: AnalyticsPerson[]): CorrelationInsight[] => {
   const signals = people.flatMap(signalsForPerson)
   const results: CorrelationInsight[] = []
 

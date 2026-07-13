@@ -27,10 +27,7 @@ export interface PatternsData {
   lifeEvents: RawLifeEvent[]
 }
 
-/**
- * Fetch all data required by the frontend analytics engine.
- */
-export function usePatternsData() {
+export const usePatternsData = () => {
   return useQuery({
     queryKey: ['patterns-data'],
 

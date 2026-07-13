@@ -14,7 +14,7 @@ const isNative = Capacitor.isNativePlatform()
 
 // On native, Amplify's built-in social button can't complete a deep-link
 // redirect, so we hide it and drive sign-in through signInWithGoogleNative().
-function NativeGoogleButton() {
+const NativeGoogleButton = () => {
   const [busy, setBusy] = useState(false)
   return (
     <button
@@ -88,10 +88,7 @@ const queryClient = new QueryClient({
 queryClient.getQueryCache().config.onError = handleGlobalError
 queryClient.getMutationCache().config.onError = handleGlobalError
 
-/**
- *
- */
-export default function App() {
+const App = () => {
   return (
     <Authenticator
       socialProviders={isNative ? [] : ['google']}
@@ -114,3 +111,5 @@ export default function App() {
     </Authenticator>
   )
 }
+
+export default App

@@ -21,15 +21,11 @@ const ICON: Record<InsightIcon, string> = {
   alert: alertCircleOutline,
 }
 
-/**
- * A generated, plain-language insight rendered as a calm card. Roomy text, a
- * single icon, and an honest confidence label — meant to be read, not decoded.
- */
-export function GeneratedInsightCard({
+export const GeneratedInsightCard = ({
   insight,
 }: {
   readonly insight: GeneratedInsight
-}): React.JSX.Element {
+}): React.JSX.Element => {
   return (
     <IonCard className={`pattern-insight pattern-insight--${insight.tone}`}>
       <IonCardContent>

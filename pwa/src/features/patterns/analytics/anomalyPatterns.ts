@@ -42,7 +42,7 @@ interface BaselineResult {
   scoredDates: Set<DateKey>
 }
 
-function median(values: readonly number[]): number {
+const median = (values: readonly number[]): number => {
   const sorted = [...values].sort((a, b) => a - b)
   const middle = Math.floor(sorted.length / 2)
 
@@ -53,7 +53,7 @@ function median(values: readonly number[]): number {
   return sorted[middle]
 }
 
-function percentile(values: readonly number[], fraction: number): number {
+const percentile = (values: readonly number[], fraction: number): number => {
   const sorted = [...values].sort((a, b) => a - b)
 
   if (sorted.length === 1) return sorted[0]
@@ -66,12 +66,7 @@ function percentile(values: readonly number[], fraction: number): number {
   return sorted[lower] * (1 - weight) + sorted[upper] * weight
 }
 
-/**
- * An anomaly means a day in the person's lower score quartile that is also
- * meaningfully below their median. This avoids calling ordinary variation
- * anomalous when someone's scores are nearly flat.
- */
-function findBaseline(scores: readonly DailyPersonScore[]): BaselineResult | null {
+const findBaseline = (scores: readonly DailyPersonScore[]): BaselineResult | null => {
   const scored = scores.filter(
     (
       day,
@@ -116,16 +111,13 @@ function findBaseline(scores: readonly DailyPersonScore[]): BaselineResult | nul
   }
 }
 
-function percentage(occurrences: number, opportunities: number): number {
+const percentage = (occurrences: number, opportunities: number): number => {
   if (opportunities === 0) return 0
 
   return Math.round((occurrences / opportunities) * 100)
 }
 
-function countOverlap(
-  signalDates: ReadonlySet<DateKey>,
-  eligibleDates: ReadonlySet<DateKey>,
-): number {
+const countOverlap = (signalDates: ReadonlySet<DateKey>, eligibleDates: ReadonlySet<DateKey>): number => {
   let count = 0
 
   for (const date of eligibleDates) {
@@ -135,13 +127,7 @@ function countOverlap(
   return count
 }
 
-function isNotable(
-  anomalyOccurrences: number,
-  anomalyOpportunities: number,
-  anomalyRate: number,
-  typicalRate: number,
-  typicalOpportunities: number,
-): boolean {
+const isNotable = (anomalyOccurrences: number, anomalyOpportunities: number, anomalyRate: number, typicalRate: number, typicalOpportunities: number): boolean => {
   if (anomalyOccurrences < MIN_SIGNAL_ANOMALY_OCCURRENCES) {
     return false
   }
@@ -164,13 +150,13 @@ function isNotable(
   return difference >= MIN_RATE_DIFFERENCE && ratio >= MIN_RATE_RATIO
 }
 
-function buildRateItem(params: {
+const buildRateItem = (params: {
   id: string
   label: string
   signalDates: ReadonlySet<DateKey>
   anomalyDates: ReadonlySet<DateKey>
   typicalDates: ReadonlySet<DateKey>
-}): AnomalyRateItem | null {
+}): AnomalyRateItem | null => {
   const { id, label, signalDates, anomalyDates, typicalDates } = params
 
   const anomalyOccurrences = countOverlap(signalDates, anomalyDates)
@@ -208,7 +194,7 @@ function buildRateItem(params: {
   }
 }
 
-function compareRateItems(a: AnomalyRateItem, b: AnomalyRateItem): number {
+const compareRateItems = (a: AnomalyRateItem, b: AnomalyRateItem): number => {
   const aDifference = a.anomalyRate - a.typicalRate
   const bDifference = b.anomalyRate - b.typicalRate
 
@@ -219,7 +205,7 @@ function compareRateItems(a: AnomalyRateItem, b: AnomalyRateItem): number {
   )
 }
 
-function buildWeekdayPattern(baseline: BaselineResult): AnomalyWeekdayPattern | null {
+const buildWeekdayPattern = (baseline: BaselineResult): AnomalyWeekdayPattern | null => {
   const buckets: AnomalyWeekdayBucket[] = WEEKDAY_LABELS.map((label, weekday) => {
     const scoredForWeekday = [...baseline.scoredDates].filter(
       (date) => dateKeyToDate(date).getDay() === weekday,
@@ -293,11 +279,7 @@ function buildWeekdayPattern(baseline: BaselineResult): AnomalyWeekdayPattern | 
   }
 }
 
-function buildEventPattern(
-  person: AnalyticsPerson,
-  lifeEvents: readonly AnalyticsLifeEvent[],
-  baseline: BaselineResult,
-): AnomalyEventPattern | null {
+const buildEventPattern = (person: AnalyticsPerson, lifeEvents: readonly AnalyticsLifeEvent[], baseline: BaselineResult): AnomalyEventPattern | null => {
   const labelById = new Map(lifeEvents.map((event) => [event.id, event.label]))
 
   const eventDates = new Map<string, Set<DateKey>>()
@@ -346,12 +328,7 @@ function buildEventPattern(
   }
 }
 
-function buildOtherPeoplePattern(
-  target: AnalyticsPerson,
-  people: readonly AnalyticsPerson[],
-  personDailyScores: Readonly<Record<string, DailyPersonScore[]>>,
-  baseline: BaselineResult,
-): AnomalyOtherPeoplePattern | null {
+const buildOtherPeoplePattern = (target: AnalyticsPerson, people: readonly AnalyticsPerson[], personDailyScores: Readonly<Record<string, DailyPersonScore[]>>, baseline: BaselineResult): AnomalyOtherPeoplePattern | null => {
   const items: AnomalyOtherPersonItem[] = []
 
   for (const other of people) {
@@ -462,13 +439,13 @@ function buildOtherPeoplePattern(
   }
 }
 
-export function buildAnomalyPatterns(params: {
+export const buildAnomalyPatterns = (params: {
   person: AnalyticsPerson
   people: readonly AnalyticsPerson[]
   dailyScores: readonly DailyPersonScore[]
   personDailyScores: Readonly<Record<string, DailyPersonScore[]>>
   lifeEvents: readonly AnalyticsLifeEvent[]
-}): AnomalyPatterns {
+}): AnomalyPatterns => {
   const { person, people, dailyScores, personDailyScores, lifeEvents } = params
 
   const baseline = findBaseline(dailyScores)

@@ -18,7 +18,7 @@ import { roleKeys, roleTemplates, type RoleKey } from '../../../templates/roleTe
  * person. Choosing a role opens the add/subtract review page.
  * @returns Role picker page.
  */
-export default function SuggestRolePage() {
+const SuggestRolePage = () => {
   const router = useIonRouter()
   const { personId } = useParams<{ personId: string }>()
 
@@ -74,3 +74,5 @@ export default function SuggestRolePage() {
     </IonPage>
   )
 }
+
+export default SuggestRolePage

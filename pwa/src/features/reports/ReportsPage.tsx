@@ -7,7 +7,7 @@ import {
   IonTextarea,
   useIonViewWillEnter,
 } from '@ionic/react'
-import { useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { Page } from '../../components/Page'
 import { useTrackerStore } from '../../stores/trackerStore'
 
@@ -18,7 +18,7 @@ import { useTrackerStore } from '../../stores/trackerStore'
  * @returns {React.JSX.Element}
  * @constructor
  */
-export default function ReportsPage() {
+const ReportsPage = (): React.JSX.Element => {
   const { hydrate, checkIns, incidents, parentCare } = useTrackerStore()
   useIonViewWillEnter(() => {
     void hydrate()
@@ -50,3 +50,5 @@ export default function ReportsPage() {
     </Page>
   )
 }
+
+export default ReportsPage

@@ -43,8 +43,7 @@ const TIME_BLOCKS = [
   { label: '8p–12a', start: 20 },
 ]
 
-/** Index of the largest non-null value, or -1 when there is none. */
-function argMax(values: (number | null)[]): number {
+const argMax = (values: (number | null)[]): number => {
   let best = -1
   let bestValue = -Infinity
   values.forEach((v, i) => {
@@ -56,13 +55,13 @@ function argMax(values: (number | null)[]): number {
   return best
 }
 
-function TakeawayCard({
+const TakeawayCard = ({
   icon,
   text,
 }: {
   readonly icon: string
   readonly text: string
-}): React.JSX.Element {
+}): React.JSX.Element => {
   return (
     <IonCard className="pattern-insight pattern-insight--neutral">
       <IonCardContent>
@@ -79,13 +78,13 @@ function TakeawayCard({
   )
 }
 
-function DayOfWeekView({
+const DayOfWeekView = ({
   dayOfWeek,
   metric,
 }: {
   readonly dayOfWeek: DayOfWeekBucket[]
   readonly metric: Metric
-}): React.JSX.Element {
+}): React.JSX.Element => {
   const rates = dayOfWeek.map((d) =>
     metric === 'challenges' ? d.challengingRate : d.positiveRate,
   )
@@ -126,13 +125,13 @@ function DayOfWeekView({
   )
 }
 
-function TimeOfDayView({
+const TimeOfDayView = ({
   timeOfDay,
   totalIncidents,
 }: {
   readonly timeOfDay: TimeOfDayBucket[]
   readonly totalIncidents: number
-}): React.JSX.Element {
+}): React.JSX.Element => {
   if (totalIncidents < MIN_INCIDENTS_FOR_TIME) {
     return (
       <PatternsEmptyState
@@ -170,11 +169,11 @@ function TimeOfDayView({
   )
 }
 
-function TrendsContent({
+const TrendsContent = ({
   timing,
 }: {
   readonly timing: TimingAnalysis
-}): React.JSX.Element {
+}): React.JSX.Element => {
   const { filters } = useScopedPatterns()
   const [mode, setMode] = useState<Mode>('week')
   const [metric, setMetric] = useState<Metric>(
@@ -229,11 +228,7 @@ function TrendsContent({
   )
 }
 
-/**
- * Trends page. Helps caregivers understand *when* behaviours happen — day of
- * week (from check-ins) and time of day (from incident logs).
- */
-export default function TrendsPage(): React.JSX.Element {
+const TrendsPage = (): React.JSX.Element => {
   const { view, isLoading, hasError } = useScopedPatterns()
 
   return (
@@ -254,3 +249,5 @@ export default function TrendsPage(): React.JSX.Element {
     </Page>
   )
 }
+
+export default TrendsPage

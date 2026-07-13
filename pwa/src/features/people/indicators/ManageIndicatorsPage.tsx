@@ -33,11 +33,10 @@ import { polarityMeta, type InputType, type Polarity } from './indicatorMeta'
 
 type AlertValues = { behavior?: string }
 
-function normalizeIndicatorName(values: AlertValues): string | false {
-  return values.behavior?.trim() || false
-}
+const normalizeIndicatorName = (values: AlertValues): string | false =>
+  values.behavior?.trim() || false
 
-function useIndicatorAlertActions(personId: string) {
+const useIndicatorAlertActions = (personId: string) => {
   const { create, update, remove } = useIndicatorMutations(personId)
   const [presentAlert] = useIonAlert()
 
@@ -145,7 +144,7 @@ const IndicatorsIntro = () => (
  * Displays and edits a person's desired and undesired indicators.
  * @returns Indicator management page.
  */
-export default function ManageIndicatorsPage() {
+const ManageIndicatorsPage = () => {
   const router = useIonRouter()
   const { personId } = useParams<{ personId: string }>()
   const { data: indicators, isLoading, error } = useIndicators(personId)
@@ -291,3 +290,5 @@ const IndicatorSection = ({
     </section>
   )
 }
+
+export default ManageIndicatorsPage

@@ -54,7 +54,7 @@ interface RenderPageParams {
 /*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
 
-function toDateKey(iso: string): string {
+const toDateKey = (iso: string): string => {
   const d = new Date(iso)
   const y = d.getFullYear()
   const m = String(d.getMonth() + 1).padStart(2, '0')
@@ -62,11 +62,11 @@ function toDateKey(iso: string): string {
   return `${y}-${m}-${day}`
 }
 
-function toMonthKey(dateKey: string): string {
+const toMonthKey = (dateKey: string): string => {
   return dateKey.slice(0, 7) // "YYYY-MM"
 }
 
-function formatMonthLabel(monthKey: string): string {
+const formatMonthLabel = (monthKey: string): string => {
   const [y, m] = monthKey.split('-').map(Number)
   const date = new Date(y, m - 1, 1)
   return date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
@@ -150,7 +150,7 @@ const renderPage = ({
   </Page>
 )
 
-function useMonthGroups(dayBuckets: Map<string, DayCounts>): MonthGroup[] {
+const useMonthGroups = (dayBuckets: Map<string, DayCounts>): MonthGroup[] => {
   return useMemo(() => {
     const months = new Map<string, DayBucket[]>()
 
@@ -178,7 +178,7 @@ function useMonthGroups(dayBuckets: Map<string, DayCounts>): MonthGroup[] {
   }, [dayBuckets])
 }
 
-function useMaxTotal(dayBuckets: Map<string, DayCounts>): number {
+const useMaxTotal = (dayBuckets: Map<string, DayCounts>): number => {
   return useMemo(
     () =>
       Math.max(...Array.from(dayBuckets.values()).map(({ good, bad }) => good + bad)) ||
@@ -187,13 +187,7 @@ function useMaxTotal(dayBuckets: Map<string, DayCounts>): number {
   )
 }
 
-/**
- * Renders insights for selected people in a format that lends itself to pattern
- *  recognition.
- * @returns {React.JSX.Element}
- * @constructor
- */
-export default function InsightsPage(): React.JSX.Element {
+const InsightsPage = (): React.JSX.Element => {
   const people = usePeople()
   const { selectedPeople, selectOnlyPerson, clearSelection } = usePersonFilter()
 
@@ -249,3 +243,5 @@ export default function InsightsPage(): React.JSX.Element {
     selectOnlyPerson,
   })
 }
+
+export default InsightsPage

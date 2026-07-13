@@ -6,13 +6,7 @@ import {
 import { useQueryClient } from '@tanstack/react-query'
 import React from 'react'
 
-/**
- * Pull-to-refresh for the analytics pages. Invalidates the shared household
- * query so every Patterns page recomputes from fresh data. Must be rendered as
- * a direct child of the page's `IonContent` (the `Page` component satisfies
- * this by rendering children straight into its content).
- */
-export function AnalyticsRefresher(): React.JSX.Element {
+export const AnalyticsRefresher = (): React.JSX.Element => {
   const queryClient = useQueryClient()
 
   const handleRefresh = async (event: RefresherCustomEvent) => {

@@ -97,27 +97,21 @@ const modalRoutes = [
   },
 ] as const
 
-function resolveModalFallback(fallback: string, url: string): string {
+const resolveModalFallback = (fallback: string, url: string): string => {
   if (fallback === '/person/:personId') {
     return url.replace(/\/check-in$/, '')
   }
   return fallback
 }
 
-/**
- * Read a `?returnTo=` off a modal URL. This lets a page that opens a modal say
- * "send me back here on dismiss" so the back button returns to the summoning
- * page instead of the modal's generic fallback. Only same-app absolute paths
- * are honoured (no protocol-relative or external URLs).
- */
-function returnToFromSearch(search: string): string | undefined {
+const returnToFromSearch = (search: string): string | undefined => {
   // URLSearchParams.get already decodes the value, so no manual decode here.
   const value = new URLSearchParams(search).get('returnTo')
   if (!value?.startsWith('/') || value.startsWith('//')) return undefined
   return value
 }
 
-function getBackgroundLocation(location: ReturnType<typeof useLocation>) {
+const getBackgroundLocation = (location: ReturnType<typeof useLocation>) => {
   const modalRoute = modalRoutes.find(({ path }) =>
     matchPath(location.pathname, { path, exact: true }),
   )
@@ -160,7 +154,7 @@ const renderRoutes = (routeLocation: ReturnType<typeof useLocation>) => (
   </IonRouterOutlet>
 )
 
-function RouteModal({
+const RouteModal = ({
   path,
   component: modalComponent,
   fallback,
@@ -168,7 +162,7 @@ function RouteModal({
   readonly path: string
   readonly component: ComponentType
   readonly fallback: string
-}) {
+}) => {
   const history = useHistory()
   const location = useLocation()
   const ModalContent = modalComponent
@@ -224,7 +218,7 @@ const renderModalRoutes = () =>
     />
   ))
 
-function AppShellRoutes() {
+const AppShellRoutes = () => {
   const location = useLocation()
   const backgroundLocation = getBackgroundLocation(location)
 
@@ -236,14 +230,12 @@ function AppShellRoutes() {
   )
 }
 
-/**
- * Mounts the Ionic router.
- * @returns {React.JSX.Element}
- */
-export default function AppShell() {
+const AppShell = () => {
   return (
     <IonReactRouter>
       <AppShellRoutes />
     </IonReactRouter>
   )
 }
+
+export default AppShell

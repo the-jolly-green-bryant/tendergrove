@@ -16,7 +16,7 @@ import {
   useIonRouter,
 } from '@ionic/react'
 import { addOutline, createOutline, trashOutline } from 'ionicons/icons'
-import { type Dispatch, type SetStateAction, useEffect, useState } from 'react'
+import React, { type Dispatch, type SetStateAction, useEffect, useState } from 'react'
 import { useParams, useLocation } from 'react-router-dom'
 
 import { LoadingState } from '../../../components/LoadingState'
@@ -51,17 +51,13 @@ let nextCustomId = 0
 
 const LOADING_STATE = <LoadingState className="ion-text-center ion-padding" />
 
-function renameChecklistItem(
-  items: ChecklistItem[],
-  itemId: string,
-  name: string,
-): ChecklistItem[] {
+const renameChecklistItem = (items: ChecklistItem[], itemId: string, name: string): ChecklistItem[] => {
   return items.map((current) =>
     current.id === itemId ? { ...current, name } : current,
   )
 }
 
-function removeChecklistItem(items: ChecklistItem[], itemId: string): ChecklistItem[] {
+const removeChecklistItem = (items: ChecklistItem[], itemId: string): ChecklistItem[] => {
   return items.filter((current) => current.id !== itemId)
 }
 
@@ -73,13 +69,13 @@ interface CustomIndicatorAlertParams {
   readonly setItems: Dispatch<SetStateAction<ChecklistItem[]>>
 }
 
-function showCustomIndicatorAlert({
+const showCustomIndicatorAlert = ({
   addCustomIndicator,
   item,
   polarity,
   presentAlert,
   setItems,
-}: CustomIndicatorAlertParams) {
+}: CustomIndicatorAlertParams) => {
   const meta = polarityMeta[polarity]
   void presentAlert({
     header: `${item ? 'Edit' : 'Add'} ${meta.title} Indicator`,
@@ -99,11 +95,11 @@ function showCustomIndicatorAlert({
   })
 }
 
-function confirmRemoveCustomIndicator(
+const confirmRemoveCustomIndicator = (
   item: ChecklistItem,
   presentAlert: PresentAlert,
   setItems: Dispatch<SetStateAction<ChecklistItem[]>>,
-) {
+) => {
   void presentAlert({
     header: 'Remove indicator?',
     message: `Remove "${item.name}" from this setup checklist?`,
@@ -118,10 +114,10 @@ function confirmRemoveCustomIndicator(
   })
 }
 
-function useChecklistState(
+const useChecklistState = (
   template: RoleTemplate | undefined,
   presentAlert: PresentAlert,
-): ChecklistState {
+): ChecklistState => {
   const [items, setItems] = useState<ChecklistItem[]>([])
   const [saving, setSaving] = useState(false)
 
@@ -184,24 +180,22 @@ function useChecklistState(
   }
 }
 
-function createSaveCustomIndicatorButton(
+const createSaveCustomIndicatorButton = (
   item: ChecklistItem | undefined,
   polarity: Polarity,
   setItems: Dispatch<SetStateAction<ChecklistItem[]>>,
   addCustomIndicator: (polarity: Polarity, name: string) => void,
-) {
-  return {
-    text: item ? 'Save' : 'Add',
-    handler: (values: { behavior?: string }) => {
-      const name = values.behavior?.trim()
-      if (!name) return false
+) => ({
+  text: item ? 'Save' : 'Add',
+  handler: (values: { behavior?: string }) => {
+    const name = values.behavior?.trim()
+    if (!name) return false
 
-      if (item) setItems((prev) => renameChecklistItem(prev, item.id, name))
-      else addCustomIndicator(polarity, name)
-      return true
-    },
-  }
-}
+    if (item) setItems((prev) => renameChecklistItem(prev, item.id, name))
+    else addCustomIndicator(polarity, name)
+    return true
+  },
+})
 
 interface ChecklistContentProps {
   readonly checklist: ChecklistState
@@ -212,17 +206,17 @@ interface ChecklistContentProps {
   readonly onSkip: () => void
 }
 
-function ChecklistContent({
+const ChecklistContent = ({
   checklist,
   displayName,
   isLoading,
   isSetup,
   onSave,
   onSkip,
-}: ChecklistContentProps) {
-  if (isLoading) return LOADING_STATE
-
-  return (
+}: ChecklistContentProps) =>
+  isLoading ? (
+    LOADING_STATE
+  ) : (
     <>
       <h1>What should we watch for?</h1>
       <p className="checklist-sub">
@@ -250,9 +244,8 @@ function ChecklistContent({
       />
     </>
   )
-}
 
-function ChecklistFooter({
+const ChecklistFooter = ({
   isSetup,
   saving,
   selectedCount,
@@ -264,43 +257,41 @@ function ChecklistFooter({
   readonly selectedCount: number
   readonly onSave: () => void
   readonly onSkip: () => void
-}) {
-  return (
-    <div className="checklist-footer">
+}) => (
+  <div className="checklist-footer">
+    <IonButton
+      expand="block"
+      disabled={selectedCount === 0 || saving}
+      onClick={onSave}
+    >
+      {saving ? (
+        <LoadingState
+          className=""
+          name="crescent"
+        />
+      ) : (
+        `Save Indicators (${selectedCount})`
+      )}
+    </IonButton>
+
+    {isSetup && (
       <IonButton
         expand="block"
-        disabled={selectedCount === 0 || saving}
-        onClick={onSave}
+        fill="clear"
+        onClick={onSkip}
       >
-        {saving ? (
-          <LoadingState
-            className=""
-            name="crescent"
-          />
-        ) : (
-          `Save Indicators (${selectedCount})`
-        )}
+        Skip for now
       </IonButton>
-
-      {isSetup && (
-        <IonButton
-          expand="block"
-          fill="clear"
-          onClick={onSkip}
-        >
-          Skip for now
-        </IonButton>
-      )}
-    </div>
-  )
-}
+    )}
+  </div>
+)
 
 /**
  * Allows users to create a list of indicators to watch for.
  * @returns {React.JSX.Element}
  * @constructor
  */
-export default function IndicatorChecklistPage() {
+const IndicatorChecklistPage = (): React.JSX.Element => {
   const router = useIonRouter()
   const { personId } = useParams<{ personId: string }>()
   const location = useLocation()
@@ -368,7 +359,7 @@ export default function IndicatorChecklistPage() {
   )
 }
 
-function PolaritySection({
+const PolaritySection = ({
   polarity,
   items,
   onToggle,
@@ -382,7 +373,7 @@ function PolaritySection({
   readonly onAddCustom: (polarity: Polarity) => void
   readonly onEditCustom: (polarity: Polarity, item: ChecklistItem) => void
   readonly onRemoveCustom: (item: ChecklistItem) => void
-}) {
+}) => {
   const meta = polarityMeta[polarity]
 
   return (
@@ -438,7 +429,7 @@ function PolaritySection({
   )
 }
 
-function CustomIndicatorButtons({
+const CustomIndicatorButtons = ({
   item,
   polarity,
   onEdit,
@@ -448,10 +439,8 @@ function CustomIndicatorButtons({
   readonly polarity: Polarity
   readonly onEdit: (polarity: Polarity, item: ChecklistItem) => void
   readonly onRemove: (item: ChecklistItem) => void
-}) {
-  if (!item.isCustom) return null
-
-  return (
+}) =>
+  item.isCustom && (
     <>
       <IonButton
         slot="end"
@@ -478,4 +467,5 @@ function CustomIndicatorButtons({
       </IonButton>
     </>
   )
-}
+
+export default IndicatorChecklistPage

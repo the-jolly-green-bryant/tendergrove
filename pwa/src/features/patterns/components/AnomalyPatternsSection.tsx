@@ -22,13 +22,13 @@ interface AnomalyPatternsSectionProps {
   readonly patterns: AnomalyPatterns
 }
 
-function PercentBar({
+const PercentBar = ({
   value,
   accent,
 }: {
   readonly value: number
   readonly accent: 'weekday' | 'event' | 'household'
-}): React.JSX.Element {
+}): React.JSX.Element => {
   return (
     <span className="anomaly-pattern-stat__track">
       <span
@@ -41,13 +41,13 @@ function PercentBar({
   )
 }
 
-function WeekdayChart({
+const WeekdayChart = ({
   buckets,
   highlightedWeekday,
 }: {
   readonly buckets: AnomalyWeekdayBucket[]
   readonly highlightedWeekday: number
-}): React.JSX.Element {
+}): React.JSX.Element => {
   const max = Math.max(1, ...buckets.map((bucket) => bucket.anomalyRate ?? 0))
 
   return (
@@ -99,7 +99,7 @@ function WeekdayChart({
   )
 }
 
-function SignalRows({
+const SignalRows = ({
   items,
   accent,
   formatLabel,
@@ -107,7 +107,7 @@ function SignalRows({
   readonly items: readonly AnomalyRateItem[]
   readonly accent: 'event' | 'household'
   readonly formatLabel?: (item: AnomalyRateItem) => string
-}): React.JSX.Element {
+}): React.JSX.Element => {
   return (
     <div className="anomaly-pattern-stats">
       {items.map((item) => (
@@ -131,7 +131,7 @@ function SignalRows({
   )
 }
 
-function CardFooter({
+const CardFooter = ({
   icon,
   action,
   onClick,
@@ -139,7 +139,7 @@ function CardFooter({
   readonly icon: React.ComponentProps<typeof IonIcon>['icon']
   readonly action: string
   readonly onClick: () => void
-}): React.JSX.Element {
+}): React.JSX.Element => {
   return (
     <div className="anomaly-pattern-card__footer">
       <div className="anomaly-pattern-card__icon anomaly-pattern-card__icon--event">
@@ -166,10 +166,10 @@ function CardFooter({
   )
 }
 
-export function AnomalyPatternsSection({
+export const AnomalyPatternsSection = ({
   personName,
   patterns,
-}: AnomalyPatternsSectionProps): React.JSX.Element | null {
+}: AnomalyPatternsSectionProps): React.JSX.Element | null => {
   const history = useHistory()
 
   const hasPatterns =

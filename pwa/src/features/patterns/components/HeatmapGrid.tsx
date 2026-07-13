@@ -19,20 +19,14 @@ const WEEKDAY_NAMES = [
   'Saturday',
 ]
 
-/** Background colour for a cell, scaling opacity with the value. */
-function cellStyle(value: number | null, scale: 'rose' | 'green'): React.CSSProperties {
+const cellStyle = (value: number | null, scale: 'rose' | 'green'): React.CSSProperties => {
   if (value === null) return { background: 'var(--wb-none)', opacity: 0.35 }
   const rgb = scale === 'green' ? '78, 157, 94' : '226, 89, 75'
   const alpha = 0.1 + (value / 100) * 0.75
   return { background: `rgba(${rgb}, ${alpha.toFixed(3)})` }
 }
 
-/**
- * An accessible indicator × weekday heatmap. Darker cells mean the indicator
- * occurred more often on that weekday. Cells are buttons so a caregiver can tap
- * one for the exact figure. Scales cleanly on small phones.
- */
-export function HeatmapGrid({
+export const HeatmapGrid = ({
   rows,
   scale = 'rose',
   onSelect,
@@ -40,7 +34,7 @@ export function HeatmapGrid({
   readonly rows: HeatmapRow[]
   readonly scale?: 'rose' | 'green'
   readonly onSelect: (rowId: string, weekday: number) => void
-}): React.JSX.Element {
+}): React.JSX.Element => {
   return (
     <div
       className="pattern-heatmap"
@@ -83,9 +77,8 @@ export function HeatmapGrid({
               className="pattern-heatmap__cell"
               style={cellStyle(value, scale)}
               onClick={() => onSelect(row.id, weekday)}
-              aria-label={`${row.label}, ${WEEKDAY_NAMES[weekday]}: ${
-                value === null ? 'no data' : `${Math.round(value)} percent`
-              }`}
+              aria-label={`${row.label}, ${WEEKDAY_NAMES[weekday]}: ${value === null ? 'no data' : `${Math.round(value)} percent`
+                }`}
             >
               <span aria-hidden="true">{value === null ? '' : Math.round(value)}</span>
             </button>

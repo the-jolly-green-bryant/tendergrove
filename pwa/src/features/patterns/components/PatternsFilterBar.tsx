@@ -11,8 +11,7 @@ import { usePatternsData } from '../usePatternsData'
 import { usePatternsFilterStore } from '../patternsFilterStore'
 import { FiltersModal } from './FiltersModal'
 
-/** Map the fetched people into the shape `PersonFilterChips` expects. */
-function toFilterablePeople(raw: RawPerson[] | undefined): FilterablePerson[] {
+const toFilterablePeople = (raw: RawPerson[] | undefined): FilterablePerson[] => {
   return (raw ?? [])
     .filter((p) => p.archived !== true)
     .map((p) => ({
@@ -28,20 +27,11 @@ function toFilterablePeople(raw: RawPerson[] | undefined): FilterablePerson[] {
     }))
 }
 
-/**
- * The shared Patterns filter row: person chips (Everyone + each household
- * member, shown when there are ≥2 people), an optional delta toggle, and a
- * Filters button that opens the filters as an in-place modal. Selection lives
- * in a store, so it carries across every Patterns page and scopes the charts.
- *
- * Filters open as a modal (not a route), so dismissing pops it and returns the
- * caregiver to exactly the page they were on — no back-stack to unwind.
- */
-export function PatternsFilterBar({
+export const PatternsFilterBar = ({
   showDeltaToggle = false,
 }: {
   readonly showDeltaToggle?: boolean
-}): React.JSX.Element {
+}): React.JSX.Element => {
   const { data } = usePatternsData()
   const personIds = usePatternsFilterStore((s) => s.personIds)
   const setPerson = usePatternsFilterStore((s) => s.setPerson)

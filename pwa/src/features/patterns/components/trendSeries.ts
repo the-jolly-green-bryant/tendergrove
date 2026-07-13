@@ -14,18 +14,13 @@ const SECONDARY = 'var(--ion-color-secondary-shade)'
 const UP = 'var(--ion-color-success-shade)'
 const DOWN = 'var(--ion-color-danger)'
 
-/** Colour the primary line by direction: green rising, red falling, brand flat. */
-export function trendLineColor(direction: TrendDirection): string {
+export const trendLineColor = (direction: TrendDirection): string => {
   if (direction === 'improving') return UP
   if (direction === 'worsening') return DOWN
   return PRIMARY
 }
 
-/**
- * Day-to-day change: each point becomes its difference from the previous
- * scored day. The first scored point has no prior, so it is left blank.
- */
-export function toDelta(values: (number | null)[]): (number | null)[] {
+export const toDelta = (values: (number | null)[]): (number | null)[] => {
   let prev: number | null = null
   return values.map((value) => {
     if (value === null) return null
@@ -35,18 +30,7 @@ export function toDelta(values: (number | null)[]): (number | null)[] {
   })
 }
 
-/**
- * Build the chart config for a trend, honouring the shared "delta" toggle.
- *
- *  - Absolute: the daily score plus a dashed 7-day rolling average, axis 0–100.
- *  - Delta: a single day-to-day change line around a zero baseline, so dramatic
- *    swings are obvious. The axis auto-scales through negatives.
- */
-export function buildTrendChart(
-  points: TrendPoint[],
-  showDelta: boolean,
-  primaryColor: string = PRIMARY,
-): TrendChartConfig {
+export const buildTrendChart = (points: TrendPoint[], showDelta: boolean, primaryColor: string = PRIMARY): TrendChartConfig => {
   const dates = points.map((p) => p.date)
 
   if (showDelta) {

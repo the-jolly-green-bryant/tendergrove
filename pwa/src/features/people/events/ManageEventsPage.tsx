@@ -29,12 +29,11 @@ import { useLifeEventMutations } from './useLifeEventMutations'
 
 type AlertValues = { label?: string }
 
-function normalizeLabel(values: AlertValues): string | false {
+const normalizeLabel = (values: AlertValues): string | false => {
   return values.label?.trim() || false
 }
 
-/** Add / edit / delete household events via lightweight prompts (like indicators). */
-function useEventAlertActions(householdId: string | undefined, events: LifeEvent[]) {
+const useEventAlertActions = (householdId: string | undefined, events: LifeEvent[]) => {
   const { create, rename, remove } = useLifeEventMutations(householdId)
   const [presentAlert] = useIonAlert()
 
@@ -123,7 +122,7 @@ const EventsIntro = () => (
   </div>
 )
 
-function EventRow({
+const EventRow = ({
   event,
   onEdit,
   onDelete,
@@ -131,7 +130,7 @@ function EventRow({
   readonly event: LifeEvent
   readonly onEdit: (event: LifeEvent) => void
   readonly onDelete: (event: LifeEvent) => void
-}) {
+}) => {
   return (
     <IonItem className="indicator-row">
       <IonIcon
@@ -167,11 +166,7 @@ function EventRow({
   )
 }
 
-/**
- * Displays and edits a person's configurable life events.
- * @returns Events management page.
- */
-export default function ManageEventsPage() {
+const ManageEventsPage = () => {
   const { personId } = useParams<{ personId: string }>()
   const { data: person } = usePerson(personId)
   const householdId = person?.householdId
@@ -248,3 +243,5 @@ export default function ManageEventsPage() {
     </IonPage>
   )
 }
+
+export default ManageEventsPage

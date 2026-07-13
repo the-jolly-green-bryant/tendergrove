@@ -12,11 +12,11 @@ import { useScopedPatterns } from './useScopedPatterns'
 
 import './patterns.scss'
 
-function InsightsContent({
+const InsightsContent = ({
   view,
 }: {
   readonly view: ScopedPatternsView
-}): React.JSX.Element {
+}): React.JSX.Element => {
   const { insights } = useHumanInsights(
     view.personId ?? 'household',
     view.generatedInsights,
@@ -48,11 +48,7 @@ function InsightsContent({
   )
 }
 
-/**
- * Insights page. Human-readable conclusions, almost no charts. Consumes the
- * scoped `generatedInsights`.
- */
-export default function PatternInsightsPage(): React.JSX.Element {
+const PatternInsightsPage = (): React.JSX.Element => {
   const { view, isLoading, hasError } = useScopedPatterns()
 
   return (
@@ -73,3 +69,5 @@ export default function PatternInsightsPage(): React.JSX.Element {
     </Page>
   )
 }
+
+export default PatternInsightsPage

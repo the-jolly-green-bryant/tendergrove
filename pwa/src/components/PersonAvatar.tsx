@@ -3,21 +3,18 @@ import { useEffect, useState } from 'react'
 
 const AVATAR_COLORS = ['147D7E', '75C8C4', '2FAE60', 'E88972', '8AA39B', 'C9A66B']
 
-function colorForName(name: string): string {
+const colorForName = (name: string): string => {
   let hash = 0
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length]
 }
 
-function fallbackUrl(name: string): string {
+const fallbackUrl = (name: string): string => {
   const bg = colorForName(name)
   return `https://ui-avatars.com/api/?background=${bg}&color=fff&bold=true&name=${encodeURIComponent(name || '?')}`
 }
 
-/**
- *
- */
-export function PersonAvatar({
+export const PersonAvatar = ({
   name,
   src,
   slot,
@@ -27,7 +24,7 @@ export function PersonAvatar({
   readonly src?: string | null
   readonly slot?: string
   readonly className?: string
-}) {
+}) => {
   const fallback = fallbackUrl(name)
   const [imgSrc, setImgSrc] = useState(src || fallback)
 

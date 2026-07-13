@@ -18,10 +18,7 @@ const peopleSelectionSet = [
   'indicators.active',
 ] as const
 
-/**
- *
- */
-export function usePeople() {
+export const usePeople = () => {
   return useQuery({
     queryKey: ['people'],
     queryFn: async () => {

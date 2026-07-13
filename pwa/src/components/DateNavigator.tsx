@@ -18,8 +18,7 @@ const addDays = (d: Date, n: number): Date => {
   return result
 }
 
-/** Build a 6-row calendar grid for the given month. */
-function buildCalendarGrid(year: number, month: number): (Date | null)[][] {
+const buildCalendarGrid = (year: number, month: number): (Date | null)[][] => {
   const firstDay = new Date(year, month, 1)
   const startDow = firstDay.getDay() // 0=Sun
   const daysInMonth = new Date(year, month + 1, 0).getDate()
@@ -64,14 +63,14 @@ interface RenderCalendarDayParams {
   handleDayClick: (day: Date) => void
 }
 
-function renderCalendarDay({
+const renderCalendarDay = ({
   day,
   dayIndex,
   date,
   today,
   eventDates,
   handleDayClick,
-}: RenderCalendarDayParams): React.JSX.Element {
+}: RenderCalendarDayParams): React.JSX.Element => {
   if (!day) {
     return (
       <span
@@ -116,7 +115,7 @@ interface DateNavigatorHeaderProps {
   toggleCalendar: () => void
 }
 
-function DateNavigatorHeader({
+const DateNavigatorHeader = ({
   calendarOpen,
   goBack,
   goForward,
@@ -125,7 +124,7 @@ function DateNavigatorHeader({
   isToday,
   today,
   toggleCalendar,
-}: Readonly<DateNavigatorHeaderProps>): React.JSX.Element {
+}: Readonly<DateNavigatorHeaderProps>): React.JSX.Element => {
   return (
     <div className="date-navigator__header">
       <button
@@ -186,7 +185,7 @@ interface DateNavigatorCalendarProps {
   today: Date
 }
 
-function DateNavigatorCalendar({
+const DateNavigatorCalendar = ({
   calendarClosing,
   calendarOpen,
   calendarWeeks,
@@ -198,14 +197,13 @@ function DateNavigatorCalendar({
   nextMonth,
   prevMonth,
   today,
-}: Readonly<DateNavigatorCalendarProps>): React.JSX.Element | null {
+}: Readonly<DateNavigatorCalendarProps>): React.JSX.Element | null => {
   if (!calendarOpen && !calendarClosing) return null
 
   return (
     <div
-      className={`date-navigator__calendar${
-        calendarClosing ? ' date-navigator__calendar--closing' : ''
-      }`}
+      className={`date-navigator__calendar${calendarClosing ? ' date-navigator__calendar--closing' : ''
+        }`}
     >
       <div className="date-navigator__cal-header">
         <button
@@ -278,7 +276,7 @@ interface MonthNavigation {
   prevMonth: () => void
 }
 
-function useCloseTimeoutRef() {
+const useCloseTimeoutRef = () => {
   const closeTimeout = useRef<number | null>(null)
 
   useEffect(
@@ -293,13 +291,7 @@ function useCloseTimeoutRef() {
   return closeTimeout
 }
 
-function useMonthNavigation(
-  viewMonth: number,
-  viewYear: number,
-  setViewMonth: React.Dispatch<React.SetStateAction<number>>,
-  setViewYear: React.Dispatch<React.SetStateAction<number>>,
-  today: Date,
-): MonthNavigation {
+const useMonthNavigation = (viewMonth: number, viewYear: number, setViewMonth: React.Dispatch<React.SetStateAction<number>>, setViewYear: React.Dispatch<React.SetStateAction<number>>, today: Date): MonthNavigation => {
   const prevMonth = useCallback(() => {
     setViewMonth((m) => {
       if (m !== 0) return m - 1
@@ -323,7 +315,7 @@ function useMonthNavigation(
   return { nextMonth, prevMonth }
 }
 
-function useCalendarState(date: Date, today: Date): CalendarState {
+const useCalendarState = (date: Date, today: Date): CalendarState => {
   const [calendarOpen, setCalendarOpen] = useState(false)
   const [calendarClosing, setCalendarClosing] = useState(false)
   const [viewYear, setViewYear] = useState(date.getFullYear())
@@ -402,13 +394,7 @@ interface DayNavigation {
   handleDayClick: (day: Date) => void
 }
 
-function useDayNavigation(
-  date: Date,
-  onChange: (date: Date) => void,
-  today: Date,
-  closeCalendar: () => void,
-  showTodayMonth: () => void,
-): DayNavigation {
+const useDayNavigation = (date: Date, onChange: (date: Date) => void, today: Date, closeCalendar: () => void, showTodayMonth: () => void): DayNavigation => {
   const goBack = useCallback(() => onChange(addDays(date, -1)), [date, onChange])
   const goForward = useCallback(() => {
     if (!isSameLocalDay(date, today)) onChange(min([addDays(date, 1), today]))
@@ -431,7 +417,7 @@ function useDayNavigation(
   return { goBack, goForward, goToToday, handleDayClick }
 }
 
-function getHeaderLabel(date: Date, today: Date): string {
+const getHeaderLabel = (date: Date, today: Date): string => {
   if (isSameLocalDay(date, today)) return 'Today'
   return date.toLocaleDateString(undefined, {
     month: 'short',
@@ -439,18 +425,10 @@ function getHeaderLabel(date: Date, today: Date): string {
   })
 }
 
-/**
- * Provides access to a reusable calendar navigation widget.
- * @param {DateNavigatorProps} param0
- * @param {Date} param0.date
- * @param {(date: Date) => void} param0.onChange
- * @param {Set<string> | undefined} param0.eventDates
- * @returns {{headerElement: React.JSX.Element, calendarElement: React.JSX.Element | null}}
- */
-export function useDateNavigator({ date, onChange, eventDates }: DateNavigatorProps): {
+export const useDateNavigator = ({ date, onChange, eventDates }: DateNavigatorProps): {
   headerElement: React.JSX.Element
   calendarElement: React.JSX.Element | null
-} {
+} => {
   const today = new Date()
   const isToday = isSameLocalDay(date, today)
   const calendarState = useCalendarState(date, today)

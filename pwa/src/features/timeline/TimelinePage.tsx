@@ -28,7 +28,7 @@ interface TimelineEvent {
   statusColor: Status['color']
 }
 
-function formatDayHeading(dateStr: string): string {
+const formatDayHeading = (dateStr: string): string => {
   const date = new Date(dateStr + 'T00:00:00')
   const today = new Date()
   const yesterday = new Date()
@@ -55,14 +55,14 @@ function formatDayHeading(dateStr: string): string {
   })
 }
 
-function formatTime(isoString: string): string {
+const formatTime = (isoString: string): string => {
   return new Date(isoString).toLocaleTimeString(undefined, {
     hour: 'numeric',
     minute: '2-digit',
   })
 }
 
-function toDateKey(isoString: string): string {
+const toDateKey = (isoString: string): string => {
   const d = new Date(isoString)
   const y = d.getFullYear()
   const m = String(d.getMonth() + 1).padStart(2, '0')
@@ -148,13 +148,7 @@ const groupEventsByDate = (events: TimelineEvent[]): Map<string, TimelineEvent[]
   return groups
 }
 
-/**
- * Depicts check-ins as a timeseries bar chart to help users visualize distress over
- * time.
- * @returns {React.JSX.Element}
- * @constructor
- */
-export default function TimelinePage() {
+const TimelinePage = () => {
   const people = usePeople()
   const { selectedPeople, selectOnlyPerson, clearSelection } = usePersonFilter()
   const [selectedTypes] = useState<Set<EventType>>(new Set(['check-in']))
@@ -230,3 +224,5 @@ export default function TimelinePage() {
     </Page>
   )
 }
+
+export default TimelinePage

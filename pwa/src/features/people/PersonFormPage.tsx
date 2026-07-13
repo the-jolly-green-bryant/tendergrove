@@ -87,11 +87,11 @@ interface SuggestedItem {
 
 let nextSuggestedId = 0
 
-function polarityForType(type: IndicatorType): Polarity {
+const polarityForType = (type: IndicatorType): Polarity => {
   return type === 'positive' ? 'desired' : 'undesired'
 }
 
-function loadImageFromFile(file: File): Promise<HTMLImageElement> {
+const loadImageFromFile = (file: File): Promise<HTMLImageElement> => {
   return new Promise((resolve, reject) => {
     const objectUrl = URL.createObjectURL(file)
     const image = new Image()
@@ -108,7 +108,7 @@ function loadImageFromFile(file: File): Promise<HTMLImageElement> {
   })
 }
 
-async function createAvatarDataUrl(file: File): Promise<string> {
+const createAvatarDataUrl = async (file: File): Promise<string> => {
   if (!file.type.startsWith('image/')) {
     throw new Error('Choose an image file.')
   }
@@ -147,17 +147,17 @@ async function createAvatarDataUrl(file: File): Promise<string> {
   return canvas.toDataURL('image/jpeg', AVATAR_JPEG_QUALITY)
 }
 
-function dotState(position: number, step: number): 'done' | 'active' | 'upcoming' {
+const dotState = (position: number, step: number): 'done' | 'active' | 'upcoming' => {
   if (position < step) return 'done'
   return position === step ? 'active' : 'upcoming'
 }
 
-function detailsPrimaryLabel(isProcessingPhoto: boolean, isEditing: boolean): string {
+const detailsPrimaryLabel = (isProcessingPhoto: boolean, isEditing: boolean): string => {
   if (isProcessingPhoto) return 'Preparing photo…'
   return isEditing ? 'Save Changes' : 'Continue'
 }
 
-function seedSuggestedItems(template: RoleTemplate): SuggestedItem[] {
+const seedSuggestedItems = (template: RoleTemplate): SuggestedItem[] => {
   return template.indicators.map((indicator) => ({
     id: `suggested-${nextSuggestedId++}`,
     name: indicator.label,
@@ -167,8 +167,7 @@ function seedSuggestedItems(template: RoleTemplate): SuggestedItem[] {
   }))
 }
 
-/** Branded modal header: back, centered TenderGrove logo, close. */
-function WizardHeader({
+const WizardHeader = ({
   isEditing,
   onBack,
   onClose,
@@ -176,7 +175,7 @@ function WizardHeader({
   readonly isEditing: boolean
   readonly onBack: () => void
   readonly onClose: () => void
-}) {
+}) => {
   return (
     <IonHeader
       translucent
@@ -229,8 +228,7 @@ function WizardHeader({
   )
 }
 
-/** "Step X of 3" label with a connected three-dot progress track. */
-function StepIndicator({ step }: { readonly step: number }) {
+const StepIndicator = ({ step }: { readonly step: number }) => {
   return (
     <div className="wizard-stepper">
       <p className="wizard-stepper__label">
@@ -243,9 +241,8 @@ function StepIndicator({ step }: { readonly step: number }) {
             <React.Fragment key={position}>
               {index > 0 && (
                 <span
-                  className={`wizard-stepper__line ${
-                    position <= step ? 'wizard-stepper__line--filled' : ''
-                  }`}
+                  className={`wizard-stepper__line ${position <= step ? 'wizard-stepper__line--filled' : ''
+                    }`}
                 />
               )}
               <span
@@ -259,7 +256,7 @@ function StepIndicator({ step }: { readonly step: number }) {
   )
 }
 
-function RoleCard({
+const RoleCard = ({
   template,
   selected,
   onSelect,
@@ -267,7 +264,7 @@ function RoleCard({
   readonly template: RoleTemplate
   readonly selected: boolean
   readonly onSelect: () => void
-}) {
+}) => {
   return (
     <button
       type="button"
@@ -293,7 +290,7 @@ function RoleCard({
   )
 }
 
-function RoleStep({
+const RoleStep = ({
   role,
   setRole,
   onNext,
@@ -301,7 +298,7 @@ function RoleStep({
   readonly role: RoleKey
   readonly setRole: (role: RoleKey) => void
   readonly onNext: () => void
-}) {
+}) => {
   return (
     <section className="wizard-step">
       <StepIndicator step={1} />
@@ -336,13 +333,13 @@ function RoleStep({
   )
 }
 
-function NameField({
+const NameField = ({
   displayName,
   setDisplayName,
 }: {
   readonly displayName: string
   readonly setDisplayName: (displayName: string) => void
-}) {
+}) => {
   return (
     <div className="wizard-field">
       <label
@@ -375,7 +372,7 @@ interface PhotoFieldProps {
   readonly handlePhotoChange: (event: React.ChangeEvent<HTMLInputElement>) => void
 }
 
-function PhotoField({
+const PhotoField = ({
   avatarUrl,
   roleLabel,
   displayName,
@@ -384,7 +381,7 @@ function PhotoField({
   photoError,
   photoInputRef,
   handlePhotoChange,
-}: PhotoFieldProps) {
+}: PhotoFieldProps) => {
   return (
     <div className="wizard-field">
       <span className="wizard-field__label">Photo</span>
@@ -426,7 +423,7 @@ interface DetailsStepProps extends PhotoFieldProps {
   readonly setDisplayName: (displayName: string) => void
 }
 
-function DetailsStep(props: DetailsStepProps) {
+const DetailsStep = (props: DetailsStepProps) => {
   const { displayName, isEditing, isProcessingPhoto, isSaving, onContinue } = props
   const primaryLabel = detailsPrimaryLabel(isProcessingPhoto, isEditing)
 
@@ -470,7 +467,7 @@ function DetailsStep(props: DetailsStepProps) {
   )
 }
 
-function SuggestedIntro({ roleLabel }: { readonly roleLabel: string }) {
+const SuggestedIntro = ({ roleLabel }: { readonly roleLabel: string }) => {
   return (
     <div className="wizard-step__intro wizard-step__intro--celebrate">
       <IonIcon
@@ -493,7 +490,7 @@ function SuggestedIntro({ roleLabel }: { readonly roleLabel: string }) {
   )
 }
 
-function SuggestedRow({
+const SuggestedRow = ({
   item,
   section,
   onEdit,
@@ -503,7 +500,7 @@ function SuggestedRow({
   readonly section: PolaritySection
   readonly onEdit: (item: SuggestedItem) => void
   readonly onRemove: (id: string) => void
-}) {
+}) => {
   return (
     <div className="suggested-row">
       <IonIcon
@@ -533,7 +530,7 @@ function SuggestedRow({
   )
 }
 
-function SuggestedSection({
+const SuggestedSection = ({
   section,
   items,
   onAdd,
@@ -545,7 +542,7 @@ function SuggestedSection({
   readonly onAdd: () => void
   readonly onEdit: (item: SuggestedItem) => void
   readonly onRemove: (id: string) => void
-}) {
+}) => {
   return (
     <div className="suggested-section">
       <div className="suggested-section__header">
@@ -584,12 +581,7 @@ interface SuggestedItemsState {
   addItem: (polarity: Polarity, name: string) => void
 }
 
-/**
- * Draft indicator list for the wizard. Seeds from the selected role's starter
- * template and re-seeds only when the role actually changes, so navigating
- * between steps preserves the user's edits.
- */
-function useSuggestedItems(roleKey: RoleKey): SuggestedItemsState {
+const useSuggestedItems = (roleKey: RoleKey): SuggestedItemsState => {
   const [items, setItems] = useState<SuggestedItem[]>([])
   const seededRole = useRef<RoleKey | null>(null)
 
@@ -629,11 +621,7 @@ function useSuggestedItems(roleKey: RoleKey): SuggestedItemsState {
   }
 }
 
-function promptAddIndicator(
-  presentAlert: PresentAlert,
-  addItem: (polarity: Polarity, name: string) => void,
-  polarity: Polarity,
-) {
+const promptAddIndicator = (presentAlert: PresentAlert, addItem: (polarity: Polarity, name: string) => void, polarity: Polarity) => {
   const isChallenge = polarity === 'undesired'
   void presentAlert({
     header: isChallenge ? 'Add a challenge' : 'Add a positive sign',
@@ -659,11 +647,7 @@ function promptAddIndicator(
   })
 }
 
-function promptEditIndicator(
-  presentAlert: PresentAlert,
-  editItem: (id: string, name: string) => void,
-  item: SuggestedItem,
-) {
+const promptEditIndicator = (presentAlert: PresentAlert, editItem: (id: string, name: string) => void, item: SuggestedItem) => {
   void presentAlert({
     header: 'Edit indicator',
     inputs: [{ name: 'name', type: 'text', value: item.name }],
@@ -682,7 +666,7 @@ function promptEditIndicator(
   })
 }
 
-function SuggestedIndicatorsStep({
+const SuggestedIndicatorsStep = ({
   roleLabel,
   suggested,
   isSaving,
@@ -692,7 +676,7 @@ function SuggestedIndicatorsStep({
   readonly suggested: SuggestedItemsState
   readonly isSaving: boolean
   readonly onFinish: (items: SuggestedItem[]) => void
-}) {
+}) => {
   const [presentAlert] = useIonAlert()
 
   return (
@@ -736,11 +720,7 @@ function SuggestedIndicatorsStep({
 
 type ExistingPerson = Exclude<ReturnType<typeof usePerson>['data'], null | undefined>
 
-function usePrefillPerson(
-  existingPerson: ExistingPerson | undefined,
-  setDisplayName: (displayName: string) => void,
-  setAvatarUrl: (avatarUrl: string | undefined) => void,
-) {
+const usePrefillPerson = (existingPerson: ExistingPerson | undefined, setDisplayName: (displayName: string) => void, setAvatarUrl: (avatarUrl: string | undefined) => void) => {
   useEffect(() => {
     if (!existingPerson) return
     setDisplayName(existingPerson.displayName)
@@ -748,7 +728,7 @@ function usePrefillPerson(
   }, [existingPerson, setAvatarUrl, setDisplayName])
 }
 
-function usePhotoUpload(setAvatarUrl: (avatarUrl: string | undefined) => void) {
+const usePhotoUpload = (setAvatarUrl: (avatarUrl: string | undefined) => void) => {
   const photoInputRef = useRef<HTMLInputElement>(null)
   const [photoError, setPhotoError] = useState<string | undefined>()
   const [isProcessingPhoto, setIsProcessingPhoto] = useState(false)
@@ -792,7 +772,7 @@ interface SavePersonArgs {
   setCreatedPersonId: (id: string) => void
 }
 
-async function savePerson(args: SavePersonArgs): Promise<string> {
+const savePerson = async (args: SavePersonArgs): Promise<string> => {
   const { displayName, role, avatarUrl, personId, createdPersonId, user } = args
   const trimmed = displayName.trim()
   if (!trimmed) throw new Error('A name is required')
@@ -836,7 +816,7 @@ interface WizardActionsArgs {
   isProcessingPhoto: boolean
 }
 
-function useWizardActions(config: WizardActionsArgs) {
+const useWizardActions = (config: WizardActionsArgs) => {
   const router = useIonRouter()
   const routeModal = useRouteModal()
   const queryClient = useQueryClient()
@@ -910,13 +890,7 @@ function useWizardActions(config: WizardActionsArgs) {
   }
 }
 
-/**
- * Guided flow for adding a new person (role → details → suggested indicators)
- * or editing an existing one (details only).
- * @returns {React.JSX.Element}
- * @constructor
- */
-export default function PersonFormPage() {
+const PersonFormPage = () => {
   const { personId } = useParams<{ personId?: string }>()
   const { data: existingPerson } = usePerson(personId ? personId : undefined)
   const loadedPerson = existingPerson ?? undefined
@@ -996,3 +970,5 @@ export default function PersonFormPage() {
     </IonPage>
   )
 }
+
+export default PersonFormPage

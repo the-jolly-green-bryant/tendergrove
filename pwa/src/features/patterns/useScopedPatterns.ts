@@ -24,13 +24,10 @@ export interface ScopedPatterns {
   filters: DisplayFilters
 }
 
-function deriveWindow(
-  rangeDays: number,
-  customRange: CustomRange | null,
-): {
+const deriveWindow = (rangeDays: number, customRange: CustomRange | null): {
   now: Date
   windowDays: number
-} {
+} => {
   if (customRange) {
     const span = daysBetween(customRange.end, customRange.start) + 1
 
@@ -46,11 +43,7 @@ function deriveWindow(
   }
 }
 
-/**
- * Runs the analytics over the appropriate household data and narrows the
- * returned view to the selected person when exactly one person is selected.
- */
-export function useScopedPatterns(): ScopedPatterns {
+export const useScopedPatterns = (): ScopedPatterns => {
   const { data, isLoading, error } = usePatternsData()
 
   const personIds = usePatternsFilterStore((state) => state.personIds)

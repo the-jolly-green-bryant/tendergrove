@@ -31,18 +31,17 @@ interface RecapSlide {
   content: ReactNode
 }
 
-function RecapPersonCard({
+const RecapPersonCard = ({
   person,
   onRequiredCheckInClick,
 }: {
   readonly person: HouseholdRecapPerson
   readonly onRequiredCheckInClick: (personId: string) => void
-}) {
+}) => {
   const canOpenCheckIn = Boolean(person.requiresCheckIn)
   const scoreText = person.score === null ? person.label : `${person.score}%`
-  const className = `recap-person recap-person--${person.level} ${
-    canOpenCheckIn ? 'recap-person--action' : ''
-  }`
+  const className = `recap-person recap-person--${person.level} ${canOpenCheckIn ? 'recap-person--action' : ''
+    }`
   const content = (
     <>
       <PersonAvatar
@@ -75,7 +74,7 @@ function RecapPersonCard({
   )
 }
 
-function RecapPersonList({
+const RecapPersonList = ({
   people,
   emptyText,
   onRequiredCheckInClick,
@@ -83,7 +82,7 @@ function RecapPersonList({
   readonly people: HouseholdRecapPerson[]
   readonly emptyText: string
   readonly onRequiredCheckInClick: (personId: string) => void
-}) {
+}) => {
   if (people.length === 0) {
     return <p className="recap-slide__empty">{emptyText}</p>
   }
@@ -101,7 +100,7 @@ function RecapPersonList({
   )
 }
 
-function RecapHero({ person }: { readonly person?: HouseholdRecapPerson }) {
+const RecapHero = ({ person }: { readonly person?: HouseholdRecapPerson }) => {
   const featuredName = person?.displayName ?? 'Your household'
   const featuredEmoji = person?.emoji ?? '✨'
 
@@ -127,10 +126,7 @@ function RecapHero({ person }: { readonly person?: HouseholdRecapPerson }) {
   )
 }
 
-function createRecapSlides(
-  recap: HouseholdRecap,
-  onRequiredCheckInClick: (personId: string) => void,
-): RecapSlide[] {
+const createRecapSlides = (recap: HouseholdRecap, onRequiredCheckInClick: (personId: string) => void): RecapSlide[] => {
   const slides: RecapSlide[] = [
     {
       title: recap.title,
@@ -194,13 +190,13 @@ function createRecapSlides(
   return slides
 }
 
-function RecapProgress({
+const RecapProgress = ({
   slides,
   slideIndex,
 }: {
   readonly slides: RecapSlide[]
   readonly slideIndex: number
-}) {
+}) => {
   return (
     <div className="recap-progress">
       {slides.map((item, index) => (
@@ -213,13 +209,13 @@ function RecapProgress({
   )
 }
 
-function RecapCheckInModal({
+const RecapCheckInModal = ({
   personId,
   onDismiss,
 }: {
   readonly personId: string | null
   readonly onDismiss: () => void
-}) {
+}) => {
   return (
     <IonModal
       isOpen={Boolean(personId)}
@@ -244,7 +240,7 @@ function RecapCheckInModal({
   )
 }
 
-function RecapActions({
+const RecapActions = ({
   isFirst,
   isLast,
   onBack,
@@ -254,7 +250,7 @@ function RecapActions({
   readonly isLast: boolean
   readonly onBack: () => void
   readonly onNext: () => void
-}) {
+}) => {
   return (
     <div className="recap-page__actions">
       <button
@@ -274,13 +270,13 @@ function RecapActions({
   )
 }
 
-function RecapTopbar({
+const RecapTopbar = ({
   eyebrow,
   onClose,
 }: {
   readonly eyebrow: string
   readonly onClose: () => void
-}) {
+}) => {
   return (
     <div className="recap-page__topbar">
       <span>{eyebrow}</span>
@@ -295,13 +291,13 @@ function RecapTopbar({
   )
 }
 
-function RecapSlideContent({
+const RecapSlideContent = ({
   dateLabel,
   slide,
 }: {
   readonly dateLabel: string
   readonly slide: RecapSlide
-}) {
+}) => {
   return (
     <section className={`recap-slide recap-slide--${slide.layout}`}>
       <p className="recap-slide__date">{dateLabel}</p>
@@ -312,7 +308,7 @@ function RecapSlideContent({
   )
 }
 
-function HouseholdRecapContent({
+const HouseholdRecapContent = ({
   recap,
   isTimeTravel,
   onReturnToToday,
@@ -320,7 +316,7 @@ function HouseholdRecapContent({
   readonly recap: HouseholdRecap
   readonly isTimeTravel: boolean
   readonly onReturnToToday: () => void
-}) {
+}) => {
   const history = useHistory()
   const routeModal = useRouteModal()
   const [slideIndex, setSlideIndex] = useState(0)
@@ -393,11 +389,7 @@ function HouseholdRecapContent({
   )
 }
 
-/**
- * Displays the household recap slideshow as a route-level full-screen page.
- * @returns {React.JSX.Element}
- */
-export default function HouseholdRecapPage() {
+const HouseholdRecapPage = () => {
   const people = usePeople()
   const { selectedDate, setSelectedDate } = useSelectedDate()
   const isTimeTravel = !isSameLocalDay(selectedDate, new Date())
@@ -433,3 +425,5 @@ export default function HouseholdRecapPage() {
     </IonPage>
   )
 }
+
+export default HouseholdRecapPage

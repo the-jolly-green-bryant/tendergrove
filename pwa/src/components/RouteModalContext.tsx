@@ -12,10 +12,6 @@ const RouteModalContext = createContext<RouteModalContextValue>({
 
 export const RouteModalProvider = RouteModalContext.Provider
 
-/**
- * Provides modal-route dismissal controls to pages rendered inside route modals.
- * @returns Modal route state and dismiss function.
- */
-export function useRouteModal() {
+export const useRouteModal = () => {
   return useContext(RouteModalContext)
 }

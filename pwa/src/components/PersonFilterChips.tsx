@@ -37,28 +37,28 @@ interface PersonFilterChipsProps {
   readonly className?: string
 }
 
-function getPersonStatusColor(person: FilterablePerson): Status['color'] {
+const getPersonStatusColor = (person: FilterablePerson): Status['color'] => {
   return derivePersonStatus(person.indicators ?? [], person.checkIns ?? []).color
 }
 
-function colorForName(name: string): string {
+const colorForName = (name: string): string => {
   let hash = 0
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length]
 }
 
-function fallbackUrl(name: string): string {
+const fallbackUrl = (name: string): string => {
   const bg = colorForName(name)
   return `https://ui-avatars.com/api/?background=${bg}&color=fff&bold=true&name=${encodeURIComponent(name || '?')}`
 }
 
-function PersonFilterAvatar({
+const PersonFilterAvatar = ({
   name,
   src,
 }: {
   readonly name: string
   readonly src?: string | null
-}): React.JSX.Element {
+}): React.JSX.Element => {
   const fallback = fallbackUrl(name)
   const [imgSrc, setImgSrc] = useState(src || fallback)
 
@@ -78,24 +78,13 @@ function PersonFilterAvatar({
   )
 }
 
-/**
- * Allows users to filter a view of people.
- * @param {PersonFilterChipsProps} param0
- * @param {FilterablePerson[]} param0.people
- * @param {Set<string>} param0.selectedPeople
- * @param {(personId: string) => void} param0.onSelectPerson
- * @param {() => void} param0.onClear
- * @param {string | undefined} param0.className
- * @returns {React.JSX.Element}
- * @constructor
- */
-export function PersonFilterChips({
+export const PersonFilterChips = ({
   people,
   selectedPeople,
   onSelectPerson,
   onClear,
   className,
-}: PersonFilterChipsProps) {
+}: PersonFilterChipsProps) => {
   const showAll = selectedPeople.size === 0
   const rootClassName = ['person-filter-chips', className].filter(Boolean).join(' ')
 
@@ -118,9 +107,8 @@ export function PersonFilterChips({
           <button
             type="button"
             key={person.id}
-            className={`person-filter-chip person-filter-chip--avatar person-filter-chip--${statusColor} ${
-              isSelected ? 'person-filter-chip--active' : ''
-            }`}
+            className={`person-filter-chip person-filter-chip--avatar person-filter-chip--${statusColor} ${isSelected ? 'person-filter-chip--active' : ''
+              }`}
             onClick={() => onSelectPerson(person.id)}
             aria-label={`Show ${person.displayName}`}
             aria-pressed={isSelected}
@@ -137,10 +125,7 @@ export function PersonFilterChips({
   )
 }
 
-/**
- *
- */
-export function usePersonFilter() {
+export const usePersonFilter = () => {
   const [selectedPeople, setSelectedPeople] = useState<Set<string>>(new Set())
 
   const togglePerson = (personId: string) => {

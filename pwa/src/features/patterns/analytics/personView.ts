@@ -44,12 +44,7 @@ export interface PersonAnalyticsView {
   anomalyPatterns: AnomalyPatterns
 }
 
-/**
- * Adapt a person's daily scores to the household-day shape so the shared
- * `buildCalendar`/`findTurningPoints` helpers can be reused unchanged. For a
- * single person "contributing people" is simply 1 on days with data.
- */
-function asHouseholdSeries(scores: DailyPersonScore[]): DailyHouseholdScore[] {
+const asHouseholdSeries = (scores: DailyPersonScore[]): DailyHouseholdScore[] => {
   return scores.map((score) => ({
     date: score.date,
     score: score.score,
@@ -71,11 +66,7 @@ const EMPTY_TREND: TrendResult = {
   confidence: 'low',
 }
 
-/** Narrow a whole-household result down to a single person's view. */
-export function buildPersonView(
-  result: AnalyticsResult,
-  personId: string,
-): PersonAnalyticsView {
+export const buildPersonView = (result: AnalyticsResult, personId: string): PersonAnalyticsView => {
   const dailyScores = result.personDailyScores[personId] ?? []
   const householdShaped = asHouseholdSeries(dailyScores)
   const personName =
@@ -137,14 +128,7 @@ export interface ScopedPatternsView {
   anomalyPatterns: AnomalyPatterns | null
 }
 
-/**
- * Build the scoped view for the current filter selection. Falls back to the
- * household view when no person is selected (or the selected person is gone).
- */
-export function buildScopedView(
-  result: AnalyticsResult,
-  personId: string | null,
-): ScopedPatternsView {
+export const buildScopedView = (result: AnalyticsResult, personId: string | null): ScopedPatternsView => {
   const known = personId !== null && result.people.some((p) => p.id === personId)
   if (!known) {
     return {

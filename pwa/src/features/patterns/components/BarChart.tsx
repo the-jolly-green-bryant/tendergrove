@@ -18,14 +18,13 @@ const PAD_B = 26
 
 const DEFAULT_COLOR = 'var(--ion-color-primary)'
 
-function barGeometry(count: number): { slot: number; width: number } {
+const barGeometry = (count: number): { slot: number; width: number } => {
   const usable = VIEW_W - PAD_L - PAD_R
   const slot = usable / Math.max(1, count)
   return { slot, width: Math.min(30, slot * 0.6) }
 }
 
-/** A short spoken description of one bar. */
-function describeBar(bar: Bar, valueSuffix: string): string {
+const describeBar = (bar: Bar, valueSuffix: string): string => {
   const value =
     bar.value === null ? 'no data' : `${Math.round(bar.value)}${valueSuffix}`
   return `${bar.label}: ${value}`
@@ -40,15 +39,14 @@ interface ColumnProps {
   readonly valueSuffix: string
 }
 
-/** One bar column: the bar (or an empty marker) plus its value and label. */
-function BarColumn({
+const BarColumn = ({
   bar,
   cx,
   width,
   chartH,
   axisMax,
   valueSuffix,
-}: ColumnProps): React.JSX.Element {
+}: ColumnProps): React.JSX.Element => {
   const value = bar.value ?? 0
   const height = (Math.min(value, axisMax) / axisMax) * chartH
   const y = PAD_T + (chartH - height)
@@ -96,12 +94,7 @@ function BarColumn({
   )
 }
 
-/**
- * A small, responsive SVG bar chart (values 0–100 by default). One takeaway
- * should always accompany it on the page; the chart itself stays quiet and
- * legible. A visually-hidden summary backs it for screen readers.
- */
-export function BarChart({
+export const BarChart = ({
   bars,
   valueSuffix = '%',
   ariaLabel,
@@ -112,7 +105,7 @@ export function BarChart({
   readonly ariaLabel?: string
   /** Top of the y-axis; defaults to 100 (rates). Pass a smaller cap for shares. */
   readonly yMax?: number
-}): React.JSX.Element {
+}): React.JSX.Element => {
   const { slot, width } = barGeometry(bars.length)
   const chartH = VIEW_H - PAD_T - PAD_B
   const axisMax = Math.max(1, yMax)

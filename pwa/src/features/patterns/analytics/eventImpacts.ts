@@ -29,18 +29,14 @@ const CONFIDENCE_BANDS = { high: 0.55, moderate: 0.4 } as const
 
 type Pairs = Map<string, Array<[number, number]>>
 
-function confidenceFromR(r: number): Confidence {
+const confidenceFromR = (r: number): Confidence => {
   const abs = Math.abs(r)
   if (abs >= CONFIDENCE_BANDS.high) return 'high'
   if (abs >= CONFIDENCE_BANDS.moderate) return 'moderate'
   return 'low'
 }
 
-/**
- * For one person, build [present, score] samples per event id, over the days
- * that had a check-in and a score (the only days an event could be measured).
- */
-function pairsForPerson(person: AnalyticsPerson, scores: DailyPersonScore[]): Pairs {
+const pairsForPerson = (person: AnalyticsPerson, scores: DailyPersonScore[]): Pairs => {
   const scoreByDate = new Map<string, number>()
   for (const day of scores) {
     if (day.score !== null && day.checkInCount > 0) scoreByDate.set(day.date, day.score)
@@ -68,8 +64,7 @@ function pairsForPerson(person: AnalyticsPerson, scores: DailyPersonScore[]): Pa
   return pairs
 }
 
-/** Merge several per-event sample sets into one (for the household view). */
-function mergePairs(sets: Pairs[]): Pairs {
+const mergePairs = (sets: Pairs[]): Pairs => {
   const merged: Pairs = new Map()
   for (const set of sets) {
     for (const [eventId, samples] of set) {
@@ -79,8 +74,7 @@ function mergePairs(sets: Pairs[]): Pairs {
   return merged
 }
 
-/** Turn sample sets into ranked impacts (most worse-day-associated first). */
-function impactsFromPairs(byEvent: Pairs): EventImpact[] {
+const impactsFromPairs = (byEvent: Pairs): EventImpact[] => {
   const impacts: EventImpact[] = []
   for (const [eventId, samples] of byEvent) {
     if (samples.length < MIN_EVENT_SAMPLE) continue
@@ -97,13 +91,7 @@ function impactsFromPairs(byEvent: Pairs): EventImpact[] {
   return impacts.sort((a, b) => a.correlation - b.correlation || b.sampleSize - a.sampleSize)
 }
 
-/**
- * Build event impacts for the whole household and for each person.
- */
-export function buildEventImpacts(
-  people: AnalyticsPerson[],
-  personDailyScores: Record<string, DailyPersonScore[]>,
-): { household: EventImpact[]; perPerson: Record<string, EventImpact[]> } {
+export const buildEventImpacts = (people: AnalyticsPerson[], personDailyScores: Record<string, DailyPersonScore[]>): { household: EventImpact[]; perPerson: Record<string, EventImpact[]> } => {
   const perPersonPairs = people.map(
     (p) => [p.id, pairsForPerson(p, personDailyScores[p.id] ?? [])] as const,
   )

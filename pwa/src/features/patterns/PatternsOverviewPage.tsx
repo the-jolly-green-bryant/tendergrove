@@ -82,11 +82,11 @@ const DEEPER_PATTERNS = [
   },
 ] as const
 
-function TrendSummary({
+const TrendSummary = ({
   view,
 }: {
   readonly view: ScopedPatternsView
-}): React.JSX.Element {
+}): React.JSX.Element => {
   const { overallTrend } = view.overview
   const { current, previous } = overallTrend
   const comparison =
@@ -106,13 +106,13 @@ function TrendSummary({
   )
 }
 
-function TrendSection({
+const TrendSection = ({
   view,
   showDelta,
 }: {
   readonly view: ScopedPatternsView
   readonly showDelta: boolean
-}): React.JSX.Element {
+}): React.JSX.Element => {
   const rangeDays = usePatternsFilterStore((s) => s.rangeDays)
   const setRangeDays = usePatternsFilterStore((s) => s.setRangeDays)
   const subject = view.personName ? `${view.personName}'s` : 'Household'
@@ -156,7 +156,7 @@ function TrendSection({
   )
 }
 
-function DeeperPatternsNav(): React.JSX.Element {
+const DeeperPatternsNav = (): React.JSX.Element => {
   const history = useHistory()
   return (
     <section className="patterns-section">
@@ -190,13 +190,13 @@ function DeeperPatternsNav(): React.JSX.Element {
   )
 }
 
-function OverviewContent({
+const OverviewContent = ({
   view,
   showDelta,
 }: {
   readonly view: ScopedPatternsView
   readonly showDelta: boolean
-}): React.JSX.Element {
+}): React.JSX.Element => {
   const hasTrend = view.trend.points.some((p) => p.score !== null)
   const emptyMessage = view.personName
     ? `Keep logging daily check-ins for ${view.personName} and patterns will appear here.`
@@ -233,12 +233,7 @@ function OverviewContent({
   )
 }
 
-/**
- * Patterns overview — the landing screen for the Patterns section.
- * Consumes: weekly insight, trend chart data, deeper-pattern cards. The shared
- * filter scopes everything to Everyone or one person.
- */
-export default function PatternsOverviewPage(): React.JSX.Element {
+const PatternsOverviewPage = (): React.JSX.Element => {
   const { view, isLoading, hasError, showDelta } = useScopedPatterns()
 
   return (
@@ -261,3 +256,5 @@ export default function PatternsOverviewPage(): React.JSX.Element {
     </Page>
   )
 }
+
+export default PatternsOverviewPage

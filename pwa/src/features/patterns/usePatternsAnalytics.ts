@@ -10,15 +10,7 @@ export interface PatternsAnalytics {
   hasError: boolean
 }
 
-/**
- * Fetch household data and compute the full analytics result.
- *
- * The computation is memoized on the fetched data, so it only re-runs when the
- * underlying records change (not on every render). `now` is captured at compute
- * time; because analytics is deterministic, the same data always yields the
- * same result within a given day.
- */
-export function usePatternsAnalytics(windowDays?: number): PatternsAnalytics {
+export const usePatternsAnalytics = (windowDays?: number): PatternsAnalytics => {
   const { data, isLoading, error } = usePatternsData()
 
   const result = useMemo(() => {

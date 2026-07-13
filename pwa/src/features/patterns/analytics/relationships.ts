@@ -44,8 +44,7 @@ export const MAX_RELATIONSHIPS = 8
 /*  Math                                                               */
 /* ------------------------------------------------------------------ */
 
-/** Pearson correlation of paired samples, or `null` with too few / no variance. */
-export function pearson(pairs: Array<[number, number]>): number | null {
+export const pearson = (pairs: Array<[number, number]>): number | null => {
   const n = pairs.length
   if (n < 2) return null
 
@@ -74,23 +73,21 @@ export function pearson(pairs: Array<[number, number]>): number | null {
   return cov / Math.sqrt(varA * varB)
 }
 
-/** Population standard deviation of a sample. */
-function stdev(values: number[]): number {
+const stdev = (values: number[]): number => {
   if (values.length === 0) return 0
   const m = values.reduce((sum, v) => sum + v, 0) / values.length
   const variance = values.reduce((sum, v) => sum + (v - m) ** 2, 0) / values.length
   return Math.sqrt(variance)
 }
 
-/** True when both columns of the paired samples vary enough to be meaningful. */
-function hasEnoughVariation(pairs: Array<[number, number]>): boolean {
+const hasEnoughVariation = (pairs: Array<[number, number]>): boolean => {
   return (
     stdev(pairs.map((p) => p[0])) >= MIN_VARIATION_SD &&
     stdev(pairs.map((p) => p[1])) >= MIN_VARIATION_SD
   )
 }
 
-function confidenceFromR(r: number): Confidence | null {
+const confidenceFromR = (r: number): Confidence | null => {
   const abs = Math.abs(r)
   if (abs >= CORRELATION_BANDS.high) return 'high'
   if (abs >= CORRELATION_BANDS.moderate) return 'moderate'
@@ -101,15 +98,7 @@ function confidenceFromR(r: number): Confidence | null {
 /*  Pairing                                                            */
 /* ------------------------------------------------------------------ */
 
-/**
- * Build aligned score pairs for "B lagged by `lag` days behind A": pair A[i]
- * with B[i + lag], keeping only pairs where both scores exist.
- */
-function alignedPairs(
-  a: DailyPersonScore[],
-  b: DailyPersonScore[],
-  lag: number,
-): Array<[number, number]> {
+const alignedPairs = (a: DailyPersonScore[], b: DailyPersonScore[], lag: number): Array<[number, number]> => {
   const pairs: Array<[number, number]> = []
   for (let i = 0; i + lag < a.length; i++) {
     const aScore = a[i].score
@@ -119,11 +108,7 @@ function alignedPairs(
   return pairs
 }
 
-/** Two raw series aligned by day index for side-by-side charting. */
-function buildChartData(
-  a: DailyPersonScore[],
-  b: DailyPersonScore[],
-): RelationshipChartPoint[] {
+const buildChartData = (a: DailyPersonScore[], b: DailyPersonScore[]): RelationshipChartPoint[] => {
   return a.map((day, index) => ({
     date: day.date,
     aScore: day.score,
@@ -141,8 +126,7 @@ interface Candidate {
   confidence: Confidence
 }
 
-/** Gentle, non-blaming summary for a relationship. */
-function buildSummary(c: Candidate): string {
+const buildSummary = (c: Candidate): string => {
   const a = c.personA.displayName
   const b = c.personB.displayName
   const positive = c.correlation > 0
@@ -168,16 +152,7 @@ interface Attempt {
   followSeries: DailyPersonScore[]
 }
 
-/**
- * The directions to test for a pair: same day, then each person leading the
- * other by a day. (Same-day is symmetric, so it's only tried once.)
- */
-function buildAttempts(
-  personA: AnalyticsPersonRef,
-  personB: AnalyticsPersonRef,
-  seriesA: DailyPersonScore[],
-  seriesB: DailyPersonScore[],
-): Attempt[] {
+const buildAttempts = (personA: AnalyticsPersonRef, personB: AnalyticsPersonRef, seriesA: DailyPersonScore[], seriesB: DailyPersonScore[]): Attempt[] => {
   return [
     {
       lag: 0,
@@ -203,8 +178,7 @@ function buildAttempts(
   ]
 }
 
-/** Score one attempt, returning a candidate only if it clears every gate. */
-function evaluateAttempt(attempt: Attempt): Candidate | null {
+const evaluateAttempt = (attempt: Attempt): Candidate | null => {
   const pairs = alignedPairs(attempt.leadSeries, attempt.followSeries, attempt.lag)
   if (pairs.length < MIN_PAIRS || !hasEnoughVariation(pairs)) return null
 
@@ -225,8 +199,7 @@ function evaluateAttempt(attempt: Attempt): Candidate | null {
   }
 }
 
-/** The strongest (largest |r|) candidate among a pair's attempts, if any. */
-function strongestCandidate(attempts: Attempt[]): Candidate | null {
+const strongestCandidate = (attempts: Attempt[]): Candidate | null => {
   let best: Candidate | null = null
   for (const attempt of attempts) {
     const candidate = evaluateAttempt(attempt)
@@ -240,8 +213,7 @@ function strongestCandidate(attempts: Attempt[]): Candidate | null {
   return best
 }
 
-/** Convert a winning candidate into the surfaced insight shape. */
-function candidateToInsight(best: Candidate): RelationshipInsight {
+const candidateToInsight = (best: Candidate): RelationshipInsight => {
   return {
     personAId: best.personA.id,
     personAName: best.personA.displayName,
@@ -260,18 +232,7 @@ function candidateToInsight(best: Candidate): RelationshipInsight {
 /*  Public entry point                                                 */
 /* ------------------------------------------------------------------ */
 
-/**
- * Find relationships between people's distress trends.
- *
- * For every unordered pair we test lag 0 (same day) and lag 1 in both
- * directions (A leads B, B leads A), then keep the single strongest result that
- * clears the confidence bar. This avoids flooding the caregiver with every
- * variation of the same relationship.
- */
-export function findRelationships(
-  people: AnalyticsPersonRef[],
-  personDailyScores: Record<string, DailyPersonScore[]>,
-): RelationshipInsight[] {
+export const findRelationships = (people: AnalyticsPersonRef[], personDailyScores: Record<string, DailyPersonScore[]>): RelationshipInsight[] => {
   const results: RelationshipInsight[] = []
 
   for (let i = 0; i < people.length; i++) {

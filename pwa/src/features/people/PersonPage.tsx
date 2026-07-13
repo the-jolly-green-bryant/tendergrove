@@ -73,15 +73,14 @@ const roleLabels: Record<PersonRole, string> = {
   other: 'Other',
 }
 
-/** Return YYYY-MM-DD for a Date. */
-function toISODate(d: Date): string {
+const toISODate = (d: Date): string => {
   const y = d.getFullYear()
   const m = String(d.getMonth() + 1).padStart(2, '0')
   const day = String(d.getDate()).padStart(2, '0')
   return `${y}-${m}-${day}`
 }
 
-function isSameDay(occurredAt: string, date: Date): boolean {
+const isSameDay = (occurredAt: string, date: Date): boolean => {
   const d = new Date(occurredAt)
   return (
     d.getFullYear() === date.getFullYear() &&
@@ -90,7 +89,7 @@ function isSameDay(occurredAt: string, date: Date): boolean {
   )
 }
 
-function isSameCalendarDate(a: Date, b: Date): boolean {
+const isSameCalendarDate = (a: Date, b: Date): boolean => {
   return (
     a.getFullYear() === b.getFullYear() &&
     a.getMonth() === b.getMonth() &&
@@ -98,7 +97,7 @@ function isSameCalendarDate(a: Date, b: Date): boolean {
   )
 }
 
-function parseDateKey(dateKey: string | null): Date | null {
+const parseDateKey = (dateKey: string | null): Date | null => {
   if (!dateKey) return null
 
   const [year, month, day] = dateKey.split('-').map(Number)
@@ -107,7 +106,7 @@ function parseDateKey(dateKey: string | null): Date | null {
   return new Date(year, month - 1, day)
 }
 
-function getPersonPageDateView(search: string, selectedDate: Date): PersonPageDateView {
+const getPersonPageDateView = (search: string, selectedDate: Date): PersonPageDateView => {
   const params = new URLSearchParams(search)
 
   return {
@@ -116,11 +115,7 @@ function getPersonPageDateView(search: string, selectedDate: Date): PersonPageDa
   }
 }
 
-function usePersonPageSummary(
-  person: Person | null | undefined,
-  viewDate: Date,
-  personId: string | undefined,
-): PersonPageSummary {
+const usePersonPageSummary = (person: Person | null | undefined, viewDate: Date, personId: string | undefined): PersonPageSummary => {
   const indicators = (person?.indicators ?? []) as Indicator[]
   const checkIns = (person?.checkIns ?? []) as CheckIn[]
 
@@ -156,10 +151,7 @@ function usePersonPageSummary(
   }
 }
 
-function usePersonPageActions(
-  person: Person | null | undefined,
-  personId: string | undefined,
-) {
+const usePersonPageActions = (person: Person | null | undefined, personId: string | undefined) => {
   const router = useIonRouter()
   const location = useLocation()
   const [presentActionSheet] = useIonActionSheet()
@@ -232,7 +224,7 @@ function usePersonPageActions(
   return { startCheckIn, showMoreOptions, manageIndicators, manageEvents }
 }
 
-function formatUpdatedLabel(checkIn: CheckIn): string | null {
+const formatUpdatedLabel = (checkIn: CheckIn): string | null => {
   const updatedAt = checkIn.updatedAt
   const createdAt = checkIn.createdAt
   if (!updatedAt || !createdAt || updatedAt === createdAt) return null
@@ -261,7 +253,7 @@ function formatUpdatedLabel(checkIn: CheckIn): string | null {
   return `Updated: ${date} - ${time}`
 }
 
-function formatDateLabel(date: Date): string {
+const formatDateLabel = (date: Date): string => {
   const today = new Date()
   if (
     date.getFullYear() === today.getFullYear() &&
@@ -277,7 +269,7 @@ function formatDateLabel(date: Date): string {
   })
 }
 
-function formatCheckInTitle(date: Date): string {
+const formatCheckInTitle = (date: Date): string => {
   const today = new Date()
   const yesterday = new Date()
   yesterday.setDate(today.getDate() - 1)
@@ -292,18 +284,18 @@ function formatCheckInTitle(date: Date): string {
   return `${dateLabel}'s Check-In`
 }
 
-function checkInSummaryIcon(seen: boolean, isDesired: boolean): string {
+const checkInSummaryIcon = (seen: boolean, isDesired: boolean): string => {
   if (seen) return isDesired ? checkmarkCircle : removeCircle
   return isDesired ? closeCircle : checkmarkCircle
 }
 
-function CheckInSummaryList({
+const CheckInSummaryList = ({
   indicators,
   checkedForDate,
 }: {
   readonly indicators: Indicator[]
   readonly checkedForDate: Set<string>
-}) {
+}) => {
   if (indicators.length === 0) {
     return <p className="section-empty">No indicators tracked.</p>
   }
@@ -340,7 +332,7 @@ function CheckInSummaryList({
   )
 }
 
-export function PersonCheckInButton({
+export const PersonCheckInButton = ({
   person,
   status,
   emoji,
@@ -352,12 +344,12 @@ export function PersonCheckInButton({
   readonly emoji?: string | null
   readonly title: string
   readonly onClick?: () => void
-}) {
+}) => {
   return (
     <button
       type="button"
       className="person-checkin-button"
-      onClick={onClick ?? (() => {})}
+      onClick={onClick ?? (() => { })}
     >
       <div className="person-checkin-button__art avatar-emoji-wrapper">
         <PersonAvatar
@@ -394,7 +386,7 @@ export function PersonCheckInButton({
   )
 }
 
-function PersonPageHeader({
+const PersonPageHeader = ({
   isTimelineView,
   displayName,
   headerElement,
@@ -404,7 +396,7 @@ function PersonPageHeader({
   readonly displayName: string
   readonly headerElement: ReactNode
   readonly calendarElement: ReactNode
-}) {
+}) => {
   return (
     <IonHeader>
       <IonToolbar>
@@ -419,7 +411,7 @@ function PersonPageHeader({
   )
 }
 
-function PersonCheckInPanel({
+const PersonCheckInPanel = ({
   person,
   status,
   emoji,
@@ -437,7 +429,7 @@ function PersonCheckInPanel({
   readonly selectedCheckIn?: CheckIn
   readonly activeIndicators: Indicator[]
   readonly onStartCheckIn: () => void
-}) {
+}) => {
   const updatedLabel = selectedCheckIn ? formatUpdatedLabel(selectedCheckIn) : null
 
   return (
@@ -453,7 +445,7 @@ function PersonCheckInPanel({
   )
 }
 
-function SetupNavCard({
+const SetupNavCard = ({
   icon,
   title,
   subtitle,
@@ -463,7 +455,7 @@ function SetupNavCard({
   readonly title: string
   readonly subtitle: string
   readonly onClick: () => void
-}) {
+}) => {
   return (
     <button
       type="button"
@@ -486,14 +478,13 @@ function SetupNavCard({
   )
 }
 
-/** The "what we track for this person" setup cards: Indicators + Events. */
-function TrackingSetupCards({
+const TrackingSetupCards = ({
   onManageIndicators,
   onManageEvents,
 }: {
   readonly onManageIndicators: () => void
   readonly onManageEvents: () => void
-}) {
+}) => {
   return (
     <div className="person-setup">
       <SetupNavCard
@@ -512,8 +503,7 @@ function TrackingSetupCards({
   )
 }
 
-/** The "viewing a past day" banner (or the time-travel notice). */
-function PersonDateBanner({
+const PersonDateBanner = ({
   viewDate,
   isTimeTravel,
   isTimelineView,
@@ -523,7 +513,7 @@ function PersonDateBanner({
   readonly isTimeTravel: boolean
   readonly isTimelineView: boolean
   readonly onReturnToToday: () => void
-}) {
+}) => {
   if (isTimeTravel) {
     return (
       <PastDataNotice
@@ -541,7 +531,7 @@ function PersonDateBanner({
   )
 }
 
-function PersonPageLoadedContent({
+const PersonPageLoadedContent = ({
   person,
   viewDate,
   isTimelineView,
@@ -563,7 +553,7 @@ function PersonPageLoadedContent({
   readonly onShowMoreOptions: () => void
   readonly onManageIndicators: () => void
   readonly onManageEvents: () => void
-}) {
+}) => {
   return (
     <>
       <PersonDateBanner
@@ -614,12 +604,7 @@ function PersonPageLoadedContent({
   )
 }
 
-/**
- * Displays check-in status of a given person.
- * @returns {React.JSX.Element | null}
- * @constructor
- */
-export default function PersonPage(): React.JSX.Element | null {
+const PersonPage = (): React.JSX.Element | null => {
   const { personId } = useParams<{ personId: string }>()
   const isRealPerson = Boolean(personId && personId !== 'new')
   const {
@@ -667,9 +652,8 @@ export default function PersonPage(): React.JSX.Element | null {
 
       <IonContent
         fullscreen
-        className={`safe-content person-page-content${
-          isTimeTravel ? ' time-travel-surface' : ''
-        }`}
+        className={`safe-content person-page-content${isTimeTravel ? ' time-travel-surface' : ''
+          }`}
       >
         {isLoading && <LoadingState />}
 
@@ -693,3 +677,5 @@ export default function PersonPage(): React.JSX.Element | null {
     </IonPage>
   )
 }
+
+export default PersonPage

@@ -24,11 +24,11 @@ const TYPE_TAG: Record<TurningPointType, { label: string; className: string }> =
   spike: { label: 'One hard day', className: 'pattern-tag--spike' },
 }
 
-function TurningPointCard({
+const TurningPointCard = ({
   turningPoint,
 }: {
   readonly turningPoint: TurningPointInsight
-}): React.JSX.Element {
+}): React.JSX.Element => {
   const tag = TYPE_TAG[turningPoint.type]
   return (
     <IonCard>
@@ -45,11 +45,11 @@ function TurningPointCard({
   )
 }
 
-function TurningPointsContent({
+const TurningPointsContent = ({
   view,
 }: {
   readonly view: ScopedPatternsView
-}): React.JSX.Element {
+}): React.JSX.Element => {
   if (view.turningPoints.length === 0) {
     const subject = view.personName
       ? `${view.personName}'s well-being has`
@@ -82,10 +82,7 @@ function TurningPointsContent({
   )
 }
 
-/**
- * Turning points page. Consumes: turning point insights (scoped by the filter).
- */
-export default function TurningPointsPage(): React.JSX.Element {
+const TurningPointsPage = (): React.JSX.Element => {
   const { view, isLoading, hasError } = useScopedPatterns()
 
   return (
@@ -105,3 +102,5 @@ export default function TurningPointsPage(): React.JSX.Element {
     </Page>
   )
 }
+
+export default TurningPointsPage

@@ -38,7 +38,7 @@ const SELF_CARE_QUOTES: ReadonlyArray<readonly [string, string]> = [
   ['Today only needs', 'one honest next step.'],
 ] as const
 
-function randomQuoteIndex(): number {
+const randomQuoteIndex = (): number => {
   const values = new Uint32Array(1)
   window.crypto.getRandomValues(values)
   return values[0] % SELF_CARE_QUOTES.length
@@ -75,7 +75,7 @@ const renderTree = (
     />
   )
 
-function SelfCareQuote() {
+const SelfCareQuote = () => {
   const quoteIndex = useMemo(randomQuoteIndex, [])
   const quote = SELF_CARE_QUOTES[quoteIndex]
 
@@ -93,7 +93,7 @@ function SelfCareQuote() {
   )
 }
 
-function HouseholdPersonButton({
+const HouseholdPersonButton = ({
   person,
   selectedDate,
   onClick,
@@ -101,7 +101,7 @@ function HouseholdPersonButton({
   readonly person: HouseholdPerson
   readonly selectedDate: Date
   readonly onClick: () => void
-}) {
+}) => {
   const status = derivePersonStatus(
     person.indicators ?? [],
     person.checkIns ?? [],
@@ -157,7 +157,7 @@ function HouseholdPersonButton({
   )
 }
 
-function HouseholdList({
+const HouseholdList = ({
   people,
   selectedDate,
   onPersonClick,
@@ -167,7 +167,7 @@ function HouseholdList({
   readonly selectedDate: Date
   readonly onPersonClick: (personId: string) => void
   readonly onAddPersonClick: () => void
-}) {
+}) => {
   return (
     <div className="household-list">
       {people.map((person) => (
@@ -193,19 +193,19 @@ function HouseholdList({
   )
 }
 
-function scrollToHouseholdList() {
+const scrollToHouseholdList = () => {
   document
     .getElementById('household-people-panel')
     ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-function scrollToHouseholdHero() {
+const scrollToHouseholdHero = () => {
   document
     .getElementById('household-hero-panel')
     ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-function HouseholdHeroPanel({
+const HouseholdHeroPanel = ({
   people,
   recap,
   selectedDate,
@@ -223,7 +223,7 @@ function HouseholdHeroPanel({
   readonly onPersonClick: (personId: string) => void
   readonly onRecapClick: () => void
   readonly onReturnToToday: () => void
-}) {
+}) => {
   const selectedDateLabel = selectedDate.toLocaleDateString(undefined, {
     month: 'short',
     day: 'numeric',
@@ -266,7 +266,7 @@ function HouseholdHeroPanel({
   )
 }
 
-function HouseholdDashboardBody({
+const HouseholdDashboardBody = ({
   people,
   recap,
   selectedDate,
@@ -286,7 +286,7 @@ function HouseholdDashboardBody({
   readonly onRecapClick: () => void
   readonly onAddPersonClick: () => void
   readonly onReturnToToday: () => void
-}) {
+}) => {
   return (
     <div className="household-snap">
       <HouseholdHeroPanel
@@ -332,13 +332,7 @@ function HouseholdDashboardBody({
   )
 }
 
-/**
- * Depicts an overview of the status of all household members. Also indicates to users
- *  if a check-in is required for certain household members.
- * @returns {React.JSX.Element}
- * @constructor
- */
-export default function HouseholdPage() {
+const HouseholdPage = () => {
   const { user } = useAppAuth()
   if (!user) {
     throw new Error('Redirect back to login')
@@ -409,3 +403,5 @@ export default function HouseholdPage() {
     </Page>
   )
 }
+
+export default HouseholdPage

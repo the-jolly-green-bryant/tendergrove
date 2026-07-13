@@ -17,26 +17,22 @@ export interface IndicatorInput {
   inputType: InputType
 }
 
-/**
- *
- */
-export function useIndicatorMutations(personId: string | undefined) {
+const unwrap = <T extends { errors?: Array<{ message: string }> }>(result: T): T => {
+  if (result.errors?.length) {
+    throw new Error(result.errors[0].message)
+  }
+  return result
+}
+
+export const useIndicatorMutations = (personId: string | undefined) => {
   const queryClient = useQueryClient()
 
-  async function invalidate() {
+  const invalidate = async () =>
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ['indicators', personId] }),
       queryClient.invalidateQueries({ queryKey: ['person', personId] }),
       queryClient.invalidateQueries({ queryKey: ['people'] }),
     ])
-  }
-
-  function unwrap<T extends { errors?: Array<{ message: string }> }>(result: T): T {
-    if (result.errors?.length) {
-      throw new Error(result.errors[0].message)
-    }
-    return result
-  }
 
   return {
     async create(input: IndicatorInput) {

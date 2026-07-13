@@ -39,16 +39,7 @@ export const STABLE_BAND = 4
 /** Fewest scored days in the recent window before we trust a direction. */
 const MIN_DAYS_FOR_DIRECTION = 3
 
-/**
- * Trailing rolling average: for each day, the mean of the available scores in
- * the trailing `windowSize` days (including that day). Days with no score are
- * skipped in the average; the point is `null` until at least one score exists
- * in its window.
- */
-export function rollingAverage(
-  series: ScoredDay[],
-  windowSize: number = ROLLING_WINDOW_DAYS,
-): (number | null)[] {
+export const rollingAverage = (series: ScoredDay[], windowSize: number = ROLLING_WINDOW_DAYS): (number | null)[] => {
   return series.map((_, index) => {
     const start = Math.max(0, index - windowSize + 1)
     const scores = series
@@ -60,18 +51,13 @@ export function rollingAverage(
   })
 }
 
-/** Direction from a delta. Well-being: score going UP = improving. */
-function directionFromDelta(delta: number): TrendDirection {
+const directionFromDelta = (delta: number): TrendDirection => {
   if (delta > STABLE_BAND) return 'improving'
   if (delta < -STABLE_BAND) return 'worsening'
   return 'stable'
 }
 
-/**
- * Confidence for the trend. We are more confident when both comparison windows
- * actually contain data. This never claims certainty — at most "high".
- */
-function trendConfidence(currentDays: number, previousDays: number): Confidence {
+const trendConfidence = (currentDays: number, previousDays: number): Confidence => {
   if (currentDays >= 5 && previousDays >= 5) return 'high'
   if (currentDays >= 3 && previousDays >= 2) return 'moderate'
   return 'low'
@@ -122,15 +108,7 @@ const calculateTrend = (
   }
 }
 
-/**
- * Compute the trend for a daily series.
- *
- * The series is expected to be contiguous and ascending (one entry per day in
- * the window). The last `TREND_WINDOW_DAYS` are "current"; the prior
- * `TREND_WINDOW_DAYS` are "previous". Averages ignore days with no score, so a
- * missing day neither helps nor hurts.
- */
-export function computeTrend(series: ScoredDay[]): TrendResult {
+export const computeTrend = (series: ScoredDay[]): TrendResult => {
   const rolling = rollingAverage(series)
   const points: TrendPoint[] = series.map((day, index) => ({
     date: day.date,
@@ -166,8 +144,8 @@ export function computeTrend(series: ScoredDay[]): TrendResult {
 
   const direction: TrendDirection =
     currentTrend !== null &&
-    historicalAverage !== null &&
-    currentTrend >= historicalAverage
+      historicalAverage !== null &&
+      currentTrend >= historicalAverage
       ? 'improving'
       : 'worsening'
 
@@ -195,24 +173,21 @@ export const STATUS_HARD_LEVEL = 45
 /** Fewest scored days before we'll call a direction at all. */
 const MIN_STATUS_DAYS = 4
 
-/** Trailing rolling mean over a plain number series. */
-function smoothSeries(values: number[], windowSize: number): number[] {
+const smoothSeries = (values: number[], windowSize: number): number[] => {
   return values.map((_, i) => {
     const slice = values.slice(Math.max(0, i - windowSize + 1), i + 1)
     return slice.reduce((sum, v) => sum + v, 0) / slice.length
   })
 }
 
-/** Direction of the most recent stretch, from a short trailing comparison. */
-function recentDirection(smooth: number[]): -1 | 0 | 1 {
+const recentDirection = (smooth: number[]): -1 | 0 | 1 => {
   const end = smooth.length - 1
   const delta = smooth[end] - smooth[Math.max(0, end - 3)]
   if (Math.abs(delta) < STATUS_STEADY_BAND) return 0
   return delta > 0 ? 1 : -1
 }
 
-/** How far back (start index) the current stretch extends on the smoothed line. */
-function runStartIndex(smooth: number[], direction: -1 | 0 | 1): number {
+const runStartIndex = (smooth: number[], direction: -1 | 0 | 1): number => {
   const end = smooth.length - 1
   let start = end
   let extreme = smooth[end]
@@ -233,13 +208,13 @@ function runStartIndex(smooth: number[], direction: -1 | 0 | 1): number {
   return start
 }
 
-function steadyState(currentAverage: number): TrendStatusState {
+const steadyState = (currentAverage: number): TrendStatusState => {
   if (currentAverage >= STATUS_GOOD_LEVEL) return 'steady-good'
   if (currentAverage <= STATUS_HARD_LEVEL) return 'steady-hard'
   return 'steady-mixed'
 }
 
-function statusSummary(state: TrendStatusState, days: number): string {
+const statusSummary = (state: TrendStatusState, days: number): string => {
   const span = `about ${days} day${days === 1 ? '' : 's'}`
   switch (state) {
     case 'improving':
@@ -255,12 +230,7 @@ function statusSummary(state: TrendStatusState, days: number): string {
   }
 }
 
-/**
- * Read the current trend: which way well-being is going (or that it's steady,
- * good or hard), and how long that has held. Smooths first so a single off day
- * doesn't reset the count.
- */
-export function buildTrendStatus(points: TrendPoint[]): TrendStatus {
+export const buildTrendStatus = (points: TrendPoint[]): TrendStatus => {
   const scored = points.filter((p) => p.score !== null) as {
     date: DateKey
     score: number

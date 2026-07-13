@@ -6,10 +6,7 @@ import {
   IonCardTitle,
 } from '@ionic/react'
 
-/**
- *
- */
-export function StatCard({
+export const StatCard = ({
   title,
   value,
   note,
@@ -17,7 +14,7 @@ export function StatCard({
   readonly title: string
   readonly value: string | number
   readonly note?: string
-}) {
+}) => {
   return (
     <IonCard className="stat-card">
       <IonCardHeader>

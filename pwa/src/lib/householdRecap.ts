@@ -52,11 +52,9 @@ export interface HouseholdRecap {
   checkInsRequired: HouseholdRecapPerson[]
 }
 
-function dateKeyFromIso(iso: string): string {
-  return toLocalDateKey(new Date(iso))
-}
+const dateKeyFromIso = (iso: string): string => toLocalDateKey(new Date(iso))
 
-function formatRecapDateLabel(dateKey: string): string {
+const formatRecapDateLabel = (dateKey: string): string => {
   const [year, month, day] = dateKey.split('-').map(Number)
   return new Date(year, month - 1, day).toLocaleDateString(undefined, {
     month: 'short',
@@ -64,19 +62,19 @@ function formatRecapDateLabel(dateKey: string): string {
   })
 }
 
-function latestCheckInForDate(
+const latestCheckInForDate = (
   person: HouseholdRecapSourcePerson,
   dateKey: string,
-): HouseholdRecapCheckIn | undefined {
+): HouseholdRecapCheckIn | undefined => {
   return (person.checkIns ?? [])
     .filter((checkIn) => dateKeyFromIso(checkIn.occurredAt) === dateKey)
     .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))[0]
 }
 
-function scoreForCheckIn(
+const scoreForCheckIn = (
   person: HouseholdRecapSourcePerson,
   checkIn: HouseholdRecapCheckIn | undefined,
-): number | null {
+): number | null => {
   if (!checkIn) return null
   return computeScore(person.indicators ?? [], {
     occurredAt: checkIn.occurredAt,
@@ -84,21 +82,18 @@ function scoreForCheckIn(
   })
 }
 
-function latestScoreableCheckIn(
-  person: HouseholdRecapSourcePerson,
-  dateKey: string,
-): HouseholdRecapCheckIn | undefined {
+const latestScoreableCheckIn = (person: HouseholdRecapSourcePerson, dateKey: string): HouseholdRecapCheckIn | undefined => {
   return [...(person.checkIns ?? [])]
     .filter((checkIn) => dateKeyFromIso(checkIn.occurredAt) <= dateKey)
     .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))
     .find((checkIn) => scoreForCheckIn(person, checkIn) !== null)
 }
 
-function recapPersonFromScore(
+const recapPersonFromScore = (
   person: HouseholdRecapSourcePerson,
   score: number | null,
   requiresCheckIn: boolean,
-): HouseholdRecapPerson {
+): HouseholdRecapPerson => {
   const status = statusFromScore(score)
   const emojiByLevel = {
     good: '😎',
@@ -119,10 +114,10 @@ function recapPersonFromScore(
   }
 }
 
-function scorePersonForRecap(
+const scorePersonForRecap = (
   person: HouseholdRecapSourcePerson,
   dateKey: string,
-): HouseholdRecapPerson {
+): HouseholdRecapPerson => {
   const todayScore = scoreForCheckIn(person, latestCheckInForDate(person, dateKey))
   const requiresCheckIn = todayScore === null
   const latestScore = requiresCheckIn
@@ -138,11 +133,11 @@ const byLowestKnownScore = (a: HouseholdRecapPerson, b: HouseholdRecapPerson) =>
 const byHighestKnownScore = (a: HouseholdRecapPerson, b: HouseholdRecapPerson) =>
   (b.score ?? -1) - (a.score ?? -1)
 
-function datedRecapTitle(
+const datedRecapTitle = (
   selectedDate: Date,
   dateKey: string,
   hasRequiredCheckIns: boolean,
-): string {
+): string => {
   const today = new Date()
   const yesterday = new Date(today)
   yesterday.setDate(today.getDate() - 1)
@@ -153,15 +148,7 @@ function datedRecapTitle(
   return `${formatRecapDateLabel(dateKey)}'s ${noun.toLowerCase()}`
 }
 
-/**
- * Builds a household recap from selected-date check-in requirements and statuses.
- * @param people Active household members to include.
- * @returns Recap data, or undefined when there are no people.
- */
-export function createHouseholdRecap(
-  people: HouseholdRecapSourcePerson[],
-  selectedDate: Date = new Date(),
-): HouseholdRecap | undefined {
+export const createHouseholdRecap = (people: HouseholdRecapSourcePerson[], selectedDate: Date = new Date()): HouseholdRecap | undefined => {
   if (people.length === 0) return undefined
 
   const dateKey = toLocalDateKey(selectedDate)
