@@ -53,11 +53,8 @@ export const INCIDENT_ONLY_BASE = 35
 /*  Per-day, per-person scoring                                        */
 /* ------------------------------------------------------------------ */
 
-const scoreableIndicators = (
-  indicators: AnalyticsIndicator[],
-): AnalyticsIndicator[] => {
-  return indicators.filter((i) => i.active !== false && i.polarity !== null)
-}
+const scoreableIndicators = (indicators: AnalyticsIndicator[]): AnalyticsIndicator[] =>
+  indicators.filter((i) => i.active !== false && i.polarity !== null)
 
 const indicatorDistress = (
   indicators: AnalyticsIndicator[],
@@ -150,9 +147,7 @@ export const scorePersonDay = (
 export const scorePersonWindow = (
   person: AnalyticsPerson,
   window: DateKey[],
-): DailyPersonScore[] => {
-  return window.map((date) => scorePersonDay(person, date))
-}
+): DailyPersonScore[] => window.map((date) => scorePersonDay(person, date))
 
 /* ------------------------------------------------------------------ */
 /*  Household aggregation                                              */

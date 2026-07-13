@@ -167,31 +167,29 @@ const HouseholdList = ({
   readonly selectedDate: Date
   readonly onPersonClick: (personId: string) => void
   readonly onAddPersonClick: () => void
-}) => {
-  return (
-    <div className="household-list">
-      {people.map((person) => (
-        <HouseholdPersonButton
-          key={person.id}
-          person={person}
-          selectedDate={selectedDate}
-          onClick={() => onPersonClick(person.id)}
-        />
-      ))}
+}) => (
+  <div className="household-list">
+    {people.map((person) => (
+      <HouseholdPersonButton
+        key={person.id}
+        person={person}
+        selectedDate={selectedDate}
+        onClick={() => onPersonClick(person.id)}
+      />
+    ))}
 
-      <button
-        className="household-add-btn"
-        onClick={onAddPersonClick}
-        aria-label={people.length === 0 ? 'Add your first person' : 'Add person'}
-      >
-        <span className="household-add-btn__icon">+</span>
-        {people.length === 0 && (
-          <span className="household-add-btn__copy">Add your first person</span>
-        )}
-      </button>
-    </div>
-  )
-}
+    <button
+      className="household-add-btn"
+      onClick={onAddPersonClick}
+      aria-label={people.length === 0 ? 'Add your first person' : 'Add person'}
+    >
+      <span className="household-add-btn__icon">+</span>
+      {people.length === 0 && (
+        <span className="household-add-btn__copy">Add your first person</span>
+      )}
+    </button>
+  </div>
+)
 
 const scrollToHouseholdList = () => {
   document
@@ -286,51 +284,49 @@ const HouseholdDashboardBody = ({
   readonly onRecapClick: () => void
   readonly onAddPersonClick: () => void
   readonly onReturnToToday: () => void
-}) => {
-  return (
-    <div className="household-snap">
-      <HouseholdHeroPanel
-        people={people}
-        recap={recap}
-        selectedDate={selectedDate}
-        isTimeTravel={isTimeTravel}
-        selectedDateHasData={selectedDateHasData}
-        onPersonClick={onPersonClick}
-        onRecapClick={onRecapClick}
-        onReturnToToday={onReturnToToday}
-      />
+}) => (
+  <div className="household-snap">
+    <HouseholdHeroPanel
+      people={people}
+      recap={recap}
+      selectedDate={selectedDate}
+      isTimeTravel={isTimeTravel}
+      selectedDateHasData={selectedDateHasData}
+      onPersonClick={onPersonClick}
+      onRecapClick={onRecapClick}
+      onReturnToToday={onReturnToToday}
+    />
 
-      <section
-        id="household-people-panel"
-        className="household-snap-panel household-people-panel"
+    <section
+      id="household-people-panel"
+      className="household-snap-panel household-people-panel"
+    >
+      <button
+        type="button"
+        className="household-scroll-cue household-scroll-cue--up"
+        onClick={scrollToHouseholdHero}
+        aria-label="View household overview"
       >
-        <button
-          type="button"
-          className="household-scroll-cue household-scroll-cue--up"
-          onClick={scrollToHouseholdHero}
-          aria-label="View household overview"
-        >
-          <IonIcon icon={chevronUpOutline} />
-        </button>
-        <HouseholdList
-          people={people}
-          selectedDate={selectedDate}
-          onPersonClick={onPersonClick}
-          onAddPersonClick={onAddPersonClick}
-        />
-        <footer className="household-legal">
-          <p className="household-legal__copyright">
-            Copyright 2026 Bryant James. All rights reserved.
-          </p>
-          <p>
-            App-generated insights are informational only and do not constitute medical,
-            clinical, legal, or professional advice.
-          </p>
-        </footer>
-      </section>
-    </div>
-  )
-}
+        <IonIcon icon={chevronUpOutline} />
+      </button>
+      <HouseholdList
+        people={people}
+        selectedDate={selectedDate}
+        onPersonClick={onPersonClick}
+        onAddPersonClick={onAddPersonClick}
+      />
+      <footer className="household-legal">
+        <p className="household-legal__copyright">
+          Copyright 2026 Bryant James. All rights reserved.
+        </p>
+        <p>
+          App-generated insights are informational only and do not constitute medical,
+          clinical, legal, or professional advice.
+        </p>
+      </footer>
+    </section>
+  </div>
+)
 
 const HouseholdPage = () => {
   const { user } = useAppAuth()

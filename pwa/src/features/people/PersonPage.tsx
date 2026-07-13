@@ -89,13 +89,10 @@ const isSameDay = (occurredAt: string, date: Date): boolean => {
   )
 }
 
-const isSameCalendarDate = (a: Date, b: Date): boolean => {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  )
-}
+const isSameCalendarDate = (a: Date, b: Date): boolean =>
+  a.getFullYear() === b.getFullYear() &&
+  a.getMonth() === b.getMonth() &&
+  a.getDate() === b.getDate()
 
 const parseDateKey = (dateKey: string | null): Date | null => {
   if (!dateKey) return null
@@ -354,47 +351,45 @@ export const PersonCheckInButton = ({
   readonly emoji?: string | null
   readonly title: string
   readonly onClick?: () => void
-}) => {
-  return (
-    <button
-      type="button"
-      className="person-checkin-button"
-      onClick={onClick ?? (() => {})}
-    >
-      <div className="person-checkin-button__art avatar-emoji-wrapper">
-        <PersonAvatar
-          className="person-checkin-button__avatar"
-          name={person.displayName}
-          src={person.avatarUrl}
-        />
-        {emoji && <span className="avatar-emoji-badge">{emoji}</span>}
-      </div>
+}) => (
+  <button
+    type="button"
+    className="person-checkin-button"
+    onClick={onClick ?? (() => {})}
+  >
+    <div className="person-checkin-button__art avatar-emoji-wrapper">
+      <PersonAvatar
+        className="person-checkin-button__avatar"
+        name={person.displayName}
+        src={person.avatarUrl}
+      />
+      {emoji && <span className="avatar-emoji-badge">{emoji}</span>}
+    </div>
 
-      <span className="person-checkin-button__copy">
-        <span>
-          {person.displayName} · {roleLabels[person.role as PersonRole] ?? 'Person'}
-        </span>
-
-        <strong>{title}</strong>
-        {status && (
-          <span
-            className={`person-checkin-button__status person-status--${status.color}`}
-          >
-            <span className="person-status__dot" />
-            {status.label}
-          </span>
-        )}
+    <span className="person-checkin-button__copy">
+      <span>
+        {person.displayName} · {roleLabels[person.role as PersonRole] ?? 'Person'}
       </span>
 
-      {onClick && (
-        <IonIcon
-          icon={chevronForwardOutline}
-          className="person-checkin-button__chevron"
-        />
+      <strong>{title}</strong>
+      {status && (
+        <span
+          className={`person-checkin-button__status person-status--${status.color}`}
+        >
+          <span className="person-status__dot" />
+          {status.label}
+        </span>
       )}
-    </button>
-  )
-}
+    </span>
+
+    {onClick && (
+      <IonIcon
+        icon={chevronForwardOutline}
+        className="person-checkin-button__chevron"
+      />
+    )}
+  </button>
+)
 
 const PersonPageHeader = ({
   isTimelineView,
@@ -406,20 +401,18 @@ const PersonPageHeader = ({
   readonly displayName: string
   readonly headerElement: ReactNode
   readonly calendarElement: ReactNode
-}) => {
-  return (
-    <IonHeader>
-      <IonToolbar>
-        <IonButtons slot="start">
-          <IonBackButton defaultHref={'/dashboard'} />
-        </IonButtons>
+}) => (
+  <IonHeader>
+    <IonToolbar>
+      <IonButtons slot="start">
+        <IonBackButton defaultHref={'/dashboard'} />
+      </IonButtons>
 
-        {!isTimelineView ? headerElement : <IonTitle>{displayName}</IonTitle>}
-      </IonToolbar>
-      {!isTimelineView && calendarElement}
-    </IonHeader>
-  )
-}
+      {!isTimelineView ? headerElement : <IonTitle>{displayName}</IonTitle>}
+    </IonToolbar>
+    {!isTimelineView && calendarElement}
+  </IonHeader>
+)
 
 const PersonCheckInPanel = ({
   person,
@@ -465,28 +458,26 @@ const SetupNavCard = ({
   readonly title: string
   readonly subtitle: string
   readonly onClick: () => void
-}) => {
-  return (
-    <button
-      type="button"
-      className="person-setup-card"
-      onClick={onClick}
-    >
-      <IonIcon
-        className="person-setup-card__icon"
-        icon={icon}
-      />
-      <span className="person-setup-card__body">
-        <span className="person-setup-card__title">{title}</span>
-        <span className="person-setup-card__sub">{subtitle}</span>
-      </span>
-      <IonIcon
-        className="person-setup-card__chevron"
-        icon={chevronForwardOutline}
-      />
-    </button>
-  )
-}
+}) => (
+  <button
+    type="button"
+    className="person-setup-card"
+    onClick={onClick}
+  >
+    <IonIcon
+      className="person-setup-card__icon"
+      icon={icon}
+    />
+    <span className="person-setup-card__body">
+      <span className="person-setup-card__title">{title}</span>
+      <span className="person-setup-card__sub">{subtitle}</span>
+    </span>
+    <IonIcon
+      className="person-setup-card__chevron"
+      icon={chevronForwardOutline}
+    />
+  </button>
+)
 
 const TrackingSetupCards = ({
   onManageIndicators,
@@ -494,24 +485,22 @@ const TrackingSetupCards = ({
 }: {
   readonly onManageIndicators: () => void
   readonly onManageEvents: () => void
-}) => {
-  return (
-    <div className="person-setup">
-      <SetupNavCard
-        icon={listOutline}
-        title="Indicators"
-        subtitle="Configure behaviors you want to track."
-        onClick={onManageIndicators}
-      />
-      <SetupNavCard
-        icon={calendarOutline}
-        title="Events"
-        subtitle="Configure common events that occur in this person's life."
-        onClick={onManageEvents}
-      />
-    </div>
-  )
-}
+}) => (
+  <div className="person-setup">
+    <SetupNavCard
+      icon={listOutline}
+      title="Indicators"
+      subtitle="Configure behaviors you want to track."
+      onClick={onManageIndicators}
+    />
+    <SetupNavCard
+      icon={calendarOutline}
+      title="Events"
+      subtitle="Configure common events that occur in this person's life."
+      onClick={onManageEvents}
+    />
+  </div>
+)
 
 const PersonDateBanner = ({
   viewDate,
@@ -563,56 +552,54 @@ const PersonPageLoadedContent = ({
   readonly onShowMoreOptions: () => void
   readonly onManageIndicators: () => void
   readonly onManageEvents: () => void
-}) => {
-  return (
-    <>
-      <PersonDateBanner
+}) => (
+  <>
+    <PersonDateBanner
+      viewDate={viewDate}
+      isTimeTravel={isTimeTravel}
+      isTimelineView={isTimelineView}
+      onReturnToToday={onReturnToToday}
+    />
+
+    <div className="ion-padding">
+      <PersonCheckInPanel
+        person={person}
+        status={summary.status}
+        emoji={summary.emoji}
         viewDate={viewDate}
-        isTimeTravel={isTimeTravel}
-        isTimelineView={isTimelineView}
-        onReturnToToday={onReturnToToday}
+        checkedForDate={summary.checkedForDate}
+        selectedCheckIn={summary.selectedCheckIn}
+        activeIndicators={summary.activeIndicators}
+        onStartCheckIn={onStartCheckIn}
       />
 
-      <div className="ion-padding">
-        <PersonCheckInPanel
-          person={person}
-          status={summary.status}
-          emoji={summary.emoji}
-          viewDate={viewDate}
-          checkedForDate={summary.checkedForDate}
-          selectedCheckIn={summary.selectedCheckIn}
-          activeIndicators={summary.activeIndicators}
-          onStartCheckIn={onStartCheckIn}
-        />
+      <PersonPatternsSection
+        personId={person.id}
+        personName={person.displayName}
+        personAvatarUrl={person.avatarUrl}
+      />
 
-        <PersonPatternsSection
-          personId={person.id}
-          personName={person.displayName}
-          personAvatarUrl={person.avatarUrl}
-        />
+      <TrackingSetupCards
+        onManageIndicators={onManageIndicators}
+        onManageEvents={onManageEvents}
+      />
 
-        <TrackingSetupCards
-          onManageIndicators={onManageIndicators}
-          onManageEvents={onManageEvents}
-        />
-
-        <div className="person-page__footer-actions">
-          <IonButton
-            expand="block"
-            fill="outline"
-            onClick={onShowMoreOptions}
-          >
-            <IonIcon
-              slot="start"
-              icon={createOutline}
-            />
-            Edit Person
-          </IonButton>
-        </div>
+      <div className="person-page__footer-actions">
+        <IonButton
+          expand="block"
+          fill="outline"
+          onClick={onShowMoreOptions}
+        >
+          <IonIcon
+            slot="start"
+            icon={createOutline}
+          />
+          Edit Person
+        </IonButton>
       </div>
-    </>
-  )
-}
+    </div>
+  </>
+)
 
 const PersonPage = (): React.JSX.Element | null => {
   const { personId } = useParams<{ personId: string }>()

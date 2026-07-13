@@ -81,38 +81,34 @@ const HeatmapLegend = ({
   scale,
 }: {
   readonly scale: 'rose' | 'green'
-}): React.JSX.Element => {
-  return (
-    <div className="pattern-heatmap-legend">
-      <span>Less often</span>
-      <span
-        className={`pattern-heatmap-legend__scale${scale === 'green' ? ' pattern-heatmap-legend__scale--green' : ''}`}
-      />
-      <span>More often</span>
-    </div>
-  )
-}
+}): React.JSX.Element => (
+  <div className="pattern-heatmap-legend">
+    <span>Less often</span>
+    <span
+      className={`pattern-heatmap-legend__scale${scale === 'green' ? ' pattern-heatmap-legend__scale--green' : ''}`}
+    />
+    <span>More often</span>
+  </div>
+)
 
-const HeatmapTip = (): React.JSX.Element => {
-  return (
-    <IonCard className="pattern-insight pattern-insight--neutral">
-      <IonCardContent>
-        <div className="pattern-insight__head">
-          <IonIcon
-            className="pattern-insight__icon"
-            icon={bulbOutline}
-            aria-hidden="true"
-          />
-          <h3 className="pattern-insight__title">Reading the heatmap</h3>
-        </div>
-        <p className="pattern-insight__detail">
-          Look for darker cells — those are days of the week that may benefit from a
-          little extra planning or support.
-        </p>
-      </IonCardContent>
-    </IonCard>
-  )
-}
+const HeatmapTip = (): React.JSX.Element => (
+  <IonCard className="pattern-insight pattern-insight--neutral">
+    <IonCardContent>
+      <div className="pattern-insight__head">
+        <IonIcon
+          className="pattern-insight__icon"
+          icon={bulbOutline}
+          aria-hidden="true"
+        />
+        <h3 className="pattern-insight__title">Reading the heatmap</h3>
+      </div>
+      <p className="pattern-insight__detail">
+        Look for darker cells — those are days of the week that may benefit from a
+        little extra planning or support.
+      </p>
+    </IonCardContent>
+  </IonCard>
+)
 
 const HeatmapContent = ({
   cells,

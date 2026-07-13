@@ -55,18 +55,11 @@ const renameChecklistItem = (
   items: ChecklistItem[],
   itemId: string,
   name: string,
-): ChecklistItem[] => {
-  return items.map((current) =>
-    current.id === itemId ? { ...current, name } : current,
-  )
-}
+): ChecklistItem[] =>
+  items.map((current) => (current.id === itemId ? { ...current, name } : current))
 
-const removeChecklistItem = (
-  items: ChecklistItem[],
-  itemId: string,
-): ChecklistItem[] => {
-  return items.filter((current) => current.id !== itemId)
-}
+const removeChecklistItem = (items: ChecklistItem[], itemId: string): ChecklistItem[] =>
+  items.filter((current) => current.id !== itemId)
 
 interface CustomIndicatorAlertParams {
   readonly addCustomIndicator: (polarity: Polarity, name: string) => void

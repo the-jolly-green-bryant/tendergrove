@@ -19,4 +19,7 @@ export const useIndicators = (personId: string | undefined) =>
     },
   })
 
+/**
+ *
+ */
 export type Indicator = NonNullable<ReturnType<typeof useIndicators>['data']>[number]

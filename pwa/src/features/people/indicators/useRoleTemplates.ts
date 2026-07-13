@@ -8,8 +8,8 @@ import {
   type TemplateIndicator,
 } from './roleTemplates'
 
-export const useRoleTemplate = (role: PersonRole | undefined) => {
-  return useQuery({
+export const useRoleTemplate = (role: PersonRole | undefined) =>
+  useQuery({
     enabled: Boolean(role),
     queryKey: ['roleTemplate', role],
     queryFn: async (): Promise<RoleTemplate> => {
@@ -35,4 +35,3 @@ export const useRoleTemplate = (role: PersonRole | undefined) => {
     },
     staleTime: 1000 * 60 * 60, // 1 hour
   })
-}

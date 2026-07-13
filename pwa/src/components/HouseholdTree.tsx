@@ -240,7 +240,7 @@ const TreePie = ({
   )
 }
 
-function TreePieDefs({
+const TreePieDefs = ({
   people,
   isSinglePerson,
   sliceSize,
@@ -248,37 +248,35 @@ function TreePieDefs({
   readonly people: Person[]
   readonly isSinglePerson: boolean
   readonly sliceSize: number
-}) {
-  return (
-    <defs>
-      <filter
-        id="tree-pie-shadow"
-        x="-20%"
-        y="-20%"
-        width="140%"
-        height="140%"
-      >
-        <feDropShadow
-          dx="0"
-          dy="2"
-          stdDeviation="2"
-          floodColor="#2F3A2E"
-          floodOpacity="0.15"
-        />
-      </filter>
-      {people.map((person, index) => (
-        <SliceClip
-          key={person.id}
-          index={index}
-          isSinglePerson={isSinglePerson}
-          sliceSize={sliceSize}
-        />
-      ))}
-    </defs>
-  )
-}
+}) => (
+  <defs>
+    <filter
+      id="tree-pie-shadow"
+      x="-20%"
+      y="-20%"
+      width="140%"
+      height="140%"
+    >
+      <feDropShadow
+        dx="0"
+        dy="2"
+        stdDeviation="2"
+        floodColor="#2F3A2E"
+        floodOpacity="0.15"
+      />
+    </filter>
+    {people.map((person, index) => (
+      <SliceClip
+        key={person.id}
+        index={index}
+        isSinglePerson={isSinglePerson}
+        sliceSize={sliceSize}
+      />
+    ))}
+  </defs>
+)
 
-function TreePieDividers({
+const TreePieDividers = ({
   people,
   isSinglePerson,
   sliceSize,
@@ -286,7 +284,7 @@ function TreePieDividers({
   readonly people: Person[]
   readonly isSinglePerson: boolean
   readonly sliceSize: number
-}) {
+}) => {
   if (isSinglePerson) return null
 
   return people.map((person, index) => {
@@ -304,29 +302,25 @@ function TreePieDividers({
   })
 }
 
-const EmptyTree = ({ stage }: { readonly stage: number }) => {
-  return (
-    <div className="tree-image-wrapper">
-      <img
-        src={`/assets/tree/tree_stage_${stage}.png`}
-        alt="Household wellbeing tree"
-        className="tree-image tree-stage__tree active"
-      />
-    </div>
-  )
-}
+const EmptyTree = ({ stage }: { readonly stage: number }) => (
+  <div className="tree-image-wrapper">
+    <img
+      src={`/assets/tree/tree_stage_${stage}.png`}
+      alt="Household wellbeing tree"
+      className="tree-image tree-stage__tree active"
+    />
+  </div>
+)
 
-const SinglePersonTree = ({ stage }: { readonly stage: number }) => {
-  return (
-    <div className="single-person-tree">
-      <img
-        src={`/assets/tree/tree_stage_${stage}.png`}
-        alt="Wellbeing tree"
-        className="single-person-tree__image tree-stage__tree"
-      />
-    </div>
-  )
-}
+const SinglePersonTree = ({ stage }: { readonly stage: number }) => (
+  <div className="single-person-tree">
+    <img
+      src={`/assets/tree/tree_stage_${stage}.png`}
+      alt="Wellbeing tree"
+      className="single-person-tree__image tree-stage__tree"
+    />
+  </div>
+)
 
 const AvatarMarker = ({
   person,
@@ -520,20 +514,18 @@ const HouseholdSummary = ({
   readonly people: Person[]
   readonly score: number
   readonly narrative: { status: string; insight: string }
-}) => {
-  return (
-    <div className="household-summary">
-      <div className="household-wellbeing-label">
-        {people.length === 1 ? 'Your Wellbeing' : 'Household Wellbeing'}
-      </div>
-      <div className="household-score-value">{score}</div>
-      <div className="household-narrative">
-        <div className="status">{narrative.status}</div>
-        <div className="insight">{narrative.insight}</div>
-      </div>
+}) => (
+  <div className="household-summary">
+    <div className="household-wellbeing-label">
+      {people.length === 1 ? 'Your Wellbeing' : 'Household Wellbeing'}
     </div>
-  )
-}
+    <div className="household-score-value">{score}</div>
+    <div className="household-narrative">
+      <div className="status">{narrative.status}</div>
+      <div className="insight">{narrative.insight}</div>
+    </div>
+  </div>
+)
 
 export const HouseholdTree: React.FC<HouseholdTreeProps> = ({
   people,
@@ -567,7 +559,7 @@ export const HouseholdTree: React.FC<HouseholdTreeProps> = ({
           />
         </div>
 
-        <div className="section-divider"></div>
+        <div className="section-divider" />
 
         {recap ? (
           <HouseholdRecapTeaser

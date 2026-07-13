@@ -25,11 +25,10 @@ export const isToday = (occurredAt: string): boolean => {
   )
 }
 
-export const findTodaysCheckIn = (checkIns: CheckIn[]): CheckIn | undefined => {
-  return [...checkIns]
+export const findTodaysCheckIn = (checkIns: CheckIn[]): CheckIn | undefined =>
+  [...checkIns]
     .filter((checkIn) => isToday(checkIn.occurredAt))
     .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))[0]
-}
 
 export const parseAnswers = (answersJson: unknown): CheckInAnswers => {
   let value = answersJson

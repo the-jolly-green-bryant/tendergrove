@@ -61,22 +61,20 @@ const TakeawayCard = ({
 }: {
   readonly icon: string
   readonly text: string
-}): React.JSX.Element => {
-  return (
-    <IonCard className="pattern-insight pattern-insight--neutral">
-      <IonCardContent>
-        <div className="pattern-insight__head">
-          <IonIcon
-            className="pattern-insight__icon"
-            icon={icon}
-            aria-hidden="true"
-          />
-          <p className="pattern-insight__detail">{text}</p>
-        </div>
-      </IonCardContent>
-    </IonCard>
-  )
-}
+}): React.JSX.Element => (
+  <IonCard className="pattern-insight pattern-insight--neutral">
+    <IonCardContent>
+      <div className="pattern-insight__head">
+        <IonIcon
+          className="pattern-insight__icon"
+          icon={icon}
+          aria-hidden="true"
+        />
+        <p className="pattern-insight__detail">{text}</p>
+      </div>
+    </IonCardContent>
+  </IonCard>
+)
 
 const DayOfWeekView = ({
   dayOfWeek,

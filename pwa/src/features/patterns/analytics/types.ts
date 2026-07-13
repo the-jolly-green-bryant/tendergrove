@@ -409,6 +409,9 @@ export interface EventImpact {
   sampleSize: number
 }
 
+/**
+ *
+ */
 export interface AnomalyBaseline {
   medianScore: number
   thresholdScore: number
@@ -416,6 +419,9 @@ export interface AnomalyBaseline {
   scoredDays: number
 }
 
+/**
+ *
+ */
 export interface AnomalyRateItem {
   id: string
   label: string
@@ -439,6 +445,9 @@ export interface AnomalyRateItem {
   typicalOpportunities: number
 }
 
+/**
+ *
+ */
 export interface AnomalyWeekdayBucket {
   weekday: number
   label: string
@@ -447,6 +456,9 @@ export interface AnomalyWeekdayBucket {
   scoredDays: number
 }
 
+/**
+ *
+ */
 export interface AnomalyWeekdayPattern {
   weekday: number
   label: string
@@ -456,22 +468,34 @@ export interface AnomalyWeekdayPattern {
   buckets: AnomalyWeekdayBucket[]
 }
 
+/**
+ *
+ */
 export interface AnomalyEventPattern {
   top: AnomalyRateItem
   items: AnomalyRateItem[]
 }
 
+/**
+ *
+ */
 export interface AnomalyOtherPersonItem extends AnomalyRateItem {
   personId: string
   personName: string
   kind: 'behavior' | 'incident'
 }
 
+/**
+ *
+ */
 export interface AnomalyOtherPeoplePattern {
   top: AnomalyOtherPersonItem
   items: AnomalyOtherPersonItem[]
 }
 
+/**
+ *
+ */
 export interface AnomalyPatterns {
   baseline: AnomalyBaseline | null
   weekday: AnomalyWeekdayPattern | null
@@ -479,6 +503,9 @@ export interface AnomalyPatterns {
   otherPeople: AnomalyOtherPeoplePattern | null
 }
 
+/**
+ *
+ */
 export interface AnalyticsLifeEvent {
   id: string
   label: string

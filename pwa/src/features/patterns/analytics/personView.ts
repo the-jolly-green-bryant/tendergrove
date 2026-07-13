@@ -44,8 +44,8 @@ export interface PersonAnalyticsView {
   anomalyPatterns: AnomalyPatterns
 }
 
-const asHouseholdSeries = (scores: DailyPersonScore[]): DailyHouseholdScore[] => {
-  return scores.map((score) => ({
+const asHouseholdSeries = (scores: DailyPersonScore[]): DailyHouseholdScore[] =>
+  scores.map((score) => ({
     date: score.date,
     score: score.score,
     contributingPeople: score.hasData ? 1 : 0,
@@ -55,7 +55,6 @@ const asHouseholdSeries = (scores: DailyPersonScore[]): DailyHouseholdScore[] =>
     positiveCount: score.positiveCount,
     negativeCount: score.negativeCount,
   }))
-}
 
 const EMPTY_TREND: TrendResult = {
   current7DayAverage: null,

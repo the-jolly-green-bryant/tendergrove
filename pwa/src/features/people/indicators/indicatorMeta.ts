@@ -10,7 +10,13 @@ import {
 
 import type { IndicatorInput } from './useIndicatorMutations'
 
+/**
+ *
+ */
 export type Polarity = IndicatorInput['polarity']
+/**
+ *
+ */
 export type InputType = IndicatorInput['inputType']
 
 export const polarityMeta: Record<

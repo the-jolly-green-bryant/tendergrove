@@ -16,22 +16,20 @@ export const InsightCard = ({
 }: {
   readonly insight: PatternInsight
   readonly showConfidence?: boolean
-}): React.JSX.Element => {
-  return (
-    <IonCard className={`pattern-insight pattern-insight--${insight.tone}`}>
-      <IonCardContent>
-        <div className="pattern-insight__head">
-          <span
-            className="pattern-insight__icon"
-            aria-hidden="true"
-          >
-            {TONE_ICON[insight.tone]}
-          </span>
-          <h3 className="pattern-insight__title">{insight.title}</h3>
-        </div>
-        <p className="pattern-insight__detail">{insight.detail}</p>
-        {showConfidence && <ConfidenceBadge confidence={insight.confidence} />}
-      </IonCardContent>
-    </IonCard>
-  )
-}
+}): React.JSX.Element => (
+  <IonCard className={`pattern-insight pattern-insight--${insight.tone}`}>
+    <IonCardContent>
+      <div className="pattern-insight__head">
+        <span
+          className="pattern-insight__icon"
+          aria-hidden="true"
+        >
+          {TONE_ICON[insight.tone]}
+        </span>
+        <h3 className="pattern-insight__title">{insight.title}</h3>
+      </div>
+      <p className="pattern-insight__detail">{insight.detail}</p>
+      {showConfidence && <ConfidenceBadge confidence={insight.confidence} />}
+    </IonCardContent>
+  </IonCard>
+)

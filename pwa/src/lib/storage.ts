@@ -1,6 +1,9 @@
 import { Preferences } from '@capacitor/preferences'
 import { z } from 'zod'
 
+/**
+ *
+ */
 export class LocalCollection<T> {
   constructor(
     private readonly key: string,

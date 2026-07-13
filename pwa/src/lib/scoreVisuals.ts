@@ -27,14 +27,11 @@ export const scoreVisualLevel = (score: number): ScoreVisualLevel => {
   return 'stable'
 }
 
-export const scoreVisualColor = (score: number): string => {
-  return SCORE_VISUAL_COLORS[scoreVisualLevel(score)]
-}
+export const scoreVisualColor = (score: number): string =>
+  SCORE_VISUAL_COLORS[scoreVisualLevel(score)]
 
-export const scoreVisualAssetColor = (score: number): string => {
-  return SCORE_VISUAL_ASSET_COLORS[scoreVisualLevel(score)]
-}
+export const scoreVisualAssetColor = (score: number): string =>
+  SCORE_VISUAL_ASSET_COLORS[scoreVisualLevel(score)]
 
-export const isCrisisScore = (score: number): boolean => {
-  return scoreVisualLevel(score) === 'crisis'
-}
+export const isCrisisScore = (score: number): boolean =>
+  scoreVisualLevel(score) === 'crisis'

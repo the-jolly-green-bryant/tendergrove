@@ -29,7 +29,7 @@ interface TimelineEvent {
 }
 
 const formatDayHeading = (dateStr: string): string => {
-  const date = new Date(dateStr + 'T00:00:00')
+  const date = new Date(`${dateStr}T00:00:00`)
   const today = new Date()
   const yesterday = new Date()
   yesterday.setDate(yesterday.getDate() - 1)
@@ -55,12 +55,11 @@ const formatDayHeading = (dateStr: string): string => {
   })
 }
 
-const formatTime = (isoString: string): string => {
-  return new Date(isoString).toLocaleTimeString(undefined, {
+const formatTime = (isoString: string): string =>
+  new Date(isoString).toLocaleTimeString(undefined, {
     hour: 'numeric',
     minute: '2-digit',
   })
-}
 
 const toDateKey = (isoString: string): string => {
   const d = new Date(isoString)

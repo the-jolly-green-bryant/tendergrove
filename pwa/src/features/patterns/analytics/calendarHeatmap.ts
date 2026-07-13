@@ -52,8 +52,8 @@ const buildShortSummary = (day: DailyHouseholdScore): string => {
 
 export const buildCalendar = (
   householdDailyScores: DailyHouseholdScore[],
-): CalendarDayPattern[] => {
-  return householdDailyScores.map((day) => ({
+): CalendarDayPattern[] =>
+  householdDailyScores.map((day) => ({
     date: day.date,
     score: day.score,
     level: day.score === null ? null : wellbeingLevel(day.score),
@@ -63,4 +63,3 @@ export const buildCalendar = (
     negativeCount: day.negativeCount,
     shortSummary: buildShortSummary(day),
   }))
-}

@@ -88,28 +88,26 @@ const queryClient = new QueryClient({
 queryClient.getQueryCache().config.onError = handleGlobalError
 queryClient.getMutationCache().config.onError = handleGlobalError
 
-const App = () => {
-  return (
-    <Authenticator
-      socialProviders={isNative ? [] : ['google']}
-      components={authComponents}
-    >
-      {({ signOut, user }) => (
-        <AuthProvider
-          user={user}
-          signOut={signOut}
-        >
-          <QueryClientProvider client={queryClient}>
-            <SelectedDateProvider>
-              <IonApp>
-                <AppShell />
-              </IonApp>
-            </SelectedDateProvider>
-          </QueryClientProvider>
-        </AuthProvider>
-      )}
-    </Authenticator>
-  )
-}
+const App = () => (
+  <Authenticator
+    socialProviders={isNative ? [] : ['google']}
+    components={authComponents}
+  >
+    {({ signOut, user }) => (
+      <AuthProvider
+        user={user}
+        signOut={signOut}
+      >
+        <QueryClientProvider client={queryClient}>
+          <SelectedDateProvider>
+            <IonApp>
+              <AppShell />
+            </IonApp>
+          </SelectedDateProvider>
+        </QueryClientProvider>
+      </AuthProvider>
+    )}
+  </Authenticator>
+)
 
 export default App

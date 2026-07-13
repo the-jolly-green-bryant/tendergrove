@@ -14,14 +14,12 @@ export const StatCard = ({
   readonly title: string
   readonly value: string | number
   readonly note?: string
-}) => {
-  return (
-    <IonCard className="stat-card">
-      <IonCardHeader>
-        <IonCardSubtitle>{title}</IonCardSubtitle>
-        <IonCardTitle>{value}</IonCardTitle>
-      </IonCardHeader>
-      {note && <IonCardContent>{note}</IonCardContent>}
-    </IonCard>
-  )
-}
+}) => (
+  <IonCard className="stat-card">
+    <IonCardHeader>
+      <IonCardSubtitle>{title}</IonCardSubtitle>
+      <IonCardTitle>{value}</IonCardTitle>
+    </IonCardHeader>
+    {note && <IonCardContent>{note}</IonCardContent>}
+  </IonCard>
+)

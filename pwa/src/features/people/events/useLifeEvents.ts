@@ -2,8 +2,8 @@ import { useQuery } from '@tanstack/react-query'
 
 import { client } from '../../../lib/api'
 
-export const useHouseholdLifeEvents = (householdId: string | undefined) => {
-  return useQuery({
+export const useHouseholdLifeEvents = (householdId: string | undefined) =>
+  useQuery({
     enabled: Boolean(householdId),
     queryKey: ['lifeEvents', householdId],
     queryFn: async () => {
@@ -18,7 +18,6 @@ export const useHouseholdLifeEvents = (householdId: string | undefined) => {
       }
     },
   })
-}
 
 function bySortOrder(
   a: { sortOrder?: number | null; createdAt?: string | null },

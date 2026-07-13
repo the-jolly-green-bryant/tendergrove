@@ -86,23 +86,21 @@ const menuItems = [
   },
 ] as const
 
-const MenuLink = ({ href, direction, icon, label }: (typeof menuItems)[number]) => {
-  return (
-    <IonMenuToggle autoHide={false}>
-      <IonItem
-        button
-        routerLink={href}
-        routerDirection={direction}
-      >
-        <IonIcon
-          slot="start"
-          icon={icon}
-        />
-        <IonLabel>{label}</IonLabel>
-      </IonItem>
-    </IonMenuToggle>
-  )
-}
+const MenuLink = ({ href, direction, icon, label }: (typeof menuItems)[number]) => (
+  <IonMenuToggle autoHide={false}>
+    <IonItem
+      button
+      routerLink={href}
+      routerDirection={direction}
+    >
+      <IonIcon
+        slot="start"
+        icon={icon}
+      />
+      <IonLabel>{label}</IonLabel>
+    </IonItem>
+  </IonMenuToggle>
+)
 
 const renderMenu = () => {
   const { signOut } = useAppAuth()
@@ -236,7 +234,7 @@ export const Page = ({
             mode={'ios'}
           >
             <IonButtons slot="start">
-              <IonMenuButton></IonMenuButton>
+              <IonMenuButton />
             </IonButtons>
             {headerContent ?? <IonTitle>{title}</IonTitle>}
           </IonToolbar>

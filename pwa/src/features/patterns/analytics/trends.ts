@@ -42,8 +42,8 @@ const MIN_DAYS_FOR_DIRECTION = 3
 export const rollingAverage = (
   series: ScoredDay[],
   windowSize: number = ROLLING_WINDOW_DAYS,
-): (number | null)[] => {
-  return series.map((_, index) => {
+): (number | null)[] =>
+  series.map((_, index) => {
     const start = Math.max(0, index - windowSize + 1)
     const scores = series
       .slice(start, index + 1)
@@ -52,7 +52,6 @@ export const rollingAverage = (
     const avg = mean(scores)
     return avg === null ? null : safeRound(avg)
   })
-}
 
 const directionFromDelta = (delta: number): TrendDirection => {
   if (delta > STABLE_BAND) return 'improving'
@@ -135,7 +134,7 @@ export const computeTrend = (series: ScoredDay[]): TrendResult => {
   const current7DayAverage = currentAvgRaw === null ? null : safeRound(currentAvgRaw)
   const previous7DayAverage = previousAvgRaw === null ? null : safeRound(previousAvgRaw)
 
-  let delta: number | null = null
+  const delta: number | null = null
   const currentTrend = points.at(-1)?.rollingAverage ?? null
 
   const historicalAverage = mean(
@@ -176,12 +175,11 @@ export const STATUS_HARD_LEVEL = 45
 /** Fewest scored days before we'll call a direction at all. */
 const MIN_STATUS_DAYS = 4
 
-const smoothSeries = (values: number[], windowSize: number): number[] => {
-  return values.map((_, i) => {
+const smoothSeries = (values: number[], windowSize: number): number[] =>
+  values.map((_, i) => {
     const slice = values.slice(Math.max(0, i - windowSize + 1), i + 1)
     return slice.reduce((sum, v) => sum + v, 0) / slice.length
   })
-}
 
 const recentDirection = (smooth: number[]): -1 | 0 | 1 => {
   const end = smooth.length - 1

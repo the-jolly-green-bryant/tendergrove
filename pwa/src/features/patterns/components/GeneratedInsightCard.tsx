@@ -25,21 +25,19 @@ export const GeneratedInsightCard = ({
   insight,
 }: {
   readonly insight: GeneratedInsight
-}): React.JSX.Element => {
-  return (
-    <IonCard className={`pattern-insight pattern-insight--${insight.tone}`}>
-      <IonCardContent>
-        <div className="pattern-insight__head">
-          <IonIcon
-            className="pattern-insight__icon"
-            icon={ICON[insight.icon]}
-            aria-hidden="true"
-          />
-          <h3 className="pattern-insight__title">{insight.title}</h3>
-        </div>
-        <p className="pattern-insight__detail">{insight.description}</p>
-        <ConfidenceBadge confidence={insight.confidence} />
-      </IonCardContent>
-    </IonCard>
-  )
-}
+}): React.JSX.Element => (
+  <IonCard className={`pattern-insight pattern-insight--${insight.tone}`}>
+    <IonCardContent>
+      <div className="pattern-insight__head">
+        <IonIcon
+          className="pattern-insight__icon"
+          icon={ICON[insight.icon]}
+          aria-hidden="true"
+        />
+        <h3 className="pattern-insight__title">{insight.title}</h3>
+      </div>
+      <p className="pattern-insight__detail">{insight.description}</p>
+      <ConfidenceBadge confidence={insight.confidence} />
+    </IonCardContent>
+  </IonCard>
+)

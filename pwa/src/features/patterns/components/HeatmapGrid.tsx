@@ -37,58 +37,56 @@ export const HeatmapGrid = ({
   readonly rows: HeatmapRow[]
   readonly scale?: 'rose' | 'green'
   readonly onSelect: (rowId: string, weekday: number) => void
-}): React.JSX.Element => {
-  return (
+}): React.JSX.Element => (
+  <div
+    className="pattern-heatmap"
+    role="table"
+    aria-label="Indicator likelihood by day of week"
+  >
     <div
-      className="pattern-heatmap"
-      role="table"
-      aria-label="Indicator likelihood by day of week"
+      className="pattern-heatmap__row pattern-heatmap__row--head"
+      role="row"
     >
-      <div
-        className="pattern-heatmap__row pattern-heatmap__row--head"
-        role="row"
-      >
-        <span className="pattern-heatmap__rowlabel" />
-        {WEEKDAY_INITIALS.map((initial, weekday) => (
-          <span
-            key={weekday}
-            className="pattern-heatmap__colhead"
-            role="columnheader"
-            aria-label={WEEKDAY_NAMES[weekday]}
-          >
-            {initial}
-          </span>
-        ))}
-      </div>
-
-      {rows.map((row) => (
-        <div
-          key={row.id}
-          className="pattern-heatmap__row"
-          role="row"
+      <span className="pattern-heatmap__rowlabel" />
+      {WEEKDAY_INITIALS.map((initial, weekday) => (
+        <span
+          key={weekday}
+          className="pattern-heatmap__colhead"
+          role="columnheader"
+          aria-label={WEEKDAY_NAMES[weekday]}
         >
-          <span
-            className="pattern-heatmap__rowlabel"
-            role="rowheader"
-          >
-            {row.label}
-          </span>
-          {row.values.map((value, weekday) => (
-            <button
-              key={weekday}
-              type="button"
-              className="pattern-heatmap__cell"
-              style={cellStyle(value, scale)}
-              onClick={() => onSelect(row.id, weekday)}
-              aria-label={`${row.label}, ${WEEKDAY_NAMES[weekday]}: ${
-                value === null ? 'no data' : `${Math.round(value)} percent`
-              }`}
-            >
-              <span aria-hidden="true">{value === null ? '' : Math.round(value)}</span>
-            </button>
-          ))}
-        </div>
+          {initial}
+        </span>
       ))}
     </div>
-  )
-}
+
+    {rows.map((row) => (
+      <div
+        key={row.id}
+        className="pattern-heatmap__row"
+        role="row"
+      >
+        <span
+          className="pattern-heatmap__rowlabel"
+          role="rowheader"
+        >
+          {row.label}
+        </span>
+        {row.values.map((value, weekday) => (
+          <button
+            key={weekday}
+            type="button"
+            className="pattern-heatmap__cell"
+            style={cellStyle(value, scale)}
+            onClick={() => onSelect(row.id, weekday)}
+            aria-label={`${row.label}, ${WEEKDAY_NAMES[weekday]}: ${
+              value === null ? 'no data' : `${Math.round(value)} percent`
+            }`}
+          >
+            <span aria-hidden="true">{value === null ? '' : Math.round(value)}</span>
+          </button>
+        ))}
+      </div>
+    ))}
+  </div>
+)

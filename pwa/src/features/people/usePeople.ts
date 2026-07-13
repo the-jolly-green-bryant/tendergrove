@@ -18,8 +18,8 @@ const peopleSelectionSet = [
   'indicators.active',
 ] as const
 
-export const usePeople = () => {
-  return useQuery({
+export const usePeople = () =>
+  useQuery({
     queryKey: ['people'],
     queryFn: async () => {
       const result = await client.models.Person.list({
@@ -33,4 +33,3 @@ export const usePeople = () => {
       return result.data
     },
   })
-}

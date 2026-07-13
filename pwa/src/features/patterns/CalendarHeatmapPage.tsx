@@ -71,41 +71,39 @@ const DayDetail = ({
 }: {
   readonly day: CalendarDayPattern
   readonly onAddCheckIn: (dateKey: string) => void
-}): React.JSX.Element => {
-  return (
-    <IonCard>
-      <IonCardContent>
-        <h3 className="pattern-turning-card__date">{formatDayLabel(day.date)}</h3>
-        <p className="pattern-row__meta">{day.shortSummary}</p>
-        <div className="pattern-day-detail__stats">
-          <span className="pattern-day-detail__stat">
-            <span className="pattern-day-detail__value">
-              {day.score === null ? '—' : day.score}
-            </span>
-            <span className="pattern-day-detail__label">Well-being score</span>
+}): React.JSX.Element => (
+  <IonCard>
+    <IonCardContent>
+      <h3 className="pattern-turning-card__date">{formatDayLabel(day.date)}</h3>
+      <p className="pattern-row__meta">{day.shortSummary}</p>
+      <div className="pattern-day-detail__stats">
+        <span className="pattern-day-detail__stat">
+          <span className="pattern-day-detail__value">
+            {day.score === null ? '—' : day.score}
           </span>
-          <span className="pattern-day-detail__stat">
-            <span className="pattern-day-detail__value">{day.checkInCount}</span>
-            <span className="pattern-day-detail__label">Check-ins</span>
-          </span>
-          <span className="pattern-day-detail__stat">
-            <span className="pattern-day-detail__value">{day.incidentCount}</span>
-            <span className="pattern-day-detail__label">Incidents</span>
-          </span>
-        </div>
+          <span className="pattern-day-detail__label">Well-being score</span>
+        </span>
+        <span className="pattern-day-detail__stat">
+          <span className="pattern-day-detail__value">{day.checkInCount}</span>
+          <span className="pattern-day-detail__label">Check-ins</span>
+        </span>
+        <span className="pattern-day-detail__stat">
+          <span className="pattern-day-detail__value">{day.incidentCount}</span>
+          <span className="pattern-day-detail__label">Incidents</span>
+        </span>
+      </div>
 
-        <IonButton
-          expand="block"
-          fill={day.checkInCount > 0 ? 'outline' : 'solid'}
-          className="pattern-day-detail__action"
-          onClick={() => onAddCheckIn(day.date)}
-        >
-          {day.checkInCount > 0 ? 'Update check-ins' : 'Add a check-in'}
-        </IonButton>
-      </IonCardContent>
-    </IonCard>
-  )
-}
+      <IonButton
+        expand="block"
+        fill={day.checkInCount > 0 ? 'outline' : 'solid'}
+        className="pattern-day-detail__action"
+        onClick={() => onAddCheckIn(day.date)}
+      >
+        {day.checkInCount > 0 ? 'Update check-ins' : 'Add a check-in'}
+      </IonButton>
+    </IonCardContent>
+  </IonCard>
+)
 
 const MonthGrid = ({
   month,
@@ -115,50 +113,48 @@ const MonthGrid = ({
   readonly month: MonthGroup
   readonly selectedDate: string | undefined
   readonly onSelect: (day: CalendarDayPattern) => void
-}): React.JSX.Element => {
-  return (
-    <section className="pattern-calendar-month">
-      <h2 className="pattern-calendar-heading">{month.label}</h2>
-      <div className="pattern-calendar-grid">
-        {DOW.map((dow) => (
+}): React.JSX.Element => (
+  <section className="pattern-calendar-month">
+    <h2 className="pattern-calendar-heading">{month.label}</h2>
+    <div className="pattern-calendar-grid">
+      {DOW.map((dow) => (
+        <div
+          key={dow}
+          className="pattern-calendar-dow"
+        >
+          {dow}
+        </div>
+      ))}
+      {month.slots.map((day, index) =>
+        day === null ? (
           <div
-            key={dow}
-            className="pattern-calendar-dow"
+            key={`pad-${index}`}
+            className="pattern-calendar-cell pattern-calendar-cell--empty"
+            aria-hidden="true"
+          />
+        ) : (
+          <button
+            key={day.date}
+            type="button"
+            className={cellClass(day, selectedDate === day.date)}
+            aria-label={`${formatDayLabel(day.date)}: ${day.shortSummary}`}
+            onClick={() => onSelect(day)}
           >
-            {dow}
-          </div>
-        ))}
-        {month.slots.map((day, index) =>
-          day === null ? (
-            <div
-              key={`pad-${index}`}
-              className="pattern-calendar-cell pattern-calendar-cell--empty"
+            <span className="pattern-calendar-cell__day">
+              {dateKeyToDate(day.date).getDate()}
+            </span>
+            <span
+              className="pattern-calendar-cell__dots"
               aria-hidden="true"
-            />
-          ) : (
-            <button
-              key={day.date}
-              type="button"
-              className={cellClass(day, selectedDate === day.date)}
-              aria-label={`${formatDayLabel(day.date)}: ${day.shortSummary}`}
-              onClick={() => onSelect(day)}
             >
-              <span className="pattern-calendar-cell__day">
-                {dateKeyToDate(day.date).getDate()}
-              </span>
-              <span
-                className="pattern-calendar-cell__dots"
-                aria-hidden="true"
-              >
-                {activityDots(day)}
-              </span>
-            </button>
-          ),
-        )}
-      </div>
-    </section>
-  )
-}
+              {activityDots(day)}
+            </span>
+          </button>
+        ),
+      )}
+    </div>
+  </section>
+)
 
 const CalendarContent = ({
   calendar,

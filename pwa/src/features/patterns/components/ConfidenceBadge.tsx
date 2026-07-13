@@ -13,10 +13,8 @@ export const ConfidenceBadge = ({
   confidence,
 }: {
   readonly confidence: Confidence
-}): React.JSX.Element => {
-  return (
-    <IonChip className={`pattern-confidence pattern-confidence--${confidence}`}>
-      {LABEL[confidence]}
-    </IonChip>
-  )
-}
+}): React.JSX.Element => (
+  <IonChip className={`pattern-confidence pattern-confidence--${confidence}`}>
+    {LABEL[confidence]}
+  </IonChip>
+)

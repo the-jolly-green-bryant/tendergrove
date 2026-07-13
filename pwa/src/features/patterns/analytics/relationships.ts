@@ -80,12 +80,9 @@ const stdev = (values: number[]): number => {
   return Math.sqrt(variance)
 }
 
-const hasEnoughVariation = (pairs: Array<[number, number]>): boolean => {
-  return (
-    stdev(pairs.map((p) => p[0])) >= MIN_VARIATION_SD &&
-    stdev(pairs.map((p) => p[1])) >= MIN_VARIATION_SD
-  )
-}
+const hasEnoughVariation = (pairs: Array<[number, number]>): boolean =>
+  stdev(pairs.map((p) => p[0])) >= MIN_VARIATION_SD &&
+  stdev(pairs.map((p) => p[1])) >= MIN_VARIATION_SD
 
 const confidenceFromR = (r: number): Confidence | null => {
   const abs = Math.abs(r)
@@ -115,13 +112,12 @@ const alignedPairs = (
 const buildChartData = (
   a: DailyPersonScore[],
   b: DailyPersonScore[],
-): RelationshipChartPoint[] => {
-  return a.map((day, index) => ({
+): RelationshipChartPoint[] =>
+  a.map((day, index) => ({
     date: day.date,
     aScore: day.score,
     bScore: b[index]?.score ?? null,
   }))
-}
 
 interface Candidate {
   personA: AnalyticsPersonRef
@@ -164,31 +160,29 @@ const buildAttempts = (
   personB: AnalyticsPersonRef,
   seriesA: DailyPersonScore[],
   seriesB: DailyPersonScore[],
-): Attempt[] => {
-  return [
-    {
-      lag: 0,
-      lead: personA,
-      follow: personB,
-      leadSeries: seriesA,
-      followSeries: seriesB,
-    },
-    {
-      lag: 1,
-      lead: personA,
-      follow: personB,
-      leadSeries: seriesA,
-      followSeries: seriesB,
-    },
-    {
-      lag: 1,
-      lead: personB,
-      follow: personA,
-      leadSeries: seriesB,
-      followSeries: seriesA,
-    },
-  ]
-}
+): Attempt[] => [
+  {
+    lag: 0,
+    lead: personA,
+    follow: personB,
+    leadSeries: seriesA,
+    followSeries: seriesB,
+  },
+  {
+    lag: 1,
+    lead: personA,
+    follow: personB,
+    leadSeries: seriesA,
+    followSeries: seriesB,
+  },
+  {
+    lag: 1,
+    lead: personB,
+    follow: personA,
+    leadSeries: seriesB,
+    followSeries: seriesA,
+  },
+]
 
 const evaluateAttempt = (attempt: Attempt): Candidate | null => {
   const pairs = alignedPairs(attempt.leadSeries, attempt.followSeries, attempt.lag)
@@ -225,20 +219,18 @@ const strongestCandidate = (attempts: Attempt[]): Candidate | null => {
   return best
 }
 
-const candidateToInsight = (best: Candidate): RelationshipInsight => {
-  return {
-    personAId: best.personA.id,
-    personAName: best.personA.displayName,
-    personBId: best.personB.id,
-    personBName: best.personB.displayName,
-    metric: 'wellbeing',
-    lagDays: best.lagDays,
-    correlation: Math.round(best.correlation * 100) / 100,
-    confidence: best.confidence,
-    summary: buildSummary(best),
-    chartData: buildChartData(best.seriesA, best.seriesB),
-  }
-}
+const candidateToInsight = (best: Candidate): RelationshipInsight => ({
+  personAId: best.personA.id,
+  personAName: best.personA.displayName,
+  personBId: best.personB.id,
+  personBName: best.personB.displayName,
+  metric: 'wellbeing',
+  lagDays: best.lagDays,
+  correlation: Math.round(best.correlation * 100) / 100,
+  confidence: best.confidence,
+  summary: buildSummary(best),
+  chartData: buildChartData(best.seriesA, best.seriesB),
+})
 
 /* ------------------------------------------------------------------ */
 /*  Public entry point                                                 */

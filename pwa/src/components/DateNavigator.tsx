@@ -124,52 +124,50 @@ const DateNavigatorHeader = ({
   isToday,
   today,
   toggleCalendar,
-}: Readonly<DateNavigatorHeaderProps>): React.JSX.Element => {
-  return (
-    <div className="date-navigator__header">
-      <button
-        className="date-navigator__month-btn"
-        onClick={toggleCalendar}
-        aria-label="Toggle calendar"
-      >
-        <span className="date-navigator__month-label">{headerLabel}</span>
-        <IonIcon
-          icon={calendarOpen ? chevronUpOutline : chevronDownOutline}
-          className="date-navigator__chevron"
-        />
-      </button>
+}: Readonly<DateNavigatorHeaderProps>): React.JSX.Element => (
+  <div className="date-navigator__header">
+    <button
+      className="date-navigator__month-btn"
+      onClick={toggleCalendar}
+      aria-label="Toggle calendar"
+    >
+      <span className="date-navigator__month-label">{headerLabel}</span>
+      <IonIcon
+        icon={calendarOpen ? chevronUpOutline : chevronDownOutline}
+        className="date-navigator__chevron"
+      />
+    </button>
 
-      <div className="date-navigator__controls">
-        <button
-          className="date-navigator__arrow"
-          onClick={goBack}
-          aria-label="Previous day"
-        >
-          <IonIcon icon={chevronBackOutline} />
-        </button>
-        <button
-          className="date-navigator__arrow"
-          onClick={goForward}
-          disabled={isToday}
-          aria-label="Next day"
-        >
-          <IonIcon icon={chevronForwardOutline} />
-        </button>
-        <button
-          className="date-navigator__today-btn"
-          onClick={goToToday}
-          aria-label="Go to today"
-        >
-          <IonIcon
-            icon={calendarClearOutline}
-            className="date-navigator__today-icon"
-          />
-          <span className="date-navigator__today-number">{today.getDate()}</span>
-        </button>
-      </div>
+    <div className="date-navigator__controls">
+      <button
+        className="date-navigator__arrow"
+        onClick={goBack}
+        aria-label="Previous day"
+      >
+        <IonIcon icon={chevronBackOutline} />
+      </button>
+      <button
+        className="date-navigator__arrow"
+        onClick={goForward}
+        disabled={isToday}
+        aria-label="Next day"
+      >
+        <IonIcon icon={chevronForwardOutline} />
+      </button>
+      <button
+        className="date-navigator__today-btn"
+        onClick={goToToday}
+        aria-label="Go to today"
+      >
+        <IonIcon
+          icon={calendarClearOutline}
+          className="date-navigator__today-icon"
+        />
+        <span className="date-navigator__today-number">{today.getDate()}</span>
+      </button>
     </div>
-  )
-}
+  </div>
+)
 
 interface DateNavigatorCalendarProps {
   calendarClosing: boolean

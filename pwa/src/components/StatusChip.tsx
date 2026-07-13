@@ -15,10 +15,8 @@ export const StatusChip = ({ label }: PageProps) => {
   }[label]
 
   return (
-    <>
-      <IonChip className={`timeline-status-chip timeline-status-chip--${color}`}>
-        {label.replace('Moderate ', '').replace('Doing ', '')}
-      </IonChip>
-    </>
+    <IonChip className={`timeline-status-chip timeline-status-chip--${color}`}>
+      {label.replace('Moderate ', '').replace('Doing ', '')}
+    </IonChip>
   )
 }

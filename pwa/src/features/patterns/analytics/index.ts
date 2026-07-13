@@ -106,6 +106,9 @@ export interface RawEvent {
   title?: string | null
 }
 
+/**
+ *
+ */
 export interface RawLifeEvent {
   id: string
   label?: string | null
@@ -157,11 +160,8 @@ interface ParsedAnswers {
   events: string[]
 }
 
-const parseStringIds = (value: unknown): string[] => {
-  return Array.isArray(value)
-    ? value.filter((id): id is string => typeof id === 'string')
-    : []
-}
+const parseStringIds = (value: unknown): string[] =>
+  Array.isArray(value) ? value.filter((id): id is string => typeof id === 'string') : []
 
 export const parseAnswers = (answersJson: unknown): ParsedAnswers => {
   let value = answersJson
@@ -195,13 +195,11 @@ export const parseAnswers = (answersJson: unknown): ParsedAnswers => {
   }
 }
 
-const normalizePolarity = (polarity: string | null | undefined): Polarity | null => {
-  return VALID_POLARITIES.includes(polarity as Polarity) ? (polarity as Polarity) : null
-}
+const normalizePolarity = (polarity: string | null | undefined): Polarity | null =>
+  VALID_POLARITIES.includes(polarity as Polarity) ? (polarity as Polarity) : null
 
-const normalizeRole = (role: string | null | undefined): PersonRole | null => {
-  return VALID_ROLES.includes(role as PersonRole) ? (role as PersonRole) : null
-}
+const normalizeRole = (role: string | null | undefined): PersonRole | null =>
+  VALID_ROLES.includes(role as PersonRole) ? (role as PersonRole) : null
 
 const normalizePerson = (raw: RawPerson): AnalyticsPerson => {
   const indicators = (raw.indicators ?? [])
@@ -239,6 +237,9 @@ const normalizePerson = (raw: RawPerson): AnalyticsPerson => {
   }
 }
 
+/**
+ *
+ */
 export interface NormalizeHouseholdOptions {
   now?: Date
   windowDays?: number
@@ -427,10 +428,7 @@ export const runAnalytics = (input: AnalyticsInput): AnalyticsResult => {
 export const analyzeHousehold = (
   rawPeople: RawPerson[],
   options?: NormalizeHouseholdOptions,
-): AnalyticsResult => {
-  return runAnalytics(normalizeHousehold(rawPeople, options))
-}
+): AnalyticsResult => runAnalytics(normalizeHousehold(rawPeople, options))
 
-export const windowRangeLabel = (result: AnalyticsResult): string => {
-  return formatRangeLabel(result.window.startDate, result.window.endDate)
-}
+export const windowRangeLabel = (result: AnalyticsResult): string =>
+  formatRangeLabel(result.window.startDate, result.window.endDate)

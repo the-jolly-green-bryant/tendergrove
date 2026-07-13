@@ -230,12 +230,10 @@ const AppShellRoutes = () => {
   )
 }
 
-const AppShell = () => {
-  return (
-    <IonReactRouter>
-      <AppShellRoutes />
-    </IonReactRouter>
-  )
-}
+const AppShell = () => (
+  <IonReactRouter>
+    <AppShellRoutes />
+  </IonReactRouter>
+)
 
 export default AppShell

@@ -22,13 +22,16 @@ const patternsSelectionSet = [
 
 const lifeEventSelectionSet = ['id', 'label', 'archived'] as const
 
+/**
+ *
+ */
 export interface PatternsData {
   people: RawPerson[]
   lifeEvents: RawLifeEvent[]
 }
 
-export const usePatternsData = () => {
-  return useQuery({
+export const usePatternsData = () =>
+  useQuery({
     queryKey: ['patterns-data'],
 
     queryFn: async (): Promise<PatternsData> => {
@@ -57,4 +60,3 @@ export const usePatternsData = () => {
       }
     },
   })
-}

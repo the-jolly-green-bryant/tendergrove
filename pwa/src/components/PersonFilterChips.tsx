@@ -37,9 +37,8 @@ interface PersonFilterChipsProps {
   readonly className?: string
 }
 
-const getPersonStatusColor = (person: FilterablePerson): Status['color'] => {
-  return derivePersonStatus(person.indicators ?? [], person.checkIns ?? []).color
-}
+const getPersonStatusColor = (person: FilterablePerson): Status['color'] =>
+  derivePersonStatus(person.indicators ?? [], person.checkIns ?? []).color
 
 const colorForName = (name: string): string => {
   let hash = 0

@@ -17,13 +17,10 @@ export const toDateKey = (date: Date): DateKey => {
   return `${year}-${month}-${day}`
 }
 
-export const isoToDateKey = (iso: string): DateKey => {
-  return toDateKey(new Date(iso))
-}
+export const isoToDateKey = (iso: string): DateKey => toDateKey(new Date(iso))
 
-export const startOfLocalDay = (date: Date): Date => {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate())
-}
+export const startOfLocalDay = (date: Date): Date =>
+  new Date(date.getFullYear(), date.getMonth(), date.getDate())
 
 export const dateKeyToDate = (key: DateKey): Date => {
   const [year, month, day] = key.split('-').map(Number)
@@ -55,22 +52,20 @@ export const safeRound = (value: number): number => {
   return Math.round(value)
 }
 
-export const clamp = (value: number, min: number, max: number): number => {
-  return Math.min(max, Math.max(min, value))
-}
+export const clamp = (value: number, min: number, max: number): number =>
+  Math.min(max, Math.max(min, value))
 
 export const mean = (values: number[]): number | null => {
   if (values.length === 0) return null
   return values.reduce((sum, v) => sum + v, 0) / values.length
 }
 
-export const formatDayLabel = (key: DateKey): string => {
-  return dateKeyToDate(key).toLocaleDateString(undefined, {
+export const formatDayLabel = (key: DateKey): string =>
+  dateKeyToDate(key).toLocaleDateString(undefined, {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
   })
-}
 
 export const formatRangeLabel = (startKey: DateKey, endKey: DateKey): string => {
   const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' }

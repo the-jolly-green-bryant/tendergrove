@@ -16,6 +16,9 @@ export interface DisplayFilters {
   indicatorIds: string[]
 }
 
+/**
+ *
+ */
 export interface ScopedPatterns {
   view: ScopedPatternsView | null
   isLoading: boolean

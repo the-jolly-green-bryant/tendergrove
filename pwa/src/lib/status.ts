@@ -194,6 +194,4 @@ export const derivePersonStatus = (
   indicators: IndicatorLike[],
   checkIns: CheckInLike[],
   now?: Date,
-): Status => {
-  return statusFromScore(computeWeightedScore(indicators, checkIns, now))
-}
+): Status => statusFromScore(computeWeightedScore(indicators, checkIns, now))

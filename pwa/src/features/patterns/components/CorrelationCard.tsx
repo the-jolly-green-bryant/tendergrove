@@ -12,28 +12,24 @@ import React from 'react'
 import type { CorrelationInsight } from '../analytics'
 import { ConfidenceBadge } from './ConfidenceBadge'
 
-const lagLabel = (lagDays: 0 | 1): string => {
-  return lagDays === 0 ? 'Same day' : 'Next day'
-}
+const lagLabel = (lagDays: 0 | 1): string => (lagDays === 0 ? 'Same day' : 'Next day')
 
 export const CorrelationCard = ({
   correlation,
 }: {
   readonly correlation: CorrelationInsight
-}): React.JSX.Element => {
-  return (
-    <IonItem>
-      <IonLabel>
-        {correlation.sourceLabel}
+}): React.JSX.Element => (
+  <IonItem>
+    <IonLabel>
+      {correlation.sourceLabel}
 
-        <IonIcon
-          icon={arrowForwardOutline}
-          aria-hidden="true"
-          style={{ margin: '0 6px', verticalAlign: 'middle' }}
-        />
+      <IonIcon
+        icon={arrowForwardOutline}
+        aria-hidden="true"
+        style={{ margin: '0 6px', verticalAlign: 'middle' }}
+      />
 
-        {correlation.targetLabel}
-      </IonLabel>
-    </IonItem>
-  )
-}
+      {correlation.targetLabel}
+    </IonLabel>
+  </IonItem>
+)

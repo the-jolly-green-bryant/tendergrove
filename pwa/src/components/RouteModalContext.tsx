@@ -12,6 +12,4 @@ const RouteModalContext = createContext<RouteModalContextValue>({
 
 export const RouteModalProvider = RouteModalContext.Provider
 
-export const useRouteModal = () => {
-  return useContext(RouteModalContext)
-}
+export const useRouteModal = () => useContext(RouteModalContext)

@@ -200,18 +200,16 @@ const RecapProgress = ({
 }: {
   readonly slides: RecapSlide[]
   readonly slideIndex: number
-}) => {
-  return (
-    <div className="recap-progress">
-      {slides.map((item, index) => (
-        <span
-          key={item.title}
-          className={index <= slideIndex ? 'is-active' : ''}
-        />
-      ))}
-    </div>
-  )
-}
+}) => (
+  <div className="recap-progress">
+    {slides.map((item, index) => (
+      <span
+        key={item.title}
+        className={index <= slideIndex ? 'is-active' : ''}
+      />
+    ))}
+  </div>
+)
 
 const RecapCheckInModal = ({
   personId,
@@ -219,30 +217,28 @@ const RecapCheckInModal = ({
 }: {
   readonly personId: string | null
   readonly onDismiss: () => void
-}) => {
-  return (
-    <IonModal
-      isOpen={Boolean(personId)}
-      breakpoints={[0, 1]}
-      initialBreakpoint={1}
-      handle
-      handleBehavior="cycle"
-      className="route-modal"
-      onDidDismiss={onDismiss}
-    >
-      {personId && (
-        <RouteModalProvider
-          value={{
-            isRouteModal: true,
-            dismiss: onDismiss,
-          }}
-        >
-          <CheckInWizardPage personIdOverride={personId} />
-        </RouteModalProvider>
-      )}
-    </IonModal>
-  )
-}
+}) => (
+  <IonModal
+    isOpen={Boolean(personId)}
+    breakpoints={[0, 1]}
+    initialBreakpoint={1}
+    handle
+    handleBehavior="cycle"
+    className="route-modal"
+    onDidDismiss={onDismiss}
+  >
+    {personId && (
+      <RouteModalProvider
+        value={{
+          isRouteModal: true,
+          dismiss: onDismiss,
+        }}
+      >
+        <CheckInWizardPage personIdOverride={personId} />
+      </RouteModalProvider>
+    )}
+  </IonModal>
+)
 
 const RecapActions = ({
   isFirst,
@@ -254,25 +250,23 @@ const RecapActions = ({
   readonly isLast: boolean
   readonly onBack: () => void
   readonly onNext: () => void
-}) => {
-  return (
-    <div className="recap-page__actions">
-      <button
-        type="button"
-        onClick={onBack}
-        disabled={isFirst}
-      >
-        Back
-      </button>
-      <button
-        type="button"
-        onClick={onNext}
-      >
-        {isLast ? 'Done' : 'Next'}
-      </button>
-    </div>
-  )
-}
+}) => (
+  <div className="recap-page__actions">
+    <button
+      type="button"
+      onClick={onBack}
+      disabled={isFirst}
+    >
+      Back
+    </button>
+    <button
+      type="button"
+      onClick={onNext}
+    >
+      {isLast ? 'Done' : 'Next'}
+    </button>
+  </div>
+)
 
 const RecapTopbar = ({
   eyebrow,
@@ -280,20 +274,18 @@ const RecapTopbar = ({
 }: {
   readonly eyebrow: string
   readonly onClose: () => void
-}) => {
-  return (
-    <div className="recap-page__topbar">
-      <span>{eyebrow}</span>
-      <button
-        type="button"
-        onClick={onClose}
-        aria-label="Close recap"
-      >
-        <IonIcon icon={closeOutline} />
-      </button>
-    </div>
-  )
-}
+}) => (
+  <div className="recap-page__topbar">
+    <span>{eyebrow}</span>
+    <button
+      type="button"
+      onClick={onClose}
+      aria-label="Close recap"
+    >
+      <IonIcon icon={closeOutline} />
+    </button>
+  </div>
+)
 
 const RecapSlideContent = ({
   dateLabel,
@@ -301,16 +293,14 @@ const RecapSlideContent = ({
 }: {
   readonly dateLabel: string
   readonly slide: RecapSlide
-}) => {
-  return (
-    <section className={`recap-slide recap-slide--${slide.layout}`}>
-      <p className="recap-slide__date">{dateLabel}</p>
-      <h2>{slide.title}</h2>
-      <p>{slide.body}</p>
-      {slide.content}
-    </section>
-  )
-}
+}) => (
+  <section className={`recap-slide recap-slide--${slide.layout}`}>
+    <p className="recap-slide__date">{dateLabel}</p>
+    <h2>{slide.title}</h2>
+    <p>{slide.body}</p>
+    {slide.content}
+  </section>
+)
 
 const HouseholdRecapContent = ({
   recap,

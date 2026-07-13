@@ -28,18 +28,16 @@ const PercentBar = ({
 }: {
   readonly value: number
   readonly accent: 'weekday' | 'event' | 'household'
-}): React.JSX.Element => {
-  return (
-    <span className="anomaly-pattern-stat__track">
-      <span
-        className={`anomaly-pattern-stat__fill anomaly-pattern-stat__fill--${accent}`}
-        style={{
-          width: `${Math.max(4, Math.min(100, value))}%`,
-        }}
-      />
-    </span>
-  )
-}
+}): React.JSX.Element => (
+  <span className="anomaly-pattern-stat__track">
+    <span
+      className={`anomaly-pattern-stat__fill anomaly-pattern-stat__fill--${accent}`}
+      style={{
+        width: `${Math.max(4, Math.min(100, value))}%`,
+      }}
+    />
+  </span>
+)
 
 const WeekdayChart = ({
   buckets,
@@ -107,29 +105,27 @@ const SignalRows = ({
   readonly items: readonly AnomalyRateItem[]
   readonly accent: 'event' | 'household'
   readonly formatLabel?: (item: AnomalyRateItem) => string
-}): React.JSX.Element => {
-  return (
-    <div className="anomaly-pattern-stats">
-      {items.map((item) => (
-        <div
-          key={item.id}
-          className="anomaly-pattern-stat"
-        >
-          <span className="anomaly-pattern-stat__label">
-            {formatLabel ? formatLabel(item) : item.label}
-          </span>
+}): React.JSX.Element => (
+  <div className="anomaly-pattern-stats">
+    {items.map((item) => (
+      <div
+        key={item.id}
+        className="anomaly-pattern-stat"
+      >
+        <span className="anomaly-pattern-stat__label">
+          {formatLabel ? formatLabel(item) : item.label}
+        </span>
 
-          <span className="anomaly-pattern-stat__percentage">{item.anomalyRate}%</span>
+        <span className="anomaly-pattern-stat__percentage">{item.anomalyRate}%</span>
 
-          <PercentBar
-            value={item.anomalyRate}
-            accent={accent}
-          />
-        </div>
-      ))}
-    </div>
-  )
-}
+        <PercentBar
+          value={item.anomalyRate}
+          accent={accent}
+        />
+      </div>
+    ))}
+  </div>
+)
 
 const CardFooter = ({
   icon,
@@ -139,32 +135,30 @@ const CardFooter = ({
   readonly icon: React.ComponentProps<typeof IonIcon>['icon']
   readonly action: string
   readonly onClick: () => void
-}): React.JSX.Element => {
-  return (
-    <div className="anomaly-pattern-card__footer">
-      <div className="anomaly-pattern-card__icon anomaly-pattern-card__icon--event">
-        <IonIcon
-          icon={icon}
-          aria-hidden="true"
-        />
-      </div>
-
-      <IonButton
-        fill="clear"
-        size="small"
-        onClick={onClick}
-      >
-        {action}
-
-        <IonIcon
-          slot="end"
-          icon={chevronForwardOutline}
-          aria-hidden="true"
-        />
-      </IonButton>
+}): React.JSX.Element => (
+  <div className="anomaly-pattern-card__footer">
+    <div className="anomaly-pattern-card__icon anomaly-pattern-card__icon--event">
+      <IonIcon
+        icon={icon}
+        aria-hidden="true"
+      />
     </div>
-  )
-}
+
+    <IonButton
+      fill="clear"
+      size="small"
+      onClick={onClick}
+    >
+      {action}
+
+      <IonIcon
+        slot="end"
+        icon={chevronForwardOutline}
+        aria-hidden="true"
+      />
+    </IonButton>
+  </div>
+)
 
 export const AnomalyPatternsSection = ({
   personName,

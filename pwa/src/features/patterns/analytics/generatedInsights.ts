@@ -35,9 +35,8 @@ const formatHour = (hour: number): string => {
   return `${h12} ${period}`
 }
 
-const withWho = (text: string, personName: string | null): string => {
-  return personName ? `${text} for ${personName}` : text
-}
+const withWho = (text: string, personName: string | null): string =>
+  personName ? `${text} for ${personName}` : text
 
 /* ------------------------------------------------------------------ */
 /*  Individual insight builders (each returns one insight or null)     */

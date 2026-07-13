@@ -62,9 +62,7 @@ const toDateKey = (iso: string): string => {
   return `${y}-${m}-${day}`
 }
 
-const toMonthKey = (dateKey: string): string => {
-  return dateKey.slice(0, 7) // "YYYY-MM"
-}
+const toMonthKey = (dateKey: string): string => dateKey.slice(0, 7) // "YYYY-MM"
 
 const formatMonthLabel = (monthKey: string): string => {
   const [y, m] = monthKey.split('-').map(Number)
@@ -150,8 +148,8 @@ const renderPage = ({
   </Page>
 )
 
-const useMonthGroups = (dayBuckets: Map<string, DayCounts>): MonthGroup[] => {
-  return useMemo(() => {
+const useMonthGroups = (dayBuckets: Map<string, DayCounts>): MonthGroup[] =>
+  useMemo(() => {
     const months = new Map<string, DayBucket[]>()
 
     for (const [dateKey, counts] of dayBuckets) {
@@ -176,16 +174,14 @@ const useMonthGroups = (dayBuckets: Map<string, DayCounts>): MonthGroup[] => {
         days,
       }))
   }, [dayBuckets])
-}
 
-const useMaxTotal = (dayBuckets: Map<string, DayCounts>): number => {
-  return useMemo(
+const useMaxTotal = (dayBuckets: Map<string, DayCounts>): number =>
+  useMemo(
     () =>
       Math.max(...Array.from(dayBuckets.values()).map(({ good, bad }) => good + bad)) ||
       1,
     [dayBuckets],
   )
-}
 
 const InsightsPage = (): React.JSX.Element => {
   const people = usePeople()

@@ -97,9 +97,7 @@ const computeDomain = (
 const computeSeriesDomains = (
   series: ChartSeries[],
   clampTo: [number, number] | null,
-): Domain[] => {
-  return series.map((item) => computeDomain([item], clampTo))
-}
+): Domain[] => series.map((item) => computeDomain([item], clampTo))
 
 const gridValuesFor = ({ min, max }: Domain): number[] => {
   const steps = 3
@@ -144,23 +142,21 @@ function dates0toN(count: number): number[] {
   return Array.from({ length: count }, (_, i) => i)
 }
 
-const ChartGrid = ({ domain }: { readonly domain: Domain }): React.JSX.Element => {
-  return (
-    <>
-      {gridValuesFor(domain).map((value) => (
-        <g key={value}>
-          <line
-            x1={PAD_L}
-            x2={VIEW_W - PAD_R}
-            y1={yFor(value, domain)}
-            y2={yFor(value, domain)}
-            className="pattern-chart__grid"
-          />
-        </g>
-      ))}
-    </>
-  )
-}
+const ChartGrid = ({ domain }: { readonly domain: Domain }): React.JSX.Element => (
+  <>
+    {gridValuesFor(domain).map((value) => (
+      <g key={value}>
+        <line
+          x1={PAD_L}
+          x2={VIEW_W - PAD_R}
+          y1={yFor(value, domain)}
+          y2={yFor(value, domain)}
+          className="pattern-chart__grid"
+        />
+      </g>
+    ))}
+  </>
+)
 
 /** The line for one series, plus point dots for solid (non-dashed) lines. */
 const SeriesLine = ({
@@ -201,8 +197,8 @@ const SeriesLine = ({
   )
 }
 
-const describeSeries = (series: ChartSeries[]): string => {
-  return series
+const describeSeries = (series: ChartSeries[]): string =>
+  series
     .map((s) => {
       const known = s.values.filter((v): v is number => v !== null)
       if (known.length === 0) return `${s.label}: no data`
@@ -210,7 +206,6 @@ const describeSeries = (series: ChartSeries[]): string => {
       return `${s.label}: averaging ${avg} out of 100`
     })
     .join('; ')
-}
 
 const lastValueIndex = (values: (number | null)[]): number => {
   for (let i = values.length - 1; i >= 0; i--) {
@@ -225,9 +220,8 @@ const currentIndex = (series: ChartSeries[]): number => {
   return index < 0 ? 0 : index
 }
 
-const primarySeries = (series: ChartSeries[]): ChartSeries | undefined => {
-  return series.find((s) => !s.dashed) ?? series[0]
-}
+const primarySeries = (series: ChartSeries[]): ChartSeries | undefined =>
+  series.find((s) => !s.dashed) ?? series[0]
 
 const nearestDataIndex = (
   targetIndex: number,

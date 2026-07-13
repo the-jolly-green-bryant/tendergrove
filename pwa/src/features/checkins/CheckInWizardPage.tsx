@@ -137,9 +137,8 @@ const ChecklistGroup = ({
   )
 }
 
-const indicatorItems = (indicators: Indicator[]): ChecklistItem[] => {
-  return indicators.map((i) => ({ id: i.id, label: i.name }))
-}
+const indicatorItems = (indicators: Indicator[]): ChecklistItem[] =>
+  indicators.map((i) => ({ id: i.id, label: i.name }))
 
 const EmptyIndicatorsMessage = ({ personId }: { readonly personId: string }) => {
   const router = useIonRouter()
@@ -246,12 +245,11 @@ const buildCheckInPayload = (
   }
 }
 
-const activeLifeEvents = (events: LifeEvent[]): ChecklistItem[] => {
-  return [...events]
+const activeLifeEvents = (events: LifeEvent[]): ChecklistItem[] =>
+  [...events]
     .filter((e) => e.archived !== true)
     .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
     .map((e) => ({ id: e.id, label: e.label }))
-}
 
 const selectedIds = (items: ChecklistItem[], checked: CheckedIndicators): string[] =>
   items.filter((i) => checked[i.id]).map((i) => i.id)
@@ -365,18 +363,16 @@ const useWizardStepState = ({
   }
 }
 
-const WizardHero = ({ person }: { readonly person: Person }) => {
-  return (
-    <div className="wizard-step__hero">
-      <PersonAvatar
-        name={person.displayName}
-        src={person.avatarUrl}
-        className="wizard-step__avatar"
-      />
-      <h2 className="wizard-step__name">{person.displayName}</h2>
-    </div>
-  )
-}
+const WizardHero = ({ person }: { readonly person: Person }) => (
+  <div className="wizard-step__hero">
+    <PersonAvatar
+      name={person.displayName}
+      src={person.avatarUrl}
+      className="wizard-step__avatar"
+    />
+    <h2 className="wizard-step__name">{person.displayName}</h2>
+  </div>
+)
 
 const ReviewGroup = ({
   title,
@@ -558,7 +554,7 @@ const EventsSection = ({
 }
 
 /** A bare checkbox list (no heading), used inside sections. */
-function CheckboxList({
+const CheckboxList = ({
   items,
   checked,
   onToggle,
@@ -566,7 +562,7 @@ function CheckboxList({
   readonly items: ChecklistItem[]
   readonly checked: CheckedIndicators
   readonly onToggle: (id: string) => void
-}) {
+}) => {
   if (items.length === 0) return null
   return (
     <IonList className="check-in__list">
@@ -599,40 +595,38 @@ const CheckInSections = ({
   readonly challenges: ChecklistItem[]
   readonly positives: ChecklistItem[]
   readonly selectedDate: Date
-}) => {
-  return (
-    <>
-      <ChecklistGroup
-        title="Challenges"
-        items={challenges}
-        icon={alertCircleOutline}
-        color="danger"
-        checked={step.checked}
-        onToggle={step.toggle}
-      />
-      <ChecklistGroup
-        title="Positive Signs"
-        items={positives}
-        icon={happyOutline}
-        color="success"
-        checked={step.checked}
-        onToggle={step.toggle}
-      />
-      <EventsSection
-        events={step.events}
-        checked={step.checkedEvents}
-        householdId={step.householdId}
-        onToggle={step.toggleEvent}
-      />
-      <CheckInNotes
-        note={step.note}
-        existing={step.existing}
-        dateLabel={formatDateLabel(selectedDate)}
-        onNoteChange={step.setNote}
-      />
-    </>
-  )
-}
+}) => (
+  <>
+    <ChecklistGroup
+      title="Challenges"
+      items={challenges}
+      icon={alertCircleOutline}
+      color="danger"
+      checked={step.checked}
+      onToggle={step.toggle}
+    />
+    <ChecklistGroup
+      title="Positive Signs"
+      items={positives}
+      icon={happyOutline}
+      color="success"
+      checked={step.checked}
+      onToggle={step.toggle}
+    />
+    <EventsSection
+      events={step.events}
+      checked={step.checkedEvents}
+      householdId={step.householdId}
+      onToggle={step.toggleEvent}
+    />
+    <CheckInNotes
+      note={step.note}
+      existing={step.existing}
+      dateLabel={formatDateLabel(selectedDate)}
+      onNoteChange={step.setNote}
+    />
+  </>
+)
 
 const WizardStep = ({ personId, selectedDate, step }: WizardStepProps) => {
   const challenges = indicatorItems(
@@ -671,31 +665,31 @@ const WizardStep = ({ personId, selectedDate, step }: WizardStepProps) => {
 const useWizardPeople = (
   personId: string | undefined,
   people: ReturnType<typeof usePeople>,
-) => {
-  return useMemo(() => {
+) =>
+  useMemo(() => {
     if (personId) return [{ id: personId }]
     return (people.data ?? []).filter((p) => !p.archived)
   }, [people.data, personId])
-}
 
-const useWizardAdvance = ({
-  activePeopleLength,
-  currentIndex,
-  personId,
-  returnPath,
-  routeModal,
-  router,
-  setCurrentIndex,
-}: {
-  readonly activePeopleLength: number
-  readonly currentIndex: number
-  readonly personId: string | undefined
-  readonly returnPath: string | undefined
-  readonly routeModal: ReturnType<typeof useRouteModal>
-  readonly router: ReturnType<typeof useIonRouter>
-  readonly setCurrentIndex: (index: number) => void
-}) => {
-  return () => {
+const useWizardAdvance =
+  ({
+    activePeopleLength,
+    currentIndex,
+    personId,
+    returnPath,
+    routeModal,
+    router,
+    setCurrentIndex,
+  }: {
+    readonly activePeopleLength: number
+    readonly currentIndex: number
+    readonly personId: string | undefined
+    readonly returnPath: string | undefined
+    readonly routeModal: ReturnType<typeof useRouteModal>
+    readonly router: ReturnType<typeof useIonRouter>
+    readonly setCurrentIndex: (index: number) => void
+  }) =>
+  () => {
     const next = currentIndex + 1
     if (next < activePeopleLength) {
       setCurrentIndex(next)
@@ -708,7 +702,6 @@ const useWizardAdvance = ({
     if (personId) return router.push(`/person/${personId}`, 'back', 'pop')
     return router.push('/dashboard', 'back', 'pop')
   }
-}
 
 export const CheckInWizardPage = ({
   personIdOverride,

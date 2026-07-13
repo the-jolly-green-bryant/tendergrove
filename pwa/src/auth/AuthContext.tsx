@@ -12,11 +12,9 @@ export const AuthProvider = ({
   user,
   signOut,
   children,
-}: AuthContextValue & { children: ReactNode }) => {
-  return (
-    <AuthContext.Provider value={{ user, signOut }}>{children}</AuthContext.Provider>
-  )
-}
+}: AuthContextValue & { children: ReactNode }) => (
+  <AuthContext.Provider value={{ user, signOut }}>{children}</AuthContext.Provider>
+)
 
 export const useAppAuth = () => {
   const context = useContext(AuthContext)

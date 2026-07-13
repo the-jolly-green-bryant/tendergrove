@@ -29,9 +29,8 @@ const magnitudeWord = (delta: number | null): string => {
   return Math.abs(delta) < 10 ? 'a little ' : ''
 }
 
-const forWhom = (subjectName: string | null): string => {
-  return subjectName ? ` for ${subjectName}` : ''
-}
+const forWhom = (subjectName: string | null): string =>
+  subjectName ? ` for ${subjectName}` : ''
 
 const openingLine = (facts: WeeklyFacts): string => {
   const who = forWhom(facts.subjectName)

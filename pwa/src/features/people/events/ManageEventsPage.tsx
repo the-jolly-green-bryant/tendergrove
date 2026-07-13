@@ -29,9 +29,8 @@ import { useLifeEventMutations } from './useLifeEventMutations'
 
 type AlertValues = { label?: string }
 
-const normalizeLabel = (values: AlertValues): string | false => {
-  return values.label?.trim() || false
-}
+const normalizeLabel = (values: AlertValues): string | false =>
+  values.label?.trim() || false
 
 const useEventAlertActions = (householdId: string | undefined, events: LifeEvent[]) => {
   const { create, rename, remove } = useLifeEventMutations(householdId)
@@ -130,41 +129,39 @@ const EventRow = ({
   readonly event: LifeEvent
   readonly onEdit: (event: LifeEvent) => void
   readonly onDelete: (event: LifeEvent) => void
-}) => {
-  return (
-    <IonItem className="indicator-row">
+}) => (
+  <IonItem className="indicator-row">
+    <IonIcon
+      slot="start"
+      icon={calendarOutline}
+      color="primary"
+    />
+    <IonLabel>{event.label}</IonLabel>
+    <IonButton
+      slot="end"
+      fill="clear"
+      aria-label={`Edit ${event.label}`}
+      onClick={() => onEdit(event)}
+    >
       <IonIcon
-        slot="start"
-        icon={calendarOutline}
-        color="primary"
+        slot="icon-only"
+        icon={createOutline}
       />
-      <IonLabel>{event.label}</IonLabel>
-      <IonButton
-        slot="end"
-        fill="clear"
-        aria-label={`Edit ${event.label}`}
-        onClick={() => onEdit(event)}
-      >
-        <IonIcon
-          slot="icon-only"
-          icon={createOutline}
-        />
-      </IonButton>
-      <IonButton
-        slot="end"
-        fill="clear"
-        color="danger"
-        aria-label={`Delete ${event.label}`}
-        onClick={() => onDelete(event)}
-      >
-        <IonIcon
-          slot="icon-only"
-          icon={trash}
-        />
-      </IonButton>
-    </IonItem>
-  )
-}
+    </IonButton>
+    <IonButton
+      slot="end"
+      fill="clear"
+      color="danger"
+      aria-label={`Delete ${event.label}`}
+      onClick={() => onDelete(event)}
+    >
+      <IonIcon
+        slot="icon-only"
+        icon={trash}
+      />
+    </IonButton>
+  </IonItem>
+)
 
 const ManageEventsPage = () => {
   const { personId } = useParams<{ personId: string }>()

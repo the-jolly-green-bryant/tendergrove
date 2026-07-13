@@ -65,11 +65,10 @@ const formatRecapDateLabel = (dateKey: string): string => {
 const latestCheckInForDate = (
   person: HouseholdRecapSourcePerson,
   dateKey: string,
-): HouseholdRecapCheckIn | undefined => {
-  return (person.checkIns ?? [])
+): HouseholdRecapCheckIn | undefined =>
+  (person.checkIns ?? [])
     .filter((checkIn) => dateKeyFromIso(checkIn.occurredAt) === dateKey)
     .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))[0]
-}
 
 const scoreForCheckIn = (
   person: HouseholdRecapSourcePerson,
@@ -85,12 +84,11 @@ const scoreForCheckIn = (
 const latestScoreableCheckIn = (
   person: HouseholdRecapSourcePerson,
   dateKey: string,
-): HouseholdRecapCheckIn | undefined => {
-  return [...(person.checkIns ?? [])]
+): HouseholdRecapCheckIn | undefined =>
+  [...(person.checkIns ?? [])]
     .filter((checkIn) => dateKeyFromIso(checkIn.occurredAt) <= dateKey)
     .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))
     .find((checkIn) => scoreForCheckIn(person, checkIn) !== null)
-}
 
 const recapPersonFromScore = (
   person: HouseholdRecapSourcePerson,

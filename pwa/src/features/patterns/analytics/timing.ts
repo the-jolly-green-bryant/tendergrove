@@ -114,9 +114,8 @@ interface IndicatorDays {
   byIndicator: Map<string, Set<string>>
 }
 
-const activeIndicators = (person: AnalyticsPerson): AnalyticsPerson['indicators'] => {
-  return person.indicators.filter((i) => i.active !== false && i.polarity !== null)
-}
+const activeIndicators = (person: AnalyticsPerson): AnalyticsPerson['indicators'] =>
+  person.indicators.filter((i) => i.active !== false && i.polarity !== null)
 
 const collectIndicatorDays = (person: AnalyticsPerson): IndicatorDays => {
   const checkInDays = new Set<string>()

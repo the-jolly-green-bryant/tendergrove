@@ -94,9 +94,7 @@ const classifySustained = (before: number, delta: number): TurningPointType => {
   return before <= LOW_WELLBEING ? 'recovery' : 'sustainedIncrease'
 }
 
-const days = (count: number): string => {
-  return `${count} day${count === 1 ? '' : 's'}`
-}
+const days = (count: number): string => `${count} day${count === 1 ? '' : 's'}`
 
 const buildSustainedSummary = (
   type: TurningPointType,
@@ -219,12 +217,11 @@ const detectSpikes = (
 /*  Drift: gradual, sustained trends                                   */
 /* ------------------------------------------------------------------ */
 
-const smoothScores = (scored: ScoredPoint[], window: number): number[] => {
-  return scored.map((_, i) => {
+const smoothScores = (scored: ScoredPoint[], window: number): number[] =>
+  scored.map((_, i) => {
     const slice = scored.slice(Math.max(0, i - window + 1), i + 1)
     return slice.reduce((sum, p) => sum + p.score, 0) / slice.length
   })
-}
 
 const extendRun = (smooth: number[], start: number): number => {
   let direction = 0

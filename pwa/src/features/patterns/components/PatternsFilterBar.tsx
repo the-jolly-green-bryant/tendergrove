@@ -11,8 +11,8 @@ import { usePatternsData } from '../usePatternsData'
 import { usePatternsFilterStore } from '../patternsFilterStore'
 import { FiltersModal } from './FiltersModal'
 
-const toFilterablePeople = (raw: RawPerson[] | undefined): FilterablePerson[] => {
-  return (raw ?? [])
+const toFilterablePeople = (raw: RawPerson[] | undefined): FilterablePerson[] =>
+  (raw ?? [])
     .filter((p) => p.archived !== true)
     .map((p) => ({
       id: p.id,
@@ -25,7 +25,6 @@ const toFilterablePeople = (raw: RawPerson[] | undefined): FilterablePerson[] =>
         .filter((c): c is NonNullable<typeof c> => c != null)
         .map((c) => ({ occurredAt: c.occurredAt, answersJson: c.answersJson })),
     }))
-}
 
 export const PatternsFilterBar = ({
   showDeltaToggle = false,

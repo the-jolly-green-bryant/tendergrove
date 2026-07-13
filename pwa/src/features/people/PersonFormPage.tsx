@@ -87,12 +87,11 @@ interface SuggestedItem {
 
 let nextSuggestedId = 0
 
-const polarityForType = (type: IndicatorType): Polarity => {
-  return type === 'positive' ? 'desired' : 'undesired'
-}
+const polarityForType = (type: IndicatorType): Polarity =>
+  type === 'positive' ? 'desired' : 'undesired'
 
-const loadImageFromFile = (file: File): Promise<HTMLImageElement> => {
-  return new Promise((resolve, reject) => {
+const loadImageFromFile = (file: File): Promise<HTMLImageElement> =>
+  new Promise((resolve, reject) => {
     const objectUrl = URL.createObjectURL(file)
     const image = new Image()
 
@@ -106,7 +105,6 @@ const loadImageFromFile = (file: File): Promise<HTMLImageElement> => {
     }
     image.src = objectUrl
   })
-}
 
 const createAvatarDataUrl = async (file: File): Promise<string> => {
   if (!file.type.startsWith('image/')) {
@@ -160,15 +158,14 @@ const detailsPrimaryLabel = (
   return isEditing ? 'Save Changes' : 'Continue'
 }
 
-const seedSuggestedItems = (template: RoleTemplate): SuggestedItem[] => {
-  return template.indicators.map((indicator) => ({
+const seedSuggestedItems = (template: RoleTemplate): SuggestedItem[] =>
+  template.indicators.map((indicator) => ({
     id: `suggested-${nextSuggestedId++}`,
     name: indicator.label,
     polarity: polarityForType(indicator.type),
     inputType: 'boolean',
     suggested: true,
   }))
-}
 
 const WizardHeader = ({
   isEditing,
@@ -178,87 +175,83 @@ const WizardHeader = ({
   readonly isEditing: boolean
   readonly onBack: () => void
   readonly onClose: () => void
-}) => {
-  return (
-    <IonHeader
-      translucent
-      className="wizard-header"
-    >
-      <IonToolbar className="wizard-toolbar">
-        <IonButtons slot="start">
-          {isEditing ? (
-            <IonBackButton
-              defaultHref="/dashboard"
-              text=""
-            />
-          ) : (
-            <IonButton
-              fill="clear"
-              onClick={onBack}
-              aria-label="Go back"
-            >
-              <IonIcon
-                slot="icon-only"
-                icon={arrowBackOutline}
-              />
-            </IonButton>
-          )}
-        </IonButtons>
-
-        <div className="wizard-brand">
-          <img
-            src="/favicon.png"
-            alt=""
-            className="wizard-brand__logo"
+}) => (
+  <IonHeader
+    translucent
+    className="wizard-header"
+  >
+    <IonToolbar className="wizard-toolbar">
+      <IonButtons slot="start">
+        {isEditing ? (
+          <IonBackButton
+            defaultHref="/dashboard"
+            text=""
           />
-          <span className="wizard-brand__name">TenderGrove</span>
-        </div>
-
-        <IonButtons slot="end">
+        ) : (
           <IonButton
             fill="clear"
-            onClick={onClose}
-            aria-label="Close"
+            onClick={onBack}
+            aria-label="Go back"
           >
             <IonIcon
               slot="icon-only"
-              icon={closeOutline}
+              icon={arrowBackOutline}
             />
           </IonButton>
-        </IonButtons>
-      </IonToolbar>
-    </IonHeader>
-  )
-}
+        )}
+      </IonButtons>
 
-const StepIndicator = ({ step }: { readonly step: number }) => {
-  return (
-    <div className="wizard-stepper">
-      <p className="wizard-stepper__label">
-        Step {step} of {TOTAL_STEPS}
-      </p>
-      <div className="wizard-stepper__track">
-        {Array.from({ length: TOTAL_STEPS }, (_, index) => {
-          const position = index + 1
-          return (
-            <React.Fragment key={position}>
-              {index > 0 && (
-                <span
-                  className={`wizard-stepper__line ${
-                    position <= step ? 'wizard-stepper__line--filled' : ''
-                  }`}
-                />
-              )}
-              <span
-                className={`wizard-stepper__dot wizard-stepper__dot--${dotState(position, step)}`}
-              />
-            </React.Fragment>
-          )
-        })}
+      <div className="wizard-brand">
+        <img
+          src="/favicon.png"
+          alt=""
+          className="wizard-brand__logo"
+        />
+        <span className="wizard-brand__name">TenderGrove</span>
       </div>
+
+      <IonButtons slot="end">
+        <IonButton
+          fill="clear"
+          onClick={onClose}
+          aria-label="Close"
+        >
+          <IonIcon
+            slot="icon-only"
+            icon={closeOutline}
+          />
+        </IonButton>
+      </IonButtons>
+    </IonToolbar>
+  </IonHeader>
+)
+
+const StepIndicator = ({ step }: { readonly step: number }) => (
+  <div className="wizard-stepper">
+    <p className="wizard-stepper__label">
+      Step {step} of {TOTAL_STEPS}
+    </p>
+    <div className="wizard-stepper__track">
+      {Array.from({ length: TOTAL_STEPS }, (_, index) => {
+        const position = index + 1
+        return (
+          <React.Fragment key={position}>
+            {index > 0 && (
+              <span
+                className={`wizard-stepper__line ${
+                  position <= step ? 'wizard-stepper__line--filled' : ''
+                }`}
+              />
+            )}
+            <span
+              className={`wizard-stepper__dot wizard-stepper__dot--${dotState(position, step)}`}
+            />
+          </React.Fragment>
+        )
+      })}
     </div>
-  )
-}
+  </div>
+)
 
 const RoleCard = ({
   template,
@@ -268,31 +261,29 @@ const RoleCard = ({
   readonly template: RoleTemplate
   readonly selected: boolean
   readonly onSelect: () => void
-}) => {
-  return (
-    <button
-      type="button"
-      className={`role-card ${selected ? 'role-card--selected' : ''}`}
-      aria-pressed={selected}
-      onClick={onSelect}
-    >
+}) => (
+  <button
+    type="button"
+    className={`role-card ${selected ? 'role-card--selected' : ''}`}
+    aria-pressed={selected}
+    onClick={onSelect}
+  >
+    <IonIcon
+      className="role-card__icon"
+      icon={template.icon}
+    />
+    <span className="role-card__text">
+      <span className="role-card__label">{template.label}</span>
+      <span className="role-card__desc">{template.description}</span>
+    </span>
+    {selected && (
       <IonIcon
-        className="role-card__icon"
-        icon={template.icon}
+        className="role-card__check"
+        icon={checkmarkCircle}
       />
-      <span className="role-card__text">
-        <span className="role-card__label">{template.label}</span>
-        <span className="role-card__desc">{template.description}</span>
-      </span>
-      {selected && (
-        <IonIcon
-          className="role-card__check"
-          icon={checkmarkCircle}
-        />
-      )}
-    </button>
-  )
-}
+    )}
+  </button>
+)
 
 const RoleStep = ({
   role,
@@ -302,40 +293,38 @@ const RoleStep = ({
   readonly role: RoleKey
   readonly setRole: (role: RoleKey) => void
   readonly onNext: () => void
-}) => {
-  return (
-    <section className="wizard-step">
-      <StepIndicator step={1} />
+}) => (
+  <section className="wizard-step">
+    <StepIndicator step={1} />
 
-      <div className="wizard-step__intro">
-        <h1 className="wizard-heading">Who are you tracking?</h1>
-        <p className="wizard-subheading">
-          We&rsquo;ll personalize suggestions based on who this person is.
-        </p>
-      </div>
+    <div className="wizard-step__intro">
+      <h1 className="wizard-heading">Who are you tracking?</h1>
+      <p className="wizard-subheading">
+        We&rsquo;ll personalize suggestions based on who this person is.
+      </p>
+    </div>
 
-      <div className="role-grid">
-        {roleKeys.map((key) => (
-          <RoleCard
-            key={key}
-            template={roleTemplates[key]}
-            selected={role === key}
-            onSelect={() => setRole(key)}
-          />
-        ))}
-      </div>
+    <div className="role-grid">
+      {roleKeys.map((key) => (
+        <RoleCard
+          key={key}
+          template={roleTemplates[key]}
+          selected={role === key}
+          onSelect={() => setRole(key)}
+        />
+      ))}
+    </div>
 
-      <div className="wizard-footer">
-        <IonButton
-          expand="block"
-          onClick={onNext}
-        >
-          Continue
-        </IonButton>
-      </div>
-    </section>
-  )
-}
+    <div className="wizard-footer">
+      <IonButton
+        expand="block"
+        onClick={onNext}
+      >
+        Continue
+      </IonButton>
+    </div>
+  </section>
+)
 
 const NameField = ({
   displayName,
@@ -343,27 +332,25 @@ const NameField = ({
 }: {
   readonly displayName: string
   readonly setDisplayName: (displayName: string) => void
-}) => {
-  return (
-    <div className="wizard-field">
-      <label
-        className="wizard-field__label"
-        htmlFor="person-name"
-      >
-        Name
-      </label>
-      <div className="wizard-input">
-        <IonInput
-          id="person-name"
-          placeholder="Enter a name"
-          value={displayName}
-          clearInput
-          onIonInput={(event) => setDisplayName(event.detail.value ?? '')}
-        />
-      </div>
+}) => (
+  <div className="wizard-field">
+    <label
+      className="wizard-field__label"
+      htmlFor="person-name"
+    >
+      Name
+    </label>
+    <div className="wizard-input">
+      <IonInput
+        id="person-name"
+        placeholder="Enter a name"
+        value={displayName}
+        clearInput
+        onIonInput={(event) => setDisplayName(event.detail.value ?? '')}
+      />
     </div>
-  )
-}
+  </div>
+)
 
 interface PhotoFieldProps {
   readonly avatarUrl: string | undefined
@@ -385,40 +372,38 @@ const PhotoField = ({
   photoError,
   photoInputRef,
   handlePhotoChange,
-}: PhotoFieldProps) => {
-  return (
-    <div className="wizard-field">
-      <span className="wizard-field__label">Photo</span>
-      <button
-        type="button"
-        className="wizard-photo"
-        onClick={choosePhoto}
-        disabled={isProcessingPhoto}
-      >
-        <span className="wizard-photo__avatar">
-          <PersonAvatar
-            name={displayName || roleLabel}
-            src={avatarUrl}
-          />
-          <span className="wizard-photo__badge">
-            <IonIcon icon={cameraOutline} />
-          </span>
+}: PhotoFieldProps) => (
+  <div className="wizard-field">
+    <span className="wizard-field__label">Photo</span>
+    <button
+      type="button"
+      className="wizard-photo"
+      onClick={choosePhoto}
+      disabled={isProcessingPhoto}
+    >
+      <span className="wizard-photo__avatar">
+        <PersonAvatar
+          name={displayName || roleLabel}
+          src={avatarUrl}
+        />
+        <span className="wizard-photo__badge">
+          <IonIcon icon={cameraOutline} />
         </span>
-        <span className="wizard-photo__caption">
-          {avatarUrl ? 'Change profile picture' : 'Add a profile picture'}
-        </span>
-      </button>
-      <input
-        ref={photoInputRef}
-        type="file"
-        accept="image/*"
-        hidden
-        onChange={handlePhotoChange}
-      />
-      {photoError && <p className="wizard-photo__error">{photoError}</p>}
-    </div>
-  )
-}
+      </span>
+      <span className="wizard-photo__caption">
+        {avatarUrl ? 'Change profile picture' : 'Add a profile picture'}
+      </span>
+    </button>
+    <input
+      ref={photoInputRef}
+      type="file"
+      accept="image/*"
+      hidden
+      onChange={handlePhotoChange}
+    />
+    {photoError && <p className="wizard-photo__error">{photoError}</p>}
+  </div>
+)
 
 interface DetailsStepProps extends PhotoFieldProps {
   readonly isEditing: boolean
@@ -471,28 +456,26 @@ const DetailsStep = (props: DetailsStepProps) => {
   )
 }
 
-const SuggestedIntro = ({ roleLabel }: { readonly roleLabel: string }) => {
-  return (
-    <div className="wizard-step__intro wizard-step__intro--celebrate">
-      <IonIcon
-        className="wizard-step__badge"
-        icon={heart}
-      />
-      <h1 className="wizard-heading">We&rsquo;ve created a starting point</h1>
-      <p className="wizard-subheading">
-        Based on your selected role
-        {roleLabel ? (
-          <>
-            {' '}
-            (<strong>{roleLabel}</strong>)
-          </>
-        ) : null}
-        , we&rsquo;ve prepared a thoughtful set of indicators to help you begin tracking
-        right away.
-      </p>
-    </div>
-  )
-}
+const SuggestedIntro = ({ roleLabel }: { readonly roleLabel: string }) => (
+  <div className="wizard-step__intro wizard-step__intro--celebrate">
+    <IonIcon
+      className="wizard-step__badge"
+      icon={heart}
+    />
+    <h1 className="wizard-heading">We&rsquo;ve created a starting point</h1>
+    <p className="wizard-subheading">
+      Based on your selected role
+      {roleLabel ? (
+        <>
+          {' '}
+          (<strong>{roleLabel}</strong>)
+        </>
+      ) : null}
+      , we&rsquo;ve prepared a thoughtful set of indicators to help you begin tracking
+      right away.
+    </p>
+  </div>
+)
 
 const SuggestedRow = ({
   item,
@@ -504,35 +487,33 @@ const SuggestedRow = ({
   readonly section: PolaritySection
   readonly onEdit: (item: SuggestedItem) => void
   readonly onRemove: (id: string) => void
-}) => {
-  return (
-    <div className="suggested-row">
-      <IonIcon
-        className="suggested-row__icon"
-        icon={section.icon}
-        style={{ color: section.iconColor }}
-      />
-      <span className="suggested-row__name">{item.name}</span>
-      {item.suggested && <span className="suggested-row__badge">Suggested</span>}
-      <button
-        type="button"
-        className="suggested-row__action"
-        aria-label={`Edit ${item.name}`}
-        onClick={() => onEdit(item)}
-      >
-        <IonIcon icon={createOutline} />
-      </button>
-      <button
-        type="button"
-        className="suggested-row__action suggested-row__action--remove"
-        aria-label={`Remove ${item.name}`}
-        onClick={() => onRemove(item.id)}
-      >
-        <IonIcon icon={closeCircle} />
-      </button>
-    </div>
-  )
-}
+}) => (
+  <div className="suggested-row">
+    <IonIcon
+      className="suggested-row__icon"
+      icon={section.icon}
+      style={{ color: section.iconColor }}
+    />
+    <span className="suggested-row__name">{item.name}</span>
+    {item.suggested && <span className="suggested-row__badge">Suggested</span>}
+    <button
+      type="button"
+      className="suggested-row__action"
+      aria-label={`Edit ${item.name}`}
+      onClick={() => onEdit(item)}
+    >
+      <IonIcon icon={createOutline} />
+    </button>
+    <button
+      type="button"
+      className="suggested-row__action suggested-row__action--remove"
+      aria-label={`Remove ${item.name}`}
+      onClick={() => onRemove(item.id)}
+    >
+      <IonIcon icon={closeCircle} />
+    </button>
+  </div>
+)
 
 const SuggestedSection = ({
   section,
@@ -546,36 +527,34 @@ const SuggestedSection = ({
   readonly onAdd: () => void
   readonly onEdit: (item: SuggestedItem) => void
   readonly onRemove: (id: string) => void
-}) => {
-  return (
-    <div className="suggested-section">
-      <div className="suggested-section__header">
-        <h2 style={{ color: section.iconColor }}>{section.title}</h2>
-        <button
-          type="button"
-          className="suggested-section__add"
-          aria-label={`Add ${section.title.toLowerCase()}`}
-          onClick={onAdd}
-        >
-          <IonIcon icon={addOutline} />
-        </button>
-      </div>
-
-      <div className="suggested-list">
-        {items.length === 0 && <p className="suggested-empty">Nothing here yet.</p>}
-        {items.map((item) => (
-          <SuggestedRow
-            key={item.id}
-            item={item}
-            section={section}
-            onEdit={onEdit}
-            onRemove={onRemove}
-          />
-        ))}
-      </div>
+}) => (
+  <div className="suggested-section">
+    <div className="suggested-section__header">
+      <h2 style={{ color: section.iconColor }}>{section.title}</h2>
+      <button
+        type="button"
+        className="suggested-section__add"
+        aria-label={`Add ${section.title.toLowerCase()}`}
+        onClick={onAdd}
+      >
+        <IonIcon icon={addOutline} />
+      </button>
     </div>
-  )
-}
+
+    <div className="suggested-list">
+      {items.length === 0 && <p className="suggested-empty">Nothing here yet.</p>}
+      {items.map((item) => (
+        <SuggestedRow
+          key={item.id}
+          item={item}
+          section={section}
+          onEdit={onEdit}
+          onRemove={onRemove}
+        />
+      ))}
+    </div>
+  </div>
+)
 
 interface SuggestedItemsState {
   items: SuggestedItem[]
