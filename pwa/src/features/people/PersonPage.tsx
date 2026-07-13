@@ -2,14 +2,9 @@ import {
   IonBackButton,
   IonButton,
   IonButtons,
-  IonCard,
-  IonCardContent,
   IonContent,
   IonHeader,
   IonIcon,
-  IonItem,
-  IonLabel,
-  IonList,
   IonPage,
   IonTitle,
   IonToolbar,
@@ -20,14 +15,10 @@ import {
 import {
   archiveOutline,
   calendarOutline,
-  checkmarkCircle,
   chevronForwardOutline,
-  closeCircle,
   createOutline,
   listOutline,
-  removeCircle,
 } from 'ionicons/icons'
-import { formatDistanceToNow } from 'date-fns'
 import React, { useMemo } from 'react'
 import type { ReactNode } from 'react'
 import { useHistory, useLocation, useParams } from 'react-router-dom'
@@ -172,15 +163,14 @@ const usePersonPageActions = (
 
   const manageEvents = () => router.push(`/person/${personId}/events`, 'forward')
 
-  function doArchive(archive: boolean) {
-    if (!person) return
+  const doArchive = (archive: boolean) =>
+    person &&
     archiveMutation.mutate(
       { id: person.id, archived: archive },
       {
         onSuccess: () => archive && router.push('/dashboard', 'back', 'pop'),
       },
     )
-  }
 
   const toggleArchive = () => {
     if (!person) return
@@ -231,35 +221,6 @@ const usePersonPageActions = (
   return { startCheckIn, showMoreOptions, manageIndicators, manageEvents }
 }
 
-const formatUpdatedLabel = (checkIn: CheckIn): string | null => {
-  const updatedAt = checkIn.updatedAt
-  const createdAt = checkIn.createdAt
-  if (!updatedAt || !createdAt || updatedAt === createdAt) return null
-
-  const created = new Date(createdAt)
-  const updated = new Date(updatedAt)
-
-  const sameDay =
-    created.getFullYear() === updated.getFullYear() &&
-    created.getMonth() === updated.getMonth() &&
-    created.getDate() === updated.getDate()
-
-  const time = updated.toLocaleTimeString(undefined, {
-    hour: 'numeric',
-    minute: '2-digit',
-  })
-
-  if (sameDay) {
-    return `Updated: ${time}`
-  }
-
-  const date = updated.toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-  })
-  return `Updated: ${date} - ${time}`
-}
-
 const formatDateLabel = (date: Date): string => {
   const today = new Date()
   if (
@@ -289,54 +250,6 @@ const formatCheckInTitle = (date: Date): string => {
     day: 'numeric',
   })
   return `${dateLabel}'s Check-In`
-}
-
-const checkInSummaryIcon = (seen: boolean, isDesired: boolean): string => {
-  if (seen) return isDesired ? checkmarkCircle : removeCircle
-  return isDesired ? closeCircle : checkmarkCircle
-}
-
-const CheckInSummaryList = ({
-  indicators,
-  checkedForDate,
-}: {
-  readonly indicators: Indicator[]
-  readonly checkedForDate: Set<string>
-}) => {
-  if (indicators.length === 0) {
-    return <p className="section-empty">No indicators tracked.</p>
-  }
-
-  return (
-    <IonList
-      lines="none"
-      className="check-in-summary person-checkin-panel__summary"
-    >
-      {indicators.map((indicator) => {
-        const seen = checkedForDate.has(indicator.id)
-        const isDesired = indicator.polarity === 'desired'
-        const markGood = seen == isDesired
-        return (
-          <IonItem
-            key={indicator.id}
-            className="check-in-summary__item"
-          >
-            <IonIcon
-              slot="start"
-              icon={checkInSummaryIcon(seen, isDesired)}
-              color={markGood ? 'success' : 'danger'}
-            />
-            <IonLabel
-              className={seen ? '' : 'check-in-summary__muted'}
-              style={!seen ? { textDecoration: 'line-through' } : undefined}
-            >
-              {indicator.name}
-            </IonLabel>
-          </IonItem>
-        )
-      })}
-    </IonList>
-  )
 }
 
 export const PersonCheckInButton = ({
@@ -419,34 +332,24 @@ const PersonCheckInPanel = ({
   status,
   emoji,
   viewDate,
-  checkedForDate,
-  selectedCheckIn,
-  activeIndicators,
   onStartCheckIn,
 }: {
   readonly person: Person
   readonly status: PersonStatus
   readonly emoji?: string | null
   readonly viewDate: Date
-  readonly checkedForDate?: Set<string>
-  readonly selectedCheckIn?: CheckIn
-  readonly activeIndicators: Indicator[]
   readonly onStartCheckIn: () => void
-}) => {
-  const updatedLabel = selectedCheckIn ? formatUpdatedLabel(selectedCheckIn) : null
-
-  return (
-    <section className="person-checkin-panel">
-      <PersonCheckInButton
-        person={person}
-        status={status}
-        emoji={emoji}
-        title={formatCheckInTitle(viewDate)}
-        onClick={onStartCheckIn}
-      />
-    </section>
-  )
-}
+}) => (
+  <section className="person-checkin-panel">
+    <PersonCheckInButton
+      person={person}
+      status={status}
+      emoji={emoji}
+      title={formatCheckInTitle(viewDate)}
+      onClick={onStartCheckIn}
+    />
+  </section>
+)
 
 const SetupNavCard = ({
   icon,

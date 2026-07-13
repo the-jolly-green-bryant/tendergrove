@@ -2,8 +2,7 @@ import React, { useMemo, useState } from 'react'
 
 import { formatDayLabel } from '../analytics/dateUtils'
 import type { DateKey } from '../analytics'
-import { IonIcon, IonItem, IonLabel, IonNote } from '@ionic/react'
-import { heart } from 'ionicons/icons'
+import { IonItem, IonLabel, IonNote } from '@ionic/react'
 
 /**
  * A small, accessible well-being line chart (0–100, higher = better).
@@ -99,15 +98,6 @@ const computeSeriesDomains = (
   clampTo: [number, number] | null,
 ): Domain[] => series.map((item) => computeDomain([item], clampTo))
 
-const gridValuesFor = ({ min, max }: Domain): number[] => {
-  const steps = 3
-  const values: number[] = []
-  for (let i = 0; i <= steps; i++) {
-    values.push(Math.round(min + ((max - min) * i) / steps))
-  }
-  return Array.from(new Set(values))
-}
-
 const xFor = (index: number, count: number): number => {
   if (count <= 1) return PAD_L
   const span = VIEW_W - PAD_L - PAD_R
@@ -132,32 +122,6 @@ const buildPath = (values: (number | null)[], domain: Domain): string => {
   return path.trim()
 }
 
-const axisLabelIndexes = (count: number): number[] => {
-  if (count <= 1) return [0]
-  if (count <= 3) return dates0toN(count)
-  return [0, Math.floor((count - 1) / 2), count - 1]
-}
-
-function dates0toN(count: number): number[] {
-  return Array.from({ length: count }, (_, i) => i)
-}
-
-const ChartGrid = ({ domain }: { readonly domain: Domain }): React.JSX.Element => (
-  <>
-    {gridValuesFor(domain).map((value) => (
-      <g key={value}>
-        <line
-          x1={PAD_L}
-          x2={VIEW_W - PAD_R}
-          y1={yFor(value, domain)}
-          y2={yFor(value, domain)}
-          className="pattern-chart__grid"
-        />
-      </g>
-    ))}
-  </>
-)
-
 /** The line for one series, plus point dots for solid (non-dashed) lines. */
 const SeriesLine = ({
   series,
@@ -166,7 +130,6 @@ const SeriesLine = ({
   readonly series: ChartSeries
   readonly domain: Domain
 }): React.JSX.Element => {
-  const count = series.values.length
   const path = buildPath(series.values, domain)
   const [mX, mY] = path.split(' ')
   const missingData = ['M0', mY, mX.replace('M', 'L'), mY].join(' ')
@@ -197,6 +160,13 @@ const SeriesLine = ({
   )
 }
 
+const hasData = (series: ChartSeries[]): boolean => {
+  const primaryValues =
+    series.find((item) => !item.dashed)?.values ?? series[0]?.values ?? []
+
+  return primaryValues.some((value) => value !== null)
+}
+
 const describeSeries = (series: ChartSeries[]): string =>
   series
     .map((s) => {
@@ -219,9 +189,6 @@ const currentIndex = (series: ChartSeries[]): number => {
   const index = primary ? lastValueIndex(primary.values) : -1
   return index < 0 ? 0 : index
 }
-
-const primarySeries = (series: ChartSeries[]): ChartSeries | undefined =>
-  series.find((s) => !s.dashed) ?? series[0]
 
 const nearestDataIndex = (
   targetIndex: number,
@@ -295,7 +262,7 @@ const Crosshair = ({
         const value = item.values[index]
         const domain = domains[seriesIndex]
 
-        if (value === null || domain === undefined || item.dashed) return null
+        if (value === null || !domain || item.dashed) return null
 
         return (
           <circle
@@ -329,35 +296,38 @@ const Readout = ({
   readonly dates: DateKey[]
   readonly series: ChartSeries[]
   readonly index: number
-}): React.JSX.Element => {
-  const solid = series.filter((s) => !s.dashed)
-  const [status, color, emoji] = _numberToStatus(solid[0].values[index])
-  return (
-    <IonItem
-      color={'transparent'}
-      lines={'none'}
-    >
-      <IonLabel>
-        <h1>
-          {solid.map((s) => (
-            <span
-              key={s.label}
-              className="pattern-chart__readout-value"
-              style={{ color: s.color }}
-            >
-              {status}
-            </span>
-          ))}
-        </h1>
-        <p>as of {dates[index] ? formatDayLabel(dates[index]) : ''}</p>
-      </IonLabel>
+}): React.JSX.Element | null =>
+  hasData(series)
+    ? (() => {
+        const solid = series.filter((s) => !s.dashed)
+        const [status, _, emoji] = _numberToStatus(solid[0].values[index])
+        return (
+          <IonItem
+            color={'transparent'}
+            lines={'none'}
+          >
+            <IonLabel>
+              <h1>
+                {solid.map((s) => (
+                  <span
+                    key={s.label}
+                    className="pattern-chart__readout-value"
+                    style={{ color: s.color }}
+                  >
+                    {status}
+                  </span>
+                ))}
+              </h1>
+              <p>as of {dates[index] ? formatDayLabel(dates[index]) : ''}</p>
+            </IonLabel>
 
-      <IonNote slot="end">
-        <h1>{emoji}</h1>
-      </IonNote>
-    </IonItem>
-  )
-}
+            <IonNote slot="end">
+              <h1>{emoji}</h1>
+            </IonNote>
+          </IonItem>
+        )
+      })()
+    : null
 
 interface EventBarsProps {
   readonly counts: number[]
@@ -421,7 +391,6 @@ interface CanvasProps {
   readonly eventCounts: number[]
   readonly highlightRect: { x: number; width: number } | null
   readonly activeIndex: number | null
-  readonly hasData: boolean
 }
 
 const ChartCanvas = ({
@@ -432,8 +401,8 @@ const ChartCanvas = ({
   eventCounts,
   highlightRect,
   activeIndex,
-  hasData,
 }: CanvasProps): React.JSX.Element => {
+  const has = hasData(series)
   const primaryDomain = domains[0] ?? { min: 0, max: 100 }
 
   const showBaseline =
@@ -476,7 +445,7 @@ const ChartCanvas = ({
         dateCount={dates.length}
       />
 
-      {hasData && activeIndex !== null && (
+      {has && activeIndex !== null && (
         <Crosshair
           index={activeIndex}
           series={series}
@@ -488,6 +457,23 @@ const ChartCanvas = ({
   )
 }
 
+const getHighlightRect = (
+  dates: DateKey[],
+  highlight: TrendChartProps['highlight'],
+): { x: number; width: number } | null => {
+  const count = dates.length
+  const startIndex = dates.indexOf(highlight!.start)
+  const endIndex = dates.indexOf(highlight!.end)
+  if (startIndex < 0 || endIndex < 0) return null
+  const x1 = xFor(startIndex, count)
+  const x2 = xFor(endIndex, count)
+
+  return {
+    x: x1,
+    width: Math.max(2, x2 - x1),
+  }
+}
+
 export const TrendChart = ({
   dates,
   series,
@@ -497,36 +483,21 @@ export const TrendChart = ({
   baseline,
 }: TrendChartProps): React.JSX.Element => {
   const count = dates.length
-
   const domains = useMemo(
     () => computeSeriesDomains(series, clampTo),
     [series, clampTo],
   )
 
-  const primary = series.find((item) => !item.dashed) ?? series[0]
-  const primaryValues = primary?.values ?? []
-
-  const hasData = primaryValues.some((value) => value !== null)
-
-  const { activeIndex, update, clear } = useScrub(primaryValues)
+  const has = hasData(series)
+  const { activeIndex, update, clear } = useScrub(
+    series.find((item) => !item.dashed)?.values ?? series[0]?.values ?? [],
+  )
   const readoutIndex = activeIndex ?? currentIndex(series)
 
-  const highlightRect = useMemo(() => {
-    if (!highlight) return null
-
-    const startIndex = dates.indexOf(highlight.start)
-    const endIndex = dates.indexOf(highlight.end)
-
-    if (startIndex < 0 || endIndex < 0) return null
-
-    const x1 = xFor(startIndex, count)
-    const x2 = xFor(endIndex, count)
-
-    return {
-      x: x1,
-      width: Math.max(2, x2 - x1),
-    }
-  }, [dates, highlight, count])
+  const highlightRect = useMemo(
+    () => highlight && getHighlightRect(dates, highlight),
+    [dates, highlight, count],
+  )
 
   const normalizedEventCounts = useMemo(
     () => dates.map((_, index) => Math.max(0, eventCounts[index] ?? 0)),
@@ -535,7 +506,7 @@ export const TrendChart = ({
 
   return (
     <figure className="pattern-chart">
-      {hasData && (
+      {has && (
         <Readout
           dates={dates}
           series={series}
@@ -562,9 +533,8 @@ export const TrendChart = ({
           domains={domains}
           eventCounts={normalizedEventCounts}
           baseline={baseline}
-          highlightRect={highlightRect}
+          highlightRect={highlightRect!}
           activeIndex={activeIndex}
-          hasData={hasData}
         />
       </svg>
     </figure>

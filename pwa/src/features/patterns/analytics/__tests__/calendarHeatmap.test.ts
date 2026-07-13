@@ -16,19 +16,19 @@ describe('wellbeingLevel', () => {
   })
 })
 
-describe('buildCalendar', () => {
-  const day = (over: Partial<DailyHouseholdScore>): DailyHouseholdScore => ({
-    date: '2025-05-10',
-    score: null,
-    contributingPeople: 0,
-    checkInCount: 0,
-    incidentCount: 0,
-    positiveCount: 0,
-    negativeCount: 0,
-    ...over,
-    eventCount: over['eventCount'] ?? 0,
-  })
+const day = (over: Partial<DailyHouseholdScore>): DailyHouseholdScore => ({
+  date: '2025-05-10',
+  score: null,
+  contributingPeople: 0,
+  checkInCount: 0,
+  incidentCount: 0,
+  positiveCount: 0,
+  negativeCount: 0,
+  ...over,
+  eventCount: over['eventCount'] ?? 0,
+})
 
+describe('buildCalendar', () => {
   it('carries counts and assigns a level and summary', () => {
     const [cell] = buildCalendar([
       day({ score: 70, checkInCount: 3, incidentCount: 2, positiveCount: 1 }),

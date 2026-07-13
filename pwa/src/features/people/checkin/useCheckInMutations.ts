@@ -15,12 +15,11 @@ export interface CheckInInput {
 export const useCheckInMutations = (personId: string | undefined) => {
   const queryClient = useQueryClient()
 
-  async function invalidate() {
+  const invalidate = async () =>
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ['person', personId] }),
       queryClient.invalidateQueries({ queryKey: ['people'] }),
     ])
-  }
 
   return {
     async create(input: CheckInInput) {

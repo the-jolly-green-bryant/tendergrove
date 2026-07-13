@@ -3,7 +3,6 @@ import {
   IonButtons,
   IonCheckbox,
   IonContent,
-  IonFooter,
   IonHeader,
   IonIcon,
   IonItem,
@@ -15,20 +14,12 @@ import {
   useIonAlert,
   useIonRouter,
 } from '@ionic/react'
-import {
-  add,
-  alertCircleOutline,
-  calendarOutline,
-  checkmarkCircle,
-  happyOutline,
-} from 'ionicons/icons'
+import { add, alertCircleOutline, calendarOutline, happyOutline } from 'ionicons/icons'
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useParams } from 'react-router-dom'
 
 import { LoadingState } from '../../components/LoadingState'
-import { Page } from '../../components/Page'
 import { PastDataNotice } from '../../components/PastDataNotice'
-import { PersonAvatar } from '../../components/PersonAvatar'
 import { useRouteModal } from '../../components/RouteModalContext'
 import { useSelectedDate } from '../../context/SelectedDateContext'
 import { usePeople } from '../people/usePeople'
@@ -65,7 +56,6 @@ const formatDateLabel = (date: Date): string => {
   })
 }
 
-type Person = NonNullable<ReturnType<typeof usePerson>['data']>
 type Indicator = NonNullable<ReturnType<typeof usePerson>['data']>['indicators'][number]
 type CheckedIndicators = Record<string, boolean>
 /** A checkbox row: an indicator or a life event, reduced to id + label. */
@@ -201,34 +191,6 @@ const CheckInNotes = ({
   )
 }
 
-const WizardActions = ({
-  existing,
-  saving,
-  canSave,
-  hasNext,
-  onSkip,
-  onSave,
-}: {
-  readonly existing: unknown
-  readonly saving: boolean
-  readonly canSave: boolean
-  readonly hasNext: boolean
-  readonly onSkip: () => void
-  readonly onSave: () => void
-}) => {
-  const saveLabel = `${existing ? 'Update' : 'Save'}${hasNext ? ' & Next' : ''}`
-
-  return (
-    <IonFooter>
-      <IonToolbar>
-        <IonButtons slot="primary">
-          <IonButton onClick={onSave}>{saveLabel}</IonButton>
-        </IonButtons>
-      </IonToolbar>
-    </IonFooter>
-  )
-}
-
 const buildCheckInPayload = (
   selectedDate: Date,
   checkedIndicatorIds: string[],
@@ -333,7 +295,7 @@ const useWizardStepState = ({
   )
   const draft = useCheckInDraft(personId, selectedDate, existing)
 
-  async function save(): Promise<boolean> {
+  const save = async (): Promise<boolean> => {
     if (saving) return false
     setSaving(true)
     try {
@@ -361,115 +323,6 @@ const useWizardStepState = ({
     ...draft,
     save,
   }
-}
-
-const WizardHero = ({ person }: { readonly person: Person }) => (
-  <div className="wizard-step__hero">
-    <PersonAvatar
-      name={person.displayName}
-      src={person.avatarUrl}
-      className="wizard-step__avatar"
-    />
-    <h2 className="wizard-step__name">{person.displayName}</h2>
-  </div>
-)
-
-const ReviewGroup = ({
-  title,
-  color,
-  items,
-}: {
-  readonly title: string
-  readonly color: string
-  readonly items: ChecklistItem[]
-}) => {
-  if (items.length === 0) return null
-  return (
-    <div className={`check-in-review__group check-in-review__group--${color}`}>
-      <div className="check-in-review__group-head">
-        <span>{title}</span>
-        <span className="check-in-review__count">{items.length}</span>
-      </div>
-      {items.map((item) => (
-        <div
-          key={item.id}
-          className="check-in-review__item"
-        >
-          <IonIcon
-            icon={checkmarkCircle}
-            aria-hidden="true"
-          />
-          {item.label}
-        </div>
-      ))}
-    </div>
-  )
-}
-
-const WizardReview = ({
-  person,
-  groups,
-  note,
-  saving,
-  onDone,
-  onEdit,
-}: {
-  readonly person: Person
-  readonly groups: {
-    challenges: ChecklistItem[]
-    positives: ChecklistItem[]
-    events: ChecklistItem[]
-  }
-  readonly note: string
-  readonly saving: boolean
-  readonly onDone: () => void
-  readonly onEdit: () => void
-}) => {
-  const nothing =
-    groups.challenges.length + groups.positives.length + groups.events.length === 0
-  return (
-    <>
-      <WizardHero person={person} />
-      {nothing && !note && (
-        <p className="section-empty">Nothing flagged today — logged as a calm day.</p>
-      )}
-      <ReviewGroup
-        title="Challenges"
-        color="danger"
-        items={groups.challenges}
-      />
-      <ReviewGroup
-        title="Positive Signs"
-        color="success"
-        items={groups.positives}
-      />
-      <ReviewGroup
-        title="Events that occurred"
-        color="primary"
-        items={groups.events}
-      />
-      {note.trim() && (
-        <div className="check-in-review__note">
-          <h2 className="check-in__group-title">Note</h2>
-          <p>{note.trim()}</p>
-        </div>
-      )}
-      <div className="wizard-step__actions wizard-step__actions--review">
-        <IonButton
-          fill="outline"
-          onClick={onEdit}
-        >
-          Edit
-        </IonButton>
-        <IonButton
-          disabled={saving}
-          onClick={onDone}
-        >
-          Done
-        </IonButton>
-      </div>
-    </>
-  )
 }
 
 /**
@@ -708,11 +561,9 @@ export const CheckInWizardPage = ({
 }: {
   readonly personIdOverride?: string
 } = {}) => {
-  const router = useIonRouter()
   const { personId: routePersonId } = useParams<{ personId: string }>()
   const personId = personIdOverride ?? routePersonId
   const location = useLocation()
-  const routeModal = useRouteModal()
   const { selectedDate, setSelectedDate } = useSelectedDate()
   const people = usePeople()
   const returnPath = useMemo(
@@ -722,25 +573,21 @@ export const CheckInWizardPage = ({
   const activePeople = useWizardPeople(personId, people)
   const [currentIndex, setCurrentIndex] = useState(0)
   const currentPerson = activePeople[currentIndex]
-  const total = activePeople.length
   const isLoadingPeople = !personId && people.isLoading
   const isTimeTravel = formatDateLabel(selectedDate) !== 'Today'
-  const title = total > 1 ? `Check-In (${currentIndex + 1} of ${total})` : 'Check-In'
+  const routeModal = useRouteModal()
   const advance = useWizardAdvance({
     activePeopleLength: activePeople.length,
     currentIndex,
     personId,
     returnPath,
     routeModal,
-    router,
+    router: useIonRouter(),
     setCurrentIndex,
   })
 
   const step = useWizardStepState({ personId, selectedDate })
-  const nothingToTrack = step.indicators.length === 0 && step.events.length === 0
-  const onSave = async () => {
-    if (await step.save()) advance()
-  }
+  const onSave = async () => (await step.save()) && advance()
 
   return (
     <>

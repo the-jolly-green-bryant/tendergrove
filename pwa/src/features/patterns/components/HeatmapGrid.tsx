@@ -50,7 +50,7 @@ export const HeatmapGrid = ({
       <span className="pattern-heatmap__rowlabel" />
       {WEEKDAY_INITIALS.map((initial, weekday) => (
         <span
-          key={weekday}
+          key={`r1-${WEEKDAY_NAMES[weekday]}`}
           className="pattern-heatmap__colhead"
           role="columnheader"
           aria-label={WEEKDAY_NAMES[weekday]}
@@ -74,7 +74,7 @@ export const HeatmapGrid = ({
         </span>
         {row.values.map((value, weekday) => (
           <button
-            key={weekday}
+            key={`r2-${WEEKDAY_NAMES[weekday]}`}
             type="button"
             className="pattern-heatmap__cell"
             style={cellStyle(value, scale)}

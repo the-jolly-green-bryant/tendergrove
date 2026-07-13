@@ -8,7 +8,7 @@ import {
   type KVStore,
 } from '../insightCache'
 
-function memStore(): { store: KVStore; map: Map<string, string> } {
+const memStore = (): { store: KVStore; map: Map<string, string> } => {
   const map = new Map<string, string>()
   const store: KVStore = {
     get: async (key) => map.get(key) ?? null,
@@ -19,17 +19,15 @@ function memStore(): { store: KVStore; map: Map<string, string> } {
   return { store, map }
 }
 
-function insight(id: string, description: string): GeneratedInsight {
-  return {
-    id,
-    title: 'Title',
-    description,
-    priority: 1,
-    icon: 'leaf',
-    tone: 'positive',
-    confidence: 'high',
-  }
-}
+const insight = (id: string, description: string): GeneratedInsight => ({
+  id,
+  title: 'Title',
+  description,
+  priority: 1,
+  icon: 'leaf',
+  tone: 'positive',
+  confidence: 'high',
+})
 
 describe('signInsights', () => {
   it('is stable for the same content', () => {

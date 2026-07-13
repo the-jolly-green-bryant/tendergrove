@@ -327,8 +327,6 @@ const toScoredDays = (
 
 export const runAnalytics = (input: AnalyticsInput): AnalyticsResult => {
   const window = buildDateWindow(input.now, input.windowDays)
-  const startDate = window[0]
-  const endDate = window[window.length - 1]
 
   const people: AnalyticsPersonRef[] = input.people.map((p) => ({
     id: p.id,
@@ -346,17 +344,18 @@ export const runAnalytics = (input: AnalyticsInput): AnalyticsResult => {
     personDailyScores,
   )
 
-  const personAnomalyPatterns: AnalyticsResult['personAnomalyPatterns'] = {}
-
-  for (const person of input.people) {
-    personAnomalyPatterns[person.id] = buildAnomalyPatterns({
-      person,
-      people: input.people,
-      dailyScores: personDailyScores[person.id] ?? [],
-      personDailyScores,
-      lifeEvents: input.lifeEvents,
-    })
-  }
+  const personAnomalyPatterns = Object.fromEntries(
+    input.people.map((person) => [
+      person.id,
+      buildAnomalyPatterns({
+        person,
+        people: input.people,
+        dailyScores: personDailyScores[person.id] ?? [],
+        personDailyScores,
+        lifeEvents: input.lifeEvents,
+      }),
+    ]),
+  )
 
   const householdTrend = computeTrend(toScoredDays(householdDailyScores))
   const personTrends: Record<string, TrendResult> = {}
@@ -364,26 +363,11 @@ export const runAnalytics = (input: AnalyticsInput): AnalyticsResult => {
     personTrends[person.id] = computeTrend(toScoredDays(personDailyScores[person.id]))
   }
 
-  const calendar = buildCalendar(householdDailyScores)
-  const correlations = findCorrelations(input.people)
-  const relationships = findRelationships(people, personDailyScores)
-  const turningPoints = findTurningPoints(householdDailyScores)
-  const overview = buildOverview({
-    householdTrend,
-    householdDailyScores,
-    turningPoints,
-    correlations,
-  })
-
   const timing = buildTiming(
     input.people,
     personDailyScores,
     toScoredDays(householdDailyScores),
   )
-  const generatedInsights = buildGeneratedInsights({
-    timing: timing.household,
-    trend: householdTrend,
-  })
   const personGeneratedInsights: Record<string, GeneratedInsight[]> = {}
   for (const person of input.people) {
     personGeneratedInsights[person.id] = buildGeneratedInsights({
@@ -398,10 +382,13 @@ export const runAnalytics = (input: AnalyticsInput): AnalyticsResult => {
     personDailyScores[p.id].some((d) => d.hasData),
   ).length
 
+  const turningPoints = findTurningPoints(householdDailyScores)
+  const correlations = findCorrelations(input.people)
+
   return {
     window: {
-      startDate,
-      endDate,
+      startDate: window[0],
+      endDate: window[window.length - 1],
       days: input.windowDays,
     },
     dataQuality: buildDataQuality(input.people, scoredDays, peopleWithData),
@@ -410,16 +397,24 @@ export const runAnalytics = (input: AnalyticsInput): AnalyticsResult => {
     personDailyScores,
     householdTrend,
     personTrends,
-    calendar,
+    calendar: buildCalendar(householdDailyScores),
     correlations,
-    relationships,
+    relationships: findRelationships(people, personDailyScores),
     turningPoints,
-    overview,
+    overview: buildOverview({
+      householdTrend,
+      householdDailyScores,
+      turningPoints,
+      correlations,
+    }),
     timing: timing.household,
     personTiming: timing.perPerson,
     eventImpacts,
     personEventImpacts,
-    generatedInsights,
+    generatedInsights: buildGeneratedInsights({
+      timing: timing.household,
+      trend: householdTrend,
+    }),
     personGeneratedInsights,
     personAnomalyPatterns,
   }

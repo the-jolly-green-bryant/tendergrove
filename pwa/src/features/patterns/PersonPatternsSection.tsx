@@ -1,12 +1,9 @@
 import {
   IonAvatar,
   IonButton,
-  IonCard,
-  IonCardContent,
   IonIcon,
   IonItem,
   IonLabel,
-  IonList,
   IonSegment,
   IonSegmentButton,
 } from '@ionic/react'
@@ -15,7 +12,6 @@ import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
 
 import { PersonAvatar } from '../../components/PersonAvatar'
-import { CorrelationCard } from './components/CorrelationCard'
 import { PatternsEmptyState } from './components/PatternsEmptyState'
 import { PeriodSelector } from './components/PeriodSelector'
 import { TrendChart } from './components/TrendChart'
@@ -33,9 +29,6 @@ import {
   type TrendResult,
 } from './analytics'
 
-/** Most correlations to surface inline before linking to the full page. */
-const MAX_INLINE_CORRELATIONS = 3
-
 type Scope = 'person' | 'household'
 
 interface ScopedData {
@@ -46,31 +39,13 @@ interface ScopedData {
   subjectName: string | null
 }
 
-const trendText = (trend: TrendResult): string => {
-  const {
-    direction,
-    current7DayAverage: current,
-    previous7DayAverage: previous,
-  } = trend
-  if (direction === 'insufficient') {
-    return 'Not enough recent check-ins to show a trend yet.'
-  }
-  const cmp = current !== null && previous !== null ? ` (${previous} → ${current})` : ''
-  if (direction === 'stable') return `About the same as last week${cmp}.`
-  return direction === 'improving'
-    ? `Trending higher than last week${cmp} — a good sign.`
-    : `Trending lower than last week${cmp} — worth watching.`
-}
-
 const PatternsBody = ({
   data,
-  chartTitle,
   rangeDays,
   onRangeChange,
   onViewAll,
 }: {
   readonly data: ScopedData
-  readonly chartTitle: string
   readonly rangeDays: number
   readonly onRangeChange: (days: number) => void
   readonly onViewAll: () => void
@@ -89,7 +64,6 @@ const PatternsBody = ({
     false,
     trendLineColor(data.trend.direction),
   )
-  const correlations = data.correlations.slice(0, MAX_INLINE_CORRELATIONS)
 
   return (
     <>
@@ -125,6 +99,8 @@ const PatternsBody = ({
   )
 }
 
+const setPerson = usePatternsFilterStore((s) => s.setPerson)
+
 export const PersonPatternsSection = ({
   personId,
   personName,
@@ -138,44 +114,30 @@ export const PersonPatternsSection = ({
   const [rangeDays, setRangeDays] = useState(30)
   const { result, isLoading, hasError } = usePatternsAnalytics(rangeDays)
   const history = useHistory()
-  const setPerson = usePatternsFilterStore((s) => s.setPerson)
 
   // The main Person page already surfaces loading/errors; stay quiet here.
   if (isLoading || hasError || !result) return null
 
   const personView = buildPersonView(result, personId)
-  const scopedToPerson = scope === 'person'
-  const data: ScopedData = scopedToPerson
-    ? {
-        trend: personView.trend,
-        correlations: personView.correlations,
-        scoredDays: personView.scoredDays,
-        anomalyPatterns: personView.anomalyPatterns,
-        subjectName: personName,
-      }
-    : {
-        trend: result.householdTrend,
-        correlations: result.correlations,
-        scoredDays: result.dataQuality.scoredDays,
-        anomalyPatterns: null,
-        subjectName: null,
-      }
-
-  const chartTitle = scopedToPerson
-    ? `${personName}'s well-being trend`
-    : 'Household well-being trend'
+  const scoped = scope === 'person'
+  const data: ScopedData = {
+    trend: scoped ? personView.trend : result.householdTrend,
+    correlations: (scoped ? personView : result).correlations,
+    scoredDays: (scoped ? personView : result.dataQuality).scoredDays,
+    anomalyPatterns: scoped ? personView.anomalyPatterns : null,
+    subjectName: scoped ? personName : null,
+  }
 
   return (
     <section className="patterns-section person-patterns">
       <PatternsBody
         data={data}
-        chartTitle={chartTitle}
         rangeDays={rangeDays}
         onRangeChange={setRangeDays}
         onViewAll={() => {
           // Carry the current scope into the Patterns section so it opens
           // pre-filtered to this person (or the whole household).
-          setPerson(scopedToPerson ? personId : null)
+          setPerson(scoped ? personId : null)
           history.push('/patterns')
         }}
       />

@@ -140,15 +140,13 @@ const buildSummary = (
 }
 
 /** Turn a signal into a readable phrase including the person when helpful. */
-function phraseFor(signal: Signal): string {
-  if (signal.kind === 'incident') return `${signal.personName}'s incidents`
-  // e.g. "Poor sleep (You)" style — keep person context for multi-person households.
-  return `${signal.label} (${signal.personName})`
-}
+const phraseFor = (signal: Signal): string =>
+  signal.kind === 'incident'
+    ? `${signal.personName}'s incidents`
+    : `${signal.label} (${signal.personName})`
 
-function capitalize(text: string): string {
-  return text.length === 0 ? text : text[0].toUpperCase() + text.slice(1)
-}
+const capitalize = (text: string): string =>
+  text.length === 0 ? text : text[0].toUpperCase() + text.slice(1)
 
 /* ------------------------------------------------------------------ */
 /*  Public entry point                                                 */

@@ -36,9 +36,6 @@ export const ROLLING_WINDOW_DAYS = 7
  */
 export const STABLE_BAND = 4
 
-/** Fewest scored days in the recent window before we trust a direction. */
-const MIN_DAYS_FOR_DIRECTION = 3
-
 export const rollingAverage = (
   series: ScoredDay[],
   windowSize: number = ROLLING_WINDOW_DAYS,
@@ -52,12 +49,6 @@ export const rollingAverage = (
     const avg = mean(scores)
     return avg === null ? null : safeRound(avg)
   })
-
-const directionFromDelta = (delta: number): TrendDirection => {
-  if (delta > STABLE_BAND) return 'improving'
-  if (delta < -STABLE_BAND) return 'worsening'
-  return 'stable'
-}
 
 const trendConfidence = (currentDays: number, previousDays: number): Confidence => {
   if (currentDays >= 5 && previousDays >= 5) return 'high'

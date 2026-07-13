@@ -106,6 +106,10 @@ export default [
       'sonarjs/no-unused-vars': 'off',
       'sonarjs/no-os-command-from-path': 'off',
       'sonarjs/slow-regex': 'off',
+      'sonarjs/no-identical-functions': 'error',
+      'sonarjs/no-all-duplicated-branches': 'error',
+      'sonarjs/no-duplicated-branches': 'error',
+      'sonarjs/no-identical-expressions': 'warn',
       '@typescript-eslint/no-inferrable-types': 'error',
       '@typescript-eslint/naming-convention': [
         'error',

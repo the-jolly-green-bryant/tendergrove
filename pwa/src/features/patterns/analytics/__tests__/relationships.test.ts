@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest'
 import { findRelationships, pearson } from '../relationships'
 import type { AnalyticsPersonRef, DailyPersonScore } from '../types'
 
-function dailyScores(personId: string, scores: (number | null)[]): DailyPersonScore[] {
-  return scores.map((score, i) => ({
+const dailyScores = (personId: string, scores: (number | null)[]): DailyPersonScore[] =>
+  scores.map((score, i) => ({
     personId,
     date: `2025-05-${String(i + 1).padStart(2, '0')}`,
     score,
@@ -15,7 +15,6 @@ function dailyScores(personId: string, scores: (number | null)[]): DailyPersonSc
     hasData: score !== null,
     eventCount: 0,
   }))
-}
 
 const you: AnalyticsPersonRef = { id: 'you', displayName: 'You', role: 'self' }
 const child: AnalyticsPersonRef = { id: 'child', displayName: 'Child A', role: 'child' }

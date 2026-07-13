@@ -1,21 +1,14 @@
-import {
-  checkmarkCircle,
-  removeCircle,
-  calculatorOutline,
-  checkmarkCircleOutline,
-  happyOutline,
-  repeatOutline,
-  timerOutline,
-} from 'ionicons/icons'
+import { checkmarkCircle, removeCircle } from 'ionicons/icons'
 
 import type { IndicatorInput } from './useIndicatorMutations'
 
 /**
- *
+ * The type of polarity the user is expected to provide for this indicator.
  */
 export type Polarity = IndicatorInput['polarity']
+
 /**
- *
+ * The type of input the user is expected to provide for this indicator.
  */
 export type InputType = IndicatorInput['inputType']
 

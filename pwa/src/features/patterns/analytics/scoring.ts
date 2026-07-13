@@ -83,11 +83,7 @@ export const scorePersonDay = (
     (e) => isoToDateKey(e.occurredAt) === date,
   )
 
-  const checkedIds = new Set<string>()
-  for (const checkIn of dayCheckIns) {
-    for (const id of checkIn.checkedIndicatorIds) checkedIds.add(id)
-  }
-
+  const checkedIds = new Set<string>(dayCheckIns.flatMap((c) => c.checkedIndicatorIds))
   const active = scoreableIndicators(person.indicators)
   const activeIds = new Set(active.map((i) => i.id))
   const desiredIds = new Set(
@@ -123,13 +119,7 @@ export const scorePersonDay = (
   // Higher = better. A day with no data stays null (never 0).
   const score = distress === null ? null : 100 - distress
 
-  const eventIds = new Set<string>()
-
-  for (const checkIn of dayCheckIns) {
-    for (const id of checkIn.eventIds) {
-      eventIds.add(id)
-    }
-  }
+  const eventIds = new Set<string>(dayCheckIns.flatMap((c) => c.eventIds))
 
   return {
     personId: person.id,

@@ -10,7 +10,6 @@ export interface TrendChartConfig {
 }
 
 const PRIMARY = 'var(--ion-color-primary)'
-const SECONDARY = 'var(--ion-color-secondary-shade)'
 const UP = 'var(--ion-color-success-shade)'
 const DOWN = 'var(--ion-color-danger)'
 

@@ -1,6 +1,4 @@
 import {
-  IonBackButton,
-  IonButton,
   IonButtons,
   IonContent,
   IonHeader,
@@ -19,10 +17,8 @@ import {
 import {
   analyticsOutline,
   archiveOutline,
-  arrowBackOutline,
   homeOutline,
   logOutOutline,
-  menuOutline,
   statsChartOutline,
   settingsOutline,
   timeOutline,

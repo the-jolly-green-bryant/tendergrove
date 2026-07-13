@@ -351,9 +351,7 @@ const buildOtherPeoplePattern = (
 ): AnomalyOtherPeoplePattern | null => {
   const items: AnomalyOtherPersonItem[] = []
 
-  for (const other of people) {
-    if (other.id === target.id) continue
-
+  for (const other of people.filter((o) => o.id !== target.id)) {
     const otherScores = personDailyScores[other.id] ?? []
 
     // Missing data must not count as the signal being absent.
@@ -394,13 +392,10 @@ const buildOtherPeoplePattern = (
         continue
       }
 
-      for (const indicatorId of new Set(checkIn.checkedIndicatorIds)) {
-        if (!undesiredIndicators.has(indicatorId)) {
-          continue
-        }
-
+      for (const indicatorId of new Set(
+        checkIn.checkedIndicatorIds.filter((i) => !undesiredIndicators.has(i)),
+      )) {
         const dates = datesByIndicator.get(indicatorId) ?? new Set<DateKey>()
-
         dates.add(date)
         datesByIndicator.set(indicatorId, dates)
       }
@@ -415,14 +410,13 @@ const buildOtherPeoplePattern = (
         typicalDates: measurableTypicalDates,
       })
 
-      if (!base) continue
-
-      items.push({
-        ...base,
-        personId: other.id,
-        personName: other.displayName,
-        kind: 'behavior',
-      })
+      base &&
+        items.push({
+          ...base,
+          personId: other.id,
+          personName: other.displayName,
+          kind: 'behavior',
+        })
     }
 
     const incidentDates = new Set(
@@ -437,14 +431,13 @@ const buildOtherPeoplePattern = (
       typicalDates: measurableTypicalDates,
     })
 
-    if (incidentBase) {
+    incidentBase &&
       items.push({
         ...incidentBase,
         personId: other.id,
         personName: other.displayName,
         kind: 'incident',
       })
-    }
   }
 
   items.sort(compareRateItems)

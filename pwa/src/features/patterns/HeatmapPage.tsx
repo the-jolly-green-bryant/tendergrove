@@ -58,9 +58,8 @@ const buildRows = (
   return { rows: ordered, cellIndex }
 }
 
-function rowPeak(row: HeatmapRow): number {
-  return row.values.reduce((max: number, v) => (v !== null && v > max ? v : max), 0)
-}
+const rowPeak = (row: HeatmapRow): number =>
+  row.values.reduce((max: number, v) => (v !== null && v > max ? v : max), 0)
 
 const CellDetail = ({ cell }: { readonly cell: SelectedCell }): React.JSX.Element => {
   const count = Math.round((cell.probability / 100) * cell.sampleSize)

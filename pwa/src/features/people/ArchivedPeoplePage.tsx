@@ -12,9 +12,7 @@ const ArchivedPeoplePage = () => {
 
   const archivedPeople = people.data?.filter((p) => p.archived) ?? []
 
-  function unarchive(id: string) {
-    archiveMutation.mutate({ id, archived: false })
-  }
+  const unarchive = (id: string) => archiveMutation.mutate({ id, archived: false })
 
   return (
     <Page title="Archived">

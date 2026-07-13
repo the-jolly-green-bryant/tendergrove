@@ -3,13 +3,12 @@ import { describe, expect, it } from 'vitest'
 import { computeTrend, rollingAverage, type ScoredDay } from '../trends'
 
 /** Build a 14-day series from an array of scores (null allowed). */
-function series(scores: (number | null)[]): ScoredDay[] {
-  return scores.map((score, i) => ({
+const series = (scores: (number | null)[]): ScoredDay[] =>
+  scores.map((score, i) => ({
     date: `2025-05-${String(i + 1).padStart(2, '0')}`,
     score,
     eventCount: 0,
   }))
-}
 
 describe('rollingAverage', () => {
   it('smooths with a trailing window and skips missing days', () => {

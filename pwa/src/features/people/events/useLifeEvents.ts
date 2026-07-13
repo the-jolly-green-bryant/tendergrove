@@ -19,10 +19,10 @@ export const useHouseholdLifeEvents = (householdId: string | undefined) =>
     },
   })
 
-function bySortOrder(
+const bySortOrder = (
   a: { sortOrder?: number | null; createdAt?: string | null },
   b: { sortOrder?: number | null; createdAt?: string | null },
-): number {
+): number => {
   const orderA = a.sortOrder ?? Number.MAX_SAFE_INTEGER
   const orderB = b.sortOrder ?? Number.MAX_SAFE_INTEGER
   if (orderA !== orderB) return orderA - orderB
@@ -30,7 +30,7 @@ function bySortOrder(
 }
 
 /**
- *
+ * A LifeEvent is a record of a person's life-event, such as a school or therapy.'
  */
 export type LifeEvent = NonNullable<
   ReturnType<typeof useHouseholdLifeEvents>['data']

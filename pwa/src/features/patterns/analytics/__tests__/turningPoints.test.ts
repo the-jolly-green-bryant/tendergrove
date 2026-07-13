@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest'
 import { findTurningPoints } from '../turningPoints'
 import type { DailyHouseholdScore } from '../types'
 
-function household(scores: (number | null)[]): DailyHouseholdScore[] {
-  return scores.map((score, i) => ({
+const household = (scores: (number | null)[]): DailyHouseholdScore[] =>
+  scores.map((score, i) => ({
     date: `2025-05-${String(i + 1).padStart(2, '0')}`,
     score,
     contributingPeople: score === null ? 0 : 1,
@@ -14,7 +14,6 @@ function household(scores: (number | null)[]): DailyHouseholdScore[] {
     negativeCount: 0,
     eventCount: 0,
   }))
-}
 
 describe('findTurningPoints', () => {
   it('detects a sustained rise in well-being and where it started', () => {

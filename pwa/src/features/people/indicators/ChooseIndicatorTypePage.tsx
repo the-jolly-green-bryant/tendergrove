@@ -46,9 +46,8 @@ const ChooseIndicatorTypePage = () => {
   const router = useIonRouter()
   const { personId } = useParams<{ personId: string }>()
 
-  function choose(polarity: Polarity) {
+  const choose = (polarity: Polarity) =>
     router.push(`/person/${personId}/indicators/new/${polarity}`, 'forward')
-  }
 
   return (
     <IonPage>

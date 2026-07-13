@@ -5,9 +5,7 @@ import { buildPersonView, buildScopedView } from '../personView'
 import { NOW } from './fixtures'
 
 /** May day at noon, as an ISO string. */
-function may(day: number): string {
-  return new Date(2025, 4, day, 12).toISOString()
-}
+const may = (day: number): string => new Date(2025, 4, day, 12).toISOString()
 
 const p1: RawPerson = {
   id: 'p1',

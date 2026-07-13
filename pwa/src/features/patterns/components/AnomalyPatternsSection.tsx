@@ -127,6 +127,19 @@ const SignalRows = ({
   </div>
 )
 
+const EMPTY_STATE = (
+  <IonCard className="anomaly-patterns__empty">
+    <IonCardContent>
+      <h3>No repeated pattern stands out yet</h3>
+
+      <p>
+        TenderGrove found harder-than-usual days, but no weekday, event, or household
+        connection currently appears often enough to call out.
+      </p>
+    </IonCardContent>
+  </IonCard>
+)
+
 const CardFooter = ({
   icon,
   action,
@@ -160,22 +173,79 @@ const CardFooter = ({
   </div>
 )
 
+const history = useHistory()
+
+const renderWeekdayChart = (patterns: AnomalyPatterns) =>
+  patterns.weekday && (
+    <IonCard className="anomaly-pattern-card anomaly-pattern-card--weekday">
+      <IonCardContent>
+        <div className="anomaly-pattern-card__main">
+          <div className="anomaly-pattern-card__copy">
+            <p className="anomaly-pattern-card__eyebrow">Day of the week</p>
+
+            <h3>{patterns.weekday.label}s are hard!</h3>
+
+            <p className="anomaly-pattern-card__description">
+              {patterns.weekday.label}s spike in severity severity{' '}
+              <strong>{patterns.weekday.anomalyRate}%</strong> of the time, compared
+              with <strong>{patterns.weekday.otherDaysRate}%</strong> on other days.
+            </p>
+          </div>
+
+          <WeekdayChart
+            buckets={patterns.weekday.buckets}
+            highlightedWeekday={patterns.weekday.weekday}
+          />
+        </div>
+
+        <CardFooter
+          icon={calendarOutline}
+          action="Explore days"
+          onClick={() => history.push('/patterns/heatmap')}
+        />
+      </IonCardContent>
+    </IonCard>
+  )
+
+const renderEventsChart = (patterns: AnomalyPatterns) =>
+  patterns.events && (
+    <IonCard className="anomaly-pattern-card anomaly-pattern-card--event">
+      <IonCardContent>
+        <div className="anomaly-pattern-card__main">
+          <div className="anomaly-pattern-card__copy">
+            <p className="anomaly-pattern-card__eyebrow">Events</p>
+
+            <h3>{patterns.events.top.label} often happens on harder days</h3>
+
+            <p className="anomaly-pattern-card__description">
+              Days where {patterns.events.top.label} is present spike in severity{' '}
+              <strong>{patterns.events.top.anomalyRate}%</strong> of the time, compared
+              with <strong>{patterns.events.top.typicalRate}%</strong> on more typical
+              days.
+            </p>
+          </div>
+
+          <SignalRows
+            items={patterns.events.items}
+            accent="event"
+          />
+        </div>
+
+        <CardFooter
+          icon={pricetagOutline}
+          action="Explore events"
+          onClick={() => history.push('/patterns/correlations')}
+        />
+      </IonCardContent>
+    </IonCard>
+  )
+
 export const AnomalyPatternsSection = ({
   personName,
   patterns,
-}: AnomalyPatternsSectionProps): React.JSX.Element | null => {
-  const history = useHistory()
-
-  const hasPatterns =
-    patterns.weekday !== null ||
-    patterns.events !== null ||
-    patterns.otherPeople !== null
-
-  if (!patterns.baseline) {
-    return null
-  }
-
-  return (
+}: AnomalyPatternsSectionProps): React.JSX.Element | null =>
+  patterns.baseline &&
+  (() => (
     <section
       className="anomaly-patterns"
       aria-labelledby="anomaly-patterns-title"
@@ -188,81 +258,14 @@ export const AnomalyPatternsSection = ({
         </div>
       </div>
 
-      {!hasPatterns && (
-        <IonCard className="anomaly-patterns__empty">
-          <IonCardContent>
-            <h3>No repeated pattern stands out yet</h3>
+      {!(
+        patterns.weekday !== null ||
+        patterns.events !== null ||
+        patterns.otherPeople !== null
+      ) && EMPTY_STATE}
 
-            <p>
-              TenderGrove found harder-than-usual days, but no weekday, event, or
-              household connection currently appears often enough to call out.
-            </p>
-          </IonCardContent>
-        </IonCard>
-      )}
-
-      {patterns.weekday && (
-        <IonCard className="anomaly-pattern-card anomaly-pattern-card--weekday">
-          <IonCardContent>
-            <div className="anomaly-pattern-card__main">
-              <div className="anomaly-pattern-card__copy">
-                <p className="anomaly-pattern-card__eyebrow">Day of the week</p>
-
-                <h3>{patterns.weekday.label}s are hard!</h3>
-
-                <p className="anomaly-pattern-card__description">
-                  {patterns.weekday.label}s spike in severity severity{' '}
-                  <strong>{patterns.weekday.anomalyRate}%</strong> of the time, compared
-                  with <strong>{patterns.weekday.otherDaysRate}%</strong> on other days.
-                </p>
-              </div>
-
-              <WeekdayChart
-                buckets={patterns.weekday.buckets}
-                highlightedWeekday={patterns.weekday.weekday}
-              />
-            </div>
-
-            <CardFooter
-              icon={calendarOutline}
-              action="Explore days"
-              onClick={() => history.push('/patterns/heatmap')}
-            />
-          </IonCardContent>
-        </IonCard>
-      )}
-
-      {patterns.events && (
-        <IonCard className="anomaly-pattern-card anomaly-pattern-card--event">
-          <IonCardContent>
-            <div className="anomaly-pattern-card__main">
-              <div className="anomaly-pattern-card__copy">
-                <p className="anomaly-pattern-card__eyebrow">Events</p>
-
-                <h3>{patterns.events.top.label} often happens on harder days</h3>
-
-                <p className="anomaly-pattern-card__description">
-                  Days where {patterns.events.top.label} is present spike in severity{' '}
-                  <strong>{patterns.events.top.anomalyRate}%</strong> of the time,
-                  compared with <strong>{patterns.events.top.typicalRate}%</strong> on
-                  more typical days.
-                </p>
-              </div>
-
-              <SignalRows
-                items={patterns.events.items}
-                accent="event"
-              />
-            </div>
-
-            <CardFooter
-              icon={pricetagOutline}
-              action="Explore events"
-              onClick={() => history.push('/patterns/correlations')}
-            />
-          </IonCardContent>
-        </IonCard>
-      )}
+      {renderWeekdayChart(patterns)}
+      {renderEventsChart(patterns)}
 
       {patterns.otherPeople && (
         <IonCard className="anomaly-pattern-card anomaly-pattern-card--household">
@@ -306,5 +309,4 @@ export const AnomalyPatternsSection = ({
         </IonCard>
       )}
     </section>
-  )
-}
+  ))()

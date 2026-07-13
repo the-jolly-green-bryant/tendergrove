@@ -7,9 +7,8 @@ import type { TimingAnalysis, TrendResult } from '../types'
 import { checkIn, indicator, iso, NOW } from './fixtures'
 
 /** Scores keyed to specific weekdays. May 2, 9, 16, 23 2025 are Fridays. */
-function scored(entries: Array<[string, number | null]>) {
-  return entries.map(([date, score]) => ({ date, score }))
-}
+const scored = (entries: Array<[string, number | null]>) =>
+  entries.map(([date, score]) => ({ date, score }))
 
 describe('buildDayOfWeek', () => {
   it('computes per-weekday challenging/positive rates from scores', () => {

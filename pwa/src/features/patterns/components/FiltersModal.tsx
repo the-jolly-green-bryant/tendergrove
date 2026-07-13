@@ -26,7 +26,6 @@ import { usePatternsData } from '../usePatternsData'
 import { usePatternsFilterStore, type AnalyticsType } from '../patternsFilterStore'
 
 import '../patterns.scss'
-import { FilterablePerson } from '../../../components/PersonFilterChips'
 import { RawPerson } from '../analytics'
 
 const TYPE_OPTIONS: { value: AnalyticsType; label: string }[] = [
@@ -234,14 +233,14 @@ const TypeSection = (): React.JSX.Element => {
 /*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
 
-function iso(date: Date): string {
+const iso = (date: Date): string => {
   const y = date.getFullYear()
   const m = String(date.getMonth() + 1).padStart(2, '0')
   const d = String(date.getDate()).padStart(2, '0')
   return `${y}-${m}-${d}`
 }
 
-function dayKey(value: string | string[] | null | undefined): string {
+const dayKey = (value: string | string[] | null | undefined): string => {
   const raw = Array.isArray(value) ? value[0] : value
   return (raw ?? '').slice(0, 10)
 }
@@ -252,7 +251,7 @@ interface IndicatorOption {
   personName: string
 }
 
-function collectIndicators(data: RawPerson[]): IndicatorOption[] {
+const collectIndicators = (data: RawPerson[]): IndicatorOption[] => {
   const options: IndicatorOption[] = []
   for (const person of (data ?? []).filter((p: RawPerson) => p.archived !== true)) {
     for (const indicator of person.indicators ?? []) {

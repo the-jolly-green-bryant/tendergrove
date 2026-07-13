@@ -50,8 +50,5 @@ export const parseAnswers = (answersJson: unknown): CheckInAnswers => {
 }
 
 /** Coerce an unknown value into an array of string ids. */
-function stringIds(value: unknown): string[] {
-  return Array.isArray(value)
-    ? value.filter((id): id is string => typeof id === 'string')
-    : []
-}
+const stringIds = (value: unknown): string[] =>
+  Array.isArray(value) ? value.filter((id): id is string => typeof id === 'string') : []

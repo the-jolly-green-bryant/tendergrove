@@ -66,11 +66,10 @@ const authComponents = {
   ...(isNative ? { SignIn: { Footer: NativeGoogleButton } } : {}),
 }
 
-function handleGlobalError(error: unknown) {
-  const message =
-    error instanceof Error ? error.message : JSON.stringify(error, null, 2)
-  alert(`Request failed:\n\n${message}`)
-}
+const handleGlobalError = (error: unknown) =>
+  alert(
+    `Request failed:\n\n${error instanceof Error ? error.message : JSON.stringify(error, null, 2)}`,
+  )
 
 const queryClient = new QueryClient({
   defaultOptions: {
