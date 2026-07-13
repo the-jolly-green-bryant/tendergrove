@@ -358,10 +358,12 @@ export const runAnalytics = (input: AnalyticsInput): AnalyticsResult => {
   )
 
   const householdTrend = computeTrend(toScoredDays(householdDailyScores))
-  const personTrends: Record<string, TrendResult> = {}
-  for (const person of input.people) {
-    personTrends[person.id] = computeTrend(toScoredDays(personDailyScores[person.id]))
-  }
+  const personTrends = Object.fromEntries(
+    input.people.map((p) => [
+      p.id,
+      computeTrend(toScoredDays(personDailyScores[p.id])),
+    ]),
+  )
 
   const timing = buildTiming(
     input.people,

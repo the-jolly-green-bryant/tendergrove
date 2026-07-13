@@ -136,28 +136,19 @@ const isNotable = (
   anomalyRate: number,
   typicalRate: number,
   typicalOpportunities: number,
-): boolean => {
-  if (anomalyOccurrences < MIN_SIGNAL_ANOMALY_OCCURRENCES) {
-    return false
-  }
-
-  if (
+): boolean =>
+  !(
+    anomalyOccurrences < MIN_SIGNAL_ANOMALY_OCCURRENCES ||
     anomalyOpportunities < MIN_ANOMALOUS_DAYS ||
     typicalOpportunities < MIN_TYPICAL_OPPORTUNITIES
-  ) {
-    return false
-  }
+  ) &&
+  (() => {
+    if (anomalyRate - typicalRate < MIN_RATE_DIFFERENCE) return false
+    if (typicalRate !== 0) return anomalyRate / typicalRate >= MIN_RATE_RATIO
 
-  const difference = anomalyRate - typicalRate
-  const ratio =
-    typicalRate === 0
-      ? anomalyRate > 0
-        ? Number.POSITIVE_INFINITY
-        : 0
-      : anomalyRate / typicalRate
-
-  return difference >= MIN_RATE_DIFFERENCE && ratio >= MIN_RATE_RATIO
-}
+    const ratio = anomalyRate > 0 ? Number.POSITIVE_INFINITY : 0
+    return ratio >= MIN_RATE_RATIO
+  })()
 
 const buildRateItem = (params: {
   id: string

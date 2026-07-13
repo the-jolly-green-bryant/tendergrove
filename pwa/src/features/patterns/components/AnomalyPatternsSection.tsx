@@ -173,7 +173,7 @@ const CardFooter = ({
   </div>
 )
 
-const history = useHistory()
+const history = () => useHistory()
 
 const renderWeekdayChart = (patterns: AnomalyPatterns) =>
   patterns.weekday && (
@@ -201,7 +201,7 @@ const renderWeekdayChart = (patterns: AnomalyPatterns) =>
         <CardFooter
           icon={calendarOutline}
           action="Explore days"
-          onClick={() => history.push('/patterns/heatmap')}
+          onClick={() => history().push('/patterns/heatmap')}
         />
       </IonCardContent>
     </IonCard>
@@ -234,7 +234,7 @@ const renderEventsChart = (patterns: AnomalyPatterns) =>
         <CardFooter
           icon={pricetagOutline}
           action="Explore events"
-          onClick={() => history.push('/patterns/correlations')}
+          onClick={() => history().push('/patterns/correlations')}
         />
       </IonCardContent>
     </IonCard>
@@ -303,7 +303,7 @@ export const AnomalyPatternsSection = ({
             <CardFooter
               icon={peopleOutline}
               action="Explore others"
-              onClick={() => history.push('/patterns/relationships')}
+              onClick={() => history().push('/patterns/relationships')}
             />
           </IonCardContent>
         </IonCard>

@@ -99,8 +99,6 @@ const PatternsBody = ({
   )
 }
 
-const setPerson = usePatternsFilterStore((s) => s.setPerson)
-
 export const PersonPatternsSection = ({
   personId,
   personName,
@@ -127,6 +125,8 @@ export const PersonPatternsSection = ({
     anomalyPatterns: scoped ? personView.anomalyPatterns : null,
     subjectName: scoped ? personName : null,
   }
+
+  const setPerson = usePatternsFilterStore((s) => s.setPerson)
 
   return (
     <section className="patterns-section person-patterns">
