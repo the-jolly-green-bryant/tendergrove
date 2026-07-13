@@ -66,7 +66,10 @@ const EMPTY_TREND: TrendResult = {
   confidence: 'low',
 }
 
-export const buildPersonView = (result: AnalyticsResult, personId: string): PersonAnalyticsView => {
+export const buildPersonView = (
+  result: AnalyticsResult,
+  personId: string,
+): PersonAnalyticsView => {
   const dailyScores = result.personDailyScores[personId] ?? []
   const householdShaped = asHouseholdSeries(dailyScores)
   const personName =
@@ -128,7 +131,10 @@ export interface ScopedPatternsView {
   anomalyPatterns: AnomalyPatterns | null
 }
 
-export const buildScopedView = (result: AnalyticsResult, personId: string | null): ScopedPatternsView => {
+export const buildScopedView = (
+  result: AnalyticsResult,
+  personId: string | null,
+): ScopedPatternsView => {
   const known = personId !== null && result.people.some((p) => p.id === personId)
   if (!known) {
     return {

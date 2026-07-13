@@ -152,7 +152,10 @@ const dotState = (position: number, step: number): 'done' | 'active' | 'upcoming
   return position === step ? 'active' : 'upcoming'
 }
 
-const detailsPrimaryLabel = (isProcessingPhoto: boolean, isEditing: boolean): string => {
+const detailsPrimaryLabel = (
+  isProcessingPhoto: boolean,
+  isEditing: boolean,
+): string => {
   if (isProcessingPhoto) return 'Preparing photo…'
   return isEditing ? 'Save Changes' : 'Continue'
 }
@@ -241,8 +244,9 @@ const StepIndicator = ({ step }: { readonly step: number }) => {
             <React.Fragment key={position}>
               {index > 0 && (
                 <span
-                  className={`wizard-stepper__line ${position <= step ? 'wizard-stepper__line--filled' : ''
-                    }`}
+                  className={`wizard-stepper__line ${
+                    position <= step ? 'wizard-stepper__line--filled' : ''
+                  }`}
                 />
               )}
               <span
@@ -621,7 +625,11 @@ const useSuggestedItems = (roleKey: RoleKey): SuggestedItemsState => {
   }
 }
 
-const promptAddIndicator = (presentAlert: PresentAlert, addItem: (polarity: Polarity, name: string) => void, polarity: Polarity) => {
+const promptAddIndicator = (
+  presentAlert: PresentAlert,
+  addItem: (polarity: Polarity, name: string) => void,
+  polarity: Polarity,
+) => {
   const isChallenge = polarity === 'undesired'
   void presentAlert({
     header: isChallenge ? 'Add a challenge' : 'Add a positive sign',
@@ -647,7 +655,11 @@ const promptAddIndicator = (presentAlert: PresentAlert, addItem: (polarity: Pola
   })
 }
 
-const promptEditIndicator = (presentAlert: PresentAlert, editItem: (id: string, name: string) => void, item: SuggestedItem) => {
+const promptEditIndicator = (
+  presentAlert: PresentAlert,
+  editItem: (id: string, name: string) => void,
+  item: SuggestedItem,
+) => {
   void presentAlert({
     header: 'Edit indicator',
     inputs: [{ name: 'name', type: 'text', value: item.name }],
@@ -720,7 +732,11 @@ const SuggestedIndicatorsStep = ({
 
 type ExistingPerson = Exclude<ReturnType<typeof usePerson>['data'], null | undefined>
 
-const usePrefillPerson = (existingPerson: ExistingPerson | undefined, setDisplayName: (displayName: string) => void, setAvatarUrl: (avatarUrl: string | undefined) => void) => {
+const usePrefillPerson = (
+  existingPerson: ExistingPerson | undefined,
+  setDisplayName: (displayName: string) => void,
+  setAvatarUrl: (avatarUrl: string | undefined) => void,
+) => {
   useEffect(() => {
     if (!existingPerson) return
     setDisplayName(existingPerson.displayName)

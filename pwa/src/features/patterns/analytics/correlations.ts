@@ -112,7 +112,11 @@ const confidenceFromRatio = (ratio: number, opportunities: number): Confidence =
   return 'low'
 }
 
-const scorePair = (source: Signal, target: Signal, lag: 0 | 1): { opportunities: number; occurrences: number } => {
+const scorePair = (
+  source: Signal,
+  target: Signal,
+  lag: 0 | 1,
+): { opportunities: number; occurrences: number } => {
   let occurrences = 0
   for (const day of source.days) {
     const targetDay = lag === 0 ? day : addDaysToKey(day, lag)
@@ -121,7 +125,11 @@ const scorePair = (source: Signal, target: Signal, lag: 0 | 1): { opportunities:
   return { opportunities: source.days.size, occurrences }
 }
 
-const buildSummary = (source: Signal, target: Signal, insight: CorrelationInsight): string => {
+const buildSummary = (
+  source: Signal,
+  target: Signal,
+  insight: CorrelationInsight,
+): string => {
   const src = phraseFor(source)
   const tgt = phraseFor(target)
   const timing =
@@ -146,7 +154,11 @@ function capitalize(text: string): string {
 /*  Public entry point                                                 */
 /* ------------------------------------------------------------------ */
 
-const evaluatePair = (source: Signal, target: Signal, lag: 0 | 1): CorrelationInsight | null => {
+const evaluatePair = (
+  source: Signal,
+  target: Signal,
+  lag: 0 | 1,
+): CorrelationInsight | null => {
   if (source.key === target.key) return null
   if (lag === 0 && source.key >= target.key) return null
 

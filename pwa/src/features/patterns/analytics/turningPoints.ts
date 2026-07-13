@@ -69,7 +69,12 @@ const severityFromDelta = (delta: number): Confidence => {
   return 'low'
 }
 
-const measurePersistence = (scored: ScoredPoint[], startIndex: number, before: number, after: number): { durationDays: number; reachedEnd: boolean } => {
+const measurePersistence = (
+  scored: ScoredPoint[],
+  startIndex: number,
+  before: number,
+  after: number,
+): { durationDays: number; reachedEnd: boolean } => {
   const midpoint = (before + after) / 2
   const rising = after > before
   let lastIndex = startIndex
@@ -93,7 +98,13 @@ const days = (count: number): string => {
   return `${count} day${count === 1 ? '' : 's'}`
 }
 
-const buildSustainedSummary = (type: TurningPointType, before: number, after: number, durationDays: number, reachedEnd: boolean): string => {
+const buildSustainedSummary = (
+  type: TurningPointType,
+  before: number,
+  after: number,
+  durationDays: number,
+  reachedEnd: boolean,
+): string => {
   const tail = reachedEnd
     ? `and has held there for ${days(durationDays)}`
     : `for about ${days(durationDays)}`
@@ -177,7 +188,10 @@ const detectSustained = (scored: ScoredPoint[]): TurningPointInsight[] => {
   return insights
 }
 
-const detectSpikes = (scored: ScoredPoint[], covered: Set<DateKey>): TurningPointInsight[] => {
+const detectSpikes = (
+  scored: ScoredPoint[],
+  covered: Set<DateKey>,
+): TurningPointInsight[] => {
   const spikes: TurningPointInsight[] = []
   for (let m = 1; m < scored.length - 1; m++) {
     const day = scored[m]
@@ -236,7 +250,12 @@ const extendRun = (smooth: number[], start: number): number => {
   return end
 }
 
-const driftInsight = (scored: ScoredPoint[], startIndex: number, endIndex: number, smooth: number[]): TurningPointInsight => {
+const driftInsight = (
+  scored: ScoredPoint[],
+  startIndex: number,
+  endIndex: number,
+  smooth: number[],
+): TurningPointInsight => {
   const before = safeRound(smooth[startIndex])
   const after = safeRound(smooth[endIndex])
   const durationDays = daysBetween(scored[endIndex].date, scored[startIndex].date) + 1
@@ -307,7 +326,9 @@ const coveredDates = (items: TurningPointInsight[]): Set<DateKey> => {
 /*  Public entry point                                                 */
 /* ------------------------------------------------------------------ */
 
-export const findTurningPoints = (householdDailyScores: DailyHouseholdScore[]): TurningPointInsight[] => {
+export const findTurningPoints = (
+  householdDailyScores: DailyHouseholdScore[],
+): TurningPointInsight[] => {
   const scored: ScoredPoint[] = householdDailyScores
     .filter((d): d is DailyHouseholdScore & { score: number } => d.score !== null)
     .map((d) => ({ date: d.date, score: d.score }))

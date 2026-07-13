@@ -82,7 +82,10 @@ const scoreForCheckIn = (
   })
 }
 
-const latestScoreableCheckIn = (person: HouseholdRecapSourcePerson, dateKey: string): HouseholdRecapCheckIn | undefined => {
+const latestScoreableCheckIn = (
+  person: HouseholdRecapSourcePerson,
+  dateKey: string,
+): HouseholdRecapCheckIn | undefined => {
   return [...(person.checkIns ?? [])]
     .filter((checkIn) => dateKeyFromIso(checkIn.occurredAt) <= dateKey)
     .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))
@@ -148,7 +151,10 @@ const datedRecapTitle = (
   return `${formatRecapDateLabel(dateKey)}'s ${noun.toLowerCase()}`
 }
 
-export const createHouseholdRecap = (people: HouseholdRecapSourcePerson[], selectedDate: Date = new Date()): HouseholdRecap | undefined => {
+export const createHouseholdRecap = (
+  people: HouseholdRecapSourcePerson[],
+  selectedDate: Date = new Date(),
+): HouseholdRecap | undefined => {
   if (people.length === 0) return undefined
 
   const dateKey = toLocalDateKey(selectedDate)

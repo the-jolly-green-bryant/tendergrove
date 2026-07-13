@@ -110,7 +110,10 @@ export const composeWeeklyObservation = (facts: WeeklyFacts): string => {
   return `${opening}${joiner}${movement}.`
 }
 
-export const composeTrendSummary = (direction: TrendDirection, subjectName: string | null): string => {
+export const composeTrendSummary = (
+  direction: TrendDirection,
+  subjectName: string | null,
+): string => {
   const subject = subjectName ? `${subjectName}'s` : 'Household'
   if (direction === 'improving') return `${subject} well-being is trending up`
   if (direction === 'worsening') return `${subject} well-being is trending down`

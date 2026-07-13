@@ -99,21 +99,18 @@
   position: relative;
 
   &__container {
-
-
     position: relative;
     overflow: hidden;
 
-    background:
-            linear-gradient(
-                    to bottom,
-                    rgba(238,245,242,0) 0%,
-                    rgba(225,242,236,.08) 10%,
-                    rgba(203,232,223,.18) 25%,
-                    rgba(175,220,206,.32) 80%,
-                    rgba(152,206,191,.55) 95%,
-                    rgba(137,194,180,.72) 100%
-            );
+    background: linear-gradient(
+      to bottom,
+      rgba(238, 245, 242, 0) 0%,
+      rgba(225, 242, 236, 0.08) 10%,
+      rgba(203, 232, 223, 0.18) 25%,
+      rgba(175, 220, 206, 0.32) 80%,
+      rgba(152, 206, 191, 0.55) 95%,
+      rgba(137, 194, 180, 0.72) 100%
+    );
 
     isolation: isolate;
 
@@ -122,15 +119,15 @@
     width: calc(100% + var(--ion-padding, 16px) * 2);
 
     &::before {
-      content: "";
+      content: '';
       position: absolute;
       inset: 0;
 
       background:
-              url('/assets/graph_background.png') center bottom / 100% auto no-repeat,
-              #f8f3fa;
+        url('/assets/graph_background.png') center bottom / 100% auto no-repeat,
+        #f8f3fa;
 
-      opacity: .35;
+      opacity: 0.35;
 
       pointer-events: none;
     }
@@ -140,13 +137,12 @@
       position: absolute;
       inset: 0;
 
-      background:
-              radial-gradient(
-                      ellipse at 50% 35%,
-                      rgba(255,255,255,.55),
-                      rgba(255,255,255,.18) 45%,
-                      transparent 05%
-              );
+      background: radial-gradient(
+        ellipse at 50% 35%,
+        rgba(255, 255, 255, 0.55),
+        rgba(255, 255, 255, 0.18) 45%,
+        transparent 05%
+      );
 
       pointer-events: none;
     }
@@ -311,11 +307,7 @@
   flex: 1 1 auto;
   height: 10px;
   border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    rgba(226, 89, 75, 0.12),
-    rgba(226, 89, 75, 0.85)
-  );
+  background: linear-gradient(90deg, rgba(226, 89, 75, 0.12), rgba(226, 89, 75, 0.85));
 }
 
 .pattern-heatmap-legend__scale--green {
@@ -462,7 +454,11 @@
 
 /* Weekly headline — a little more prominent. */
 .pattern-weekly {
-  background: linear-gradient(180deg, rgba(117, 200, 196, 0.16), rgba(117, 200, 196, 0.05));
+  background: linear-gradient(
+    180deg,
+    rgba(117, 200, 196, 0.16),
+    rgba(117, 200, 196, 0.05)
+  );
   border: 1px solid rgba(20, 125, 126, 0.16);
 }
 
@@ -844,16 +840,12 @@
 .anomaly-pattern-card {
   margin: 0;
   overflow: hidden;
-  border: 1px solid
-  rgba(var(--ion-color-primary-rgb), 0.13);
+  border: 1px solid rgba(var(--ion-color-primary-rgb), 0.13);
   border-radius: 18px;
-  background: rgba(
-          var(--ion-background-color-rgb),
-          0.92
-  );
+  background: rgba(var(--ion-background-color-rgb), 0.92);
   box-shadow:
-          0 2px 5px rgba(24, 58, 58, 0.04),
-          0 8px 22px rgba(24, 58, 58, 0.05);
+    0 2px 5px rgba(24, 58, 58, 0.04),
+    0 8px 22px rgba(24, 58, 58, 0.05);
 
   ion-card-content {
     padding: 0;
@@ -865,10 +857,7 @@
 }
 
 .anomaly-pattern-card--event {
-  border-color: rgba(
-          var(--ion-color-primary-rgb),
-          0.2
-  );
+  border-color: rgba(var(--ion-color-primary-rgb), 0.2);
 }
 
 .anomaly-pattern-card--household {
@@ -898,10 +887,7 @@
 
 .anomaly-pattern-card__icon--event {
   color: var(--ion-color-primary);
-  background: rgba(
-          var(--ion-color-primary-rgb),
-          0.12
-  );
+  background: rgba(var(--ion-color-primary-rgb), 0.12);
 }
 
 .anomaly-pattern-card__icon--household {
@@ -922,13 +908,11 @@
   text-transform: uppercase;
 }
 
-.anomaly-pattern-card--weekday
-.anomaly-pattern-card__eyebrow {
+.anomaly-pattern-card--weekday .anomaly-pattern-card__eyebrow {
   color: #7654c7;
 }
 
-.anomaly-pattern-card--household
-.anomaly-pattern-card__eyebrow {
+.anomaly-pattern-card--household .anomaly-pattern-card__eyebrow {
   color: #cf5e37;
 }
 
@@ -989,11 +973,7 @@
 }
 
 .anomaly-weekday-chart__bar--highlighted {
-  background: linear-gradient(
-          to top,
-          #7654c7,
-          #a784ec
-  );
+  background: linear-gradient(to top, #7654c7, #a784ec);
 }
 
 .anomaly-weekday-chart__label {
@@ -1072,12 +1052,8 @@
   gap: 0.65rem;
   min-height: 52px;
   padding: 0.5rem 0.55rem 0.5rem 1rem;
-  border-top: 1px solid
-  rgba(var(--ion-color-primary-rgb), 0.08);
-  background: rgba(
-          var(--ion-color-primary-rgb),
-          0.045
-  );
+  border-top: 1px solid rgba(var(--ion-color-primary-rgb), 0.08);
+  background: rgba(var(--ion-color-primary-rgb), 0.045);
 
   p {
     margin: 0;
@@ -1094,13 +1070,11 @@
   }
 }
 
-.anomaly-pattern-card--weekday
-.anomaly-pattern-card__footer {
+.anomaly-pattern-card--weekday .anomaly-pattern-card__footer {
   background: rgba(118, 84, 199, 0.055);
 }
 
-.anomaly-pattern-card--household
-.anomaly-pattern-card__footer {
+.anomaly-pattern-card--household .anomaly-pattern-card__footer {
   background: rgba(207, 94, 55, 0.055);
 }
 

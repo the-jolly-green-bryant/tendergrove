@@ -246,7 +246,10 @@ export interface NormalizeHouseholdOptions {
   lifeEvents?: RawLifeEvent[]
 }
 
-export const normalizeHousehold = (rawPeople: RawPerson[], options: NormalizeHouseholdOptions = {}): AnalyticsInput => {
+export const normalizeHousehold = (
+  rawPeople: RawPerson[],
+  options: NormalizeHouseholdOptions = {},
+): AnalyticsInput => {
   const {
     now = new Date(),
     windowDays = DEFAULT_WINDOW_DAYS,
@@ -286,7 +289,11 @@ const readyMessage = (scoredDays: number, peopleWithData: number): string => {
 const GATHERING_MESSAGE =
   'We’re still gathering data. Keep logging daily check-ins and patterns will start to appear here — usually within a week or so.'
 
-const buildDataQuality = (people: AnalyticsPerson[], scoredDays: number, peopleWithData: number): DataQuality => {
+const buildDataQuality = (
+  people: AnalyticsPerson[],
+  scoredDays: number,
+  peopleWithData: number,
+): DataQuality => {
   const hasEnoughData = scoredDays >= MIN_SCORED_DAYS_FOR_CONFIDENCE
   const message = hasEnoughData
     ? readyMessage(scoredDays, peopleWithData)
@@ -417,7 +424,10 @@ export const runAnalytics = (input: AnalyticsInput): AnalyticsResult => {
   }
 }
 
-export const analyzeHousehold = (rawPeople: RawPerson[], options?: NormalizeHouseholdOptions): AnalyticsResult => {
+export const analyzeHousehold = (
+  rawPeople: RawPerson[],
+  options?: NormalizeHouseholdOptions,
+): AnalyticsResult => {
   return runAnalytics(normalizeHousehold(rawPeople, options))
 }
 

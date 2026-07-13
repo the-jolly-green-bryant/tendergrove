@@ -98,7 +98,11 @@ const confidenceFromR = (r: number): Confidence | null => {
 /*  Pairing                                                            */
 /* ------------------------------------------------------------------ */
 
-const alignedPairs = (a: DailyPersonScore[], b: DailyPersonScore[], lag: number): Array<[number, number]> => {
+const alignedPairs = (
+  a: DailyPersonScore[],
+  b: DailyPersonScore[],
+  lag: number,
+): Array<[number, number]> => {
   const pairs: Array<[number, number]> = []
   for (let i = 0; i + lag < a.length; i++) {
     const aScore = a[i].score
@@ -108,7 +112,10 @@ const alignedPairs = (a: DailyPersonScore[], b: DailyPersonScore[], lag: number)
   return pairs
 }
 
-const buildChartData = (a: DailyPersonScore[], b: DailyPersonScore[]): RelationshipChartPoint[] => {
+const buildChartData = (
+  a: DailyPersonScore[],
+  b: DailyPersonScore[],
+): RelationshipChartPoint[] => {
   return a.map((day, index) => ({
     date: day.date,
     aScore: day.score,
@@ -152,7 +159,12 @@ interface Attempt {
   followSeries: DailyPersonScore[]
 }
 
-const buildAttempts = (personA: AnalyticsPersonRef, personB: AnalyticsPersonRef, seriesA: DailyPersonScore[], seriesB: DailyPersonScore[]): Attempt[] => {
+const buildAttempts = (
+  personA: AnalyticsPersonRef,
+  personB: AnalyticsPersonRef,
+  seriesA: DailyPersonScore[],
+  seriesB: DailyPersonScore[],
+): Attempt[] => {
   return [
     {
       lag: 0,
@@ -232,7 +244,10 @@ const candidateToInsight = (best: Candidate): RelationshipInsight => {
 /*  Public entry point                                                 */
 /* ------------------------------------------------------------------ */
 
-export const findRelationships = (people: AnalyticsPersonRef[], personDailyScores: Record<string, DailyPersonScore[]>): RelationshipInsight[] => {
+export const findRelationships = (
+  people: AnalyticsPersonRef[],
+  personDailyScores: Record<string, DailyPersonScore[]>,
+): RelationshipInsight[] => {
   const results: RelationshipInsight[] = []
 
   for (let i = 0; i < people.length; i++) {

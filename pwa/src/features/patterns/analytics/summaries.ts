@@ -21,13 +21,21 @@ import type {
   TurningPointInsight,
 } from './types'
 
-const sumRecent = (series: DailyHouseholdScore[], n: number, field: 'incidentCount' | 'positiveCount' | 'negativeCount', offset = 0): number => {
+const sumRecent = (
+  series: DailyHouseholdScore[],
+  n: number,
+  field: 'incidentCount' | 'positiveCount' | 'negativeCount',
+  offset = 0,
+): number => {
   const end = series.length - offset
   const start = Math.max(0, end - n)
   return series.slice(start, end).reduce((sum, d) => sum + d[field], 0)
 }
 
-const detectMovement = (series: DailyHouseholdScore[], turningPoints: TurningPointInsight[]): MovementFact | null => {
+const detectMovement = (
+  series: DailyHouseholdScore[],
+  turningPoints: TurningPointInsight[],
+): MovementFact | null => {
   const recentIncidents = sumRecent(series, 7, 'incidentCount')
   const priorIncidents = sumRecent(series, 7, 'incidentCount', 7)
   const latestTurning = turningPoints[turningPoints.length - 1]
@@ -108,7 +116,11 @@ const correlationCard = (correlations: CorrelationInsight[]): PatternInsight | n
   }
 }
 
-const buildNoteworthy = (series: DailyHouseholdScore[], turningPoints: TurningPointInsight[], correlations: CorrelationInsight[]): PatternInsight[] => {
+const buildNoteworthy = (
+  series: DailyHouseholdScore[],
+  turningPoints: TurningPointInsight[],
+  correlations: CorrelationInsight[],
+): PatternInsight[] => {
   const cards: (PatternInsight | null)[] = [
     ...[...turningPoints].reverse().slice(0, 2).map(turningPointCard),
     incidentCard(series),
@@ -119,7 +131,10 @@ const buildNoteworthy = (series: DailyHouseholdScore[], turningPoints: TurningPo
   return cards.filter((c): c is PatternInsight => c !== null).slice(0, 4)
 }
 
-const overallConfidence = (trend: TrendResult, noteworthy: PatternInsight[]): Confidence => {
+const overallConfidence = (
+  trend: TrendResult,
+  noteworthy: PatternInsight[],
+): Confidence => {
   if (trend.direction === 'insufficient') return 'low'
   const hasHigh = noteworthy.some((c) => c.confidence === 'high')
   if (trend.confidence === 'high' && hasHigh) return 'high'

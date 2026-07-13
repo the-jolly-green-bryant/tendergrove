@@ -63,7 +63,10 @@ interface Domain {
   max: number
 }
 
-const computeDomain = (series: ChartSeries[], clampTo: [number, number] | null): Domain => {
+const computeDomain = (
+  series: ChartSeries[],
+  clampTo: [number, number] | null,
+): Domain => {
   const values = series.flatMap((s) => s.values).filter((v): v is number => v !== null)
   if (values.length === 0)
     return clampTo ? { min: clampTo[0], max: clampTo[1] } : { min: 0, max: 1 }
@@ -91,7 +94,10 @@ const computeDomain = (series: ChartSeries[], clampTo: [number, number] | null):
   return { min: lo, max: hi }
 }
 
-const computeSeriesDomains = (series: ChartSeries[], clampTo: [number, number] | null): Domain[] => {
+const computeSeriesDomains = (
+  series: ChartSeries[],
+  clampTo: [number, number] | null,
+): Domain[] => {
   return series.map((item) => computeDomain([item], clampTo))
 }
 
@@ -223,7 +229,10 @@ const primarySeries = (series: ChartSeries[]): ChartSeries | undefined => {
   return series.find((s) => !s.dashed) ?? series[0]
 }
 
-const nearestDataIndex = (targetIndex: number, values: (number | null)[]): number | null => {
+const nearestDataIndex = (
+  targetIndex: number,
+  values: (number | null)[],
+): number | null => {
   let bestIndex: number | null = null
   let bestDistance = Infinity
 

@@ -43,7 +43,10 @@ const withWho = (text: string, personName: string | null): string => {
 /*  Individual insight builders (each returns one insight or null)     */
 /* ------------------------------------------------------------------ */
 
-const hardestWeekdayInsight = (dayOfWeek: DayOfWeekBucket[], personName: string | null): GeneratedInsight | null => {
+const hardestWeekdayInsight = (
+  dayOfWeek: DayOfWeekBucket[],
+  personName: string | null,
+): GeneratedInsight | null => {
   const eligible = dayOfWeek.filter(
     (d) => d.sampleSize >= MIN_WEEKDAY_SAMPLE && d.challengingRate !== null,
   )
@@ -68,7 +71,10 @@ const hardestWeekdayInsight = (dayOfWeek: DayOfWeekBucket[], personName: string 
   }
 }
 
-const calmestWeekdayInsight = (dayOfWeek: DayOfWeekBucket[], personName: string | null): GeneratedInsight | null => {
+const calmestWeekdayInsight = (
+  dayOfWeek: DayOfWeekBucket[],
+  personName: string | null,
+): GeneratedInsight | null => {
   const eligible = dayOfWeek.filter(
     (d) => d.sampleSize >= MIN_WEEKDAY_SAMPLE && d.positiveRate !== null,
   )
@@ -93,7 +99,10 @@ const calmestWeekdayInsight = (dayOfWeek: DayOfWeekBucket[], personName: string 
   }
 }
 
-const timeOfDayInsight = (timeOfDay: TimeOfDayBucket[], totalIncidents: number): GeneratedInsight | null => {
+const timeOfDayInsight = (
+  timeOfDay: TimeOfDayBucket[],
+  totalIncidents: number,
+): GeneratedInsight | null => {
   if (totalIncidents < 5) return null
   let bestStart = 0
   let bestShare = 0
@@ -119,7 +128,10 @@ const timeOfDayInsight = (timeOfDay: TimeOfDayBucket[], totalIncidents: number):
   }
 }
 
-const correlationInsight = (correlations: IndicatorOutcomeCorrelation[], wantPositive: boolean): GeneratedInsight | null => {
+const correlationInsight = (
+  correlations: IndicatorOutcomeCorrelation[],
+  wantPositive: boolean,
+): GeneratedInsight | null => {
   const match = correlations.find(
     (c) =>
       c.confidence !== 'low' && (wantPositive ? c.correlation > 0 : c.correlation < 0),
@@ -141,7 +153,10 @@ const correlationInsight = (correlations: IndicatorOutcomeCorrelation[], wantPos
   }
 }
 
-const trendInsight = (trend: TrendResult, personName: string | null): GeneratedInsight | null => {
+const trendInsight = (
+  trend: TrendResult,
+  personName: string | null,
+): GeneratedInsight | null => {
   if (trend.direction === 'improving') {
     return {
       id: 'trend',

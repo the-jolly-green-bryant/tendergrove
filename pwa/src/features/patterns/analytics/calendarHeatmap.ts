@@ -50,7 +50,9 @@ const buildShortSummary = (day: DailyHouseholdScore): string => {
   return parts.join(' · ')
 }
 
-export const buildCalendar = (householdDailyScores: DailyHouseholdScore[]): CalendarDayPattern[] => {
+export const buildCalendar = (
+  householdDailyScores: DailyHouseholdScore[],
+): CalendarDayPattern[] => {
   return householdDailyScores.map((day) => ({
     date: day.date,
     score: day.score,

@@ -30,7 +30,11 @@ interface SelectedCell {
   sampleSize: number
 }
 
-const buildRows = (cells: HeatmapCell[], polarity: Polarity, filters: DisplayFilters): { rows: HeatmapRow[]; cellIndex: Map<string, HeatmapCell[]> } => {
+const buildRows = (
+  cells: HeatmapCell[],
+  polarity: Polarity,
+  filters: DisplayFilters,
+): { rows: HeatmapRow[]; cellIndex: Map<string, HeatmapCell[]> } => {
   const rows = new Map<string, HeatmapRow>()
   const cellIndex = new Map<string, HeatmapCell[]>()
   const allowCustom = filters.indicatorMode === 'custom'

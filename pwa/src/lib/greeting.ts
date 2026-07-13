@@ -1,4 +1,7 @@
-export const householdGreetingText = (selfName?: string, date: Date = new Date()): string => {
+export const householdGreetingText = (
+  selfName?: string,
+  date: Date = new Date(),
+): string => {
   const hour = date.getHours()
   const period = (() => {
     if (hour < 12) return 'morning'

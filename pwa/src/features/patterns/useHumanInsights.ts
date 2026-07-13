@@ -4,7 +4,10 @@ import type { GeneratedInsight } from './analytics'
 import { readInsightCache, signInsights, writeInsightCache } from './insightCache'
 import { insightProvider, localInsightProvider } from './insightProvider'
 
-export const useHumanInsights = (scopeKey: string, insights: GeneratedInsight[]): { insights: GeneratedInsight[]; pending: boolean } => {
+export const useHumanInsights = (
+  scopeKey: string,
+  insights: GeneratedInsight[],
+): { insights: GeneratedInsight[]; pending: boolean } => {
   const insightsRef = useRef(insights)
   insightsRef.current = insights
   const signature = useMemo(

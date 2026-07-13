@@ -40,8 +40,9 @@ const RecapPersonCard = ({
 }) => {
   const canOpenCheckIn = Boolean(person.requiresCheckIn)
   const scoreText = person.score === null ? person.label : `${person.score}%`
-  const className = `recap-person recap-person--${person.level} ${canOpenCheckIn ? 'recap-person--action' : ''
-    }`
+  const className = `recap-person recap-person--${person.level} ${
+    canOpenCheckIn ? 'recap-person--action' : ''
+  }`
   const content = (
     <>
       <PersonAvatar
@@ -126,7 +127,10 @@ const RecapHero = ({ person }: { readonly person?: HouseholdRecapPerson }) => {
   )
 }
 
-const createRecapSlides = (recap: HouseholdRecap, onRequiredCheckInClick: (personId: string) => void): RecapSlide[] => {
+const createRecapSlides = (
+  recap: HouseholdRecap,
+  onRequiredCheckInClick: (personId: string) => void,
+): RecapSlide[] => {
   const slides: RecapSlide[] = [
     {
       title: recap.title,

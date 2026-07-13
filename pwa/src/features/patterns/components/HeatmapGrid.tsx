@@ -19,7 +19,10 @@ const WEEKDAY_NAMES = [
   'Saturday',
 ]
 
-const cellStyle = (value: number | null, scale: 'rose' | 'green'): React.CSSProperties => {
+const cellStyle = (
+  value: number | null,
+  scale: 'rose' | 'green',
+): React.CSSProperties => {
   if (value === null) return { background: 'var(--wb-none)', opacity: 0.35 }
   const rgb = scale === 'green' ? '78, 157, 94' : '226, 89, 75'
   const alpha = 0.1 + (value / 100) * 0.75
@@ -77,8 +80,9 @@ export const HeatmapGrid = ({
               className="pattern-heatmap__cell"
               style={cellStyle(value, scale)}
               onClick={() => onSelect(row.id, weekday)}
-              aria-label={`${row.label}, ${WEEKDAY_NAMES[weekday]}: ${value === null ? 'no data' : `${Math.round(value)} percent`
-                }`}
+              aria-label={`${row.label}, ${WEEKDAY_NAMES[weekday]}: ${
+                value === null ? 'no data' : `${Math.round(value)} percent`
+              }`}
             >
               <span aria-hidden="true">{value === null ? '' : Math.round(value)}</span>
             </button>

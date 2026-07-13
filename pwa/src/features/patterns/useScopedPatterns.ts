@@ -24,7 +24,10 @@ export interface ScopedPatterns {
   filters: DisplayFilters
 }
 
-const deriveWindow = (rangeDays: number, customRange: CustomRange | null): {
+const deriveWindow = (
+  rangeDays: number,
+  customRange: CustomRange | null,
+): {
   now: Date
   windowDays: number
 } => {

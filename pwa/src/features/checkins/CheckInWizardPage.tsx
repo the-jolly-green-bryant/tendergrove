@@ -230,7 +230,12 @@ const WizardActions = ({
   )
 }
 
-const buildCheckInPayload = (selectedDate: Date, checkedIndicatorIds: string[], checkedEventIds: string[], note: string) => {
+const buildCheckInPayload = (
+  selectedDate: Date,
+  checkedIndicatorIds: string[],
+  checkedEventIds: string[],
+  note: string,
+) => {
   const occurDate = new Date(selectedDate)
   occurDate.setHours(12, 0, 0, 0)
 
@@ -256,14 +261,22 @@ const activeIndicators = (list: Indicator[]): Indicator[] =>
 
 type CheckInMutations = ReturnType<typeof useCheckInMutations>
 
-const commitCheckIn = async (mutations: CheckInMutations, existing: { id: string } | undefined, payload: ReturnType<typeof buildCheckInPayload>): Promise<void> => {
+const commitCheckIn = async (
+  mutations: CheckInMutations,
+  existing: { id: string } | undefined,
+  payload: ReturnType<typeof buildCheckInPayload>,
+): Promise<void> => {
   if (existing) await mutations.update(existing.id, payload)
   else await mutations.create(payload)
 }
 
 type ExistingCheckIn = { id: string; answersJson?: unknown; note?: string | null }
 
-const useCheckInDraft = (personId: string, selectedDate: Date, existing: ExistingCheckIn | undefined) => {
+const useCheckInDraft = (
+  personId: string,
+  selectedDate: Date,
+  existing: ExistingCheckIn | undefined,
+) => {
   const [checked, setChecked] = useState<CheckedIndicators>({})
   const [checkedEvents, setCheckedEvents] = useState<CheckedIndicators>({})
   const [note, setNote] = useState('')
@@ -655,7 +668,10 @@ const WizardStep = ({ personId, selectedDate, step }: WizardStepProps) => {
   )
 }
 
-const useWizardPeople = (personId: string | undefined, people: ReturnType<typeof usePeople>) => {
+const useWizardPeople = (
+  personId: string | undefined,
+  people: ReturnType<typeof usePeople>,
+) => {
   return useMemo(() => {
     if (personId) return [{ id: personId }]
     return (people.data ?? []).filter((p) => !p.archived)

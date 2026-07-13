@@ -47,7 +47,10 @@ interface CheckInLike {
 /*  Core scoring                                                       */
 /* ------------------------------------------------------------------ */
 
-export const computeScore = (indicators: IndicatorLike[], checkIn: CheckInLike): number | null => {
+export const computeScore = (
+  indicators: IndicatorLike[],
+  checkIn: CheckInLike,
+): number | null => {
   const active = indicators.filter((i) => i.active !== false)
   if (active.length === 0) return null
 
@@ -70,7 +73,12 @@ export const computeScore = (indicators: IndicatorLike[], checkIn: CheckInLike):
 /*  Weighted average over a lookback window                            */
 /* ------------------------------------------------------------------ */
 
-export const computeWeightedScore = (indicators: IndicatorLike[], checkIns: CheckInLike[], now: Date = new Date(), lookbackDays: number = STATUS_LOOKBACK_DAYS): number | null => {
+export const computeWeightedScore = (
+  indicators: IndicatorLike[],
+  checkIns: CheckInLike[],
+  now: Date = new Date(),
+  lookbackDays: number = STATUS_LOOKBACK_DAYS,
+): number | null => {
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
   let weightedSum = 0
@@ -136,7 +144,12 @@ const hashCode = (str: string): number => {
   return Math.abs(hash)
 }
 
-export const todayEmoji = (indicators: IndicatorLike[], checkIns: CheckInLike[], now: Date = new Date(), personId = ''): string | null => {
+export const todayEmoji = (
+  indicators: IndicatorLike[],
+  checkIns: CheckInLike[],
+  now: Date = new Date(),
+  personId = '',
+): string | null => {
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
   const todayCheckIns = checkIns.filter((ci) => {
@@ -177,6 +190,10 @@ export const todayEmoji = (indicators: IndicatorLike[], checkIns: CheckInLike[],
 /*  Convenience: derive status for a person given their data           */
 /* ------------------------------------------------------------------ */
 
-export const derivePersonStatus = (indicators: IndicatorLike[], checkIns: CheckInLike[], now?: Date): Status => {
+export const derivePersonStatus = (
+  indicators: IndicatorLike[],
+  checkIns: CheckInLike[],
+  now?: Date,
+): Status => {
   return statusFromScore(computeWeightedScore(indicators, checkIns, now))
 }

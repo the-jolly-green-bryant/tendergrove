@@ -106,7 +106,10 @@ const parseDateKey = (dateKey: string | null): Date | null => {
   return new Date(year, month - 1, day)
 }
 
-const getPersonPageDateView = (search: string, selectedDate: Date): PersonPageDateView => {
+const getPersonPageDateView = (
+  search: string,
+  selectedDate: Date,
+): PersonPageDateView => {
   const params = new URLSearchParams(search)
 
   return {
@@ -115,7 +118,11 @@ const getPersonPageDateView = (search: string, selectedDate: Date): PersonPageDa
   }
 }
 
-const usePersonPageSummary = (person: Person | null | undefined, viewDate: Date, personId: string | undefined): PersonPageSummary => {
+const usePersonPageSummary = (
+  person: Person | null | undefined,
+  viewDate: Date,
+  personId: string | undefined,
+): PersonPageSummary => {
   const indicators = (person?.indicators ?? []) as Indicator[]
   const checkIns = (person?.checkIns ?? []) as CheckIn[]
 
@@ -151,7 +158,10 @@ const usePersonPageSummary = (person: Person | null | undefined, viewDate: Date,
   }
 }
 
-const usePersonPageActions = (person: Person | null | undefined, personId: string | undefined) => {
+const usePersonPageActions = (
+  person: Person | null | undefined,
+  personId: string | undefined,
+) => {
   const router = useIonRouter()
   const location = useLocation()
   const [presentActionSheet] = useIonActionSheet()
@@ -349,7 +359,7 @@ export const PersonCheckInButton = ({
     <button
       type="button"
       className="person-checkin-button"
-      onClick={onClick ?? (() => { })}
+      onClick={onClick ?? (() => {})}
     >
       <div className="person-checkin-button__art avatar-emoji-wrapper">
         <PersonAvatar
@@ -652,8 +662,9 @@ const PersonPage = (): React.JSX.Element | null => {
 
       <IonContent
         fullscreen
-        className={`safe-content person-page-content${isTimeTravel ? ' time-travel-surface' : ''
-          }`}
+        className={`safe-content person-page-content${
+          isTimeTravel ? ' time-travel-surface' : ''
+        }`}
       >
         {isLoading && <LoadingState />}
 

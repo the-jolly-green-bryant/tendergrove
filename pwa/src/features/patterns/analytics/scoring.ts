@@ -53,11 +53,16 @@ export const INCIDENT_ONLY_BASE = 35
 /*  Per-day, per-person scoring                                        */
 /* ------------------------------------------------------------------ */
 
-const scoreableIndicators = (indicators: AnalyticsIndicator[]): AnalyticsIndicator[] => {
+const scoreableIndicators = (
+  indicators: AnalyticsIndicator[],
+): AnalyticsIndicator[] => {
   return indicators.filter((i) => i.active !== false && i.polarity !== null)
 }
 
-const indicatorDistress = (indicators: AnalyticsIndicator[], checkedIds: Set<string>): number | null => {
+const indicatorDistress = (
+  indicators: AnalyticsIndicator[],
+  checkedIds: Set<string>,
+): number | null => {
   const active = scoreableIndicators(indicators)
   if (active.length === 0) return null
 
@@ -72,7 +77,10 @@ const indicatorDistress = (indicators: AnalyticsIndicator[], checkedIds: Set<str
   return 100 - wellness
 }
 
-export const scorePersonDay = (person: AnalyticsPerson, date: DateKey): DailyPersonScore => {
+export const scorePersonDay = (
+  person: AnalyticsPerson,
+  date: DateKey,
+): DailyPersonScore => {
   const dayCheckIns = person.checkIns.filter((c) => isoToDateKey(c.occurredAt) === date)
   const dayIncidents = person.incidents.filter(
     (e) => isoToDateKey(e.occurredAt) === date,
@@ -139,7 +147,10 @@ export const scorePersonDay = (person: AnalyticsPerson, date: DateKey): DailyPer
   }
 }
 
-export const scorePersonWindow = (person: AnalyticsPerson, window: DateKey[]): DailyPersonScore[] => {
+export const scorePersonWindow = (
+  person: AnalyticsPerson,
+  window: DateKey[],
+): DailyPersonScore[] => {
   return window.map((date) => scorePersonDay(person, date))
 }
 
@@ -147,7 +158,10 @@ export const scorePersonWindow = (person: AnalyticsPerson, window: DateKey[]): D
 /*  Household aggregation                                              */
 /* ------------------------------------------------------------------ */
 
-export const aggregateHouseholdDay = (date: DateKey, personScores: DailyPersonScore[]): DailyHouseholdScore => {
+export const aggregateHouseholdDay = (
+  date: DateKey,
+  personScores: DailyPersonScore[],
+): DailyHouseholdScore => {
   const scored = personScores.filter((p) => p.score !== null)
 
   const checkInCount = personScores.reduce((sum, p) => sum + p.checkInCount, 0)
@@ -174,7 +188,10 @@ export const aggregateHouseholdDay = (date: DateKey, personScores: DailyPersonSc
   }
 }
 
-export const buildDailyScores = (people: AnalyticsPerson[], window: DateKey[]): {
+export const buildDailyScores = (
+  people: AnalyticsPerson[],
+  window: DateKey[],
+): {
   personDailyScores: Record<string, DailyPersonScore[]>
   householdDailyScores: DailyHouseholdScore[]
 } => {

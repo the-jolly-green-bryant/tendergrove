@@ -84,7 +84,9 @@ export const buildDayOfWeek = (scores: ScoredDay[]): DayOfWeekBucket[] => {
 /*  Time of day (incidents only)                                       */
 /* ------------------------------------------------------------------ */
 
-export const buildTimeOfDay = (incidents: { occurredAt: string }[]): {
+export const buildTimeOfDay = (
+  incidents: { occurredAt: string }[],
+): {
   buckets: TimeOfDayBucket[]
   total: number
 } => {
@@ -136,7 +138,10 @@ const collectIndicatorDays = (person: AnalyticsPerson): IndicatorDays => {
 /*  Heatmap                                                            */
 /* ------------------------------------------------------------------ */
 
-const buildPersonHeatmap = (person: AnalyticsPerson, days: IndicatorDays): HeatmapCell[] => {
+const buildPersonHeatmap = (
+  person: AnalyticsPerson,
+  days: IndicatorDays,
+): HeatmapCell[] => {
   const checkInsByWeekday = new Array(7).fill(0)
   for (const day of days.checkInDays) {
     checkInsByWeekday[dateKeyToDate(day).getDay()]++
@@ -175,14 +180,22 @@ const confidenceFromR = (r: number): Confidence => {
   return 'low'
 }
 
-const correlationSummary = (label: string, personName: string, correlation: number): string => {
+const correlationSummary = (
+  label: string,
+  personName: string,
+  correlation: number,
+): string => {
   const direction = correlation > 0 ? 'better' : 'harder'
   const nudge =
     correlation > 0 ? 'a habit worth encouraging' : 'something worth gently watching'
   return `${label} (${personName}) tends to appear on ${direction} days. These appear related — ${nudge}.`
 }
 
-const buildPersonIndicatorCorrelations = (person: AnalyticsPerson, scores: DailyPersonScore[], days: IndicatorDays): IndicatorOutcomeCorrelation[] => {
+const buildPersonIndicatorCorrelations = (
+  person: AnalyticsPerson,
+  scores: DailyPersonScore[],
+  days: IndicatorDays,
+): IndicatorOutcomeCorrelation[] => {
   const scoredDays = scores.filter((d) => d.score !== null && d.checkInCount > 0)
   const results: IndicatorOutcomeCorrelation[] = []
 
@@ -215,7 +228,10 @@ const buildPersonIndicatorCorrelations = (person: AnalyticsPerson, scores: Daily
 /*  Orchestration                                                      */
 /* ------------------------------------------------------------------ */
 
-const buildPersonTiming = (person: AnalyticsPerson, scores: DailyPersonScore[]): TimingAnalysis => {
+const buildPersonTiming = (
+  person: AnalyticsPerson,
+  scores: DailyPersonScore[],
+): TimingAnalysis => {
   const days = collectIndicatorDays(person)
   const { buckets, total } = buildTimeOfDay(person.incidents)
   return {
@@ -227,7 +243,11 @@ const buildPersonTiming = (person: AnalyticsPerson, scores: DailyPersonScore[]):
   }
 }
 
-export const buildTiming = (people: AnalyticsPerson[], personDailyScores: Record<string, DailyPersonScore[]>, householdDailyScores: ScoredDay[]): { household: TimingAnalysis; perPerson: Record<string, TimingAnalysis> } => {
+export const buildTiming = (
+  people: AnalyticsPerson[],
+  personDailyScores: Record<string, DailyPersonScore[]>,
+  householdDailyScores: ScoredDay[],
+): { household: TimingAnalysis; perPerson: Record<string, TimingAnalysis> } => {
   const perPerson: Record<string, TimingAnalysis> = {}
   for (const person of people) {
     perPerson[person.id] = buildPersonTiming(person, personDailyScores[person.id] ?? [])

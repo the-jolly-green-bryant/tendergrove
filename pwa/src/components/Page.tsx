@@ -138,7 +138,11 @@ const renderMenu = () => {
   )
 }
 
-const useHeaderScrollState = (transparentHeaderUntilScroll: boolean | undefined, transparentHeaderMode: PageProps['transparentHeaderMode'], className: string | undefined) => {
+const useHeaderScrollState = (
+  transparentHeaderUntilScroll: boolean | undefined,
+  transparentHeaderMode: PageProps['transparentHeaderMode'],
+  className: string | undefined,
+) => {
   const [isAtTop, setIsAtTop] = useState(true)
   const contentRef = useRef<HTMLIonContentElement | null>(null)
   const updateHeaderPosition = useCallback(

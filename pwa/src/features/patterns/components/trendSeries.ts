@@ -30,7 +30,11 @@ export const toDelta = (values: (number | null)[]): (number | null)[] => {
   })
 }
 
-export const buildTrendChart = (points: TrendPoint[], showDelta: boolean, primaryColor: string = PRIMARY): TrendChartConfig => {
+export const buildTrendChart = (
+  points: TrendPoint[],
+  showDelta: boolean,
+  primaryColor: string = PRIMARY,
+): TrendChartConfig => {
   const dates = points.map((p) => p.date)
 
   if (showDelta) {

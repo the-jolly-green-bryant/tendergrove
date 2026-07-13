@@ -7,7 +7,11 @@ interface SelectedDateContextValue {
 
 const SelectedDateContext = createContext<SelectedDateContextValue | null>(null)
 
-export const SelectedDateProvider = ({ children }: { readonly children: ReactNode }) => {
+export const SelectedDateProvider = ({
+  children,
+}: {
+  readonly children: ReactNode
+}) => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
 
   return (

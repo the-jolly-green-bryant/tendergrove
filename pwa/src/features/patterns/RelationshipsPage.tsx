@@ -19,7 +19,10 @@ const RELATIONSHIP_CHART_DAYS = 14
 const PERSON_A_COLOR = 'var(--ion-color-primary)'
 const PERSON_B_COLOR = '#7B5EBF'
 
-const relationshipSeries = (rel: RelationshipInsight, showDelta: boolean): { dates: string[]; series: ChartSeries[] } => {
+const relationshipSeries = (
+  rel: RelationshipInsight,
+  showDelta: boolean,
+): { dates: string[]; series: ChartSeries[] } => {
   const points = rel.chartData.slice(-RELATIONSHIP_CHART_DAYS)
   const aRaw = points.map((p) => p.aScore)
   const bRaw = points.map((p) => p.bScore)

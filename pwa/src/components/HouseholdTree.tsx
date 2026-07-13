@@ -428,8 +428,9 @@ const TreeVisual = ({
 
   return (
     <div
-      className={`tree-visualization tree-stage${isTimeTravel ? ' tree-stage--time-travel' : ''
-        }`}
+      className={`tree-visualization tree-stage${
+        isTimeTravel ? ' tree-stage--time-travel' : ''
+      }`}
     >
       <TreeArtwork
         people={people}

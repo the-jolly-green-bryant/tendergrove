@@ -35,12 +35,18 @@ const hash = (input: string): string => {
   return (h >>> 0).toString(36)
 }
 
-export const signInsights = (scopeKey: string, insights: GeneratedInsight[]): string => {
+export const signInsights = (
+  scopeKey: string,
+  insights: GeneratedInsight[],
+): string => {
   const basis = insights.map((i) => `${i.id}|${i.title}|${i.description}`).join('~')
   return `${scopeKey}:${hash(basis)}`
 }
 
-export const readInsightCache = async (signature: string, store: KVStore = preferencesStore): Promise<GeneratedInsight[] | null> => {
+export const readInsightCache = async (
+  signature: string,
+  store: KVStore = preferencesStore,
+): Promise<GeneratedInsight[] | null> => {
   const raw = await store.get(CACHE_PREFIX + signature)
   if (!raw) return null
   try {
@@ -50,6 +56,10 @@ export const readInsightCache = async (signature: string, store: KVStore = prefe
   }
 }
 
-export const writeInsightCache = async (signature: string, insights: GeneratedInsight[], store: KVStore = preferencesStore): Promise<void> => {
+export const writeInsightCache = async (
+  signature: string,
+  insights: GeneratedInsight[],
+  store: KVStore = preferencesStore,
+): Promise<void> => {
   await store.set(CACHE_PREFIX + signature, JSON.stringify(insights))
 }

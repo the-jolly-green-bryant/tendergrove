@@ -147,19 +147,19 @@ export const PersonPatternsSection = ({
   const scopedToPerson = scope === 'person'
   const data: ScopedData = scopedToPerson
     ? {
-      trend: personView.trend,
-      correlations: personView.correlations,
-      scoredDays: personView.scoredDays,
-      anomalyPatterns: personView.anomalyPatterns,
-      subjectName: personName,
-    }
+        trend: personView.trend,
+        correlations: personView.correlations,
+        scoredDays: personView.scoredDays,
+        anomalyPatterns: personView.anomalyPatterns,
+        subjectName: personName,
+      }
     : {
-      trend: result.householdTrend,
-      correlations: result.correlations,
-      scoredDays: result.dataQuality.scoredDays,
-      anomalyPatterns: null,
-      subjectName: null,
-    }
+        trend: result.householdTrend,
+        correlations: result.correlations,
+        scoredDays: result.dataQuality.scoredDays,
+        anomalyPatterns: null,
+        subjectName: null,
+      }
 
   const chartTitle = scopedToPerson
     ? `${personName}'s well-being trend`

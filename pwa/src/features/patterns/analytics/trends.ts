@@ -39,7 +39,10 @@ export const STABLE_BAND = 4
 /** Fewest scored days in the recent window before we trust a direction. */
 const MIN_DAYS_FOR_DIRECTION = 3
 
-export const rollingAverage = (series: ScoredDay[], windowSize: number = ROLLING_WINDOW_DAYS): (number | null)[] => {
+export const rollingAverage = (
+  series: ScoredDay[],
+  windowSize: number = ROLLING_WINDOW_DAYS,
+): (number | null)[] => {
   return series.map((_, index) => {
     const start = Math.max(0, index - windowSize + 1)
     const scores = series
@@ -144,8 +147,8 @@ export const computeTrend = (series: ScoredDay[]): TrendResult => {
 
   const direction: TrendDirection =
     currentTrend !== null &&
-      historicalAverage !== null &&
-      currentTrend >= historicalAverage
+    historicalAverage !== null &&
+    currentTrend >= historicalAverage
       ? 'improving'
       : 'worsening'
 

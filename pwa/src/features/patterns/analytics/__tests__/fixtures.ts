@@ -23,7 +23,11 @@ export const NOW = new Date(2025, 4, 31, 12, 0, 0) // May 31, 2025 noon local
 
 let indicatorCounter = 0
 
-export const indicator = (polarity: Polarity, name = `indicator-${++indicatorCounter}`, overrides: Partial<AnalyticsIndicator> = {}): AnalyticsIndicator => {
+export const indicator = (
+  polarity: Polarity,
+  name = `indicator-${++indicatorCounter}`,
+  overrides: Partial<AnalyticsIndicator> = {},
+): AnalyticsIndicator => {
   return {
     id: overrides.id ?? name,
     name,
@@ -32,7 +36,10 @@ export const indicator = (polarity: Polarity, name = `indicator-${++indicatorCou
   }
 }
 
-export const checkIn = (occurredAt: string, checkedIndicatorIds: string[]): AnalyticsCheckIn => {
+export const checkIn = (
+  occurredAt: string,
+  checkedIndicatorIds: string[],
+): AnalyticsCheckIn => {
   return { occurredAt, checkedIndicatorIds, eventIds: [] }
 }
 
@@ -40,7 +47,10 @@ export const incident = (occurredAt: string, title = 'Incident'): AnalyticsIncid
   return { occurredAt, title }
 }
 
-export const person = (id: string, overrides: Partial<AnalyticsPerson> = {}): AnalyticsPerson => {
+export const person = (
+  id: string,
+  overrides: Partial<AnalyticsPerson> = {},
+): AnalyticsPerson => {
   return {
     id,
     displayName: overrides.displayName ?? id,

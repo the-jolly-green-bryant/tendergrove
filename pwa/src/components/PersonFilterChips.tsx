@@ -107,8 +107,9 @@ export const PersonFilterChips = ({
           <button
             type="button"
             key={person.id}
-            className={`person-filter-chip person-filter-chip--avatar person-filter-chip--${statusColor} ${isSelected ? 'person-filter-chip--active' : ''
-              }`}
+            className={`person-filter-chip person-filter-chip--avatar person-filter-chip--${statusColor} ${
+              isSelected ? 'person-filter-chip--active' : ''
+            }`}
             onClick={() => onSelectPerson(person.id)}
             aria-label={`Show ${person.displayName}`}
             aria-pressed={isSelected}

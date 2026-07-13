@@ -117,7 +117,10 @@ const percentage = (occurrences: number, opportunities: number): number => {
   return Math.round((occurrences / opportunities) * 100)
 }
 
-const countOverlap = (signalDates: ReadonlySet<DateKey>, eligibleDates: ReadonlySet<DateKey>): number => {
+const countOverlap = (
+  signalDates: ReadonlySet<DateKey>,
+  eligibleDates: ReadonlySet<DateKey>,
+): number => {
   let count = 0
 
   for (const date of eligibleDates) {
@@ -127,7 +130,13 @@ const countOverlap = (signalDates: ReadonlySet<DateKey>, eligibleDates: Readonly
   return count
 }
 
-const isNotable = (anomalyOccurrences: number, anomalyOpportunities: number, anomalyRate: number, typicalRate: number, typicalOpportunities: number): boolean => {
+const isNotable = (
+  anomalyOccurrences: number,
+  anomalyOpportunities: number,
+  anomalyRate: number,
+  typicalRate: number,
+  typicalOpportunities: number,
+): boolean => {
   if (anomalyOccurrences < MIN_SIGNAL_ANOMALY_OCCURRENCES) {
     return false
   }
@@ -205,7 +214,9 @@ const compareRateItems = (a: AnomalyRateItem, b: AnomalyRateItem): number => {
   )
 }
 
-const buildWeekdayPattern = (baseline: BaselineResult): AnomalyWeekdayPattern | null => {
+const buildWeekdayPattern = (
+  baseline: BaselineResult,
+): AnomalyWeekdayPattern | null => {
   const buckets: AnomalyWeekdayBucket[] = WEEKDAY_LABELS.map((label, weekday) => {
     const scoredForWeekday = [...baseline.scoredDates].filter(
       (date) => dateKeyToDate(date).getDay() === weekday,
@@ -279,7 +290,11 @@ const buildWeekdayPattern = (baseline: BaselineResult): AnomalyWeekdayPattern | 
   }
 }
 
-const buildEventPattern = (person: AnalyticsPerson, lifeEvents: readonly AnalyticsLifeEvent[], baseline: BaselineResult): AnomalyEventPattern | null => {
+const buildEventPattern = (
+  person: AnalyticsPerson,
+  lifeEvents: readonly AnalyticsLifeEvent[],
+  baseline: BaselineResult,
+): AnomalyEventPattern | null => {
   const labelById = new Map(lifeEvents.map((event) => [event.id, event.label]))
 
   const eventDates = new Map<string, Set<DateKey>>()
@@ -328,7 +343,12 @@ const buildEventPattern = (person: AnalyticsPerson, lifeEvents: readonly Analyti
   }
 }
 
-const buildOtherPeoplePattern = (target: AnalyticsPerson, people: readonly AnalyticsPerson[], personDailyScores: Readonly<Record<string, DailyPersonScore[]>>, baseline: BaselineResult): AnomalyOtherPeoplePattern | null => {
+const buildOtherPeoplePattern = (
+  target: AnalyticsPerson,
+  people: readonly AnalyticsPerson[],
+  personDailyScores: Readonly<Record<string, DailyPersonScore[]>>,
+  baseline: BaselineResult,
+): AnomalyOtherPeoplePattern | null => {
   const items: AnomalyOtherPersonItem[] = []
 
   for (const other of people) {

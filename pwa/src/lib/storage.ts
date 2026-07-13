@@ -1,14 +1,11 @@
 import { Preferences } from '@capacitor/preferences'
 import { z } from 'zod'
 
-/**
- *
- */
 export class LocalCollection<T> {
   constructor(
     private readonly key: string,
     private readonly schema: z.ZodType<T>,
-  ) { }
+  ) {}
 
   async all(): Promise<T[]> {
     const result = await Preferences.get({ key: this.key })

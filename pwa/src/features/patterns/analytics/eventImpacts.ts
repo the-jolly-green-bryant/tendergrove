@@ -88,10 +88,15 @@ const impactsFromPairs = (byEvent: Pairs): EventImpact[] => {
     })
   }
   // Most negative (hardest-day) first; ties broken by more supporting days.
-  return impacts.sort((a, b) => a.correlation - b.correlation || b.sampleSize - a.sampleSize)
+  return impacts.sort(
+    (a, b) => a.correlation - b.correlation || b.sampleSize - a.sampleSize,
+  )
 }
 
-export const buildEventImpacts = (people: AnalyticsPerson[], personDailyScores: Record<string, DailyPersonScore[]>): { household: EventImpact[]; perPerson: Record<string, EventImpact[]> } => {
+export const buildEventImpacts = (
+  people: AnalyticsPerson[],
+  personDailyScores: Record<string, DailyPersonScore[]>,
+): { household: EventImpact[]; perPerson: Record<string, EventImpact[]> } => {
   const perPersonPairs = people.map(
     (p) => [p.id, pairsForPerson(p, personDailyScores[p.id] ?? [])] as const,
   )
@@ -99,6 +104,8 @@ export const buildEventImpacts = (people: AnalyticsPerson[], personDailyScores: 
   for (const [id, pairs] of perPersonPairs) {
     perPerson[id] = impactsFromPairs(pairs)
   }
-  const household = impactsFromPairs(mergePairs(perPersonPairs.map(([, pairs]) => pairs)))
+  const household = impactsFromPairs(
+    mergePairs(perPersonPairs.map(([, pairs]) => pairs)),
+  )
   return { household, perPerson }
 }
