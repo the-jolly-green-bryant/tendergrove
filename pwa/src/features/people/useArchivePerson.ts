@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { client } from '../../lib/api'
 
-export const useArchivePerson = (): ReturnType<typeof useMutation> => {
+export const useArchivePerson = () => {
   const queryClient = useQueryClient()
 
   return useMutation({

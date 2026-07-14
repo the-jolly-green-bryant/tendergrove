@@ -188,7 +188,7 @@ const usePersonPageActions = (
         {
           text: 'Archive',
           role: 'destructive',
-          handler: () => doArchive(true),
+          handler: () => void doArchive(true),
         },
       ],
     })
@@ -470,9 +470,6 @@ const PersonPageLoadedContent = ({
         status={summary.status}
         emoji={summary.emoji}
         viewDate={viewDate}
-        checkedForDate={summary.checkedForDate}
-        selectedCheckIn={summary.selectedCheckIn}
-        activeIndicators={summary.activeIndicators}
         onStartCheckIn={onStartCheckIn}
       />
 
