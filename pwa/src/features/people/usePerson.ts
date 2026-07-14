@@ -22,7 +22,7 @@ const personSelectionSet = [
   'checkIns.note',
 ] as const
 
-export const usePerson = (personId: string | undefined): ReturnType<typeof useQuery> =>
+export const usePerson = (personId: string | undefined) =>
   useQuery({
     enabled: Boolean(personId),
     queryKey: ['person', personId],
