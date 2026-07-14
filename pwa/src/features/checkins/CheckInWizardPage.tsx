@@ -556,6 +556,14 @@ const useWizardAdvance =
     return router.push('/dashboard', 'back', 'pop')
   }
 
+const renderTimeTravelNotice = (selectedDate: Date, callback: () => void) => (
+  <PastDataNotice
+    selectedDateLabel={formatDateLabel(selectedDate)}
+    onReturnToToday={callback}
+    className="past-data-notice--page"
+  />
+)
+
 export const CheckInWizardPage = ({
   personIdOverride,
 }: {
@@ -609,13 +617,8 @@ export const CheckInWizardPage = ({
       <IonContent
         className={`ion-padding check-in-wizard-content${isTimeTravel ? ' time-travel-surface' : ''}`}
       >
-        {isTimeTravel && (
-          <PastDataNotice
-            selectedDateLabel={formatDateLabel(selectedDate)}
-            onReturnToToday={() => setSelectedDate(new Date())}
-            className="past-data-notice--page"
-          />
-        )}
+        {isTimeTravel &&
+          renderTimeTravelNotice(selectedDate, () => setSelectedDate(new Date()))}
 
         {isLoadingPeople && <LoadingState />}
 

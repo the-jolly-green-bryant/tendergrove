@@ -224,9 +224,9 @@ const DateNavigatorCalendar = ({
       </div>
 
       <div className="date-navigator__weekdays">
-        {DAY_LABELS.map((label, i) => (
+        {DAY_LABELS.map((label) => (
           <span
-            key={i}
+            key={label}
             className="date-navigator__weekday"
           >
             {label}
@@ -237,7 +237,7 @@ const DateNavigatorCalendar = ({
       <div className="date-navigator__grid">
         {calendarWeeks.map((week, wi) => (
           <div
-            key={wi}
+            key={week.map((d) => d?.toISOString() ?? '').join('-')}
             className="date-navigator__week"
           >
             {week.map((day, di) =>

@@ -113,6 +113,8 @@ export const PersonPatternsSection = ({
   const { result, isLoading, hasError } = usePatternsAnalytics(rangeDays)
   const history = useHistory()
 
+  const setPerson = usePatternsFilterStore((s) => s.setPerson)
+
   // The main Person page already surfaces loading/errors; stay quiet here.
   if (isLoading || hasError || !result) return null
 
@@ -125,8 +127,6 @@ export const PersonPatternsSection = ({
     anomalyPatterns: scoped ? personView.anomalyPatterns : null,
     subjectName: scoped ? personName : null,
   }
-
-  const setPerson = usePatternsFilterStore((s) => s.setPerson)
 
   return (
     <section className="patterns-section person-patterns">

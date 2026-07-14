@@ -46,7 +46,6 @@ import type {
   GeneratedInsight,
   Polarity,
   PersonRole,
-  TrendResult,
 } from './types'
 import { buildEventImpacts } from './eventImpacts'
 

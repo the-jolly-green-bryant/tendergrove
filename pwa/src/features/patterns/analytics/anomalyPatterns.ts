@@ -342,94 +342,93 @@ const buildOtherPeoplePattern = (
 ): AnomalyOtherPeoplePattern | null => {
   const items: AnomalyOtherPersonItem[] = []
 
-  for (const other of people.filter((o) => o.id !== target.id)) {
-    const otherScores = personDailyScores[other.id] ?? []
+  people
+    .filter((o) => o.id !== target.id)
+    .forEach((other) => {
+      const otherScores = personDailyScores[other.id] ?? []
 
-    // Missing data must not count as the signal being absent.
-    const otherMeasurableDates = new Set(
-      otherScores.filter((day) => day.hasData).map((day) => day.date),
-    )
+      // Missing data must not count as the signal being absent.
+      const otherMeasurableDates = new Set(
+        otherScores.filter((day) => day.hasData).map((day) => day.date),
+      )
 
-    const measurableAnomalyDates = new Set(
-      [...baseline.anomalyDates].filter((date) => otherMeasurableDates.has(date)),
-    )
+      const measurableAnomalyDates = new Set(
+        [...baseline.anomalyDates].filter((date) => otherMeasurableDates.has(date)),
+      )
 
-    const measurableTypicalDates = new Set(
-      [...baseline.typicalDates].filter((date) => otherMeasurableDates.has(date)),
-    )
+      const measurableTypicalDates = new Set(
+        [...baseline.typicalDates].filter((date) => otherMeasurableDates.has(date)),
+      )
 
-    if (
-      measurableAnomalyDates.size < MIN_ANOMALOUS_DAYS ||
-      measurableTypicalDates.size < MIN_TYPICAL_OPPORTUNITIES
-    ) {
-      continue
-    }
-
-    const undesiredIndicators = new Map(
-      other.indicators
-        .filter(
-          (indicator) =>
-            indicator.active !== false && indicator.polarity === 'undesired',
-        )
-        .map((indicator) => [indicator.id, indicator.name]),
-    )
-
-    const datesByIndicator = new Map<string, Set<DateKey>>()
-
-    for (const checkIn of other.checkIns) {
-      const date = isoToDateKey(checkIn.occurredAt)
-
-      if (!otherMeasurableDates.has(date)) {
-        continue
+      if (
+        measurableAnomalyDates.size < MIN_ANOMALOUS_DAYS ||
+        measurableTypicalDates.size < MIN_TYPICAL_OPPORTUNITIES
+      ) {
+        return
       }
 
-      for (const indicatorId of new Set(
-        checkIn.checkedIndicatorIds.filter((i) => !undesiredIndicators.has(i)),
-      )) {
-        const dates = datesByIndicator.get(indicatorId) ?? new Set<DateKey>()
-        dates.add(date)
-        datesByIndicator.set(indicatorId, dates)
-      }
-    }
+      const undesiredIndicators = new Map(
+        other.indicators
+          .filter((i) => i.active !== false && i.polarity === 'undesired')
+          .map((indicator) => [indicator.id, indicator.name]),
+      )
 
-    for (const [indicatorId, dates] of datesByIndicator) {
-      const base = buildRateItem({
-        id: `${other.id}:indicator:${indicatorId}`,
-        label: undesiredIndicators.get(indicatorId) ?? 'Challenge',
-        signalDates: dates,
+      const datesByIndicator = new Map<string, Set<DateKey>>()
+
+      other.checkIns.forEach((checkIn) => {
+        const date = isoToDateKey(checkIn.occurredAt)
+
+        if (!otherMeasurableDates.has(date)) {
+          return
+        }
+
+        new Set(
+          checkIn.checkedIndicatorIds.filter((i) => !undesiredIndicators.has(i)),
+        ).forEach((indicatorId) => {
+          const dates = datesByIndicator.get(indicatorId) ?? new Set<DateKey>()
+          dates.add(date)
+          datesByIndicator.set(indicatorId, dates)
+        })
+      })
+
+      datesByIndicator.forEach((dates, indicatorId) => {
+        const base = buildRateItem({
+          id: `${other.id}:indicator:${indicatorId}`,
+          label: undesiredIndicators.get(indicatorId) ?? 'Challenge',
+          signalDates: dates,
+          anomalyDates: measurableAnomalyDates,
+          typicalDates: measurableTypicalDates,
+        })
+
+        base &&
+          items.push({
+            ...base,
+            personId: other.id,
+            personName: other.displayName,
+            kind: 'behavior',
+          })
+      })
+
+      const incidentDates = new Set(
+        other.incidents.map((incident) => isoToDateKey(incident.occurredAt)),
+      )
+
+      const incidentBase = buildRateItem({
+        id: `${other.id}:incidents`,
+        label: 'Incidents',
+        signalDates: incidentDates,
         anomalyDates: measurableAnomalyDates,
         typicalDates: measurableTypicalDates,
       })
 
-      base &&
+      incidentBase &&
         items.push({
-          ...base,
+          ...incidentBase,
           personId: other.id,
           personName: other.displayName,
-          kind: 'behavior',
+          kind: 'incident',
         })
-    }
-
-    const incidentDates = new Set(
-      other.incidents.map((incident) => isoToDateKey(incident.occurredAt)),
-    )
-
-    const incidentBase = buildRateItem({
-      id: `${other.id}:incidents`,
-      label: 'Incidents',
-      signalDates: incidentDates,
-      anomalyDates: measurableAnomalyDates,
-      typicalDates: measurableTypicalDates,
     })
-
-    incidentBase &&
-      items.push({
-        ...incidentBase,
-        personId: other.id,
-        personName: other.displayName,
-        kind: 'incident',
-      })
-  }
 
   items.sort(compareRateItems)
 

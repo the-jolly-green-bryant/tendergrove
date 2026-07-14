@@ -363,7 +363,7 @@ const EventBars = ({ counts, dateCount }: EventBarsProps): React.JSX.Element | n
 
         return (
           <rect
-            key={`${index}-${count}`}
+            key={`${x}-${count}`}
             className="pattern-chart__event-bar"
             x={x}
             y={EVENT_BASELINE_Y - height}

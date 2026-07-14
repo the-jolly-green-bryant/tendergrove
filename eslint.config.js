@@ -36,12 +36,7 @@ export default [
       parser: tseslint.parser,
       parserOptions: {
         projectService: {
-          allowDefaultProject: [
-            'vite.config.ts',
-            'pwa/vite.config.ts',
-            'pwa/capacitor.config.ts',
-            'pwa/public/assets/bloom/bloomPetalStyle.ts',
-          ],
+          allowDefaultProject: ['vite.config.ts', 'pwa/capacitor.config.ts'],
         },
         tsconfigRootDir: import.meta.dirname,
       },
