@@ -35,9 +35,8 @@ import { PersonAvatar } from '../../components/PersonAvatar'
 import { PersonRole } from '../../lib/domain'
 import { derivePersonStatus, todayEmoji } from '../../lib/status'
 import { PersonPatternsSection } from '../patterns/PersonPatternsSection'
+import { RawCheckIn, RawIndicator } from '../patterns/analytics'
 
-type Indicator = NonNullable<ReturnType<typeof usePerson>['data']>['indicators'][number]
-type CheckIn = NonNullable<ReturnType<typeof usePerson>['data']>['checkIns'][number]
 type Person = NonNullable<ReturnType<typeof usePerson>['data']>
 type PersonStatus = ReturnType<typeof derivePersonStatus>
 type PersonPageDateView = {
@@ -46,12 +45,12 @@ type PersonPageDateView = {
 }
 type PersonPageSummary = {
   readonly eventDates: Set<string>
-  readonly activeIndicators: Indicator[]
-  readonly selectedCheckIn?: CheckIn
+  readonly activeIndicators: RawIndicator[]
+  readonly selectedCheckIn?: RawCheckIn
   readonly status: PersonStatus
   readonly emoji?: string | null
   readonly selectedDateNote: string | null
-  readonly lastNoteCheckIn: CheckIn | null
+  readonly lastNoteCheckIn: RawCheckIn | null
   readonly checkedForDate?: Set<string>
 }
 
@@ -111,8 +110,8 @@ const usePersonPageSummary = (
   viewDate: Date,
   personId: string | undefined,
 ): PersonPageSummary => {
-  const indicators = (person?.indicators ?? []) as Indicator[]
-  const checkIns = (person?.checkIns ?? []) as CheckIn[]
+  const indicators = (person?.indicators ?? []) as RawIndicator[]
+  const checkIns = (person?.checkIns ?? []) as RawCheckIn[]
 
   const eventDates = useMemo(
     () => new Set<string>(checkIns.map((ci) => toISODate(new Date(ci.occurredAt)))),

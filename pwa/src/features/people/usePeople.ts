@@ -17,6 +17,7 @@ const peopleSelectionSet = [
   'indicators.id',
   'indicators.polarity',
   'indicators.active',
+  'indicators.name',
 ] as const
 
 export const usePeople = (): UseQueryResult<RawPerson[]> =>

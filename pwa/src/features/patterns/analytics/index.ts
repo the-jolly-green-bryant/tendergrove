@@ -88,7 +88,7 @@ export const MIN_SCORED_DAYS_FOR_CONFIDENCE = 4
 export interface RawIndicator {
   id: string
   name: string
-  polarity: string
+  polarity: string | null
   active?: boolean | null
 }
 
