@@ -17,15 +17,10 @@ import { useAppAuth } from '../../auth/AuthContext'
 import { useSelectedDate } from '../../context/SelectedDateContext'
 import { usePeople } from '../people/usePeople'
 import { derivePersonStatus, todayEmoji } from '../../lib/status'
-import {
-  createHouseholdRecap,
-  type HouseholdRecap,
-  type HouseholdRecapSourcePerson,
-} from '../../lib/householdRecap'
+import { createHouseholdRecap, type HouseholdRecap } from '../../lib/householdRecap'
 import { isSameLocalDay, toLocalDateKey } from '../../lib/dateKeys'
 import './HouseholdPage.scss'
-
-type HouseholdPerson = HouseholdRecapSourcePerson
+import { RawPerson } from '../patterns/analytics'
 
 const SELF_CARE_QUOTES: ReadonlyArray<readonly [string, string]> = [
   ['Small steps still move you', 'toward steadier ground.'],
@@ -45,7 +40,7 @@ const randomQuoteIndex = (): number => {
 }
 
 const renderTree = (
-  people: HouseholdPerson[],
+  people: RawPerson[],
   recap: HouseholdRecap | undefined,
   selectedDate: Date,
   isTimeTravel: boolean,
@@ -93,12 +88,12 @@ const SelfCareQuote = () => {
   )
 }
 
-const HouseholdPersonButton = ({
+const RawPersonButton = ({
   person,
   selectedDate,
   onClick,
 }: {
-  readonly person: HouseholdPerson
+  readonly person: RawPerson
   readonly selectedDate: Date
   readonly onClick: () => void
 }) => {
@@ -163,14 +158,14 @@ const HouseholdList = ({
   onPersonClick,
   onAddPersonClick,
 }: {
-  readonly people: HouseholdPerson[]
+  readonly people: RawPerson[]
   readonly selectedDate: Date
   readonly onPersonClick: (personId: string) => void
   readonly onAddPersonClick: () => void
 }) => (
   <div className="household-list">
     {people.map((person) => (
-      <HouseholdPersonButton
+      <RawPersonButton
         key={person.id}
         person={person}
         selectedDate={selectedDate}
@@ -213,7 +208,7 @@ const HouseholdHeroPanel = ({
   onRecapClick,
   onReturnToToday,
 }: {
-  readonly people: HouseholdPerson[]
+  readonly people: RawPerson[]
   readonly recap: HouseholdRecap | undefined
   readonly selectedDate: Date
   readonly isTimeTravel: boolean
@@ -275,7 +270,7 @@ const HouseholdDashboardBody = ({
   onAddPersonClick,
   onReturnToToday,
 }: {
-  readonly people: HouseholdPerson[]
+  readonly people: RawPerson[]
   readonly recap: HouseholdRecap | undefined
   readonly selectedDate: Date
   readonly isTimeTravel: boolean
@@ -342,8 +337,8 @@ const HouseholdPage = () => {
   const isTimeTravel = !isViewingToday
   const selectedDateKey = toLocalDateKey(selectedDate)
 
-  const activePeople = useMemo(
-    () => (people.data ?? []).filter((p) => !p.archived),
+  const activePeople: RawPerson[] = useMemo(
+    () => (people.data ?? []).filter((p: RawPerson) => !p.archived),
     [people.data],
   )
 

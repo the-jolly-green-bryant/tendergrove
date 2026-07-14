@@ -43,6 +43,7 @@ import {
   type RoleKey,
   type RoleTemplate,
 } from '../../templates/roleTemplates'
+import { RawPerson } from '../patterns/analytics'
 
 const TOTAL_STEPS = 3
 
@@ -794,7 +795,7 @@ const savePerson = async (args: SavePersonArgs): Promise<string> => {
     householdId: user.userId,
   })
   if (result.errors?.length) throw new Error(result.errors[0].message)
-  const newId = result.data!.id
+  const newId = (result.data! as unknown as RawPerson).id
   args.setCreatedPersonId(newId)
   await args.queryClient.invalidateQueries({ queryKey: ['people'] })
   return newId

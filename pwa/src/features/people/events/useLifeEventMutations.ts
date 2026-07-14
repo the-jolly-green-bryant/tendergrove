@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 
 import { client } from '../../../lib/api'
+import { RawPerson } from '../../patterns/analytics'
 
 // The generated client only exposes deployed models, so this is undefined
 // until the LifeEvent table ships. Guard rather than crashing with a TypeError.
@@ -37,7 +38,7 @@ export const useLifeEventMutations = (householdId: string | undefined) => {
         await model().create({ householdId, label, sortOrder: nextSortOrder }),
       )
       await invalidate()
-      return result.data?.id ?? ''
+      return (result.data as unknown as RawPerson)?.id ?? ''
     },
 
     async rename(id: string, label: string) {

@@ -1,6 +1,7 @@
 import { computeScore, statusFromScore } from './status'
 import { householdGreetingText } from './greeting'
 import { isSameLocalDay, toLocalDateKey } from './dateKeys'
+import { RawPerson } from '../features/patterns/analytics'
 
 /** Raw check-in data needed to score a recap person. */
 export interface HouseholdRecapCheckIn {
@@ -13,17 +14,6 @@ export interface HouseholdRecapIndicator {
   id: string
   polarity: string | null
   active?: boolean | null
-}
-
-/** Person data needed to build the household recap. */
-export interface HouseholdRecapSourcePerson {
-  id: string
-  displayName: string
-  avatarUrl?: string | null
-  role?: string | null
-  archived?: boolean | null
-  indicators?: HouseholdRecapIndicator[] | null
-  checkIns?: HouseholdRecapCheckIn[] | null
 }
 
 /** A single person's status inside the household recap. */
@@ -63,7 +53,7 @@ const formatRecapDateLabel = (dateKey: string): string => {
 }
 
 const latestCheckInForDate = (
-  person: HouseholdRecapSourcePerson,
+  person: RawPerson,
   dateKey: string,
 ): HouseholdRecapCheckIn | undefined =>
   (person.checkIns ?? [])
@@ -71,7 +61,7 @@ const latestCheckInForDate = (
     .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))[0]
 
 const scoreForCheckIn = (
-  person: HouseholdRecapSourcePerson,
+  person: RawPerson,
   checkIn: HouseholdRecapCheckIn | undefined,
 ): number | null => {
   if (!checkIn) return null
@@ -82,7 +72,7 @@ const scoreForCheckIn = (
 }
 
 const latestScoreableCheckIn = (
-  person: HouseholdRecapSourcePerson,
+  person: RawPerson,
   dateKey: string,
 ): HouseholdRecapCheckIn | undefined =>
   [...(person.checkIns ?? [])]
@@ -91,7 +81,7 @@ const latestScoreableCheckIn = (
     .find((checkIn) => scoreForCheckIn(person, checkIn) !== null)
 
 const recapPersonFromScore = (
-  person: HouseholdRecapSourcePerson,
+  person: RawPerson,
   score: number | null,
   requiresCheckIn: boolean,
 ): HouseholdRecapPerson => {
@@ -116,7 +106,7 @@ const recapPersonFromScore = (
 }
 
 const scorePersonForRecap = (
-  person: HouseholdRecapSourcePerson,
+  person: RawPerson,
   dateKey: string,
 ): HouseholdRecapPerson => {
   const todayScore = scoreForCheckIn(person, latestCheckInForDate(person, dateKey))
@@ -150,7 +140,7 @@ const datedRecapTitle = (
 }
 
 export const createHouseholdRecap = (
-  people: HouseholdRecapSourcePerson[],
+  people: RawPerson[],
   selectedDate: Date = new Date(),
 ): HouseholdRecap | undefined => {
   if (people.length === 0) return undefined

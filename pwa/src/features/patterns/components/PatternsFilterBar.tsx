@@ -11,19 +11,15 @@ import { usePatternsData } from '../usePatternsData'
 import { usePatternsFilterStore } from '../patternsFilterStore'
 import { FiltersModal } from './FiltersModal'
 
-const toFilterablePeople = (raw: RawPerson[] | undefined): FilterablePerson[] =>
+const toFilterablePeople = (raw: RawPerson[] | undefined): RawPerson[] =>
   (raw ?? [])
     .filter((p) => p.archived !== true)
     .map((p) => ({
-      id: p.id,
-      displayName: p.displayName,
-      avatarUrl: p.avatarUrl ?? null,
-      indicators: (p.indicators ?? [])
-        .filter((i): i is NonNullable<typeof i> => i != null)
-        .map((i) => ({ id: i.id, polarity: i.polarity ?? null, active: i.active })),
-      checkIns: (p.checkIns ?? [])
-        .filter((c): c is NonNullable<typeof c> => c != null)
-        .map((c) => ({ occurredAt: c.occurredAt, answersJson: c.answersJson })),
+      ...p,
+      indicators: (p.indicators ?? []).filter(
+        (i): i is NonNullable<typeof i> => i != null,
+      ),
+      checkIns: (p.checkIns ?? []).filter((c): c is NonNullable<typeof c> => c != null),
     }))
 
 export const PatternsFilterBar = ({

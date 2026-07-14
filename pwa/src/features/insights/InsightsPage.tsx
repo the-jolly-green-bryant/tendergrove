@@ -12,6 +12,7 @@ import { parseAnswers } from '../people/checkin/checkInUtils'
 
 import './InsightsPage.css'
 import { not } from '../../lib/helpers'
+import { RawPerson } from '../patterns/analytics'
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -40,7 +41,7 @@ interface ScoreableIndicator {
 }
 
 interface RenderPageParams {
-  activePeople: FilterablePerson[]
+  activePeople: RawPerson[]
   clearSelection: () => void
   hasError: boolean
   isLoading: boolean
@@ -187,8 +188,8 @@ const InsightsPage = (): React.JSX.Element => {
   const people = usePeople()
   const { selectedPeople, selectOnlyPerson, clearSelection } = usePersonFilter()
 
-  const activePeople = useMemo(
-    () => (people.data ?? []).filter((p) => !p.archived),
+  const activePeople: RawPerson[] = useMemo(
+    () => (people.data ?? []).filter((p: RawPerson) => !p.archived),
     [people.data],
   )
 

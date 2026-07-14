@@ -87,15 +87,19 @@ export const MIN_SCORED_DAYS_FOR_CONFIDENCE = 4
 /** Loose shape of an `Indicator` record as fetched from the API. */
 export interface RawIndicator {
   id: string
-  name?: string | null
-  polarity?: string | null
+  name: string
+  polarity: string
   active?: boolean | null
 }
 
 /** Loose shape of a `CheckIn` record as fetched from the API. */
 export interface RawCheckIn {
+  id: string
   occurredAt: string
+  updatedAt?: string
+  createdAt?: string
   answersJson?: unknown
+  note?: string
 }
 
 /** Loose shape of an `Event` record as fetched from the API. */
@@ -117,12 +121,13 @@ export interface RawLifeEvent {
 /** Loose shape of a `Person` record (with related records) from the API. */
 export interface RawPerson {
   id: string
+  householdId?: string
   displayName: string
-  role?: string | null
-  avatarUrl?: string | null
-  archived?: boolean | null
-  indicators?: (RawIndicator | null)[] | null
-  checkIns?: (RawCheckIn | null)[] | null
+  role: string | null
+  avatarUrl: string | null
+  archived: boolean | null
+  indicators?: RawIndicator[] | null
+  checkIns: RawCheckIn[]
   events?: (RawEvent | null)[] | null
 }
 

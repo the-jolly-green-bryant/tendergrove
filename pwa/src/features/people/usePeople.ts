@@ -1,6 +1,7 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, UseQueryResult } from '@tanstack/react-query'
 
 import { client } from '../../lib/api'
+import { RawPerson } from '../patterns/analytics'
 
 const peopleSelectionSet = [
   'id',
@@ -18,7 +19,7 @@ const peopleSelectionSet = [
   'indicators.active',
 ] as const
 
-export const usePeople = () =>
+export const usePeople = (): UseQueryResult<RawPerson[]> =>
   useQuery({
     queryKey: ['people'],
     queryFn: async () => {

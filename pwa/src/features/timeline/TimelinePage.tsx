@@ -10,6 +10,7 @@ import { computeScore, statusFromScore, type Status } from '../../lib/status'
 
 import './TimelinePage.css'
 import { StatusChip } from '../../components/StatusChip'
+import { RawCheckIn, RawPerson } from '../patterns/analytics'
 
 type EventType = 'check-in'
 type TimelinePerson = NonNullable<ReturnType<typeof usePeople>['data']>[number]
@@ -119,7 +120,7 @@ const renderEventButton = (event: TimelineEvent) => {
   )
 }
 
-const checkInToEvent = (person: TimelinePerson, ci: TimelineCheckIn): TimelineEvent => {
+const checkInToEvent = (person: RawPerson, ci: RawCheckIn): TimelineEvent => {
   const score = computeScore(person.indicators ?? [], ci)
   const status = statusFromScore(score)
 

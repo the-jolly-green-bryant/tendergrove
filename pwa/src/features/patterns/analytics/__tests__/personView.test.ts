@@ -11,6 +11,8 @@ const p1: RawPerson = {
   id: 'p1',
   displayName: 'Child A',
   role: 'child',
+  avatarUrl: null,
+  archived: false,
   indicators: [
     { id: 'sleep', name: 'poor sleep', polarity: 'undesired', active: true },
     { id: 'dys', name: 'dysregulation', polarity: 'undesired', active: true },
@@ -19,10 +21,12 @@ const p1: RawPerson = {
     ...[2, 6, 10, 14, 18].map((d) => ({
       occurredAt: may(d),
       answersJson: { checked: ['sleep'] },
+      id: 'blah',
     })),
     ...[3, 7, 11, 15].map((d) => ({
       occurredAt: may(d),
       answersJson: { checked: ['dys'] },
+      id: 'blah',
     })),
   ],
   events: [],
@@ -32,8 +36,12 @@ const p2: RawPerson = {
   id: 'p2',
   displayName: 'You',
   role: 'self',
+  avatarUrl: null,
+  archived: false,
   indicators: [{ id: 'fatigue', name: 'fatigue', polarity: 'undesired', active: true }],
-  checkIns: [{ occurredAt: may(20), answersJson: { checked: ['fatigue'] } }],
+  checkIns: [
+    { occurredAt: may(20), answersJson: { checked: ['fatigue'] }, id: 'blah' },
+  ],
   events: [],
 }
 

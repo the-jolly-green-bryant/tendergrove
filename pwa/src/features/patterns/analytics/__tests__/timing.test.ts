@@ -104,10 +104,13 @@ describe('analyzeHousehold — timing integration', () => {
         id: 'p1',
         displayName: 'You',
         role: 'self',
+        avatarUrl: null,
+        archived: false,
         indicators: [{ id: 'cope', name: 'coping', polarity: 'desired', active: true }],
         checkIns: [...copeDays, ...flatDays].map((c) => ({
           occurredAt: c.occurredAt,
           answersJson: { checked: c.checkedIndicatorIds },
+          id: 'blah',
         })),
         events: [],
       },

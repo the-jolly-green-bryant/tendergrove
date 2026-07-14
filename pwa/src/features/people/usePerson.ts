@@ -1,6 +1,8 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, UseQueryResult } from '@tanstack/react-query'
 
 import { client } from '../../lib/api'
+import { FilterablePerson } from '../../components/PersonFilterChips'
+import { RawPerson } from '../patterns/analytics'
 
 const personSelectionSet = [
   'id',
@@ -22,7 +24,9 @@ const personSelectionSet = [
   'checkIns.note',
 ] as const
 
-export const usePerson = (personId: string | undefined) =>
+export const usePerson = (
+  personId: string | undefined,
+): UseQueryResult<RawPerson | null> =>
   useQuery({
     enabled: Boolean(personId),
     queryKey: ['person', personId],
@@ -36,6 +40,6 @@ export const usePerson = (personId: string | undefined) =>
         throw new Error(result.errors[0].message)
       }
 
-      return result.data
+      return result.data as unknown as RawPerson | null
     },
   })

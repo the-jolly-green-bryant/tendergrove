@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 
 import { derivePersonStatus, type Status } from '../lib/status'
 import './PersonFilterChips.css'
+import { RawPerson } from '../features/patterns/analytics'
 
 const AVATAR_COLORS = ['147D7E', '75C8C4', '2FAE60', 'E88972', '8AA39B', 'C9A66B']
 
@@ -30,14 +31,14 @@ export interface FilterablePerson {
 }
 
 interface PersonFilterChipsProps {
-  readonly people: FilterablePerson[]
+  readonly people: RawPerson[]
   readonly selectedPeople: Set<string>
   readonly onSelectPerson: (personId: string) => void
   readonly onClear: () => void
   readonly className?: string
 }
 
-const getPersonStatusColor = (person: FilterablePerson): Status['color'] =>
+const getPersonStatusColor = (person: RawPerson): Status['color'] =>
   derivePersonStatus(person.indicators ?? [], person.checkIns ?? []).color
 
 const colorForName = (name: string): string => {

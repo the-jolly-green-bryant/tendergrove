@@ -1,4 +1,5 @@
 import { parseAnswers } from '../features/people/checkin/checkInUtils'
+import { RawIndicator } from '../features/patterns/analytics'
 
 /* ------------------------------------------------------------------ */
 /*  Configuration                                                      */
@@ -32,12 +33,6 @@ export interface Status {
   color: 'success' | 'warning' | 'danger' | 'medium'
 }
 
-interface IndicatorLike {
-  id: string
-  polarity: string | null
-  active?: boolean | null
-}
-
 interface CheckInLike {
   occurredAt: string
   answersJson?: unknown
@@ -48,7 +43,7 @@ interface CheckInLike {
 /* ------------------------------------------------------------------ */
 
 export const computeScore = (
-  indicators: IndicatorLike[],
+  indicators: RawIndicator[],
   checkIn: CheckInLike,
 ): number | null => {
   const active = indicators.filter((i) => i.active !== false)
@@ -74,7 +69,7 @@ export const computeScore = (
 /* ------------------------------------------------------------------ */
 
 export const computeWeightedScore = (
-  indicators: IndicatorLike[],
+  indicators: RawIndicator[],
   checkIns: CheckInLike[],
   now: Date = new Date(),
   lookbackDays: number = STATUS_LOOKBACK_DAYS,
@@ -145,7 +140,7 @@ const hashCode = (str: string): number => {
 }
 
 export const todayEmoji = (
-  indicators: IndicatorLike[],
+  indicators: RawIndicator[],
   checkIns: CheckInLike[],
   now: Date = new Date(),
   personId = '',
@@ -191,7 +186,7 @@ export const todayEmoji = (
 /* ------------------------------------------------------------------ */
 
 export const derivePersonStatus = (
-  indicators: IndicatorLike[],
+  indicators: RawIndicator[],
   checkIns: CheckInLike[],
   now?: Date,
 ): Status => statusFromScore(computeWeightedScore(indicators, checkIns, now))

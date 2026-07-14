@@ -29,13 +29,19 @@ describe('normalizeHousehold', () => {
       id: 'p1',
       displayName: 'Child A',
       role: 'child',
+      avatarUrl: null,
       archived: false,
       indicators: [
         { id: 'i1', name: 'poor sleep', polarity: 'undesired', active: true },
         { id: 'i2', name: 'mystery', polarity: 'weird-value', active: true }, // invalid polarity
-        null,
       ],
-      checkIns: [{ occurredAt: NOW.toISOString(), answersJson: '{"checked":["i1"]}' }],
+      checkIns: [
+        {
+          occurredAt: NOW.toISOString(),
+          answersJson: '{"checked":["i1"]}',
+          id: 'blah',
+        },
+      ],
       events: [
         { occurredAt: NOW.toISOString(), type: 'incident', title: 'meltdown' },
         {
@@ -45,7 +51,14 @@ describe('normalizeHousehold', () => {
         },
       ],
     },
-    { id: 'p2', displayName: 'Archived', archived: true },
+    {
+      id: 'p2',
+      displayName: 'Archived',
+      archived: true,
+      role: 'blah',
+      avatarUrl: null,
+      checkIns: [],
+    },
   ]
 
   it('drops archived people by default', () => {
@@ -78,6 +91,8 @@ describe('runAnalytics / analyzeHousehold', () => {
         id: 'p1',
         displayName: 'Child A',
         role: 'child',
+        avatarUrl: null,
+        archived: false,
         indicators: [
           { id: 'i1', name: 'meltdown', polarity: 'undesired', active: true },
         ],
@@ -85,10 +100,12 @@ describe('runAnalytics / analyzeHousehold', () => {
           {
             occurredAt: new Date(2025, 4, 30, 12).toISOString(),
             answersJson: { checked: ['i1'] },
+            id: 'blah',
           },
           {
             occurredAt: new Date(2025, 4, 29, 12).toISOString(),
             answersJson: { checked: [] },
+            id: 'blah',
           },
         ],
         events: [],

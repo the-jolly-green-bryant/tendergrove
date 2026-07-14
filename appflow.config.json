@@ -2,7 +2,11 @@
   "apps": [
     {
       "appId": "760262b0",
-      "root": "pwa"
+      "root": "pwa",
+      "dependencyInstallCommand": "cd .. && npx --yes pnpm@10.14.0 install --frozen-lockfile",
+      "webBuildCommand": "cd .. && npx --yes pnpm@10.14.0 --filter pwa build",
+      "androidPath": "android",
+      "iosPath": "ios"
     }
   ]
 }

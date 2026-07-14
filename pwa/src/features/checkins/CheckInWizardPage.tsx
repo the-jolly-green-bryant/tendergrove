@@ -30,6 +30,7 @@ import { useIndicators } from '../people/indicators/useIndicators'
 import { parseAnswers } from '../people/checkin/checkInUtils'
 import { useCheckInMutations } from '../people/checkin/useCheckInMutations'
 import { PersonCheckInButton } from '../people/PersonPage'
+import { RawCheckIn, RawIndicator } from '../patterns/analytics'
 
 const isSameDay = (occurredAt: string, date: Date): boolean => {
   const d = new Date(occurredAt)
@@ -56,7 +57,6 @@ const formatDateLabel = (date: Date): string => {
   })
 }
 
-type Indicator = NonNullable<ReturnType<typeof usePerson>['data']>['indicators'][number]
 type CheckedIndicators = Record<string, boolean>
 /** A checkbox row: an indicator or a life event, reduced to id + label. */
 interface ChecklistItem {
@@ -127,7 +127,7 @@ const ChecklistGroup = ({
   )
 }
 
-const indicatorItems = (indicators: Indicator[]): ChecklistItem[] =>
+const indicatorItems = (indicators: RawIndicator[]): ChecklistItem[] =>
   indicators.map((i) => ({ id: i.id, label: i.name }))
 
 const EmptyIndicatorsMessage = ({ personId }: { readonly personId: string }) => {
@@ -216,7 +216,7 @@ const activeLifeEvents = (events: LifeEvent[]): ChecklistItem[] =>
 const selectedIds = (items: ChecklistItem[], checked: CheckedIndicators): string[] =>
   items.filter((i) => checked[i.id]).map((i) => i.id)
 
-const activeIndicators = (list: Indicator[]): Indicator[] =>
+const activeIndicators = (list: RawIndicator[]): RawIndicator[] =>
   list.filter((i) => i.active !== false)
 
 type CheckInMutations = ReturnType<typeof useCheckInMutations>
@@ -230,12 +230,10 @@ const commitCheckIn = async (
   else await mutations.create(payload)
 }
 
-type ExistingCheckIn = { id: string; answersJson?: unknown; note?: string | null }
-
 const useCheckInDraft = (
   personId: string,
   selectedDate: Date,
-  existing: ExistingCheckIn | undefined,
+  existing: RawCheckIn | undefined,
 ) => {
   const [checked, setChecked] = useState<CheckedIndicators>({})
   const [checkedEvents, setCheckedEvents] = useState<CheckedIndicators>({})
@@ -281,7 +279,7 @@ const useWizardStepState = ({
   const indicators = useMemo(
     () =>
       activeIndicators(
-        (indicatorsQuery.data ?? person?.indicators ?? []) as Indicator[],
+        (indicatorsQuery.data ?? person?.indicators ?? []) as RawIndicator[],
       ),
     [indicatorsQuery.data, person],
   )
