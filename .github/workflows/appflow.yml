@@ -24,7 +24,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Appflow CLI
-        run: curl -sL https://ionic.io/docs/appflow/cli/install | bash
+        run: curl -sL https://ionic.io/get-appflow-cli | bash
 
       - name: Trigger Android Build
         id: android_build
