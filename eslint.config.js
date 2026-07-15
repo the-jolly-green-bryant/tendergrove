@@ -53,7 +53,6 @@ export default [
 
     rules: {
       'prettier/prettier': 'error',
-      'sonarjs/cognitive-complexity': ['error', 15],
       'sonarjs/no-nested-assignment': 'off',
       'max-lines-per-function': ['error', 80],
       '@typescript-eslint/no-unused-expressions': 'off',
@@ -104,7 +103,17 @@ export default [
       'sonarjs/no-identical-functions': 'error',
       'sonarjs/no-all-duplicated-branches': 'error',
       'sonarjs/no-duplicated-branches': 'error',
-      'sonarjs/no-identical-expressions': 'warn',
+      'sonarjs/cognitive-complexity': ['error', 15],
+      'sonarjs/no-collapsible-if': 'warn',
+      'sonarjs/no-identical-conditions': 'error',
+      'sonarjs/no-identical-expressions': 'error',
+      'sonarjs/no-invariant-returns': 'warn',
+      'sonarjs/no-nested-conditional': 'error',
+      'sonarjs/no-redundant-boolean': 'warn',
+      'sonarjs/no-redundant-jump': 'warn',
+      'sonarjs/no-unused-collection': 'error',
+      'sonarjs/prefer-immediate-return': 'warn',
+      'sonarjs/prefer-single-boolean-return': 'warn',
       '@typescript-eslint/no-inferrable-types': 'error',
       '@typescript-eslint/naming-convention': [
         'error',
