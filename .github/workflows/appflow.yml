@@ -1,0 +1,74 @@
+name: Appflow Build & Deploy
+
+# This workflow triggers builds and deployments on Ionic Appflow using the Appflow CLI.
+# This allows automated CI/CD on the Appflow free tier without needing "Automations".
+#
+# Prerequisite: Add a 'IONIC_TOKEN' secret to your GitHub repository settings.
+# You can generate this token in the Appflow Dashboard (Personal Settings > Personal Access Tokens).
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      IONIC_TOKEN: ${{ secrets.IONIC_TOKEN }}
+      APP_ID: '760262b0' # From appflow.config.json
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Appflow CLI
+        run: curl -sL https://ionic.io/docs/appflow/cli/install | bash
+
+      - name: Trigger Android Build
+        id: android_build
+        run: |
+          # Use --json and jq to capture the build ID
+          # Assuming 'production' signing cert and 'Google Play' destination are set up in Appflow
+          # If these aren't set up, the user might need to adjust these names.
+          ANDROID_BUILD_ID=$(appflow build android release \
+            --app-id=$APP_ID \
+            --commit=$GITHUB_SHA \
+            --signing-cert="production" \
+            --json \
+            --token=$IONIC_TOKEN | jq -r ".buildId")
+          echo "ANDROID_BUILD_ID=$ANDROID_BUILD_ID" >> $GITHUB_OUTPUT
+        continue-on-error: true # Don't fail the whole job if one platform fails
+
+#      - name: Trigger iOS Build
+#        id: ios_build
+#        run: |
+#          IOS_BUILD_ID=$(appflow build ios app-store \
+#            --app-id=$APP_ID \
+#            --commit=$GITHUB_SHA \
+#            --signing-cert="production" \
+#            --json \
+#            --token=$IONIC_TOKEN | jq -r ".buildId")
+#          echo "IOS_BUILD_ID=$IOS_BUILD_ID" >> $GITHUB_OUTPUT
+#        continue-on-error: true
+
+      - name: Deploy Android to Store
+        if: steps.android_build.outputs.ANDROID_BUILD_ID != ''
+        run: |
+          appflow deploy android \
+            --app-id=$APP_ID \
+            --build-id=${{ steps.android_build.outputs.ANDROID_BUILD_ID }} \
+            --destination="Google Play Store" \
+            --token=$IONIC_TOKEN
+        continue-on-error: true
+
+      - name: Deploy iOS to Store
+        if: steps.ios_build.outputs.IOS_BUILD_ID != ''
+        run: |
+          appflow deploy ios \
+            --app-id=$APP_ID \
+            --build-id=${{ steps.ios_build.outputs.IOS_BUILD_ID }} \
+            --destination="App Store" \
+            --token=$IONIC_TOKEN
+        continue-on-error: true
