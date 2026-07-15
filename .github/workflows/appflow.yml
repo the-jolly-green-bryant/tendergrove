@@ -1,7 +1,6 @@
 name: Appflow Build & Deploy
 
 # This workflow triggers builds and deployments on Ionic Appflow using the Appflow CLI.
-# This allows automated CI/CD on the Appflow free tier without needing "Automations".
 #
 # Prerequisite: Add a 'IONIC_TOKEN' secret to your GitHub repository settings.
 # You can generate this token in the Appflow Dashboard (Personal Settings > Personal Access Tokens).
@@ -12,34 +11,49 @@ on:
       - main
   workflow_dispatch:
 
+# Do not allow two main-branch releases to race each other into Google Play.
+concurrency:
+  group: appflow-android-production
+  cancel-in-progress: false
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     env:
       IONIC_TOKEN: ${{ secrets.IONIC_TOKEN }}
       APP_ID: '760262b0' # From appflow.config.json
+      SIGNING_CERT: production
+      DESTINATION: Google Play Store # Must exactly match the Appflow destination name.
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install Appflow CLI
-        run: curl -sL https://ionic.io/get-appflow-cli | bash
+        run: curl -fsSL https://ionic.io/get-appflow-cli | bash
 
       - name: Trigger Android Build
         id: android_build
+        shell: bash
         run: |
-          # Use --json and jq to capture the build ID
-          # Assuming 'production' signing cert and 'Google Play' destination are set up in Appflow
-          # If these aren't set up, the user might need to adjust these names.
-          ANDROID_BUILD_ID=$(appflow build android release \
-            --app-id=$APP_ID \
-            --commit=$GITHUB_SHA \
-            --signing-cert="production" \
+          set -euo pipefail
+          test -n "$IONIC_TOKEN"
+
+          appflow build android release \
+            --app-id="$APP_ID" \
+            --commit="$GITHUB_SHA" \
+            --signing-cert="$SIGNING_CERT" \
             --json \
-            --token=$IONIC_TOKEN | jq -r ".buildId")
-          echo "ANDROID_BUILD_ID=$ANDROID_BUILD_ID" >> $GITHUB_OUTPUT
-        continue-on-error: true # Don't fail the whole job if one platform fails
+            --token="$IONIC_TOKEN" | tee appflow-build.json
+
+          jq -e '
+            .buildStatus == "SUCCESS"
+            and .platform == "ANDROID"
+            and (.buildId | type == "number")
+          ' appflow-build.json > /dev/null
+
+          echo "ANDROID_BUILD_ID=$(jq -r '.buildId' appflow-build.json)" >> "$GITHUB_OUTPUT"
+          echo "ANDROID_BUILD_NUMBER=$(jq -r '.buildNumber' appflow-build.json)" >> "$GITHUB_OUTPUT"
 
 #      - name: Trigger iOS Build
 #        id: ios_build
@@ -51,24 +65,33 @@ jobs:
 #            --json \
 #            --token=$IONIC_TOKEN | jq -r ".buildId")
 #          echo "IOS_BUILD_ID=$IOS_BUILD_ID" >> $GITHUB_OUTPUT
-#        continue-on-error: true
 
       - name: Deploy Android to Store
-        if: steps.android_build.outputs.ANDROID_BUILD_ID != ''
+        shell: bash
         run: |
-          appflow deploy android \
-            --app-id=$APP_ID \
-            --build-id=${{ steps.android_build.outputs.ANDROID_BUILD_ID }} \
-            --destination="Google Play Store" \
-            --token=$IONIC_TOKEN
-        continue-on-error: true
+          set -euo pipefail
 
-      - name: Deploy iOS to Store
-        if: steps.ios_build.outputs.IOS_BUILD_ID != ''
+          appflow deploy android \
+            --app-id="$APP_ID" \
+            --build-id="${{ steps.android_build.outputs.ANDROID_BUILD_ID }}" \
+            --destination="$DESTINATION" \
+            --json \
+            --token="$IONIC_TOKEN" | tee appflow-deployment.json
+
+          jq --arg destination "$DESTINATION" -e '
+            .buildStatus == "SUCCESS"
+            and .platform == "ANDROID"
+            and .destinationName == $destination
+          ' appflow-deployment.json > /dev/null
+
+      - name: Publish release summary
+        if: success()
+        shell: bash
         run: |
-          appflow deploy ios \
-            --app-id=$APP_ID \
-            --build-id=${{ steps.ios_build.outputs.IOS_BUILD_ID }} \
-            --destination="App Store" \
-            --token=$IONIC_TOKEN
-        continue-on-error: true
+          {
+            echo "### Android release deployed"
+            echo "- Appflow build ID: ${{ steps.android_build.outputs.ANDROID_BUILD_ID }}"
+            echo "- Android version code: ${{ steps.android_build.outputs.ANDROID_BUILD_NUMBER }}"
+            echo "- Destination: $DESTINATION"
+            echo "- Commit: \`$GITHUB_SHA\`"
+          } >> "$GITHUB_STEP_SUMMARY"

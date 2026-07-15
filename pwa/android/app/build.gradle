@@ -1,5 +1,14 @@
 apply plugin: 'com.android.application'
 
+// Google Play requires every uploaded artifact to have a strictly increasing
+// versionCode. Appflow provides a sequential build number for each app; local
+// builds retain stable defaults unless explicitly overridden.
+def appflowBuildNumber = System.getenv('CI_BUILD_NUMBER')
+def configuredVersionCode = System.getenv('ANDROID_VERSION_CODE') ?: appflowBuildNumber ?: '1'
+def commitSha = System.getenv('CI_GIT_COMMIT_SHA') ?: System.getenv('GITHUB_SHA') ?: ''
+def shortCommitSha = commitSha ? commitSha.take(7) : 'local'
+def configuredVersionName = System.getenv('ANDROID_VERSION_NAME') ?: "1.0.${configuredVersionCode}-${shortCommitSha}"
+
 android {
     namespace = "com.tendergrove.app"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -7,8 +16,8 @@ android {
         applicationId "com.tendergrove.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode configuredVersionCode.toInteger()
+        versionName configuredVersionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
