@@ -2,7 +2,7 @@
   "apps": [
     {
       "appId": "760262b0",
-      "root": ".",
+      "root": "pwa",
       "dependencyInstallCommand": "corepack enable && corepack prepare pnpm@10.14.0 --activate && pnpm install --frozen-lockfile",
       "webBuildCommand": "pnpm --filter pwa build",
       "androidPath": "pwa/android",
