@@ -45,3 +45,4 @@ Thumbs.db
 .amplify/
 amplify_outputs*
 amplifyconfiguration*
+/tendergrove-release.keystore
