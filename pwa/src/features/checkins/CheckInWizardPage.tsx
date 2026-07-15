@@ -14,7 +14,14 @@ import {
   useIonAlert,
   useIonRouter,
 } from '@ionic/react'
-import { add, alertCircleOutline, calendarOutline, happyOutline } from 'ionicons/icons'
+import {
+  add,
+  alertCircleOutline,
+  calendarOutline,
+  chevronBack,
+  happyOutline,
+} from 'ionicons/icons'
+import { formatDateLabel, isSameLocalDay } from '../../lib/dateKeys'
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useParams } from 'react-router-dom'
 
@@ -32,30 +39,8 @@ import { useCheckInMutations } from '../people/checkin/useCheckInMutations'
 import { PersonCheckInButton } from '../people/PersonPage'
 import { RawCheckIn, RawIndicator } from '../patterns/analytics'
 
-const isSameDay = (occurredAt: string, date: Date): boolean => {
-  const d = new Date(occurredAt)
-  return (
-    d.getFullYear() === date.getFullYear() &&
-    d.getMonth() === date.getMonth() &&
-    d.getDate() === date.getDate()
-  )
-}
-
-const formatDateLabel = (date: Date): string => {
-  const today = new Date()
-  if (
-    date.getFullYear() === today.getFullYear() &&
-    date.getMonth() === today.getMonth() &&
-    date.getDate() === today.getDate()
-  ) {
-    return 'Today'
-  }
-  return date.toLocaleDateString(undefined, {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-  })
-}
+const isSameDay = (occurredAt: string, date: Date): boolean =>
+  isSameLocalDay(new Date(occurredAt), date)
 
 type CheckedIndicators = Record<string, boolean>
 /** A checkbox row: an indicator or a life event, reduced to id + label. */
@@ -254,7 +239,7 @@ const useCheckInDraft = (
     setCheckedEvents(Object.fromEntries(answers.events.map((id) => [id, true])))
     setNote(existing.note ?? '')
     setPrefilled(true)
-  }, [existing, prefilled])
+  }, [existing, prefilled, personId, selectedDate])
 
   return {
     checked,
@@ -600,7 +585,16 @@ export const CheckInWizardPage = ({
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonButton onClick={() => routeModal.dismiss()}>Close</IonButton>
+            {currentIndex > 0 ? (
+              <IonButton onClick={() => setCurrentIndex(currentIndex - 1)}>
+                <IonIcon
+                  slot="icon-only"
+                  icon={chevronBack}
+                />
+              </IonButton>
+            ) : (
+              <IonButton onClick={() => routeModal.dismiss()}>Close</IonButton>
+            )}
           </IonButtons>
 
           <IonTitle>

@@ -11,3 +11,16 @@ export const toLocalDateKey = (date: Date): string => {
   const day = String(date.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
 }
+
+/** Formats a date for display (e.g. "Today" or "Mon, Oct 24"). */
+export const formatDateLabel = (date: Date): string => {
+  const today = new Date()
+  if (isSameLocalDay(date, today)) {
+    return 'Today'
+  }
+  return date.toLocaleDateString(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  })
+}

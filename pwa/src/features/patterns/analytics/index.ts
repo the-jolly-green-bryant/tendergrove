@@ -25,6 +25,45 @@
  * we're still learning which insights are actually useful.
  */
 
+export interface ParsedAnswers {
+  checked: string[]
+  events: string[]
+}
+
+export const parseAnswers = (answersJson: unknown): ParsedAnswers => {
+  let value = answersJson
+
+  if (typeof value === 'string') {
+    try {
+      value = JSON.parse(value)
+    } catch {
+      return {
+        checked: [],
+        events: [],
+      }
+    }
+  }
+
+  if (!value || typeof value !== 'object') {
+    return {
+      checked: [],
+      events: [],
+    }
+  }
+
+  const answers = value as {
+    checked?: unknown
+    events?: unknown
+  }
+
+  const parseStringIds = (val: unknown): string[] =>
+    Array.isArray(val) ? val.filter((id): id is string => typeof id === 'string') : []
+
+  return {
+    checked: parseStringIds(answers.checked),
+    events: parseStringIds(answers.events),
+  }
+}
 import { buildCalendar } from './calendarHeatmap'
 import { findCorrelations } from './correlations'
 import { buildDateWindow, formatRangeLabel } from './dateUtils'
@@ -140,64 +179,6 @@ const VALID_ROLES: PersonRole[] = [
   'caregiver',
   'other',
 ]
-
-export const parseCheckedIds = (answersJson: unknown): string[] => {
-  let value = answersJson
-  if (typeof value === 'string') {
-    try {
-      value = JSON.parse(value)
-    } catch {
-      return []
-    }
-  }
-  if (value && typeof value === 'object' && 'checked' in value) {
-    const checked = (value as { checked: unknown }).checked
-    if (Array.isArray(checked)) {
-      return checked.filter((id): id is string => typeof id === 'string')
-    }
-  }
-  return []
-}
-
-interface ParsedAnswers {
-  checked: string[]
-  events: string[]
-}
-
-const parseStringIds = (value: unknown): string[] =>
-  Array.isArray(value) ? value.filter((id): id is string => typeof id === 'string') : []
-
-export const parseAnswers = (answersJson: unknown): ParsedAnswers => {
-  let value = answersJson
-
-  if (typeof value === 'string') {
-    try {
-      value = JSON.parse(value)
-    } catch {
-      return {
-        checked: [],
-        events: [],
-      }
-    }
-  }
-
-  if (!value || typeof value !== 'object') {
-    return {
-      checked: [],
-      events: [],
-    }
-  }
-
-  const answers = value as {
-    checked?: unknown
-    events?: unknown
-  }
-
-  return {
-    checked: parseStringIds(answers.checked),
-    events: parseStringIds(answers.events),
-  }
-}
 
 const normalizePolarity = (polarity: string | null | undefined): Polarity | null =>
   VALID_POLARITIES.includes(polarity as Polarity) ? (polarity as Polarity) : null
@@ -433,3 +414,6 @@ export const analyzeHousehold = (
 
 export const windowRangeLabel = (result: AnalyticsResult): string =>
   formatRangeLabel(result.window.startDate, result.window.endDate)
+
+export const parseCheckedIds = (answersJson: unknown): string[] =>
+  parseAnswers(answersJson).checked

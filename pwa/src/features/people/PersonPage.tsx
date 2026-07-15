@@ -12,6 +12,7 @@ import {
   useIonAlert,
   useIonRouter,
 } from '@ionic/react'
+import { formatDateLabel, isSameLocalDay, toLocalDateKey } from '../../lib/dateKeys'
 import {
   archiveOutline,
   calendarOutline,
@@ -63,26 +64,10 @@ const roleLabels: Record<PersonRole, string> = {
   other: 'Other',
 }
 
-const toISODate = (d: Date): string => {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
+const toISODate = toLocalDateKey
 
-const isSameDay = (occurredAt: string, date: Date): boolean => {
-  const d = new Date(occurredAt)
-  return (
-    d.getFullYear() === date.getFullYear() &&
-    d.getMonth() === date.getMonth() &&
-    d.getDate() === date.getDate()
-  )
-}
-
-const isSameCalendarDate = (a: Date, b: Date): boolean =>
-  a.getFullYear() === b.getFullYear() &&
-  a.getMonth() === b.getMonth() &&
-  a.getDate() === b.getDate()
+const isSameDay = (occurredAt: string, date: Date): boolean =>
+  isSameLocalDay(new Date(occurredAt), date)
 
 const parseDateKey = (dateKey: string | null): Date | null => {
   if (!dateKey) return null
@@ -220,29 +205,13 @@ const usePersonPageActions = (
   return { startCheckIn, showMoreOptions, manageIndicators, manageEvents }
 }
 
-const formatDateLabel = (date: Date): string => {
-  const today = new Date()
-  if (
-    date.getFullYear() === today.getFullYear() &&
-    date.getMonth() === today.getMonth() &&
-    date.getDate() === today.getDate()
-  ) {
-    return 'Today'
-  }
-  return date.toLocaleDateString(undefined, {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-  })
-}
-
 const formatCheckInTitle = (date: Date): string => {
   const today = new Date()
   const yesterday = new Date()
   yesterday.setDate(today.getDate() - 1)
 
-  if (isSameCalendarDate(date, today)) return "Today's Check-In"
-  if (isSameCalendarDate(date, yesterday)) return "Yesterday's Check-In"
+  if (isSameLocalDay(date, today)) return "Today's Check-In"
+  if (isSameLocalDay(date, yesterday)) return "Yesterday's Check-In"
 
   const dateLabel = date.toLocaleDateString(undefined, {
     month: 'short',
@@ -518,7 +487,7 @@ const PersonPage = (): React.JSX.Element | null => {
     () => getPersonPageDateView(location.search, selectedDate),
     [location.search, selectedDate],
   )
-  const isTimeTravel = !isSameCalendarDate(viewDate, new Date())
+  const isTimeTravel = !isSameLocalDay(viewDate, new Date())
   const summary = usePersonPageSummary(person, viewDate, personId)
   const returnToToday = () => {
     setSelectedDate(new Date())
