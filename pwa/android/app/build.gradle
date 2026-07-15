@@ -10,10 +10,10 @@ def shortCommitSha = commitSha ? commitSha.take(7) : 'local'
 def configuredVersionName = System.getenv('ANDROID_VERSION_NAME') ?: "1.0.${configuredVersionCode}-${shortCommitSha}"
 
 android {
-    namespace = "com.tendergrove.app"
+    namespace = "com.bryantjames.tendergrove"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.tendergrove.app"
+        applicationId "com.bryantjames.tendergrove"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode configuredVersionCode.toInteger()

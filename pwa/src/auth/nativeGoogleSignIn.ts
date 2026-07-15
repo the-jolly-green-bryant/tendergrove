@@ -5,7 +5,7 @@ import { Browser } from '@capacitor/browser'
 // The custom-scheme deep link registered in Cognito callback URLs and in the
 // Android intent filter (AndroidManifest.xml). Cognito redirects here once the
 // Google sign-in completes.
-const CALLBACK_SCHEME = 'com.tendergrove.app://callback'
+const CALLBACK_SCHEME = 'com.bryantjames.tendergrove://callback'
 
 interface OpenAuthSessionResult {
   type: 'success' | 'canceled' | 'error'
@@ -20,7 +20,7 @@ interface OpenAuthSessionResult {
  * Capacitor escapes into the external browser and never returns. Instead we
  * open the Cognito Hosted UI in a Custom Tab (which Google allows, unlike an
  * embedded webview) and resolve with the deep-link URL once the OS hands the
- * `com.tendergrove.app://callback` redirect back to the app. Amplify then runs
+ * `com.bryantjames.tendergrove://callback` redirect back to the app. Amplify then runs
  * completeOAuthFlow() with that URL — doing the PKCE exchange, storing the
  * session, and firing the `signedIn` Hub event.
  */

@@ -12,12 +12,12 @@ export const auth = defineAuth({
       callbackUrls: [
         'http://localhost:8100/',
         'https://localhost/',
-        'com.tendergrove.app://callback/',
+        'com.bryantjames.tendergrove://callback/',
       ],
       logoutUrls: [
         'http://localhost:8100/',
         'https://localhost/',
-        'com.tendergrove.app://callback/',
+        'com.bryantjames.tendergrove://callback/',
       ],
     },
   },

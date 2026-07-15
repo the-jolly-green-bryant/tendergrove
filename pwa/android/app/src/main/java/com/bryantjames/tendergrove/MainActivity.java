@@ -1,4 +1,4 @@
-package com.tendergrove.app;
+package com.bryantjames.tendergrove;
 
 import com.getcapacitor.BridgeActivity;
 
