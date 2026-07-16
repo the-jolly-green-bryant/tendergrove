@@ -783,8 +783,55 @@
   margin: 0;
 }
 
-.person-patterns__scope {
-  margin-bottom: 14px;
+.person-patterns__chart-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.person-patterns__period {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.person-patterns__scope-toggle {
+  width: 92px;
+  min-width: 92px;
+  border-radius: 999px;
+}
+
+.person-patterns__scope-toggle ion-segment-button {
+  min-width: 42px;
+  min-height: 40px;
+  --indicator-box-shadow: none;
+  --indicator-color: transparent;
+  --border-radius: 999px;
+}
+
+.person-patterns__scope-toggle ion-segment-button.segment-button-checked {
+  border-radius: 999px;
+  background: var(--ion-color-light);
+}
+
+.person-patterns__scope-toggle ion-icon {
+  font-size: 1.2rem;
+}
+
+.person-patterns__scope-avatar-wrap {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.person-patterns__scope-avatar {
+  position: relative;
+  width: 26px;
+  height: 26px;
 }
 
 /* ---- Empty / low-data state --------------------------------------- */

@@ -1,9 +1,6 @@
 import {
-  IonAvatar,
   IonButton,
   IonIcon,
-  IonItem,
-  IonLabel,
   IonSegment,
   IonSegmentButton,
 } from '@ionic/react'
@@ -43,12 +40,20 @@ const PatternsBody = ({
   data,
   rangeDays,
   onRangeChange,
+  onScopeChange,
   onViewAll,
+  personAvatarUrl,
+  personName,
+  scope,
 }: {
   readonly data: ScopedData
   readonly rangeDays: number
   readonly onRangeChange: (days: number) => void
+  readonly onScopeChange: (scope: Scope) => void
   readonly onViewAll: () => void
+  readonly personAvatarUrl?: string | null
+  readonly personName: string
+  readonly scope: Scope
 }): React.JSX.Element => {
   if (data.scoredDays === 0) {
     return (
@@ -78,10 +83,41 @@ const PatternsBody = ({
           eventCounts={visiblePoints.map((point) => point.eventCount)}
         />
 
-        <PeriodSelector
-          value={rangeDays}
-          onChange={onRangeChange}
-        />
+        <div className="person-patterns__chart-controls">
+          <div className="person-patterns__period">
+            <PeriodSelector
+              value={rangeDays}
+              onChange={onRangeChange}
+            />
+          </div>
+          <IonSegment
+            className="person-patterns__scope-toggle"
+            value={scope}
+            aria-label="Chart scope"
+            onIonChange={(event) =>
+              onScopeChange((event.detail.value as Scope) ?? 'person')
+            }
+          >
+            <IonSegmentButton
+              value="person"
+              aria-label={`${personName} scope`}
+            >
+              <span className="person-patterns__scope-avatar-wrap">
+                <PersonAvatar
+                  className="person-patterns__scope-avatar"
+                  name={personName}
+                  src={personAvatarUrl}
+                />
+              </span>
+            </IonSegmentButton>
+            <IonSegmentButton
+              value="household"
+              aria-label="Household scope"
+            >
+              <IonIcon icon={homeOutline} />
+            </IonSegmentButton>
+          </IonSegment>
+        </div>
       </div>
 
       {data.subjectName && data.anomalyPatterns && (
@@ -137,6 +173,10 @@ export const PersonPatternsSection = ({
         data={data}
         rangeDays={rangeDays}
         onRangeChange={setRangeDays}
+        onScopeChange={setScope}
+        personAvatarUrl={personAvatarUrl}
+        personName={personName}
+        scope={scope}
         onViewAll={() => {
           // Carry the current scope into the Patterns section so it opens
           // pre-filtered to this person (or the whole household).
@@ -145,37 +185,6 @@ export const PersonPatternsSection = ({
         }}
       />
 
-      <IonSegment
-        value={scope}
-        onIonChange={(e) => setScope((e.detail.value as Scope) ?? 'person')}
-      >
-        <IonSegmentButton value="person">
-          <IonItem
-            color={'transparent'}
-            lines={'none'}
-          >
-            <PersonAvatar
-              name={personName}
-              src={personAvatarUrl}
-              slot={'start'}
-            />
-            <IonLabel>{personName}</IonLabel>
-          </IonItem>
-        </IonSegmentButton>
-
-        <IonSegmentButton value="household">
-          <IonItem
-            color={'transparent'}
-            lines={'none'}
-          >
-            <IonAvatar slot={'start'}>
-              <IonIcon icon={homeOutline} />
-            </IonAvatar>
-
-            <IonLabel>Household</IonLabel>
-          </IonItem>
-        </IonSegmentButton>
-      </IonSegment>
     </section>
   )
 }
