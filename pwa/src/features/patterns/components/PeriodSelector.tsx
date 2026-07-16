@@ -11,7 +11,7 @@ export const PERIOD_OPTIONS = [
 
 /**
  * A compact 1M / 3M / 6M / 12M range selector (stock-chart style). Drives the
- * analysis window; the chart re-scales to the chosen period.
+ * visible chart window; analytics retain a longer lookback for context.
  */
 export const PeriodSelector = ({
   value,

@@ -59,8 +59,11 @@ const PatternsBody = ({
     )
   }
 
+  // Rolling averages and summary stats are computed over the full analytics
+  // lookback. Only trim the points handed to the chart.
+  const visiblePoints = data.trend.points.slice(-rangeDays)
   const chart = buildTrendChart(
-    data.trend.points,
+    visiblePoints,
     false,
     trendLineColor(data.trend.direction),
   )
@@ -72,7 +75,7 @@ const PatternsBody = ({
           dates={chart.dates}
           series={chart.series}
           clampTo={chart.clampTo}
-          eventCounts={data.trend.points.map((point) => point.eventCount)}
+          eventCounts={visiblePoints.map((point) => point.eventCount)}
         />
 
         <PeriodSelector
@@ -110,7 +113,7 @@ export const PersonPatternsSection = ({
 }): React.JSX.Element | null => {
   const [scope, setScope] = useState<Scope>('person')
   const [rangeDays, setRangeDays] = useState(30)
-  const { result, isLoading, hasError } = usePatternsAnalytics(rangeDays)
+  const { result, isLoading, hasError } = usePatternsAnalytics()
   const history = useHistory()
 
   const setPerson = usePatternsFilterStore((s) => s.setPerson)

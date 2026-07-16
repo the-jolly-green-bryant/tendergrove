@@ -19,6 +19,7 @@ export const useCheckInMutations = (personId: string | undefined) => {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ['person', personId] }),
       queryClient.invalidateQueries({ queryKey: ['people'] }),
+      queryClient.invalidateQueries({ queryKey: ['patterns-data'] }),
     ])
 
   return {

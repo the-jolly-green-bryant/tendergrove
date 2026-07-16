@@ -3,6 +3,12 @@ import { useMemo } from 'react'
 import { analyzeHousehold, type AnalyticsResult } from './analytics'
 import { usePatternsData } from './usePatternsData'
 
+/**
+ * Keep enough history for baselines and rolling calculations while avoiding an
+ * ever-growing client-side analytics pass. Charts can render a smaller slice.
+ */
+export const ANALYTICS_LOOKBACK_DAYS = 365
+
 /** The computed analytics plus the query's loading/error state. */
 export interface PatternsAnalytics {
   result: AnalyticsResult | null
@@ -10,7 +16,7 @@ export interface PatternsAnalytics {
   hasError: boolean
 }
 
-export const usePatternsAnalytics = (windowDays?: number): PatternsAnalytics => {
+export const usePatternsAnalytics = (): PatternsAnalytics => {
   const { data, isLoading, error } = usePatternsData()
 
   const result = useMemo(() => {
@@ -18,10 +24,10 @@ export const usePatternsAnalytics = (windowDays?: number): PatternsAnalytics => 
 
     return analyzeHousehold(data.people, {
       now: new Date(),
-      windowDays,
+      windowDays: ANALYTICS_LOOKBACK_DAYS,
       lifeEvents: data.lifeEvents,
     })
-  }, [data, windowDays])
+  }, [data])
 
   return { result, isLoading, hasError: Boolean(error) }
 }
