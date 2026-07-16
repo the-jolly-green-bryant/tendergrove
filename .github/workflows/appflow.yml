@@ -26,6 +26,10 @@ jobs:
       SIGNING_CERT: production
       # Store destination names are case-sensitive and are configured in Appflow.
       DESTINATION: com.bryantjames.tendergrove
+      # Google Play's alpha track is Closed testing. COMPLETED makes each
+      # successful upload available to enrolled testers instead of saving a draft.
+      PLAY_TRACK: alpha
+      PLAY_RELEASE_STATUS: COMPLETED
 
     steps:
       - name: Checkout Code
@@ -33,6 +37,37 @@ jobs:
 
       - name: Install Appflow CLI
         run: curl -fsSL https://ionic.io/get-appflow-cli | bash
+
+      - name: Configure Google Play closed testing destination
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$IONIC_TOKEN"
+
+          appflow destination update-android \
+            --app-id="$APP_ID" \
+            --name="$DESTINATION" \
+            --track="$PLAY_TRACK" \
+            --json \
+            --token="$IONIC_TOKEN" > appflow-destination-update.json
+
+          appflow destination get \
+            --app-id="$APP_ID" \
+            --name="$DESTINATION" \
+            --json \
+            --token="$IONIC_TOKEN" | tee appflow-destination.json
+
+          jq --arg track "${PLAY_TRACK^^}" \
+             --arg release_status "$PLAY_RELEASE_STATUS" -e '
+            .target == "Google Play"
+            and .artifactType == "AAB"
+            and .track == $track
+            and .releaseStatus == $release_status
+          ' appflow-destination.json > /dev/null || {
+            echo "Appflow destination must use AAB, track ${PLAY_TRACK^^}, and release status $PLAY_RELEASE_STATUS." >&2
+            echo "Set the destination release status to Completed in Appflow, then rerun this workflow." >&2
+            exit 1
+          }
 
       - name: Trigger Android Build
         id: android_build
@@ -95,5 +130,7 @@ jobs:
             echo "- Appflow build ID: ${{ steps.android_build.outputs.ANDROID_BUILD_ID }}"
             echo "- Android version code: ${{ steps.android_build.outputs.ANDROID_BUILD_NUMBER }}"
             echo "- Destination: $DESTINATION"
+            echo "- Google Play track: Closed testing ($PLAY_TRACK)"
+            echo "- Release status: $PLAY_RELEASE_STATUS"
             echo "- Commit: \`$GITHUB_SHA\`"
           } >> "$GITHUB_STEP_SUMMARY"
