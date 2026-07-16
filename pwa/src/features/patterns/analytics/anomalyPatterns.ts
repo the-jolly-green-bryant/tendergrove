@@ -383,7 +383,7 @@ const buildOtherPeoplePattern = (
         }
 
         new Set(
-          checkIn.checkedIndicatorIds.filter((i) => !undesiredIndicators.has(i)),
+          checkIn.checkedIndicatorIds.filter((i) => undesiredIndicators.has(i)),
         ).forEach((indicatorId) => {
           const dates = datesByIndicator.get(indicatorId) ?? new Set<DateKey>()
           dates.add(date)
