@@ -1,18 +1,13 @@
-import { IonChip, IonIcon } from '@ionic/react'
-import {
-  chevronDownOutline,
-  chevronForwardOutline,
-  chevronUpOutline,
-} from 'ionicons/icons'
+import { IonChip, IonIcon, IonSkeletonText } from '@ionic/react'
+import { chevronForwardOutline } from 'ionicons/icons'
 import { useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
 
-import { LoadingState } from '../../components/LoadingState'
 import { Page } from '../../components/Page'
 import { useDateNavigator } from '../../components/DateNavigator'
 import { PastDataNotice } from '../../components/PastDataNotice'
 import { PersonAvatar } from '../../components/PersonAvatar'
-import { HouseholdTree } from '../../components/HouseholdTree'
+import { HouseholdRecapTeaser, HouseholdTree } from '../../components/HouseholdTree'
 import { useAppAuth } from '../../auth/AuthContext'
 import { useSelectedDate } from '../../context/SelectedDateContext'
 import { usePeople } from '../people/usePeople'
@@ -39,6 +34,47 @@ const randomQuoteIndex = (): number => {
   return values[0] % SELF_CARE_QUOTES.length
 }
 
+const HouseholdDashboardLoading = () => (
+  <div
+    className="household-dashboard-loading"
+    aria-label="Loading household"
+  >
+    <section className="household-dashboard-loading__hero">
+      <IonSkeletonText
+        animated
+        className="household-dashboard-loading__eyebrow"
+      />
+      <IonSkeletonText
+        animated
+        className="household-dashboard-loading__title"
+      />
+      <IonSkeletonText
+        animated
+        className="household-dashboard-loading__tree"
+      />
+    </section>
+    <IonSkeletonText
+      animated
+      className="household-dashboard-loading__action"
+    />
+    <IonSkeletonText
+      animated
+      className="household-dashboard-loading__quote"
+    />
+    <IonSkeletonText
+      animated
+      className="household-dashboard-loading__heading"
+    />
+    {[0, 1, 2].map((item) => (
+      <IonSkeletonText
+        animated
+        className="household-dashboard-loading__person"
+        key={item}
+      />
+    ))}
+  </div>
+)
+
 const renderTree = (
   people: RawPerson[],
   recap: HouseholdRecap | undefined,
@@ -51,6 +87,7 @@ const renderTree = (
   people.length > 0 && (
     <HouseholdTree
       recap={recap}
+      showFooter={false}
       isTimeTravel={isTimeTravel}
       selectedDateHasData={selectedDateHasData}
       onPersonClick={onPersonClick}
@@ -179,24 +216,16 @@ const HouseholdList = ({
       aria-label={people.length === 0 ? 'Add your first person' : 'Add person'}
     >
       <span className="household-add-btn__icon">+</span>
-      {people.length === 0 && (
-        <span className="household-add-btn__copy">Add your first person</span>
-      )}
+      <span className="household-add-btn__copy">
+        {people.length === 0 ? 'Add your first person' : 'Add another person'}
+      </span>
+      <IonIcon
+        icon={chevronForwardOutline}
+        className="household-add-btn__chevron"
+      />
     </button>
   </div>
 )
-
-const scrollToHouseholdList = () => {
-  document
-    .getElementById('household-people-panel')
-    ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-}
-
-const scrollToHouseholdHero = () => {
-  document
-    .getElementById('household-hero-panel')
-    ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-}
 
 const HouseholdHeroPanel = ({
   people,
@@ -227,6 +256,37 @@ const HouseholdHeroPanel = ({
       id="household-hero-panel"
       className="household-snap-panel household-hero-panel"
     >
+      <div className="household-overview-card">
+        <header className="household-overview-heading">
+          <div>
+            <p>Today at a glance</p>
+            <h1>Household wellbeing</h1>
+          </div>
+          <span className="household-overview-heading__date">
+            {selectedDate.toLocaleDateString(undefined, {
+              month: 'short',
+              day: 'numeric',
+            })}
+          </span>
+        </header>
+        {renderTree(
+          people,
+          recap,
+          selectedDate,
+          isTimeTravel,
+          selectedDateHasData,
+          onPersonClick,
+          onRecapClick,
+        )}
+      </div>
+      {recap && (
+        <HouseholdRecapTeaser
+          recap={recap}
+          isTimeTravel={isTimeTravel}
+          emptyPastDate={isTimeTravel && !selectedDateHasData}
+          onRecapClick={onRecapClick}
+        />
+      )}
       {isTimeTravel ? (
         <PastDataNotice
           selectedDateLabel={selectedDateLabel}
@@ -235,25 +295,6 @@ const HouseholdHeroPanel = ({
         />
       ) : (
         <SelfCareQuote />
-      )}
-      {renderTree(
-        people,
-        recap,
-        selectedDate,
-        isTimeTravel,
-        selectedDateHasData,
-        onPersonClick,
-        onRecapClick,
-      )}
-      {people.length > 0 && (
-        <button
-          type="button"
-          className="household-scroll-cue"
-          onClick={scrollToHouseholdList}
-          aria-label="View household members"
-        >
-          <IonIcon icon={chevronDownOutline} />
-        </button>
       )}
     </section>
   )
@@ -296,14 +337,10 @@ const HouseholdDashboardBody = ({
       id="household-people-panel"
       className="household-snap-panel household-people-panel"
     >
-      <button
-        type="button"
-        className="household-scroll-cue household-scroll-cue--up"
-        onClick={scrollToHouseholdHero}
-        aria-label="View household overview"
-      >
-        <IonIcon icon={chevronUpOutline} />
-      </button>
+      <header className="household-people-panel__heading">
+        <p>Your household</p>
+        <h1>People you care for</h1>
+      </header>
       <HouseholdList
         people={people}
         selectedDate={selectedDate}
@@ -373,24 +410,24 @@ const HouseholdPage = () => {
       subHeaderContent={calendarElement}
       disablePadding
       className="household-dashboard-content"
-      transparentHeaderUntilScroll
-      transparentHeaderMode="snap-panel"
       forceOverscroll={false}
     >
-      {people.isLoading && <LoadingState />}
+      {people.isLoading && <HouseholdDashboardLoading />}
       {people.error && <p className="ion-padding">Failed to load people.</p>}
 
-      <HouseholdDashboardBody
-        people={activePeople}
-        recap={householdRecap}
-        selectedDate={selectedDate}
-        isTimeTravel={isTimeTravel}
-        selectedDateHasData={selectedDateHasData}
-        onPersonClick={(personId) => history.push(`/person/${personId}`)}
-        onRecapClick={() => history.push('/household/recap')}
-        onAddPersonClick={() => history.push('/people/new')}
-        onReturnToToday={goToToday}
-      />
+      {!people.isLoading && (
+        <HouseholdDashboardBody
+          people={activePeople}
+          recap={householdRecap}
+          selectedDate={selectedDate}
+          isTimeTravel={isTimeTravel}
+          selectedDateHasData={selectedDateHasData}
+          onPersonClick={(personId) => history.push(`/person/${personId}`)}
+          onRecapClick={() => history.push('/household/recap')}
+          onAddPersonClick={() => history.push('/people/new')}
+          onReturnToToday={goToToday}
+        />
+      )}
     </Page>
   )
 }

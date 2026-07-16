@@ -1,92 +1,161 @@
 .household-dashboard-content {
-  --background: url('/assets/hero.png') center top / cover no-repeat fixed;
+  --background: #e6f1ec;
   --household-panel-height: 100dvh;
-  background: #f7f3ec url('/assets/hero.png') center top / cover no-repeat fixed;
+  background: #e6f1ec;
 }
 
 .household-dashboard-content::part(scroll) {
-  scroll-snap-type: y mandatory;
   scroll-behavior: smooth;
-  overscroll-behavior-y: none;
-  display: flex;
-  flex-direction: column;
-  background: transparent;
+  background: #e6f1ec;
 }
 
 .household-snap {
-  flex: 1 0 auto;
-  height: auto;
-  min-height: var(--household-panel-height);
+  position: relative;
+  isolation: isolate;
+  width: min(100%, 620px);
+  margin: 0 auto;
+  padding: 88px 16px 28px;
   background: transparent;
+}
+
+.household-snap::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: -1;
+  height: 1120px;
+  background: url('/assets/hero.png') center top / cover no-repeat;
+  mask-image: linear-gradient(180deg, #000 0, #000 78%, transparent 100%);
+  pointer-events: none;
 }
 
 .household-snap-panel {
-  min-height: var(--household-panel-height);
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
+  min-height: 0;
 }
 
 .household-hero-panel {
-  min-height: var(--household-panel-height);
   position: relative;
   display: flex;
   flex-direction: column;
+  gap: 10px;
   background: transparent;
 }
 
-.self-care-quote {
+.household-overview-card {
+  position: relative;
+  overflow: hidden;
+  padding: 18px 14px 14px;
+  border: 1px solid rgba(20, 125, 126, 0.14);
+  border-radius: 18px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.96),
+    rgba(231, 245, 239, 0.82)
+  );
+  box-shadow:
+    0 2px 5px rgba(24, 58, 58, 0.04),
+    0 12px 28px rgba(24, 58, 58, 0.1);
+  isolation: isolate;
+}
+
+.household-overview-card::after {
+  content: '';
   position: absolute;
-  z-index: 1;
-  top: max(112px, calc(env(safe-area-inset-top) + 102px));
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(calc(100% - 48px), 430px);
-  padding: 0;
+  inset: 42% 0 0;
+  z-index: -1;
+  background:
+    linear-gradient(180deg, transparent, rgba(135, 194, 180, 0.18)),
+    url('/assets/graph_background.png') center bottom / 100% auto no-repeat;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.household-overview-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 2px 18px;
+}
+
+.household-overview-heading p {
+  margin: 0 0 3px;
+  color: var(--ion-color-primary-shade);
+  font-size: 0.72rem;
+  font-weight: 780;
+  letter-spacing: 0.065em;
+  text-transform: uppercase;
+}
+
+.household-overview-heading h1 {
+  margin: 0;
+  color: #244446;
+  font-size: 1.28rem;
+  font-weight: 740;
+}
+
+.household-overview-heading__date {
+  flex: 0 0 auto;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(var(--ion-color-primary-rgb), 0.08);
+  color: var(--app-muted-text);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.self-care-quote {
+  position: relative;
+  width: 100%;
+  padding: 16px 18px 12px;
   border: 0;
+  border-radius: 0;
   background: transparent;
   box-shadow: none;
+  backdrop-filter: none;
   color: #244446;
   text-align: center;
-  text-shadow: 0 2px 10px rgba(255, 255, 255, 0.74);
+  text-shadow: none;
 }
 
 .self-care-quote p {
   margin: 0;
   color: #2f5556;
-  font-family: 'Bradley Hand', 'Comic Sans MS', 'Segoe Print', cursive;
-  font-size: clamp(25px, 6vw, 36px);
-  font-weight: 700;
-  line-height: 1.12;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(16px, 4.4vw, 22px);
+  font-style: italic;
+  font-weight: 600;
+  line-height: 1.28;
 }
 
 .self-care-quote p span {
   display: block;
+  white-space: nowrap;
 }
 
 .self-care-quote__mark {
   display: block;
-  height: 24px;
-  margin-bottom: 6px;
+  height: 16px;
+  margin-bottom: 2px;
   color: rgba(20, 125, 126, 0.38);
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: 58px;
+  font-size: 46px;
   font-weight: 800;
   line-height: 0.7;
 }
 
 .household-hero-panel .household-tree-container {
-  flex: 1;
-  min-height: 0;
+  width: 100%;
   background: transparent;
 }
 
 .household-hero-panel .household-tree-card {
-  min-height: 100dvh;
-  padding: max(228px, calc(env(safe-area-inset-top) + 218px)) 18px 58px;
-  justify-content: space-around;
-  border-bottom: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
   background: transparent;
-  border-top: 0;
+  box-shadow: none;
 }
 
 .household-hero-panel .household-tree-greeting {
@@ -108,15 +177,104 @@
 }
 
 .household-hero-panel .tree-visualization {
-  width: min(100%, 430px, 52dvh);
+  width: min(100%, 390px);
 }
 
 .household-hero-panel .section-divider {
-  margin: 14px 0;
+  display: none;
 }
 
 .household-hero-panel .household-recap-teaser {
   width: min(100%, 390px);
+  height: 68px;
+  margin-top: 4px;
+  border-color: rgba(20, 125, 126, 0.16);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 6px 18px rgba(36, 63, 66, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+.household-hero-panel > .household-recap-teaser {
+  width: 100%;
+  max-width: none;
+  margin: 4px 0 0;
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  padding: 8px 14px 8px 8px;
+  border-radius: var(--app-radius-lg);
+  box-shadow: var(--app-shadow-card);
+}
+
+.household-hero-panel > .household-recap-teaser .household-recap-teaser__art {
+  box-sizing: border-box;
+  width: 52px;
+  height: 52px;
+  padding: 4px;
+  overflow: visible;
+}
+
+.household-hero-panel > .household-recap-teaser .household-recap-teaser__avatar {
+  box-sizing: border-box;
+  width: 44px;
+  height: 44px;
+}
+
+.household-dashboard-loading {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 620px);
+  margin: 0 auto;
+  padding: 88px 16px 28px;
+}
+
+.household-dashboard-loading ion-skeleton-text {
+  margin: 0;
+  --background: rgba(20, 125, 126, 0.1);
+  --background-rgb: 20, 125, 126;
+}
+
+.household-dashboard-loading__hero {
+  padding: 18px 14px;
+  border: 1px solid rgba(20, 125, 126, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.household-dashboard-loading__eyebrow {
+  width: 34%;
+  height: 10px;
+}
+.household-dashboard-loading__title {
+  width: 58%;
+  height: 24px;
+  margin-top: 8px !important;
+}
+.household-dashboard-loading__tree {
+  width: min(82%, 330px);
+  aspect-ratio: 1;
+  margin: 18px auto 0 !important;
+  border-radius: 50%;
+}
+.household-dashboard-loading__action {
+  height: 68px;
+  margin: 12px 4px 0 !important;
+  border-radius: var(--app-radius-lg);
+}
+.household-dashboard-loading__quote {
+  width: 72%;
+  height: 44px;
+  margin: 24px auto !important;
+  border-radius: 10px;
+}
+.household-dashboard-loading__heading {
+  width: 48%;
+  height: 26px;
+  margin: 0 0 12px !important;
+}
+.household-dashboard-loading__person {
+  height: 76px;
+  margin: 10px 0 0 !important;
+  border-radius: var(--app-radius-lg);
 }
 
 .household-scroll-cue {
@@ -127,9 +285,9 @@
   z-index: 2;
   width: 42px;
   height: 42px;
-  border: 0;
+  border: 1px solid rgba(20, 125, 126, 0.14);
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.82);
   color: var(--ion-color-primary-shade);
   box-shadow: var(--app-shadow-card);
   display: inline-flex;
@@ -139,20 +297,41 @@
 }
 
 .household-people-panel {
-  min-height: var(--household-panel-height);
-  background:
-    url('/assets/lower.png') center bottom / 100% auto no-repeat,
-    #f8f3fa;
-  padding: max(210px, calc(env(safe-area-inset-top) + 200px)) 16px 32px;
+  min-height: 0;
+  margin-top: 18px;
+  padding: 0;
   display: flex;
   flex-direction: column;
   position: relative;
-  box-shadow: 0 -18px 40px rgba(36, 63, 66, 0.12);
+  background: transparent;
+  box-shadow: none;
 }
 
 .household-scroll-cue--up {
   top: max(78px, calc(env(safe-area-inset-top) + 72px));
   bottom: auto;
+}
+
+.household-people-panel__heading {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto 12px;
+}
+
+.household-people-panel__heading p {
+  margin: 0 0 3px;
+  color: var(--ion-color-primary-shade);
+  font-size: 0.72rem;
+  font-weight: 780;
+  letter-spacing: 0.065em;
+  text-transform: uppercase;
+}
+
+.household-people-panel__heading h1 {
+  margin: 0;
+  color: #244446;
+  font-size: 1.35rem;
+  font-weight: 730;
 }
 
 .household-people-panel .household-list {
@@ -164,30 +343,34 @@
 
 .household-people-panel .household-person-btn {
   position: relative;
-  background: rgba(255, 255, 255, 0.78);
-  border-color: rgba(20, 125, 126, 0.14);
+  min-height: 76px;
+  border-radius: var(--app-radius-lg);
+  background: var(--ion-card-background);
+  border-color: var(--app-border-color);
   backdrop-filter: blur(10px);
   overflow: hidden;
 }
 
 .household-people-panel .household-add-btn {
-  width: auto;
-  min-height: 0;
-  margin: 8px auto 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
+  width: 100%;
+  min-height: 64px;
+  margin: 2px 0 0;
+  padding: 10px 14px;
+  border: 1px dashed rgba(20, 125, 126, 0.38);
+  border-radius: var(--app-radius-lg);
+  background: rgba(255, 255, 255, 0.58);
   color: #147d7e;
   box-shadow: none;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  text-align: left;
 }
 
 .household-add-btn__icon {
-  width: 52px;
-  height: 52px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: #147d7e;
   color: #ffffff;
@@ -195,7 +378,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 34px;
+  font-size: 27px;
   font-weight: 700;
   line-height: 0;
   padding-bottom: 4px;
@@ -205,6 +388,11 @@
   color: #244446;
   font-size: 14px;
   font-weight: 700;
+}
+
+.household-add-btn__chevron {
+  color: var(--ion-color-step-400);
+  font-size: 1.2rem;
 }
 
 .household-person-btn__score-ribbon {
@@ -242,9 +430,9 @@
 .household-legal {
   max-width: 560px;
   width: 100%;
-  margin: auto auto 0;
+  margin: 0 auto;
   padding: 28px 4px max(8px, env(safe-area-inset-bottom));
-  color: #244446;
+  color: var(--app-muted-text);
   font-size: 12px;
   line-height: 1.45;
   text-align: center;
@@ -259,22 +447,12 @@
 }
 
 @media (max-height: 760px) {
-  .self-care-quote,
-  .past-data-notice--floating {
-    top: max(92px, calc(env(safe-area-inset-top) + 84px));
-  }
-
   .self-care-quote p {
-    font-size: clamp(22px, 5.7vw, 30px);
+    font-size: clamp(19px, 5vw, 25px);
   }
 
   .household-hero-panel .household-tree-card {
-    padding-top: max(176px, calc(env(safe-area-inset-top) + 166px));
-    padding-bottom: 54px;
-  }
-
-  .household-people-panel {
-    padding-top: max(176px, calc(env(safe-area-inset-top) + 166px));
+    padding: 0;
   }
 
   .household-hero-panel .household-tree-greeting {
@@ -286,7 +464,7 @@
   }
 
   .household-hero-panel .tree-visualization {
-    width: min(100%, 390px, 48dvh);
+    width: min(100%, 350px);
   }
 
   .household-hero-panel .section-divider {

@@ -17,6 +17,7 @@ interface HouseholdTreeProps {
   className?: string
   showGreeting?: boolean
   showSingleGreeting?: boolean
+  showFooter?: boolean
   recap?: HouseholdRecap
   isTimeTravel?: boolean
   selectedDateHasData?: boolean
@@ -460,7 +461,7 @@ const TreeVisual = ({
   )
 }
 
-const HouseholdRecapTeaser = ({
+export const HouseholdRecapTeaser = ({
   recap,
   isTimeTravel,
   emptyPastDate,
@@ -533,6 +534,7 @@ export const HouseholdTree: React.FC<HouseholdTreeProps> = ({
   recap,
   isTimeTravel = false,
   selectedDateHasData = true,
+  showFooter = true,
   onPersonClick,
   onRecapClick,
 }) => {
@@ -559,22 +561,22 @@ export const HouseholdTree: React.FC<HouseholdTreeProps> = ({
           />
         </div>
 
-        <div className="section-divider" />
+        {showFooter && <div className="section-divider" />}
 
-        {recap ? (
+        {showFooter && recap ? (
           <HouseholdRecapTeaser
             recap={recap}
             isTimeTravel={isTimeTravel}
             emptyPastDate={isTimeTravel && !selectedDateHasData}
             onRecapClick={onRecapClick}
           />
-        ) : (
+        ) : showFooter ? (
           <HouseholdSummary
             people={people}
             score={householdScore}
             narrative={narrative}
           />
-        )}
+        ) : null}
       </div>
     </div>
   )
