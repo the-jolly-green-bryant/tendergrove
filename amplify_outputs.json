@@ -30,12 +30,12 @@
       "redirect_sign_in_uri": [
         "http://localhost:8100/",
         "https://localhost/",
-        "com.tendergrove.app://callback/"
+        "com.bryantjames.tendergrove://callback/"
       ],
       "redirect_sign_out_uri": [
         "http://localhost:8100/",
         "https://localhost/",
-        "com.tendergrove.app://callback/"
+        "com.bryantjames.tendergrove://callback/"
       ],
       "response_type": "code",
       "scopes": [

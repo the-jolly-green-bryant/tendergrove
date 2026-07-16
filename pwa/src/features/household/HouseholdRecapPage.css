@@ -203,6 +203,12 @@
   line-height: 1.08;
 }
 
+.recap-hero__reason {
+  max-width: 320px;
+  margin: 8px 0 0;
+  font-size: 14px;
+}
+
 .recap-person-list {
   display: flex;
   flex-direction: column;

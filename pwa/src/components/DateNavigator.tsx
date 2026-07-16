@@ -298,12 +298,13 @@ const useMonthNavigation = (
   today: Date,
 ): MonthNavigation => {
   const prevMonth = useCallback(() => {
-    setViewMonth((m) => {
-      if (m !== 0) return m - 1
-      setViewYear((y) => y - 1)
-      return 11
-    })
-  }, [setViewMonth, setViewYear])
+    if (viewMonth === 0) {
+      setViewYear(viewYear - 1)
+      setViewMonth(11)
+      return
+    }
+    setViewMonth(viewMonth - 1)
+  }, [setViewMonth, setViewYear, viewMonth, viewYear])
 
   const nextMonth = useCallback(() => {
     const nextM = viewMonth === 11 ? 0 : viewMonth + 1
@@ -337,10 +338,11 @@ const useCalendarState = (date: Date, today: Date): CalendarState => {
       window.clearTimeout(closeTimeout.current)
       closeTimeout.current = null
     }
-    showTodayMonth()
+    setViewYear(date.getFullYear())
+    setViewMonth(date.getMonth())
     setCalendarClosing(false)
     setCalendarOpen(true)
-  }, [showTodayMonth])
+  }, [date])
 
   const closeCalendar = useCallback(() => {
     setCalendarOpen(false)
@@ -433,6 +435,7 @@ const getHeaderLabel = (date: Date, today: Date): string => {
   return date.toLocaleDateString(undefined, {
     month: 'short',
     day: 'numeric',
+    year: 'numeric',
   })
 }
 

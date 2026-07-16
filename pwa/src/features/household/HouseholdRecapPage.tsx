@@ -122,6 +122,9 @@ const RecapHero = ({ person }: { readonly person?: HouseholdRecapPerson }) => {
       <div>
         <p className="recap-hero__label">Most needs attention</p>
         <h3>{featuredName}</h3>
+        {person?.attentionReason && (
+          <p className="recap-hero__reason">{person.attentionReason}</p>
+        )}
       </div>
     </div>
   )
@@ -164,7 +167,7 @@ const createRecapSlides = (
     },
     {
       title: 'Who needs care',
-      body: 'These latest statuses point to moderate risk or crisis, lowest first.',
+      body: 'Current need, sudden wellness drops, and repeated hard check-ins shape this order.',
       layout: 'list',
       content: (
         <RecapPersonList
