@@ -32,6 +32,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Install Appflow CLI
         run: curl -fsSL https://ionic.io/get-appflow-cli | bash
