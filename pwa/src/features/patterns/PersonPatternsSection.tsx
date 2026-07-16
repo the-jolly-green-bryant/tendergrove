@@ -4,7 +4,7 @@ import {
   IonSegment,
   IonSegmentButton,
 } from '@ionic/react'
-import { homeOutline } from 'ionicons/icons'
+import { chevronForwardOutline, homeOutline } from 'ionicons/icons'
 import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
 
@@ -12,7 +12,7 @@ import { PersonAvatar } from '../../components/PersonAvatar'
 import { PatternsEmptyState } from './components/PatternsEmptyState'
 import { PeriodSelector } from './components/PeriodSelector'
 import { TrendChart } from './components/TrendChart'
-import { buildTrendChart, trendLineColor } from './components/trendSeries'
+import { buildTrendChart } from './components/trendSeries'
 import { usePatternsAnalytics } from './usePatternsAnalytics'
 import { usePatternsFilterStore } from './patternsFilterStore'
 
@@ -34,6 +34,24 @@ interface ScopedData {
   scoredDays: number
   anomalyPatterns: AnomalyPatterns | null
   subjectName: string | null
+}
+
+const currentTrendColor = (trend: TrendResult): string => {
+  const rollingScores = trend.points
+    .map((point) => point.rollingAverage)
+    .filter((score): score is number => score !== null)
+
+  if (rollingScores.length < 2) return 'var(--ion-color-danger)'
+
+  const currentScore = rollingScores.at(-1)!
+  const historicalScores = rollingScores.slice(0, -1)
+  const historicalMean =
+    historicalScores.reduce((sum, score) => sum + score, 0) /
+    historicalScores.length
+
+  return currentScore >= historicalMean
+    ? 'var(--ion-color-success-shade)'
+    : 'var(--ion-color-danger)'
 }
 
 const PatternsBody = ({
@@ -70,7 +88,7 @@ const PatternsBody = ({
   const chart = buildTrendChart(
     visiblePoints,
     false,
-    trendLineColor(data.trend.direction),
+    currentTrendColor(data.trend),
   )
 
   return (
@@ -128,11 +146,16 @@ const PatternsBody = ({
       )}
 
       <IonButton
+        className="person-patterns__view-all"
         expand="block"
         fill="clear"
         onClick={onViewAll}
       >
         View all patterns
+        <IonIcon
+          slot="end"
+          icon={chevronForwardOutline}
+        />
       </IonButton>
     </>
   )
@@ -163,8 +186,10 @@ export const PersonPatternsSection = ({
     trend: scoped ? personView.trend : result.householdTrend,
     correlations: (scoped ? personView : result).correlations,
     scoredDays: (scoped ? personView : result.dataQuality).scoredDays,
-    anomalyPatterns: scoped ? personView.anomalyPatterns : null,
-    subjectName: scoped ? personName : null,
+    // Scope changes the graph only. Pattern cards stay anchored to the person
+    // whose page is being viewed.
+    anomalyPatterns: personView.anomalyPatterns,
+    subjectName: personName,
   }
 
   return (

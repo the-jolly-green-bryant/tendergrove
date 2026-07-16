@@ -750,7 +750,81 @@
 /* ---- Person page patterns section --------------------------------- */
 
 .person-patterns {
-  margin-top: 8px;
+  margin: 18px 0 20px;
+
+  .pattern-chart__container {
+    width: 100%;
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid rgba(var(--ion-color-primary-rgb), 0.14);
+    border-radius: var(--app-radius-lg);
+    background: linear-gradient(
+      180deg,
+      rgba(247, 251, 249, 0.96),
+      rgba(225, 241, 235, 0.78)
+    );
+    box-shadow: var(--app-shadow-card);
+  }
+
+  .pattern-chart__container::before {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.64), transparent 58%),
+      url('/assets/graph_background.png') center bottom / 100% auto no-repeat;
+    opacity: 0.28;
+  }
+
+  .pattern-chart {
+    padding: 14px 12px 0;
+  }
+
+  .pattern-chart__readout {
+    margin-bottom: 2px;
+  }
+
+  .anomaly-patterns {
+    padding: 22px 0 8px;
+  }
+
+  .anomaly-patterns__heading {
+    margin: 0 2px 3px;
+  }
+
+  .anomaly-patterns__heading h2 {
+    font-size: 1.25rem;
+    font-weight: 730;
+  }
+
+  .anomaly-patterns__heading p {
+    margin-top: 0.3rem;
+    color: var(--app-muted-text);
+    font-size: 0.9rem;
+  }
+
+  .anomaly-pattern-card {
+    border-color: var(--app-border-color);
+    border-radius: var(--app-radius-lg);
+    background: var(--ion-card-background);
+    box-shadow: var(--app-shadow-card);
+  }
+
+  .anomaly-pattern-card__main {
+    gap: 0.7rem;
+    padding: 15px 16px 13px;
+  }
+
+  .anomaly-pattern-card__eyebrow,
+  .anomaly-pattern-card--weekday .anomaly-pattern-card__eyebrow,
+  .anomaly-pattern-card--household .anomaly-pattern-card__eyebrow {
+    color: var(--ion-color-primary-shade);
+  }
+
+  .anomaly-pattern-card__footer,
+  .anomaly-pattern-card--weekday .anomaly-pattern-card__footer,
+  .anomaly-pattern-card--household .anomaly-pattern-card__footer {
+    min-height: 48px;
+    border-color: var(--app-border-color);
+    background: rgba(var(--ion-color-primary-rgb), 0.035);
+  }
 }
 
 .person-patterns__header {
@@ -787,7 +861,12 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 8px;
+  margin: 0 8px 8px;
+  padding: 4px;
+  border: 1px solid rgba(var(--ion-color-primary-rgb), 0.1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.58);
+  backdrop-filter: blur(8px);
 }
 
 .person-patterns__period {
@@ -832,6 +911,23 @@
   position: relative;
   width: 26px;
   height: 26px;
+}
+
+.person-patterns__view-all {
+  min-height: 52px;
+  margin: 2px 0 0;
+  border: 1px solid var(--app-border-color);
+  border-radius: var(--app-radius-lg);
+  background: var(--ion-card-background);
+  box-shadow: var(--app-shadow-card);
+  font-weight: 700;
+  text-transform: none;
+  --color: var(--ion-color-primary-shade);
+}
+
+.person-patterns__view-all::part(native) {
+  justify-content: space-between;
+  padding-inline: 16px;
 }
 
 /* ---- Empty / low-data state --------------------------------------- */
