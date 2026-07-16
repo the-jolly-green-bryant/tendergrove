@@ -26,10 +26,8 @@ jobs:
       SIGNING_CERT: production
       # Store destination names are case-sensitive and are configured in Appflow.
       DESTINATION: com.bryantjames.tendergrove
-      # Google Play's alpha track is Closed testing. COMPLETED makes each
-      # successful upload available to enrolled testers instead of saving a draft.
+      # Google Play's alpha track is Closed testing.
       PLAY_TRACK: alpha
-      PLAY_RELEASE_STATUS: COMPLETED
 
     steps:
       - name: Checkout Code
@@ -57,15 +55,12 @@ jobs:
             --json \
             --token="$IONIC_TOKEN" | tee appflow-destination.json
 
-          jq --arg track "${PLAY_TRACK^^}" \
-             --arg release_status "$PLAY_RELEASE_STATUS" -e '
+          jq --arg track "${PLAY_TRACK^^}" -e '
             .target == "Google Play"
             and .artifactType == "AAB"
             and .track == $track
-            and .releaseStatus == $release_status
           ' appflow-destination.json > /dev/null || {
-            echo "Appflow destination must use AAB, track ${PLAY_TRACK^^}, and release status $PLAY_RELEASE_STATUS." >&2
-            echo "Set the destination release status to Completed in Appflow, then rerun this workflow." >&2
+            echo "Appflow destination must use AAB and track ${PLAY_TRACK^^}." >&2
             exit 1
           }
 
@@ -131,6 +126,5 @@ jobs:
             echo "- Android version code: ${{ steps.android_build.outputs.ANDROID_BUILD_NUMBER }}"
             echo "- Destination: $DESTINATION"
             echo "- Google Play track: Closed testing ($PLAY_TRACK)"
-            echo "- Release status: $PLAY_RELEASE_STATUS"
             echo "- Commit: \`$GITHUB_SHA\`"
           } >> "$GITHUB_STEP_SUMMARY"
