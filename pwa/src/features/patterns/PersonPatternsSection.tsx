@@ -9,6 +9,7 @@ import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
 
 import { PersonAvatar } from '../../components/PersonAvatar'
+import { toLocalDateKey } from '../../lib/dateKeys'
 import { PatternsEmptyState } from './components/PatternsEmptyState'
 import { PeriodSelector } from './components/PeriodSelector'
 import { TrendChart } from './components/TrendChart'
@@ -63,6 +64,7 @@ const PatternsBody = ({
   personAvatarUrl,
   personName,
   scope,
+  viewDate,
 }: {
   readonly data: ScopedData
   readonly rangeDays: number
@@ -72,6 +74,7 @@ const PatternsBody = ({
   readonly personAvatarUrl?: string | null
   readonly personName: string
   readonly scope: Scope
+  readonly viewDate: Date
 }): React.JSX.Element => {
   if (data.scoredDays === 0) {
     return (
@@ -84,11 +87,18 @@ const PatternsBody = ({
 
   // Rolling averages and summary stats are computed over the full analytics
   // lookback. Only trim the points handed to the chart.
-  const visiblePoints = data.trend.points.slice(-rangeDays)
+  // A historical person page should show the period ending on that historical
+  // date, rather than silently jumping the chart back to today. This also makes
+  // imported older check-ins visible when their date card is being reviewed.
+  const chartEndDate = toLocalDateKey(viewDate)
+  const eligiblePoints = data.trend.points.filter(
+    (point) => point.date <= chartEndDate,
+  )
+  const visiblePoints = eligiblePoints.slice(-rangeDays)
   const chart = buildTrendChart(
     visiblePoints,
     false,
-    currentTrendColor(data.trend),
+    currentTrendColor({ ...data.trend, points: eligiblePoints }),
   )
 
   return (
@@ -165,14 +175,16 @@ export const PersonPatternsSection = ({
   personId,
   personName,
   personAvatarUrl,
+  viewDate,
 }: {
   readonly personId: string
   readonly personName: string
   readonly personAvatarUrl?: string | null
+  readonly viewDate: Date
 }): React.JSX.Element | null => {
   const [scope, setScope] = useState<Scope>('person')
   const [rangeDays, setRangeDays] = useState(30)
-  const { result, isLoading, hasError } = usePatternsAnalytics()
+  const { result, isLoading, hasError } = usePatternsAnalytics(viewDate)
   const history = useHistory()
 
   const setPerson = usePatternsFilterStore((s) => s.setPerson)
@@ -202,6 +214,7 @@ export const PersonPatternsSection = ({
         personAvatarUrl={personAvatarUrl}
         personName={personName}
         scope={scope}
+        viewDate={viewDate}
         onViewAll={() => {
           // Carry the current scope into the Patterns section so it opens
           // pre-filtered to this person (or the whole household).

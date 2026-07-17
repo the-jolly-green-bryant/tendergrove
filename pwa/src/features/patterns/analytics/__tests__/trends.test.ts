@@ -79,4 +79,13 @@ describe('computeTrend', () => {
     expect(trend.points).toHaveLength(14)
     expect(trend.points[13].rollingAverage).toBe(50)
   })
+
+  it('lets a setback persist until positive evidence accumulates', () => {
+    const trend = computeTrend(series([100, 0, 100, 100]))
+    const smoothed = trend.points.map((point) => point.rollingAverage)
+
+    expect(smoothed[1]).toBe(55)
+    expect(smoothed[2]).toBe(58)
+    expect(smoothed[3]).toBe(60)
+  })
 })

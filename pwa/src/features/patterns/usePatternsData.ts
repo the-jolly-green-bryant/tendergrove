@@ -13,6 +13,8 @@ const patternsSelectionSet = [
   'indicators.name',
   'indicators.polarity',
   'indicators.active',
+  'indicators.createdAt',
+  'indicators.updatedAt',
   'checkIns.occurredAt',
   'checkIns.answersJson',
   'events.occurredAt',

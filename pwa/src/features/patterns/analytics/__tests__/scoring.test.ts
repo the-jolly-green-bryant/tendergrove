@@ -31,13 +31,23 @@ describe('scorePersonDay — indicator scoring (higher = better)', () => {
     expect(result.positiveCount).toBe(0)
   })
 
-  it('scores highest well-being when an undesired indicator stayed away', () => {
+  it('does not score an unchecked undesired indicator as a good outcome', () => {
     const meltdown = indicator('undesired', 'meltdown')
     const p = person('p1', {
       indicators: [meltdown],
       checkIns: [checkIn(AT, [])],
     })
-    expect(scorePersonDay(p, DAY).score).toBe(100)
+    expect(scorePersonDay(p, DAY).score).toBeNull()
+  })
+
+  it('scores an unchecked desired indicator as a bad outcome', () => {
+    const slept = indicator('desired', 'slept well')
+    const p = person('p1', {
+      indicators: [slept],
+      checkIns: [checkIn(AT, [])],
+    })
+
+    expect(scorePersonDay(p, DAY).score).toBe(0)
   })
 
   it('scores highest well-being when a desired indicator occurred', () => {
@@ -87,6 +97,47 @@ describe('scorePersonDay — indicator scoring (higher = better)', () => {
     const result = scorePersonDay(p, DAY)
     expect(result.negativeCount).toBe(1) // ghost not counted
     expect(result.score).toBe(0)
+  })
+
+  it('does not let a newly added indicator rewrite older scores', () => {
+    const historical = indicator('undesired', 'historical')
+    const addedLater = indicator('undesired', 'added later', {
+      activeFrom: '2025-06-01',
+    })
+    const p = person('p1', {
+      indicators: [historical, addedLater],
+      checkIns: [checkIn(AT, [historical.id])],
+    })
+
+    expect(scorePersonDay(p, DAY).score).toBe(0)
+  })
+
+  it('honors an explicitly checked indicator on a backfilled historical day', () => {
+    const backfilled = indicator('undesired', 'backfilled', {
+      activeFrom: '2025-06-01',
+    })
+    const p = person('p1', {
+      indicators: [backfilled],
+      checkIns: [checkIn(AT, [backfilled.id])],
+    })
+
+    expect(scorePersonDay(p, DAY).score).toBe(0)
+    expect(scorePersonDay(p, DAY).negativeCount).toBe(1)
+  })
+
+  it('keeps an archived indicator in scores from before it was archived', () => {
+    const archivedLater = indicator('undesired', 'archived later', {
+      active: false,
+      activeFrom: '2025-01-01',
+      activeUntil: '2025-07-01',
+    })
+    const p = person('p1', {
+      indicators: [archivedLater],
+      checkIns: [checkIn(AT, [archivedLater.id])],
+    })
+
+    expect(scorePersonDay(p, DAY).score).toBe(0)
+    expect(scorePersonDay(p, DAY).negativeCount).toBe(1)
   })
 })
 

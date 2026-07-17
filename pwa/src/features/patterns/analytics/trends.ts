@@ -68,8 +68,8 @@ const trendConfidence = (currentDays: number, previousDays: number): Confidence 
 const calculateTrend = (
   trend: TrendResult,
   {
-    negativeAlpha = 0.55,
-    positiveAlpha = 0.1,
+    negativeAlpha = 0.45,
+    positiveAlpha = 0.06,
   }: {
     negativeAlpha?: number
     positiveAlpha?: number
@@ -83,6 +83,9 @@ const calculateTrend = (
         weightedAverage = point.score
       } else {
         const isNegativeResult = point.score < weightedAverage
+        // Setbacks register promptly, while improvement must accumulate over
+        // several check-ins. This keeps one good day from visually erasing a
+        // sustained difficult stretch.
         const alpha = isNegativeResult ? negativeAlpha : positiveAlpha
 
         weightedAverage = alpha * point.score + (1 - alpha) * weightedAverage
@@ -125,22 +128,16 @@ export const computeTrend = (series: ScoredDay[]): TrendResult => {
   const current7DayAverage = currentAvgRaw === null ? null : safeRound(currentAvgRaw)
   const previous7DayAverage = previousAvgRaw === null ? null : safeRound(previousAvgRaw)
 
-  const delta: number | null = null
-  const currentTrend = points.at(-1)?.rollingAverage ?? null
+  const delta =
+    current7DayAverage === null || previous7DayAverage === null
+      ? null
+      : current7DayAverage - previous7DayAverage
+  const confidence = trendConfidence(currentScores.length, previousScores.length)
 
-  const historicalAverage = mean(
-    points
-      .slice(0, -TREND_WINDOW_DAYS)
-      .map((p) => p.rollingAverage)
-      .filter((v): v is number => v !== null),
-  )
-
-  const direction: TrendDirection =
-    currentTrend !== null &&
-    historicalAverage !== null &&
-    currentTrend >= historicalAverage
-      ? 'improving'
-      : 'worsening'
+  let direction: TrendDirection
+  if (delta === null || confidence === 'low') direction = 'insufficient'
+  else if (Math.abs(delta) < STABLE_BAND) direction = 'stable'
+  else direction = delta > 0 ? 'improving' : 'worsening'
 
   return calculateTrend({
     current7DayAverage,
@@ -148,7 +145,7 @@ export const computeTrend = (series: ScoredDay[]): TrendResult => {
     delta,
     direction,
     points,
-    confidence: trendConfidence(currentScores.length, previousScores.length),
+    confidence,
   })
 }
 

@@ -87,6 +87,7 @@ import type {
   PersonRole,
 } from './types'
 import { buildEventImpacts } from './eventImpacts'
+import { isoToDateKey } from './dateUtils'
 
 export * from './types'
 export { scorePersonDay, aggregateHouseholdDay, buildDailyScores } from './scoring'
@@ -129,6 +130,8 @@ export interface RawIndicator {
   name: string
   polarity: string | null
   active?: boolean | null
+  createdAt?: string | null
+  updatedAt?: string | null
 }
 
 /** Loose shape of a `CheckIn` record as fetched from the API. */
@@ -194,6 +197,9 @@ const normalizePerson = (raw: RawPerson): AnalyticsPerson => {
       name: i.name ?? 'Indicator',
       polarity: normalizePolarity(i.polarity),
       active: i.active !== false,
+      activeFrom: i.createdAt ? isoToDateKey(i.createdAt) : undefined,
+      activeUntil:
+        i.active === false && i.updatedAt ? isoToDateKey(i.updatedAt) : undefined,
     }))
 
   const checkIns = (raw.checkIns ?? [])

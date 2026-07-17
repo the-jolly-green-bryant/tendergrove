@@ -1,4 +1,4 @@
-import { dateKeyToDate, isoToDateKey, safeRound } from './dateUtils'
+import { addDaysToKey, dateKeyToDate, isoToDateKey, safeRound } from './dateUtils'
 
 import type {
   AnalyticsLifeEvent,
@@ -33,6 +33,25 @@ const MIN_TYPICAL_OPPORTUNITIES = 3
 
 const MIN_RATE_DIFFERENCE = 15
 const MIN_RATE_RATIO = 1.35
+const EVENT_LOOKBACK_DAYS = 90
+
+const eventAnalyticsGroup = (label: string): { id: string; label: string } | null => {
+  const normalized = label.trim().toLowerCase()
+
+  if (normalized.startsWith('pass -') || normalized === 'pass') {
+    return { id: 'analytics-group:passes', label: 'Passes' }
+  }
+
+  if (normalized.startsWith('family therapy')) {
+    return { id: 'analytics-group:family-therapy', label: 'Family therapy' }
+  }
+
+  if (normalized.startsWith('call -') || normalized === 'call') {
+    return { id: 'analytics-group:calls', label: 'Calls' }
+  }
+
+  return null
+}
 
 interface BaselineResult {
   medianScore: number
@@ -53,58 +72,42 @@ const median = (values: readonly number[]): number => {
   return sorted[middle]
 }
 
-const percentile = (values: readonly number[], fraction: number): number => {
-  const sorted = [...values].sort((a, b) => a - b)
+/**
+ * Pattern discovery intentionally uses explicit behavioral evidence rather than
+ * the wellness score used by the graph. A missed desired indicator can lower
+ * overall well-being, but it should not by itself become evidence of an
+ * escalation or create an event/household behavior association.
+ */
+const findBehaviorBaseline = (
+  scores: readonly DailyPersonScore[],
+): BaselineResult | null => {
+  const measurable = scores.filter((day) => day.hasData)
+  if (measurable.length < MIN_SCORED_DAYS) return null
 
-  if (sorted.length === 1) return sorted[0]
-
-  const position = (sorted.length - 1) * fraction
-  const lower = Math.floor(position)
-  const upper = Math.ceil(position)
-  const weight = position - lower
-
-  return sorted[lower] * (1 - weight) + sorted[upper] * weight
-}
-
-const findBaseline = (scores: readonly DailyPersonScore[]): BaselineResult | null => {
-  const scored = scores.filter(
-    (
-      day,
-    ): day is DailyPersonScore & {
-      score: number
-    } => day.score !== null,
+  const behaviorBurden = measurable.map(
+    (day) => day.negativeCount + day.incidentCount * 2,
   )
+  const usualBurden = median(behaviorBurden)
+  const hardDayBurden = Math.max(1, Math.floor(usualBurden) + 1)
 
-  if (scored.length < MIN_SCORED_DAYS) return null
+  const anomalyDates = new Set(
+    measurable
+      .filter((day) => day.negativeCount + day.incidentCount * 2 >= hardDayBurden)
+      .map((day) => day.date),
+  )
+  if (anomalyDates.size < MIN_ANOMALOUS_DAYS) return null
 
-  const values = scored.map((day) => day.score)
-  const medianScore = median(values)
-  const lowerQuartile = percentile(values, 0.25)
-
-  // Require the day to be at least five points below the person's median.
-  const thresholdScore = Math.min(lowerQuartile, medianScore - 5)
-
-  const anomalyDates = new Set<DateKey>()
-  const typicalDates = new Set<DateKey>()
-  const scoredDates = new Set<DateKey>()
-
-  for (const day of scored) {
-    scoredDates.add(day.date)
-
-    if (day.score <= thresholdScore) {
-      anomalyDates.add(day.date)
-    } else {
-      typicalDates.add(day.date)
-    }
-  }
-
-  if (anomalyDates.size < MIN_ANOMALOUS_DAYS) {
-    return null
-  }
+  const scoredDates = new Set(measurable.map((day) => day.date))
+  const typicalDates = new Set(
+    measurable.filter((day) => !anomalyDates.has(day.date)).map((day) => day.date),
+  )
+  const wellnessScores = measurable
+    .map((day) => day.score)
+    .filter((score): score is number => score !== null)
 
   return {
-    medianScore: safeRound(medianScore),
-    thresholdScore: safeRound(thresholdScore),
+    medianScore: wellnessScores.length > 0 ? safeRound(median(wellnessScores)) : 0,
+    thresholdScore: hardDayBurden,
     anomalyDates,
     typicalDates,
     scoredDates,
@@ -156,8 +159,9 @@ const buildRateItem = (params: {
   signalDates: ReadonlySet<DateKey>
   anomalyDates: ReadonlySet<DateKey>
   typicalDates: ReadonlySet<DateKey>
+  includeEarly?: boolean
 }): AnomalyRateItem | null => {
-  const { id, label, signalDates, anomalyDates, typicalDates } = params
+  const { id, label, signalDates, anomalyDates, typicalDates, includeEarly } = params
 
   const anomalyOccurrences = countOverlap(signalDates, anomalyDates)
 
@@ -170,21 +174,22 @@ const buildRateItem = (params: {
 
   const typicalRate = percentage(typicalOccurrences, typicalOpportunities)
 
-  if (
-    !isNotable(
-      anomalyOccurrences,
-      anomalyOpportunities,
-      anomalyRate,
-      typicalRate,
-      typicalOpportunities,
-    )
-  ) {
+  const notable = isNotable(
+    anomalyOccurrences,
+    anomalyOpportunities,
+    anomalyRate,
+    typicalRate,
+    typicalOpportunities,
+  )
+
+  if (!notable && (!includeEarly || anomalyOccurrences + typicalOccurrences < 2)) {
     return null
   }
 
   return {
     id,
     label,
+    evidence: notable ? 'repeated' : 'early',
     anomalyRate,
     typicalRate,
     anomalyOccurrences,
@@ -194,13 +199,58 @@ const buildRateItem = (params: {
   }
 }
 
+/** Compare P(hard day | signal present) with P(hard day | signal absent). */
+const buildConditionalSignalRateItem = (params: {
+  id: string
+  label: string
+  signalDates: ReadonlySet<DateKey>
+  anomalyDates: ReadonlySet<DateKey>
+  scoredDates: ReadonlySet<DateKey>
+  includeEarly?: boolean
+}): AnomalyRateItem | null => {
+  const { id, label, signalDates, anomalyDates, scoredDates, includeEarly } = params
+  const presentDates = new Set([...scoredDates].filter((date) => signalDates.has(date)))
+  const absentDates = new Set([...scoredDates].filter((date) => !signalDates.has(date)))
+  const presentHardDays = countOverlap(anomalyDates, presentDates)
+  const absentHardDays = countOverlap(anomalyDates, absentDates)
+  const presentRate = percentage(presentHardDays, presentDates.size)
+  const absentRate = percentage(absentHardDays, absentDates.size)
+
+  const notable = isNotable(
+    presentHardDays,
+    presentDates.size,
+    presentRate,
+    absentRate,
+    absentDates.size,
+  )
+
+  if (!notable && (!includeEarly || presentDates.size < 2 || absentDates.size < 3)) {
+    return null
+  }
+
+  return {
+    id,
+    label,
+    evidence: notable ? 'repeated' : 'early',
+    anomalyRate: presentRate,
+    typicalRate: absentRate,
+    anomalyOccurrences: presentHardDays,
+    anomalyOpportunities: presentDates.size,
+    typicalOccurrences: absentHardDays,
+    typicalOpportunities: absentDates.size,
+  }
+}
+
 const compareRateItems = (a: AnomalyRateItem, b: AnomalyRateItem): number => {
   const aDifference = a.anomalyRate - a.typicalRate
   const bDifference = b.anomalyRate - b.typicalRate
 
   return (
+    Number(b.evidence === 'repeated') - Number(a.evidence === 'repeated') ||
     bDifference - aDifference ||
     b.anomalyOccurrences - a.anomalyOccurrences ||
+    Number(b.id.startsWith('analytics-group:')) -
+      Number(a.id.startsWith('analytics-group:')) ||
     a.label.localeCompare(b.label)
   )
 }
@@ -287,6 +337,14 @@ const buildEventPattern = (
   baseline: BaselineResult,
 ): AnomalyEventPattern | null => {
   const labelById = new Map(lifeEvents.map((event) => [event.id, event.label]))
+  const groupByEventId = new Map(
+    lifeEvents
+      .map((event) => [event.id, eventAnalyticsGroup(event.label)] as const)
+      .filter(
+        (entry): entry is readonly [string, { id: string; label: string }] =>
+          entry[1] !== null,
+      ),
+  )
 
   const eventDates = new Map<string, Set<DateKey>>()
 
@@ -305,26 +363,35 @@ const buildEventPattern = (
     }
 
     for (const eventId of new Set(checkIn.eventIds)) {
-      const dates = eventDates.get(eventId) ?? new Set<DateKey>()
+      const analyticsSignals = [
+        { id: eventId, label: labelById.get(eventId) ?? 'Tracked event' },
+        groupByEventId.get(eventId),
+      ].filter((signal): signal is { id: string; label: string } => Boolean(signal))
 
-      dates.add(date)
-      eventDates.set(eventId, dates)
+      for (const signal of analyticsSignals) {
+        const dates = eventDates.get(signal.id) ?? new Set<DateKey>()
+        dates.add(date)
+        eventDates.set(signal.id, dates)
+        labelById.set(signal.id, signal.label)
+      }
     }
   }
 
   const items = [...eventDates]
     .map(([eventId, dates]) =>
-      buildRateItem({
+      buildConditionalSignalRateItem({
         id: eventId,
         label: labelById.get(eventId) ?? 'Tracked event',
         signalDates: dates,
         anomalyDates: measurableAnomalyDates,
-        typicalDates: measurableTypicalDates,
+        scoredDates: new Set([...measurableAnomalyDates, ...measurableTypicalDates]),
+        includeEarly: true,
       }),
     )
     .filter((item): item is AnomalyRateItem => item !== null)
     .sort(compareRateItems)
-    .slice(0, 3)
+    // Keep room for both an event family and its discrete event types.
+    .slice(0, 6)
 
   if (items.length === 0) return null
 
@@ -398,6 +465,7 @@ const buildOtherPeoplePattern = (
           signalDates: dates,
           anomalyDates: measurableAnomalyDates,
           typicalDates: measurableTypicalDates,
+          includeEarly: true,
         })
 
         base &&
@@ -419,6 +487,7 @@ const buildOtherPeoplePattern = (
         signalDates: incidentDates,
         anomalyDates: measurableAnomalyDates,
         typicalDates: measurableTypicalDates,
+        includeEarly: true,
       })
 
       incidentBase &&
@@ -451,7 +520,7 @@ export const buildAnomalyPatterns = (params: {
 }): AnomalyPatterns => {
   const { person, people, dailyScores, personDailyScores, lifeEvents } = params
 
-  const baseline = findBaseline(dailyScores)
+  const baseline = findBehaviorBaseline(dailyScores)
 
   if (!baseline) {
     return {
@@ -461,6 +530,14 @@ export const buildAnomalyPatterns = (params: {
       otherPeople: null,
     }
   }
+
+  const latestScoredDate = [...baseline.scoredDates].sort().at(-1)
+  const recentEventScores = latestScoredDate
+    ? dailyScores.filter(
+        (day) => day.date >= addDaysToKey(latestScoredDate, -(EVENT_LOOKBACK_DAYS - 1)),
+      )
+    : []
+  const recentEventBaseline = findBehaviorBaseline(recentEventScores)
 
   return {
     baseline: {
@@ -472,7 +549,9 @@ export const buildAnomalyPatterns = (params: {
 
     weekday: buildWeekdayPattern(baseline),
 
-    events: buildEventPattern(person, lifeEvents, baseline),
+    events: recentEventBaseline
+      ? buildEventPattern(person, lifeEvents, recentEventBaseline)
+      : null,
 
     otherPeople: buildOtherPeoplePattern(person, people, personDailyScores, baseline),
   }

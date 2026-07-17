@@ -445,6 +445,7 @@ const PersonPageLoadedContent = ({
         personId={person.id}
         personName={person.displayName}
         personAvatarUrl={person.avatarUrl}
+        viewDate={viewDate}
       />
 
       <TrackingSetupCards
@@ -489,6 +490,10 @@ const PersonPage = (): React.JSX.Element | null => {
   )
   const isTimeTravel = !isSameLocalDay(viewDate, new Date())
   const summary = usePersonPageSummary(person, viewDate, personId)
+  const startCheckInForViewDate = () => {
+    setSelectedDate(viewDate)
+    startCheckIn()
+  }
   const returnToToday = () => {
     setSelectedDate(new Date())
     if (isTimelineView) history.replace(`/person/${personId}`)
@@ -533,7 +538,7 @@ const PersonPage = (): React.JSX.Element | null => {
             isTimeTravel={isTimeTravel}
             onReturnToToday={returnToToday}
             summary={summary}
-            onStartCheckIn={startCheckIn}
+            onStartCheckIn={startCheckInForViewDate}
             onShowMoreOptions={showMoreOptions}
             onManageIndicators={manageIndicators}
             onManageEvents={manageEvents}

@@ -31,6 +31,8 @@ export const indicator = (
   name,
   polarity,
   active: overrides.active ?? true,
+  activeFrom: overrides.activeFrom,
+  activeUntil: overrides.activeUntil,
 })
 
 export const checkIn = (

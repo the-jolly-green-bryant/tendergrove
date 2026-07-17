@@ -10,6 +10,8 @@
  * wellness score in `lib/status.ts`):
  *   - desired indicators that occurred push the score UP
  *   - undesired indicators that occurred pull the score DOWN
+ *   - unchecked undesired indicators are neutral (they may be historical or
+ *     only relevant as-needed)
  *   - incidents pull the score DOWN (weighted a little heavier — they matter)
  *   - a day with no check-in and no incident has NO score (null), never 0.
  *     Missing data is absence, not a bad day.
@@ -53,24 +55,51 @@ export const INCIDENT_ONLY_BASE = 35
 /*  Per-day, per-person scoring                                        */
 /* ------------------------------------------------------------------ */
 
-const scoreableIndicators = (indicators: AnalyticsIndicator[]): AnalyticsIndicator[] =>
-  indicators.filter((i) => i.active !== false && i.polarity !== null)
+const scoreableIndicators = (
+  indicators: AnalyticsIndicator[],
+  date: DateKey,
+  checkedIds: ReadonlySet<string>,
+): AnalyticsIndicator[] =>
+  indicators.filter((indicator) => {
+    if (indicator.polarity === null) return false
+    // Backfilled check-ins may deliberately reference an indicator before the
+    // record itself was created. Preserve that explicit historical evidence,
+    // but do not let an unchecked new indicator rewrite older scores.
+    if (
+      indicator.activeFrom &&
+      date < indicator.activeFrom &&
+      !checkedIds.has(indicator.id)
+    ) {
+      return false
+    }
+    if (indicator.activeUntil) return date <= indicator.activeUntil
+    return indicator.active !== false
+  })
 
 const indicatorDistress = (
   indicators: AnalyticsIndicator[],
   checkedIds: Set<string>,
+  date: DateKey,
 ): number | null => {
-  const active = scoreableIndicators(indicators)
+  const active = scoreableIndicators(indicators, date, checkedIds)
   if (active.length === 0) return null
 
-  let good = 0
-  for (const indicator of active) {
-    const occurred = checkedIds.has(indicator.id)
-    const desired = indicator.polarity === 'desired'
-    if ((desired && occurred) || (!desired && !occurred)) good++
-  }
+  const desired = active.filter((indicator) => indicator.polarity === 'desired')
+  const checkedUndesired = active.filter(
+    (indicator) =>
+      indicator.polarity === 'undesired' && checkedIds.has(indicator.id),
+  )
 
-  const wellness = (good / active.length) * 100
+  // Desired indicators are daily expectations: checked is good, unchecked is
+  // bad. Undesired indicators only contribute when explicitly checked; their
+  // absence is neutral and must never inflate a score.
+  const opportunities = desired.length + checkedUndesired.length
+  if (opportunities === 0) return null
+
+  const checkedDesired = desired.filter((indicator) =>
+    checkedIds.has(indicator.id),
+  ).length
+  const wellness = (checkedDesired / opportunities) * 100
   return 100 - wellness
 }
 
@@ -84,7 +113,7 @@ export const scorePersonDay = (
   )
 
   const checkedIds = new Set<string>(dayCheckIns.flatMap((c) => c.checkedIndicatorIds))
-  const active = scoreableIndicators(person.indicators)
+  const active = scoreableIndicators(person.indicators, date, checkedIds)
   const activeIds = new Set(active.map((i) => i.id))
   const desiredIds = new Set(
     active.filter((i) => i.polarity === 'desired').map((i) => i.id),
@@ -101,7 +130,9 @@ export const scorePersonDay = (
   const hasData = dayCheckIns.length > 0 || dayIncidents.length > 0
   const incidentDistress = Math.min(dayIncidents.length * INCIDENT_POINTS, INCIDENT_CAP)
   const fromIndicators =
-    dayCheckIns.length > 0 ? indicatorDistress(person.indicators, checkedIds) : null
+    dayCheckIns.length > 0
+      ? indicatorDistress(person.indicators, checkedIds, date)
+      : null
 
   // Compute distress (how much went wrong) internally, then invert to well-being.
   let distress: number | null

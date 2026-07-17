@@ -69,6 +69,10 @@ export interface AnalyticsIndicator {
   /** `null` when a caregiver never picked a polarity; such indicators are ignored by scoring. */
   polarity: Polarity | null
   active: boolean
+  /** First day this indicator belonged to the checklist, when known. */
+  activeFrom?: DateKey
+  /** Last day it belonged to the checklist after being archived, when known. */
+  activeUntil?: DateKey
 }
 
 /** A single check-in with its checked-indicator and event ids already parsed out. */
@@ -425,23 +429,25 @@ export interface AnomalyBaseline {
 export interface AnomalyRateItem {
   id: string
   label: string
+  /** Whether the association clears the repeated-pattern threshold or is early. */
+  evidence?: 'repeated' | 'early'
 
-  /** Percentage of harder-than-usual days where this signal appeared. */
+  /** Percentage of signal-present days that were harder than usual. */
   anomalyRate: number
 
-  /** Percentage of typical days where this signal appeared. */
+  /** Percentage of signal-absent days that were harder than usual. */
   typicalRate: number
 
-  /** Number of anomaly-day occurrences. */
+  /** Number of harder-than-usual days when the signal was present. */
   anomalyOccurrences: number
 
-  /** Number of measurable anomalous days. */
+  /** Number of measurable days when the signal was present. */
   anomalyOpportunities: number
 
-  /** Number of typical-day occurrences. */
+  /** Number of harder-than-usual days when the signal was absent. */
   typicalOccurrences: number
 
-  /** Number of measurable typical days. */
+  /** Number of measurable days when the signal was absent. */
   typicalOpportunities: number
 }
 

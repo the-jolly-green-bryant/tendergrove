@@ -19,10 +19,10 @@ import {
 } from '@ionic/react'
 import {
   add,
+  archiveOutline,
   chevronForwardOutline,
   informationCircleOutline,
   sparklesOutline,
-  trash,
 } from 'ionicons/icons'
 import { useParams } from 'react-router-dom'
 
@@ -37,7 +37,7 @@ const normalizeIndicatorName = (values: AlertValues): string | false =>
   values.behavior?.trim() || false
 
 const useIndicatorAlertActions = (personId: string) => {
-  const { create, update, remove } = useIndicatorMutations(personId)
+  const { create, update, archive } = useIndicatorMutations(personId)
   const [presentAlert] = useIonAlert()
 
   const addIndicator = (polarity: Polarity) => {
@@ -100,21 +100,23 @@ const useIndicatorAlertActions = (personId: string) => {
     })
   }
 
-  const confirmRemoveIndicator = (indicator: Indicator) => {
+  const confirmArchiveIndicator = (indicator: Indicator) => {
     void presentAlert({
-      header: 'Remove indicator?',
+      header: 'Archive indicator?',
+      message:
+        'It will stop appearing in new check-ins. Existing check-ins and historical trends will be preserved.',
       buttons: [
         { text: 'Cancel', role: 'cancel' },
         {
-          text: 'Remove',
+          text: 'Archive',
           role: 'destructive',
-          handler: () => void remove(indicator.id),
+          handler: () => void archive(indicator.id),
         },
       ],
     })
   }
 
-  return { addIndicator, editIndicator, confirmRemoveIndicator }
+  return { addIndicator, editIndicator, confirmArchiveIndicator }
 }
 
 const IndicatorsIntro = () => (
@@ -148,11 +150,13 @@ const ManageIndicatorsPage = () => {
   const router = useIonRouter()
   const { personId } = useParams<{ personId: string }>()
   const { data: indicators, isLoading, error } = useIndicators(personId)
-  const { addIndicator, editIndicator, confirmRemoveIndicator } =
+  const { addIndicator, editIndicator, confirmArchiveIndicator } =
     useIndicatorAlertActions(personId)
 
   const byPolarity = (polarity: Polarity) =>
-    (indicators ?? []).filter((indicator) => indicator.polarity === polarity)
+    (indicators ?? []).filter(
+      (indicator) => indicator.polarity === polarity && indicator.active !== false,
+    )
 
   return (
     <IonPage>
@@ -182,7 +186,7 @@ const ManageIndicatorsPage = () => {
           indicators={byPolarity('undesired')}
           onAdd={() => addIndicator('undesired')}
           onEdit={editIndicator}
-          onDelete={confirmRemoveIndicator}
+          onArchive={confirmArchiveIndicator}
         />
 
         <IndicatorSection
@@ -190,7 +194,7 @@ const ManageIndicatorsPage = () => {
           indicators={byPolarity('desired')}
           onAdd={() => addIndicator('desired')}
           onEdit={editIndicator}
-          onDelete={confirmRemoveIndicator}
+          onArchive={confirmArchiveIndicator}
         />
 
         <div className="wizard-footer">
@@ -218,13 +222,13 @@ const IndicatorSection = ({
   indicators,
   onAdd,
   onEdit,
-  onDelete,
+  onArchive,
 }: {
   readonly polarity: Polarity
   readonly indicators: Indicator[]
   readonly onAdd: () => void
   readonly onEdit: (indicator: Indicator) => void
-  readonly onDelete: (indicator: Indicator) => void
+  readonly onArchive: (indicator: Indicator) => void
 }) => {
   const meta = polarityMeta[polarity]
 
@@ -275,11 +279,12 @@ const IndicatorSection = ({
               <IonItemOptions side="end">
                 <IonItemOption
                   color="danger"
-                  onClick={() => onDelete(indicator)}
+                  aria-label={`Archive ${indicator.name}`}
+                  onClick={() => onArchive(indicator)}
                 >
                   <IonIcon
                     slot="icon-only"
-                    icon={trash}
+                    icon={archiveOutline}
                   />
                 </IonItemOption>
               </IonItemOptions>

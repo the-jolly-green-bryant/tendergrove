@@ -49,6 +49,11 @@ export const useIndicatorMutations = (personId: string | undefined) => {
       await invalidate()
     },
 
+    async archive(id: string) {
+      unwrap(await client.models.Indicator.update({ id, active: false }))
+      await invalidate()
+    },
+
     async remove(id: string) {
       unwrap(await client.models.Indicator.delete({ id }))
       await invalidate()
