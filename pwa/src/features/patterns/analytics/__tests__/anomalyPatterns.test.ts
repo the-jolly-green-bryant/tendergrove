@@ -54,6 +54,33 @@ describe('buildAnomalyPatterns other people signals', () => {
       personName: 'Steph',
     })
   })
+
+  it('compares another household member’s overall severe days with the viewed person', () => {
+    const target = person('target', { displayName: 'Beth' })
+    const other = person('other', { displayName: 'Bryant' })
+    const targetScores = [20, 20, 80, 80, 80, 80, 80].map((value, index) =>
+      score('target', index + 1, value),
+    )
+    const otherScores = [20, 20, 80, 80, 80, 80, 80].map((value, index) =>
+      score('other', index + 1, value),
+    )
+
+    const patterns = buildAnomalyPatterns({
+      person: target,
+      people: [target, other],
+      dailyScores: targetScores,
+      personDailyScores: { target: targetScores, other: otherScores },
+      lifeEvents: [],
+    })
+
+    expect(patterns.otherPeople?.top).toMatchObject({
+      personName: 'Bryant',
+      label: 'Higher-severity days',
+      kind: 'severity',
+      anomalyRate: 100,
+      typicalRate: 0,
+    })
+  })
 })
 
 describe('buildAnomalyPatterns event signals', () => {

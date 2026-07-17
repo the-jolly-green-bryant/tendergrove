@@ -256,6 +256,13 @@ const HouseholdHeroPanel = ({
       id="household-hero-panel"
       className="household-snap-panel household-hero-panel"
     >
+      {isTimeTravel && (
+        <PastDataNotice
+          selectedDateLabel={selectedDateLabel}
+          onReturnToToday={onReturnToToday}
+          className="past-data-notice--page"
+        />
+      )}
       <div className="household-overview-card">
         <header className="household-overview-heading">
           <div>
@@ -287,15 +294,7 @@ const HouseholdHeroPanel = ({
           onRecapClick={onRecapClick}
         />
       )}
-      {isTimeTravel ? (
-        <PastDataNotice
-          selectedDateLabel={selectedDateLabel}
-          onReturnToToday={onReturnToToday}
-          className="past-data-notice--floating"
-        />
-      ) : (
-        <SelfCareQuote />
-      )}
+      {!isTimeTravel && <SelfCareQuote />}
     </section>
   )
 }

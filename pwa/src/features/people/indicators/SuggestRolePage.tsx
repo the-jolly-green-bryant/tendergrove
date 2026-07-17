@@ -35,7 +35,7 @@ const SuggestRolePage = () => {
               text=""
             />
           </IonButtons>
-          <IonTitle>Suggest Indicators</IonTitle>
+          <IonTitle>Suggest Signals</IonTitle>
         </IonToolbar>
       </IonHeader>
 
@@ -44,8 +44,8 @@ const SuggestRolePage = () => {
         className="ion-padding safe-content"
       >
         <p className="indicator-intro">
-          Pick a role and we&rsquo;ll suggest a thoughtful set of indicators. You can
-          choose which to add on the next screen — existing indicators are kept.
+          Pick a role and we&rsquo;ll suggest a thoughtful set of signals. You can
+          choose which to add on the next screen — existing signals are kept.
         </p>
 
         <div className="role-grid">

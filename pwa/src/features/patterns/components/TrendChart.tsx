@@ -41,6 +41,8 @@ interface TrendChartProps {
   /** Draw a slightly bolder reference line at this value (e.g. 0 for deltas). */
   readonly baseline?: number
   readonly eventCounts?: number[]
+  readonly action?: React.ReactNode
+  readonly statusValues?: (number | null)[]
 }
 
 const VIEW_W = 320
@@ -292,15 +294,21 @@ const Readout = ({
   dates,
   series,
   index,
+  action,
+  statusValues,
 }: {
   readonly dates: DateKey[]
   readonly series: ChartSeries[]
   readonly index: number
+  readonly action?: React.ReactNode
+  readonly statusValues?: (number | null)[]
 }): React.JSX.Element | null =>
   hasData(series)
     ? (() => {
         const solid = series.filter((s) => !s.dashed)
-        const [status, _, emoji] = _numberToStatus(solid[0].values[index])
+        const [status, _, emoji] = _numberToStatus(
+          statusValues?.[index] ?? solid[0].values[index],
+        )
         return (
           <IonItem
             color={'transparent'}
@@ -308,22 +316,17 @@ const Readout = ({
           >
             <IonLabel>
               <h1>
-                {solid.map((s) => (
-                  <span
-                    key={s.label}
-                    className="pattern-chart__readout-value"
-                    style={{ color: s.color }}
-                  >
-                    {status}
-                  </span>
-                ))}
+                <span
+                  className="pattern-chart__readout-value"
+                  style={{ color: solid[0].color }}
+                >
+                  {status} {emoji}
+                </span>
               </h1>
               <p>as of {dates[index] ? formatDayLabel(dates[index]) : ''}</p>
             </IonLabel>
 
-            <IonNote slot="end">
-              <h1>{emoji}</h1>
-            </IonNote>
+            {action && <IonNote slot="end">{action}</IonNote>}
           </IonItem>
         )
       })()
@@ -481,6 +484,8 @@ export const TrendChart = ({
   eventCounts = [],
   clampTo = [0, 100],
   baseline,
+  action,
+  statusValues,
 }: TrendChartProps): React.JSX.Element => {
   const count = dates.length
   const domains = useMemo(
@@ -511,6 +516,8 @@ export const TrendChart = ({
           dates={dates}
           series={series}
           index={readoutIndex}
+          action={action}
+          statusValues={statusValues}
         />
       )}
 

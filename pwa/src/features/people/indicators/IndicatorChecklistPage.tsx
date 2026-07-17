@@ -78,7 +78,7 @@ const showCustomIndicatorAlert = ({
 }: CustomIndicatorAlertParams) => {
   const meta = polarityMeta[polarity]
   void presentAlert({
-    header: `${item ? 'Edit' : 'Add'} ${meta.title} Indicator`,
+    header: `${item ? 'Edit' : 'Add'} ${meta.title} Signal`,
     message: 'Enter the behavior you want to track.',
     inputs: [
       {
@@ -101,7 +101,7 @@ const confirmRemoveCustomIndicator = (
   setItems: Dispatch<SetStateAction<ChecklistItem[]>>,
 ) => {
   void presentAlert({
-    header: 'Remove indicator?',
+    header: 'Remove signal?',
     message: `Remove "${item.name}" from this setup checklist?`,
     buttons: [
       { text: 'Cancel', role: 'cancel' },
@@ -270,7 +270,7 @@ const ChecklistFooter = ({
           name="crescent"
         />
       ) : (
-        `Save Indicators (${selectedCount})`
+        `Save Signals (${selectedCount})`
       )}
     </IonButton>
 
@@ -338,7 +338,7 @@ const IndicatorChecklistPage = (): React.JSX.Element => {
           <IonButtons slot="start">
             <IonBackButton text="" />
           </IonButtons>
-          <IonTitle>Configure Indicators</IonTitle>
+          <IonTitle>Configure Signals</IonTitle>
         </IonToolbar>
       </IonHeader>
 
@@ -389,7 +389,7 @@ const PolaritySection = ({
           fill="clear"
           size="small"
           onClick={() => onAddCustom(polarity)}
-          aria-label={`Add ${meta.title.toLowerCase()} indicator`}
+          aria-label={`Add ${meta.title.toLowerCase()} signal`}
         >
           <IonIcon
             slot="icon-only"
@@ -402,7 +402,7 @@ const PolaritySection = ({
         className="checklist-list"
       >
         {items.length === 0 && (
-          <p className="section-empty">No {meta.title.toLowerCase()} indicators yet.</p>
+          <p className="section-empty">No {meta.title.toLowerCase()} signals yet.</p>
         )}
         {items.map((item) => (
           <IonItem

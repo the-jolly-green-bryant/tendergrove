@@ -497,11 +497,36 @@ const buildOtherPeoplePattern = (
           personName: other.displayName,
           kind: 'incident',
         })
+
+      const otherBehaviorBaseline = findBehaviorBaseline(otherScores)
+      if (otherBehaviorBaseline) {
+        const severityBase = buildRateItem({
+          id: `${other.id}:severity`,
+          label: 'Higher-severity days',
+          signalDates: otherBehaviorBaseline.anomalyDates,
+          anomalyDates: measurableAnomalyDates,
+          typicalDates: measurableTypicalDates,
+          includeEarly: true,
+        })
+
+        severityBase &&
+          items.push({
+            ...severityBase,
+            personId: other.id,
+            personName: other.displayName,
+            kind: 'severity',
+          })
+      }
     })
 
-  items.sort(compareRateItems)
+  items.sort(
+    (a, b) =>
+      b.anomalyRate - a.anomalyRate ||
+      b.anomalyOccurrences - a.anomalyOccurrences ||
+      compareRateItems(a, b),
+  )
 
-  const strongest = items.slice(0, 3)
+  const strongest = items.slice(0, 10)
 
   if (strongest.length === 0) return null
 

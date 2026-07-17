@@ -23,14 +23,14 @@ export const polarityMeta: Record<
   }
 > = {
   undesired: {
-    title: 'Undesired',
+    title: 'Negative',
     color: 'danger',
     icon: removeCircle,
     blurb: 'Behaviors or situations that may increase distress or indicate challenges.',
     examples: 'Aggression, meltdowns, school refusal, sleep issues',
   },
   desired: {
-    title: 'Desired',
+    title: 'Positive',
     color: 'success',
     icon: checkmarkCircle,
     blurb: 'Positive behaviors or outcomes that support well-being and progress.',

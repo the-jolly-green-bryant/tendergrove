@@ -1,4 +1,4 @@
-import { IonButton, IonCard, IonCardContent } from '@ionic/react'
+import { IonButton, IonCard, IonCardContent, IonModal } from '@ionic/react'
 import React, { useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 
@@ -41,7 +41,8 @@ const groupByMonth = (calendar: CalendarDayPattern[]): MonthGroup[] => {
     .sort(([a], [b]) => b.localeCompare(a)) // newest month first
     .map(([key, days]) => {
       const first = dateKeyToDate(days[0].date)
-      const leadingPad = first.getDay()
+      const monthStartWeekday = (first.getDay() - ((first.getDate() - 1) % 7) + 7) % 7
+      const leadingPad = monthStartWeekday + first.getDate() - 1
       const slots: (CalendarDayPattern | null)[] = Array(leadingPad).fill(null)
       slots.push(...days)
       return {
@@ -99,7 +100,7 @@ const DayDetail = ({
         className="pattern-day-detail__action"
         onClick={() => onAddCheckIn(day.date)}
       >
-        {day.checkInCount > 0 ? 'Update check-ins' : 'Add a check-in'}
+        Go to day
       </IonButton>
     </IonCardContent>
   </IonCard>
@@ -156,15 +157,22 @@ const MonthGrid = ({
   </section>
 )
 
-const CalendarContent = ({
+export const CalendarContent = ({
   calendar,
   onAddCheckIn,
 }: {
   readonly calendar: CalendarDayPattern[]
   readonly onAddCheckIn: (dateKey: string) => void
 }): React.JSX.Element => {
-  const months = useMemo(() => groupByMonth(calendar), [calendar])
-  const [selected, setSelected] = useState<CalendarDayPattern | null>(null)
+  const visibleCalendar = useMemo(() => {
+    const firstDataIndex = calendar.findIndex(
+      (day) => day.checkInCount > 0 || day.incidentCount > 0,
+    )
+    return firstDataIndex < 0 ? calendar : calendar.slice(firstDataIndex)
+  }, [calendar])
+  const months = useMemo(() => groupByMonth(visibleCalendar), [visibleCalendar])
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const selected = calendar.find((day) => day.date === selectedDate) ?? null
 
   return (
     <>
@@ -177,8 +185,8 @@ const CalendarContent = ({
         <MonthGrid
           key={month.key}
           month={month}
-          selectedDate={selected?.date}
-          onSelect={setSelected}
+          selectedDate={selectedDate ?? undefined}
+          onSelect={(day) => setSelectedDate(day.date)}
         />
       ))}
 
@@ -196,12 +204,24 @@ const CalendarContent = ({
         ))}
       </div>
 
-      {selected && (
-        <DayDetail
-          day={selected}
-          onAddCheckIn={onAddCheckIn}
-        />
-      )}
+      <IonModal
+        isOpen={selected !== null}
+        initialBreakpoint={0.48}
+        breakpoints={[0, 0.48, 0.85]}
+        handle
+        className="pattern-calendar-detail-modal"
+        onDidDismiss={() => setSelectedDate(null)}
+      >
+        {selected && (
+          <DayDetail
+            day={selected}
+            onAddCheckIn={(dateKey) => {
+              setSelectedDate(null)
+              onAddCheckIn(dateKey)
+            }}
+          />
+        )}
+      </IonModal>
     </>
   )
 }
@@ -212,10 +232,8 @@ const CalendarHeatmapPage = (): React.JSX.Element => {
   const { setSelectedDate } = useSelectedDate()
 
   const addCheckIn = (dateKey: string) => {
-    // Point the shared check-in flow at the chosen day, then open the household
-    // wizard; it returns here when finished.
     setSelectedDate(dateKeyToDate(dateKey))
-    history.push('/check-in/wizard?returnTo=/patterns/calendar')
+    history.push('/dashboard')
   }
 
   const emptyMessage = view?.personName

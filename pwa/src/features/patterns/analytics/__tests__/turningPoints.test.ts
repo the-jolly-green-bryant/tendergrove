@@ -60,6 +60,23 @@ describe('findTurningPoints', () => {
     ).toHaveLength(0)
   })
 
+  it('detects both sides of a month-long U-shaped run', () => {
+    const tps = findTurningPoints(
+      household([
+        ...new Array(8).fill(75),
+        ...new Array(14).fill(30),
+        ...new Array(8).fill(72),
+      ]),
+    )
+
+    expect(tps.some((point) => point.type === 'sustainedDecrease')).toBe(true)
+    expect(
+      tps.some(
+        (point) => point.type === 'recovery' || point.type === 'sustainedIncrease',
+      ),
+    ).toBe(true)
+  })
+
   it('returns nothing with too little data', () => {
     expect(findTurningPoints(household([50, 60, 70]))).toHaveLength(0)
   })

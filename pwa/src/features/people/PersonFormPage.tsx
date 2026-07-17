@@ -472,7 +472,7 @@ const SuggestedIntro = ({ roleLabel }: { readonly roleLabel: string }) => (
           (<strong>{roleLabel}</strong>)
         </>
       ) : null}
-      , we&rsquo;ve prepared a thoughtful set of indicators to help you begin tracking
+      , we&rsquo;ve prepared a thoughtful set of signals to help you begin tracking
       right away.
     </p>
   </div>
@@ -641,7 +641,7 @@ const promptEditIndicator = (
   item: SuggestedItem,
 ) => {
   void presentAlert({
-    header: 'Edit indicator',
+    header: 'Edit signal',
     inputs: [{ name: 'name', type: 'text', value: item.name }],
     buttons: [
       { text: 'Cancel', role: 'cancel' },
@@ -679,8 +679,8 @@ const SuggestedIndicatorsStep = ({
       <div className="suggested-tip">
         <IonIcon icon={sparkles} />
         <span>
-          You can remove anything that doesn&rsquo;t fit, rename an indicator, or add
-          your own anytime.
+          You can remove anything that doesn&rsquo;t fit, rename a signal, or add your
+          own anytime.
         </span>
       </div>
 

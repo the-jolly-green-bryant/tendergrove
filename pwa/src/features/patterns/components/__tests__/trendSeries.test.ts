@@ -23,18 +23,20 @@ describe('buildTrendChart', () => {
     { date: '2025-05-02', score: 60, rollingAverage: 55, eventCount: 0 },
   ]
 
-  it('shows daily + rolling series clamped to 0–100 by default', () => {
+  it('shows daily + rolling series with automatic scaling by default', () => {
     const config = buildTrendChart(points, false)
     expect(config.series).toHaveLength(2)
-    expect(config.clampTo).toEqual([0, 100])
+    expect(config.clampTo).toBeNull()
     expect(config.baseline).toBeUndefined()
   })
 
-  it('shows a single change series with a zero baseline in delta mode', () => {
+  it('shows raw and smoothed change without an extra zero line in delta mode', () => {
     const config = buildTrendChart(points, true)
-    expect(config.series).toHaveLength(1)
+    expect(config.series).toHaveLength(2)
     expect(config.series[0].values).toEqual([null, 10])
+    expect(config.series[0].dashed).toBe(true)
+    expect(config.series[1].values).toEqual([null, 5])
     expect(config.clampTo).toBeNull()
-    expect(config.baseline).toBe(0)
+    expect(config.baseline).toBeUndefined()
   })
 })

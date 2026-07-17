@@ -28,16 +28,22 @@ const PercentBar = ({
 }: {
   readonly value: number
   readonly accent: 'weekday' | 'event' | 'household'
-}): React.JSX.Element => (
-  <span className="anomaly-pattern-stat__track">
-    <span
-      className={`anomaly-pattern-stat__fill anomaly-pattern-stat__fill--${accent}`}
-      style={{
-        width: `${Math.max(4, Math.min(100, value))}%`,
-      }}
-    />
-  </span>
-)
+}): React.JSX.Element => {
+  const intensity = Math.max(0, Math.min(100, value)) / 100
+  const severityColor = `rgba(201, 48, 48, ${0.22 + intensity * 0.78})`
+
+  return (
+    <span className="anomaly-pattern-stat__track">
+      <span
+        className={`anomaly-pattern-stat__fill anomaly-pattern-stat__fill--${accent}`}
+        style={{
+          width: `${Math.max(4, Math.min(100, value))}%`,
+          backgroundColor: accent === 'weekday' ? undefined : severityColor,
+        }}
+      />
+    </span>
+  )
+}
 
 const WeekdayChart = ({
   buckets,
@@ -101,14 +107,10 @@ const SignalRows = ({
   items,
   accent,
   formatLabel,
-  formatValue,
-  barValue,
 }: {
   readonly items: readonly AnomalyRateItem[]
   readonly accent: 'event' | 'household'
   readonly formatLabel?: (item: AnomalyRateItem) => string
-  readonly formatValue?: (item: AnomalyRateItem) => string
-  readonly barValue?: (item: AnomalyRateItem) => number
 }): React.JSX.Element => (
   <div className="anomaly-pattern-stats">
     {items.map((item) => (
@@ -120,12 +122,10 @@ const SignalRows = ({
           {formatLabel ? formatLabel(item) : item.label}
         </span>
 
-        <span className="anomaly-pattern-stat__percentage">
-          {formatValue ? formatValue(item) : `${item.anomalyRate}%`}
-        </span>
+        <span className="anomaly-pattern-stat__percentage">{item.anomalyRate}%</span>
 
         <PercentBar
-          value={barValue ? barValue(item) : item.anomalyRate}
+          value={item.anomalyRate}
           accent={accent}
         />
       </div>
@@ -139,8 +139,8 @@ const EMPTY_STATE = (
       <h3>No repeated pattern stands out yet</h3>
 
       <p>
-        TenderGrove found harder-than-usual days, but no weekday, event, or household
-        connection currently appears often enough to call out.
+        TenderGrove found days with more severe behavior, but no weekday, event, or
+        household connection currently appears often enough to call out.
       </p>
     </IonCardContent>
   </IonCard>
@@ -189,12 +189,13 @@ const renderWeekdayChart = (patterns: AnomalyPatterns) =>
           <div className="anomaly-pattern-card__copy">
             <p className="anomaly-pattern-card__eyebrow">Day of the week</p>
 
-            <h3>{patterns.weekday.label}s are hard!</h3>
+            <h3>{patterns.weekday.label}s tend to be more severe</h3>
 
             <p className="anomaly-pattern-card__description">
-              {patterns.weekday.label}s spike in severity severity{' '}
-              <strong>{patterns.weekday.anomalyRate}%</strong> of the time, compared
-              with <strong>{patterns.weekday.otherDaysRate}%</strong> on other days.
+              More severe behavior appears on{' '}
+              <strong>{patterns.weekday.anomalyRate}%</strong> of{' '}
+              {patterns.weekday.label}s, compared with{' '}
+              <strong>{patterns.weekday.otherDaysRate}%</strong> on other days.
             </p>
           </div>
 
@@ -207,7 +208,7 @@ const renderWeekdayChart = (patterns: AnomalyPatterns) =>
         <CardFooter
           icon={calendarOutline}
           action="Explore days"
-          onClick={() => history().push('/patterns/heatmap')}
+          onClick={() => history().push('/patterns?tab=calendar')}
         />
       </IonCardContent>
     </IonCard>
@@ -224,37 +225,31 @@ const renderEventsChart = (patterns: AnomalyPatterns) =>
         <IonCardContent>
           <div className="anomaly-pattern-card__main">
             <div className="anomaly-pattern-card__copy">
-              <p className="anomaly-pattern-card__eyebrow">Events · past 3 months</p>
+              <p className="anomaly-pattern-card__eyebrow">Events</p>
 
               <h3>
                 {top.evidence === 'repeated' && higherOnEventDays
-                  ? `${top.label} often overlaps with harder days`
+                  ? `${top.label} often overlaps with more severe days`
                   : `${top.label} is an early pattern to watch`}
               </h3>
 
               <p className="anomaly-pattern-card__description">
-                Harder-than-usual patterns appear on <strong>{top.anomalyRate}%</strong>{' '}
-                of days with {top.label}, compared with{' '}
-                <strong>{top.typicalRate}%</strong> of days without it.
+                More severe behavior appears on <strong>{top.anomalyRate}%</strong> of
+                days with {top.label}, compared with <strong>{top.typicalRate}%</strong>{' '}
+                of days without it.
               </p>
             </div>
 
             <SignalRows
               items={patterns.events.items}
               accent="event"
-              formatValue={(item) => {
-                const difference = item.anomalyRate - item.typicalRate
-                if (difference === 0) return 'same'
-                return difference > 0 ? `+${difference} pts` : `${difference} pts`
-              }}
-              barValue={(item) => Math.abs(item.anomalyRate - item.typicalRate)}
             />
           </div>
 
           <CardFooter
             icon={pricetagOutline}
             action="Explore events"
-            onClick={() => history().push('/patterns/correlations')}
+            onClick={() => history().push('/patterns?tab=trend')}
           />
         </IonCardContent>
       </IonCard>
@@ -275,7 +270,7 @@ export const AnomalyPatternsSection = ({
         <div>
           <h2 id="anomaly-patterns-title">Patterns worth watching</h2>
 
-          <p>Based on recent check-ins that were harder than usual for {personName}.</p>
+          <p>Based on recent check-ins with more severe behavior for {personName}.</p>
         </div>
       </div>
 
@@ -297,15 +292,15 @@ export const AnomalyPatternsSection = ({
 
                 <h3>
                   {patterns.otherPeople.top.evidence === 'repeated'
-                    ? `${patterns.otherPeople.top.personName}’s ${patterns.otherPeople.top.label.toLowerCase()} often overlaps with harder days`
-                    : `${patterns.otherPeople.top.personName} may be having harder days alongside ${personName}`}
+                    ? `${patterns.otherPeople.top.personName}’s ${patterns.otherPeople.top.label.toLowerCase()} often overlaps with ${personName}’s more severe days`
+                    : `${patterns.otherPeople.top.personName} may be having more severe days alongside ${personName}`}
                 </h3>
 
                 <p className="anomaly-pattern-card__description">
                   {patterns.otherPeople.top.personName}’s{' '}
                   {patterns.otherPeople.top.label.toLowerCase()} appears on{' '}
                   <strong>{patterns.otherPeople.top.anomalyRate}%</strong> of{' '}
-                  {personName}’s harder days, compared with{' '}
+                  {personName}’s more severe days, compared with{' '}
                   <strong>{patterns.otherPeople.top.typicalRate}%</strong> of other
                   measurable days.
                 </p>
@@ -325,7 +320,7 @@ export const AnomalyPatternsSection = ({
             <CardFooter
               icon={peopleOutline}
               action="Explore others"
-              onClick={() => history().push('/patterns/relationships')}
+              onClick={() => history().push('/patterns?tab=household')}
             />
           </IonCardContent>
         </IonCard>

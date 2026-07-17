@@ -30,7 +30,7 @@ const renderDeleteButton = (deleteIndicator: () => void) => (
       fill="clear"
       color="danger"
       onClick={deleteIndicator}
-      aria-label="Delete indicator"
+      aria-label="Delete signal"
     >
       <IonIcon
         slot="icon-only"
@@ -258,7 +258,7 @@ const IndicatorFormPage = (): React.JSX.Element => {
         deleteIndicator={deleteIndicator}
         isEditing={isEditing}
         personId={personId}
-        title={`${isEditing ? 'Edit' : 'Add'} ${meta.title} Indicator`}
+        title={`${isEditing ? 'Edit' : 'Add'} ${meta.title} Signal`}
       />
       <IndicatorFormContent
         blurb={meta.blurb}

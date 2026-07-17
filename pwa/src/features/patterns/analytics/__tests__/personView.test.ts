@@ -94,7 +94,36 @@ describe('buildScopedView', () => {
   })
 
   it('scopes to a single person when selected', () => {
-    const view = buildScopedView(result, 'p1')
+    const scopedResult = {
+      ...result,
+      indicatorOverlaps: [
+        {
+          sourcePersonId: 'p1',
+          sourcePersonName: 'Child A',
+          sourceIndicatorId: 'sleep',
+          sourceIndicatorName: 'poor sleep',
+          polarity: 'undesired' as const,
+          targetPersonId: 'p2',
+          targetPersonName: 'You',
+          targetIndicatorId: 'fatigue',
+          targetIndicatorName: 'fatigue',
+          overlapDays: 2,
+        },
+        {
+          sourcePersonId: 'p2',
+          sourcePersonName: 'You',
+          sourceIndicatorId: 'fatigue',
+          sourceIndicatorName: 'fatigue',
+          polarity: 'undesired' as const,
+          targetPersonId: 'p3',
+          targetPersonName: 'Someone else',
+          targetIndicatorId: 'stress',
+          targetIndicatorName: 'stress',
+          overlapDays: 3,
+        },
+      ],
+    }
+    const view = buildScopedView(scopedResult, 'p1')
     expect(view.personId).toBe('p1')
     expect(view.personName).toBe('Child A')
     expect(
@@ -102,6 +131,8 @@ describe('buildScopedView', () => {
         (c) => c.sourcePersonId === 'p1' || c.targetPersonId === 'p1',
       ),
     ).toBe(true)
+    expect(view.indicatorOverlaps).toHaveLength(1)
+    expect(view.indicatorOverlaps[0].sourcePersonId).toBe('p1')
   })
 
   it('falls back to the household view for an unknown person', () => {

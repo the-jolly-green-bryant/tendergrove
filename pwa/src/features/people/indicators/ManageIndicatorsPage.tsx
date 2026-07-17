@@ -43,7 +43,7 @@ const useIndicatorAlertActions = (personId: string) => {
   const addIndicator = (polarity: Polarity) => {
     const meta = polarityMeta[polarity]
     void presentAlert({
-      header: `Add ${meta.title} Indicator`,
+      header: `Add ${meta.title} Signal`,
       inputs: [
         {
           name: 'behavior',
@@ -70,7 +70,7 @@ const useIndicatorAlertActions = (personId: string) => {
     const polarity = (indicator.polarity ?? 'undesired') as Polarity
     const inputType = (indicator.inputType ?? 'boolean') as InputType
     void presentAlert({
-      header: 'Edit Indicator',
+      header: 'Edit Signal',
       inputs: [
         {
           name: 'behavior',
@@ -102,7 +102,7 @@ const useIndicatorAlertActions = (personId: string) => {
 
   const confirmArchiveIndicator = (indicator: Indicator) => {
     void presentAlert({
-      header: 'Archive indicator?',
+      header: 'Archive signal?',
       message:
         'It will stop appearing in new check-ins. Existing check-ins and historical trends will be preserved.',
       buttons: [
@@ -122,8 +122,8 @@ const useIndicatorAlertActions = (personId: string) => {
 const IndicatorsIntro = () => (
   <>
     <p className="indicator-intro">
-      Track behaviors that either increase distress (undesired) or support well-being
-      (desired).
+      Track negative signals that increase distress and positive signals that support
+      well-being.
     </p>
 
     <div className="indicator-why">
@@ -168,7 +168,7 @@ const ManageIndicatorsPage = () => {
               text=""
             />
           </IonButtons>
-          <IonTitle>Manage Indicators</IonTitle>
+          <IonTitle>Manage Signals</IonTitle>
         </IonToolbar>
       </IonHeader>
 
@@ -179,7 +179,7 @@ const ManageIndicatorsPage = () => {
         <IndicatorsIntro />
 
         {isLoading && <LoadingState />}
-        {error && <p>Failed to load indicators.</p>}
+        {error && <p>Failed to load signals.</p>}
 
         <IndicatorSection
           polarity="undesired"
@@ -209,7 +209,7 @@ const ManageIndicatorsPage = () => {
               slot="start"
               icon={sparklesOutline}
             />
-            Suggest indicators
+            Suggest signals
           </IonButton>
         </div>
       </IonContent>
@@ -235,12 +235,12 @@ const IndicatorSection = ({
   return (
     <section className="indicator-group">
       <div className="section-header">
-        <h2>{meta.title} Indicators</h2>
+        <h2>{meta.title} Signals</h2>
         <IonButton
           fill="clear"
           size="small"
           onClick={onAdd}
-          aria-label={`Add ${meta.title.toLowerCase()} indicator`}
+          aria-label={`Add ${meta.title.toLowerCase()} signal`}
         >
           <IonIcon
             slot="icon-only"
@@ -250,7 +250,7 @@ const IndicatorSection = ({
       </div>
 
       {indicators.length === 0 ? (
-        <p className="section-empty">No {meta.title.toLowerCase()} indicators yet.</p>
+        <p className="section-empty">No {meta.title.toLowerCase()} signals yet.</p>
       ) : (
         <IonList
           lines="none"

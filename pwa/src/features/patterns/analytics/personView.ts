@@ -23,6 +23,8 @@ import type {
   TimingAnalysis,
   TrendResult,
   TurningPointInsight,
+  IndicatorOverlap,
+  IndicatorSignal,
 } from './types'
 
 /** Everything the person page needs for one person. */
@@ -128,6 +130,79 @@ export interface ScopedPatternsView {
   generatedInsights: GeneratedInsight[]
   scoredDays: number
   anomalyPatterns: AnomalyPatterns | null
+  severityOverlaps: HouseholdSeverityOverlap[]
+  indicatorOverlaps: IndicatorOverlap[]
+  indicatorSignals: IndicatorSignal[]
+}
+
+export interface HouseholdSeverityOverlap {
+  personAId: string
+  personAName: string
+  personBId: string
+  personBName: string
+  personASevereDays: number
+  personBSevereDays: number
+  overlapDays: number
+  personAGoodDays: number
+  personBGoodDays: number
+  goodOverlapDays: number
+}
+
+const buildSeverityOverlaps = (
+  result: AnalyticsResult,
+  focusPersonId: string | null,
+): HouseholdSeverityOverlap[] => {
+  const people = focusPersonId
+    ? result.people.filter((person) => person.id === focusPersonId)
+    : result.people
+  const pairs: HouseholdSeverityOverlap[] = []
+
+  people.forEach((personA) => {
+    result.people.forEach((personB) => {
+      if (personA.id === personB.id) return
+      if (!focusPersonId && personA.id > personB.id) return
+
+      const severeDates = (personId: string) =>
+        new Set(
+          (result.personDailyScores[personId] ?? [])
+            .filter((day) => day.negativeCount > 0 || day.incidentCount > 0)
+            .map((day) => day.date),
+        )
+      const goodDates = (personId: string) =>
+        new Set(
+          (result.personDailyScores[personId] ?? [])
+            .filter(
+              (day) =>
+                day.hasData && day.negativeCount === 0 && day.incidentCount === 0,
+            )
+            .map((day) => day.date),
+        )
+      const aDates = severeDates(personA.id)
+      const bDates = severeDates(personB.id)
+      const aGoodDates = goodDates(personA.id)
+      const bGoodDates = goodDates(personB.id)
+      const overlapDays = [...aDates].filter((date) => bDates.has(date)).length
+      const goodOverlapDays = [...aGoodDates].filter((date) =>
+        bGoodDates.has(date),
+      ).length
+      if (aDates.size === 0 && bDates.size === 0 && goodOverlapDays === 0) return
+
+      pairs.push({
+        personAId: personA.id,
+        personAName: personA.displayName,
+        personBId: personB.id,
+        personBName: personB.displayName,
+        personASevereDays: aDates.size,
+        personBSevereDays: bDates.size,
+        overlapDays,
+        personAGoodDays: aGoodDates.size,
+        personBGoodDays: bGoodDates.size,
+        goodOverlapDays,
+      })
+    })
+  })
+
+  return pairs.sort((a, b) => b.overlapDays - a.overlapDays)
 }
 
 export const buildScopedView = (
@@ -149,10 +224,17 @@ export const buildScopedView = (
       generatedInsights: result.generatedInsights,
       scoredDays: result.dataQuality.scoredDays,
       anomalyPatterns: null,
+      severityOverlaps: buildSeverityOverlaps(result, null),
+      indicatorOverlaps: result.indicatorOverlaps,
+      indicatorSignals: result.indicatorSignals,
     }
   }
 
   const view = buildPersonView(result, personId)
+  const personIndicatorOverlaps = result.indicatorOverlaps.filter(
+    (overlap) =>
+      overlap.sourcePersonId === personId || overlap.targetPersonId === personId,
+  )
   return {
     personId,
     personName: view.personName,
@@ -166,5 +248,8 @@ export const buildScopedView = (
     generatedInsights: result.personGeneratedInsights[personId] ?? [],
     scoredDays: view.scoredDays,
     anomalyPatterns: view.anomalyPatterns,
+    severityOverlaps: buildSeverityOverlaps(result, null),
+    indicatorOverlaps: personIndicatorOverlaps,
+    indicatorSignals: result.indicatorSignals,
   }
 }

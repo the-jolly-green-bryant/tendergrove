@@ -121,7 +121,7 @@ const EmptyIndicatorsMessage = ({ personId }: { readonly personId: string }) => 
 
   return (
     <p className="section-empty">
-      No indicators yet — skip or{' '}
+      No signals yet — skip or{' '}
       <a
         href={indicatorPath}
         onClick={(event) => {

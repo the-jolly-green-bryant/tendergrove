@@ -85,6 +85,8 @@ import type {
   GeneratedInsight,
   Polarity,
   PersonRole,
+  IndicatorOverlap,
+  IndicatorSignal,
 } from './types'
 import { buildEventImpacts } from './eventImpacts'
 import { isoToDateKey } from './dateUtils'
@@ -105,6 +107,7 @@ export {
   buildScopedView,
   type PersonAnalyticsView,
   type ScopedPatternsView,
+  type HouseholdSeverityOverlap,
 } from './personView'
 
 /** Default look-back window for the daily score series. */
@@ -194,7 +197,7 @@ const normalizePerson = (raw: RawPerson): AnalyticsPerson => {
     .filter((i): i is RawIndicator => i !== null)
     .map((i) => ({
       id: i.id,
-      name: i.name ?? 'Indicator',
+      name: i.name ?? 'Signal',
       polarity: normalizePolarity(i.polarity),
       active: i.active !== false,
       activeFrom: i.createdAt ? isoToDateKey(i.createdAt) : undefined,
@@ -222,6 +225,7 @@ const normalizePerson = (raw: RawPerson): AnalyticsPerson => {
     id: raw.id,
     displayName: raw.displayName,
     role: normalizeRole(raw.role),
+    avatarUrl: raw.avatarUrl,
     indicators,
     checkIns,
     incidents,
@@ -316,6 +320,116 @@ const toScoredDays = (
     eventCount: score.eventCount,
   }))
 
+const buildIndicatorOverlaps = (
+  people: AnalyticsPerson[],
+  windowDates: readonly string[],
+): IndicatorOverlap[] => {
+  const eligibleDates = new Set(windowDates)
+  const signals = people.flatMap((person) => {
+    const indicators = new Map(
+      person.indicators
+        .filter(
+          (indicator): indicator is typeof indicator & { polarity: Polarity } =>
+            indicator.polarity !== null,
+        )
+        .map((indicator) => [
+          indicator.id,
+          { name: indicator.name, polarity: indicator.polarity },
+        ]),
+    )
+    const datesByIndicator = new Map<string, Set<string>>()
+    person.checkIns.forEach((checkIn) => {
+      const date = isoToDateKey(checkIn.occurredAt)
+      if (!eligibleDates.has(date)) return
+      new Set(checkIn.checkedIndicatorIds).forEach((indicatorId) => {
+        if (!indicators.has(indicatorId)) return
+        const dates = datesByIndicator.get(indicatorId) ?? new Set<string>()
+        dates.add(date)
+        datesByIndicator.set(indicatorId, dates)
+      })
+    })
+    return [...datesByIndicator].map(([indicatorId, dates]) => ({
+      person,
+      indicatorId,
+      indicatorName: indicators.get(indicatorId)?.name ?? 'Signal',
+      polarity: indicators.get(indicatorId)?.polarity ?? 'undesired',
+      dates,
+    }))
+  })
+
+  const overlaps: IndicatorOverlap[] = []
+  signals.forEach((source, sourceIndex) => {
+    signals.slice(sourceIndex + 1).forEach((target) => {
+      if (source.person.id === target.person.id) return
+      if (source.polarity !== target.polarity) return
+      const overlapDays = [...source.dates].filter((date) =>
+        target.dates.has(date),
+      ).length
+      if (overlapDays === 0) return
+      overlaps.push({
+        sourcePersonId: source.person.id,
+        sourcePersonName: source.person.displayName,
+        sourceIndicatorId: source.indicatorId,
+        sourceIndicatorName: source.indicatorName,
+        polarity: source.polarity,
+        sourceAvatarUrl: source.person.avatarUrl,
+        targetPersonId: target.person.id,
+        targetPersonName: target.person.displayName,
+        targetIndicatorId: target.indicatorId,
+        targetIndicatorName: target.indicatorName,
+        targetAvatarUrl: target.person.avatarUrl,
+        overlapDays,
+      })
+    })
+  })
+  const ordered = overlaps.sort((a, b) => b.overlapDays - a.overlapDays)
+  const selectBalanced = (polarity: Polarity, limit = 60) => {
+    const candidates = ordered.filter((item) => item.polarity === polarity)
+    const selected = new Map<string, IndicatorOverlap>()
+    const peopleWithConnections = new Set(
+      candidates.flatMap((item) => [item.sourcePersonId, item.targetPersonId]),
+    )
+    const keyFor = (item: IndicatorOverlap) =>
+      `${item.sourcePersonId}:${item.sourceIndicatorId}-${item.targetPersonId}:${item.targetIndicatorId}`
+
+    // Reserve several of the strongest connections touching each person before
+    // filling the remaining slots globally. Dense pairs can no longer crowd a
+    // household member out of the diagram entirely.
+    peopleWithConnections.forEach((personId) => {
+      candidates
+        .filter(
+          (item) =>
+            item.sourcePersonId === personId || item.targetPersonId === personId,
+        )
+        .slice(0, 4)
+        .forEach((item) => selected.set(keyFor(item), item))
+    })
+    candidates.forEach((item) => {
+      if (selected.size < limit) selected.set(keyFor(item), item)
+    })
+    return [...selected.values()].slice(0, limit)
+  }
+
+  return [...selectBalanced('undesired'), ...selectBalanced('desired')]
+}
+
+const buildIndicatorSignals = (people: AnalyticsPerson[]): IndicatorSignal[] =>
+  people.flatMap((person) =>
+    person.indicators
+      .filter(
+        (indicator): indicator is typeof indicator & { polarity: Polarity } =>
+          indicator.active && indicator.polarity !== null,
+      )
+      .map((indicator) => ({
+        personId: person.id,
+        personName: person.displayName,
+        avatarUrl: person.avatarUrl,
+        indicatorId: indicator.id,
+        indicatorName: indicator.name,
+        polarity: indicator.polarity,
+      })),
+  )
+
 export const runAnalytics = (input: AnalyticsInput): AnalyticsResult => {
   const window = buildDateWindow(input.now, input.windowDays)
 
@@ -323,6 +437,7 @@ export const runAnalytics = (input: AnalyticsInput): AnalyticsResult => {
     id: p.id,
     displayName: p.displayName,
     role: p.role,
+    ...(p.avatarUrl ? { avatarUrl: p.avatarUrl } : {}),
   }))
 
   const { personDailyScores, householdDailyScores } = buildDailyScores(
@@ -410,6 +525,8 @@ export const runAnalytics = (input: AnalyticsInput): AnalyticsResult => {
     }),
     personGeneratedInsights,
     personAnomalyPatterns,
+    indicatorOverlaps: buildIndicatorOverlaps(input.people, window),
+    indicatorSignals: buildIndicatorSignals(input.people),
   }
 }
 

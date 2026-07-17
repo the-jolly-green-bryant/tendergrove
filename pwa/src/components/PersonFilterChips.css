@@ -1,9 +1,15 @@
 .person-filter-chips {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   overflow-x: auto;
-  padding: 8px 0;
+  width: fit-content;
+  max-width: 100%;
+  padding: 4px;
+  border: 1px solid rgba(var(--ion-color-primary-rgb), 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.58);
+  backdrop-filter: blur(8px);
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
@@ -15,7 +21,7 @@
 .person-filter-chip {
   align-items: center;
   appearance: none;
-  background: var(--ion-color-light);
+  background: transparent;
   border: 0;
   border-radius: 999px;
   color: var(--ion-color-medium);
@@ -23,11 +29,11 @@
   display: inline-flex;
   flex-shrink: 0;
   gap: 6px;
-  height: 36px;
+  height: 40px;
   justify-content: center;
   line-height: 1;
-  min-width: 36px;
-  padding: 0 12px;
+  min-width: 40px;
+  padding: 0;
   font-size: 0.875rem;
   font: inherit;
   -webkit-tap-highlight-color: transparent;
@@ -35,36 +41,30 @@
 
 .person-filter-chip--active {
   background: var(--ion-color-primary);
-  color: #fff;
+  color: var(--ion-color-primary-contrast);
+  box-shadow: 0 3px 10px rgba(var(--ion-color-primary-rgb), 0.28);
 }
 
 .person-filter-chip--avatar {
-  background: var(--ion-color-light);
-  border: 2px solid var(--ion-color-medium);
+  background: transparent;
+  border: 0;
   height: 40px;
   padding: 4px;
   width: 40px;
 }
 
 .person-filter-chip--avatar.person-filter-chip--active {
-  border-color: var(--ion-color-primary);
-  box-shadow: 0 0 0 2px rgba(var(--ion-color-primary-rgb), 0.18);
+  background: var(--ion-color-primary);
+  box-shadow:
+    0 0 0 2px var(--ion-color-primary),
+    0 3px 10px rgba(var(--ion-color-primary-rgb), 0.28);
 }
 
-.person-filter-chip--success {
-  border-color: var(--ion-color-success);
-}
-
-.person-filter-chip--warning {
-  border-color: var(--ion-color-warning);
-}
-
-.person-filter-chip--danger {
-  border-color: var(--ion-color-danger);
-}
-
+.person-filter-chip--success,
+.person-filter-chip--warning,
+.person-filter-chip--danger,
 .person-filter-chip--medium {
-  border-color: var(--ion-color-medium);
+  border-color: transparent;
 }
 
 .person-filter-chip__avatar {

@@ -242,8 +242,8 @@ const SuggestReviewPage = () => {
         className="ion-padding safe-content"
       >
         <p className="indicator-intro">
-          Check the indicators you want to keep. Unchecked items you already have will
-          be removed.
+          Check the signals you want to keep. Unchecked items you already have will be
+          removed.
         </p>
 
         {review.isLoading ? (

@@ -1,5 +1,5 @@
 import { IonIcon } from '@ionic/react'
-import { peopleOutline } from 'ionicons/icons'
+import { homeOutline } from 'ionicons/icons'
 import { useEffect, useState } from 'react'
 
 import { derivePersonStatus, type Status } from '../lib/status'
@@ -96,8 +96,8 @@ export const PersonFilterChips = ({
         onClick={onClear}
         aria-pressed={showAll}
       >
-        <IonIcon icon={peopleOutline} />
-        <span>Everyone</span>
+        <IonIcon icon={homeOutline} />
+        <span className="visually-hidden">Everyone</span>
       </button>
 
       {people.map((person) => {

@@ -1,10 +1,5 @@
-import {
-  IonButton,
-  IonIcon,
-  IonSegment,
-  IonSegmentButton,
-} from '@ionic/react'
-import { chevronForwardOutline, homeOutline } from 'ionicons/icons'
+import { IonButton, IonIcon, IonSegment, IonSegmentButton } from '@ionic/react'
+import { chevronForwardOutline, homeOutline, triangleOutline } from 'ionicons/icons'
 import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
 
@@ -12,8 +7,7 @@ import { PersonAvatar } from '../../components/PersonAvatar'
 import { toLocalDateKey } from '../../lib/dateKeys'
 import { PatternsEmptyState } from './components/PatternsEmptyState'
 import { PeriodSelector } from './components/PeriodSelector'
-import { TrendChart } from './components/TrendChart'
-import { buildTrendChart } from './components/trendSeries'
+import { TrendChartPanel } from './components/TrendChartPanel'
 import { usePatternsAnalytics } from './usePatternsAnalytics'
 import { usePatternsFilterStore } from './patternsFilterStore'
 
@@ -37,24 +31,6 @@ interface ScopedData {
   subjectName: string | null
 }
 
-const currentTrendColor = (trend: TrendResult): string => {
-  const rollingScores = trend.points
-    .map((point) => point.rollingAverage)
-    .filter((score): score is number => score !== null)
-
-  if (rollingScores.length < 2) return 'var(--ion-color-danger)'
-
-  const currentScore = rollingScores.at(-1)!
-  const historicalScores = rollingScores.slice(0, -1)
-  const historicalMean =
-    historicalScores.reduce((sum, score) => sum + score, 0) /
-    historicalScores.length
-
-  return currentScore >= historicalMean
-    ? 'var(--ion-color-success-shade)'
-    : 'var(--ion-color-danger)'
-}
-
 const PatternsBody = ({
   data,
   rangeDays,
@@ -64,6 +40,8 @@ const PatternsBody = ({
   personAvatarUrl,
   personName,
   scope,
+  showDelta,
+  onToggleDelta,
   viewDate,
 }: {
   readonly data: ScopedData
@@ -74,6 +52,8 @@ const PatternsBody = ({
   readonly personAvatarUrl?: string | null
   readonly personName: string
   readonly scope: Scope
+  readonly showDelta: boolean
+  readonly onToggleDelta: () => void
   readonly viewDate: Date
 }): React.JSX.Element => {
   if (data.scoredDays === 0) {
@@ -91,62 +71,66 @@ const PatternsBody = ({
   // date, rather than silently jumping the chart back to today. This also makes
   // imported older check-ins visible when their date card is being reviewed.
   const chartEndDate = toLocalDateKey(viewDate)
-  const eligiblePoints = data.trend.points.filter(
-    (point) => point.date <= chartEndDate,
-  )
-  const visiblePoints = eligiblePoints.slice(-rangeDays)
-  const chart = buildTrendChart(
-    visiblePoints,
-    false,
-    currentTrendColor({ ...data.trend, points: eligiblePoints }),
-  )
+  const eligiblePoints = data.trend.points.filter((point) => point.date <= chartEndDate)
 
   return (
     <>
-      <div className={'pattern-chart__container'}>
-        <TrendChart
-          dates={chart.dates}
-          series={chart.series}
-          clampTo={chart.clampTo}
-          eventCounts={visiblePoints.map((point) => point.eventCount)}
-        />
-
-        <div className="person-patterns__chart-controls">
-          <div className="person-patterns__period">
-            <PeriodSelector
-              value={rangeDays}
-              onChange={onRangeChange}
-            />
-          </div>
-          <IonSegment
-            className="person-patterns__scope-toggle"
-            value={scope}
-            aria-label="Chart scope"
-            onIonChange={(event) =>
-              onScopeChange((event.detail.value as Scope) ?? 'person')
-            }
+      <TrendChartPanel
+        points={eligiblePoints}
+        rangeDays={rangeDays}
+        showDelta={showDelta}
+        action={
+          <button
+            type="button"
+            className={`pattern-delta-toggle${showDelta ? ' pattern-delta-toggle--active' : ''}`}
+            aria-pressed={showDelta}
+            onClick={onToggleDelta}
           >
-            <IonSegmentButton
-              value="person"
-              aria-label={`${personName} scope`}
+            <IonIcon
+              icon={triangleOutline}
+              aria-hidden="true"
+            />
+            Delta
+          </button>
+        }
+        controls={
+          <div className="person-patterns__chart-controls">
+            <div className="person-patterns__period">
+              <PeriodSelector
+                value={rangeDays}
+                onChange={onRangeChange}
+              />
+            </div>
+            <IonSegment
+              className="person-patterns__scope-toggle"
+              value={scope}
+              aria-label="Chart scope"
+              onIonChange={(event) =>
+                onScopeChange((event.detail.value as Scope) ?? 'person')
+              }
             >
-              <span className="person-patterns__scope-avatar-wrap">
-                <PersonAvatar
-                  className="person-patterns__scope-avatar"
-                  name={personName}
-                  src={personAvatarUrl}
-                />
-              </span>
-            </IonSegmentButton>
-            <IonSegmentButton
-              value="household"
-              aria-label="Household scope"
-            >
-              <IonIcon icon={homeOutline} />
-            </IonSegmentButton>
-          </IonSegment>
-        </div>
-      </div>
+              <IonSegmentButton
+                value="person"
+                aria-label={`${personName} scope`}
+              >
+                <span className="person-patterns__scope-avatar-wrap">
+                  <PersonAvatar
+                    className="person-patterns__scope-avatar"
+                    name={personName}
+                    src={personAvatarUrl}
+                  />
+                </span>
+              </IonSegmentButton>
+              <IonSegmentButton
+                value="household"
+                aria-label="Household scope"
+              >
+                <IonIcon icon={homeOutline} />
+              </IonSegmentButton>
+            </IonSegment>
+          </div>
+        }
+      />
 
       {data.subjectName && data.anomalyPatterns && (
         <AnomalyPatternsSection
@@ -184,6 +168,7 @@ export const PersonPatternsSection = ({
 }): React.JSX.Element | null => {
   const [scope, setScope] = useState<Scope>('person')
   const [rangeDays, setRangeDays] = useState(30)
+  const [showDelta, setShowDelta] = useState(false)
   const { result, isLoading, hasError } = usePatternsAnalytics(viewDate)
   const history = useHistory()
 
@@ -214,6 +199,8 @@ export const PersonPatternsSection = ({
         personAvatarUrl={personAvatarUrl}
         personName={personName}
         scope={scope}
+        showDelta={showDelta}
+        onToggleDelta={() => setShowDelta((current) => !current)}
         viewDate={viewDate}
         onViewAll={() => {
           // Carry the current scope into the Patterns section so it opens
@@ -222,7 +209,6 @@ export const PersonPatternsSection = ({
           history.push('/patterns')
         }}
       />
-
     </section>
   )
 }

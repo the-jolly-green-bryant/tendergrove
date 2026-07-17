@@ -183,7 +183,7 @@ const usePersonPageActions = (
     void presentActionSheet({
       buttons: [
         { text: 'Edit Person', icon: createOutline, handler: editPerson },
-        { text: 'Edit Indicators', icon: listOutline, handler: manageIndicators },
+        { text: 'Edit Signals', icon: listOutline, handler: manageIndicators },
         { text: 'Edit Events', icon: calendarOutline, handler: manageEvents },
         {
           text: isArchived ? 'Unarchive' : 'Archive',
@@ -360,7 +360,7 @@ const TrackingSetupCards = ({
   <div className="person-setup">
     <SetupNavCard
       icon={listOutline}
-      title="Indicators"
+      title="Signals"
       subtitle="Configure behaviors you want to track."
       onClick={onManageIndicators}
     />
@@ -425,14 +425,13 @@ const PersonPageLoadedContent = ({
   readonly onManageEvents: () => void
 }) => (
   <>
-    <PersonDateBanner
-      viewDate={viewDate}
-      isTimeTravel={isTimeTravel}
-      isTimelineView={isTimelineView}
-      onReturnToToday={onReturnToToday}
-    />
-
     <div className="ion-padding">
+      <PersonDateBanner
+        viewDate={viewDate}
+        isTimeTravel={isTimeTravel}
+        isTimelineView={isTimelineView}
+        onReturnToToday={onReturnToToday}
+      />
       <PersonCheckInPanel
         person={person}
         status={summary.status}

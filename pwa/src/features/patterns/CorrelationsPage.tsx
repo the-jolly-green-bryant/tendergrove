@@ -64,8 +64,8 @@ const StrengthList = ({
   return (
     <>
       <p className="patterns-lede">
-        How strongly each indicator lines up with better or harder days. Positive links
-        are worth encouraging; these are relationships, not causes.
+        How strongly each signal lines up with better or harder days. Positive links are
+        worth encouraging; these are relationships, not causes.
       </p>
       {rows.map((row) => (
         <StrengthRow

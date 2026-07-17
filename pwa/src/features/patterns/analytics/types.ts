@@ -95,6 +95,7 @@ export interface AnalyticsPerson {
   id: string
   displayName: string
   role: PersonRole | null
+  avatarUrl?: string | null
   indicators: AnalyticsIndicator[]
   checkIns: AnalyticsCheckIn[]
   incidents: AnalyticsIncident[]
@@ -488,7 +489,7 @@ export interface AnomalyEventPattern {
 export interface AnomalyOtherPersonItem extends AnomalyRateItem {
   personId: string
   personName: string
-  kind: 'behavior' | 'incident'
+  kind: 'behavior' | 'incident' | 'severity'
 }
 
 /**
@@ -581,6 +582,31 @@ export interface AnalyticsPersonRef {
   id: string
   displayName: string
   role: PersonRole | null
+  avatarUrl?: string | null
+}
+
+export interface IndicatorOverlap {
+  sourcePersonId: string
+  sourcePersonName: string
+  sourceIndicatorId: string
+  sourceIndicatorName: string
+  polarity: Polarity
+  sourceAvatarUrl?: string | null
+  targetPersonId: string
+  targetPersonName: string
+  targetIndicatorId: string
+  targetIndicatorName: string
+  targetAvatarUrl?: string | null
+  overlapDays: number
+}
+
+export interface IndicatorSignal {
+  personId: string
+  personName: string
+  avatarUrl?: string | null
+  indicatorId: string
+  indicatorName: string
+  polarity: Polarity
 }
 
 /** Everything the Patterns pages need, computed in one deterministic pass. */
@@ -598,6 +624,8 @@ export interface AnalyticsResult {
   turningPoints: TurningPointInsight[]
   overview: OverviewSummary
   personAnomalyPatterns: Record<string, AnomalyPatterns>
+  indicatorOverlaps: IndicatorOverlap[]
+  indicatorSignals: IndicatorSignal[]
   /** Household timing (day-of-week, time-of-day, heatmap, indicator↔outcome). */
   timing: TimingAnalysis
   /** Timing per person, keyed by person id. */

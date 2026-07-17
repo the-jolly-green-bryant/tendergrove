@@ -41,7 +41,7 @@ export const HeatmapGrid = ({
   <div
     className="pattern-heatmap"
     role="table"
-    aria-label="Indicator likelihood by day of week"
+    aria-label="Signal likelihood by day of week"
   >
     <div
       className="pattern-heatmap__row pattern-heatmap__row--head"

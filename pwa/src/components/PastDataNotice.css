@@ -35,6 +35,8 @@
 }
 
 .past-data-notice--page {
+  width: 100%;
+  max-width: none;
   margin-top: 12px;
   margin-bottom: 18px;
 }

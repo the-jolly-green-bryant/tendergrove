@@ -19,6 +19,19 @@ export const trendLineColor = (direction: TrendDirection): string => {
   return PRIMARY
 }
 
+export const currentTrendColor = (points: readonly TrendPoint[]): string => {
+  const rollingScores = points
+    .map((point) => point.rollingAverage)
+    .filter((score): score is number => score !== null)
+
+  if (rollingScores.length < 2) return DOWN
+
+  const current = rollingScores.at(-1)!
+  const history = rollingScores.slice(0, -1)
+  const historicalMean = history.reduce((sum, score) => sum + score, 0) / history.length
+  return current >= historicalMean ? UP : DOWN
+}
+
 export const toDelta = (values: (number | null)[]): (number | null)[] => {
   let prev: number | null = null
   return values.map((value) => {
@@ -41,13 +54,18 @@ export const buildTrendChart = (
       dates,
       series: [
         {
-          label: 'Day-to-day change',
-          color: primaryColor,
+          label: 'Daily change',
+          color: '#a5a5a5',
           values: toDelta(points.map((p) => p.score)),
+          dashed: true,
+        },
+        {
+          label: 'Trend change',
+          color: primaryColor,
+          values: toDelta(points.map((p) => p.rollingAverage)),
         },
       ],
       clampTo: null,
-      baseline: 0,
     }
   }
 
@@ -56,7 +74,6 @@ export const buildTrendChart = (
     series: [
       {
         label: 'Daily well-being',
-
         color: '#a5a5a5',
         values: points.map((p) => p.score),
         dashed: true,

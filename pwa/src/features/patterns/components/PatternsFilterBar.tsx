@@ -1,6 +1,4 @@
-import { IonIcon } from '@ionic/react'
-import { optionsOutline } from 'ionicons/icons'
-import React, { useMemo, useState } from 'react'
+import React, { useMemo } from 'react'
 
 import {
   PersonFilterChips,
@@ -9,7 +7,6 @@ import {
 import type { RawPerson } from '../analytics'
 import { usePatternsData } from '../usePatternsData'
 import { usePatternsFilterStore } from '../patternsFilterStore'
-import { FiltersModal } from './FiltersModal'
 
 const toFilterablePeople = (raw: RawPerson[] | undefined): RawPerson[] =>
   (raw ?? [])
@@ -32,50 +29,32 @@ export const PatternsFilterBar = ({
   const setPerson = usePatternsFilterStore((s) => s.setPerson)
   const showDelta = usePatternsFilterStore((s) => s.showDelta)
   const toggleDelta = usePatternsFilterStore((s) => s.toggleDelta)
-  const [filtersOpen, setFiltersOpen] = useState(false)
 
   const people = useMemo(() => toFilterablePeople(data?.people), [data])
   const selectedPeople = useMemo(() => new Set(personIds), [personIds])
 
   return (
-    <>
-      <div className="patterns-filter-bar">
-        {people.length >= 2 && (
-          <PersonFilterChips
-            people={people}
-            selectedPeople={selectedPeople}
-            onSelectPerson={setPerson}
-            onClear={() => setPerson(null)}
-          />
-        )}
-        <div className="patterns-filter-bar__actions">
-          {showDeltaToggle && (
-            <button
-              type="button"
-              className={`patterns-pill${showDelta ? ' patterns-pill--active' : ''}`}
-              onClick={toggleDelta}
-              aria-pressed={showDelta}
-            >
-              <span aria-hidden="true">Δ</span> Show change
-            </button>
-          )}
+    <div className="patterns-filter-bar">
+      {people.length >= 2 && (
+        <PersonFilterChips
+          people={people}
+          selectedPeople={selectedPeople}
+          onSelectPerson={setPerson}
+          onClear={() => setPerson(null)}
+        />
+      )}
+      <div className="patterns-filter-bar__actions">
+        {showDeltaToggle && (
           <button
             type="button"
-            className="patterns-pill"
-            onClick={() => setFiltersOpen(true)}
+            className={`patterns-pill${showDelta ? ' patterns-pill--active' : ''}`}
+            onClick={toggleDelta}
+            aria-pressed={showDelta}
           >
-            <IonIcon
-              icon={optionsOutline}
-              aria-hidden="true"
-            />
-            Filters
+            <span aria-hidden="true">Δ</span> Show change
           </button>
-        </div>
+        )}
       </div>
-      <FiltersModal
-        isOpen={filtersOpen}
-        onDismiss={() => setFiltersOpen(false)}
-      />
-    </>
+    </div>
   )
 }

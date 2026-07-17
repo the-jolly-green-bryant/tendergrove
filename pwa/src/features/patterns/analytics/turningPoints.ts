@@ -103,16 +103,14 @@ const buildSustainedSummary = (
   durationDays: number,
   reachedEnd: boolean,
 ): string => {
-  const tail = reachedEnd
-    ? `and has held there for ${days(durationDays)}`
-    : `for about ${days(durationDays)}`
+  const percent =
+    before === 0
+      ? Math.abs(after - before)
+      : Math.round((Math.abs(after - before) / before) * 100)
   if (type === 'sustainedDecrease') {
-    return `Well-being dipped from around ${before} to ${after} ${tail}. Worth watching.`
+    return `Worsened by ${percent}% over ${days(durationDays)}${reachedEnd ? ' and remains at that level' : ''}.`
   }
-  if (type === 'recovery') {
-    return `Well-being bounced back from around ${before} to ${after} ${tail}. A hopeful change.`
-  }
-  return `Well-being improved from around ${before} to ${after} ${tail}. A hopeful change.`
+  return `Improved by ${percent}% over ${days(durationDays)}${reachedEnd ? ' and remains at that level' : ''}.`
 }
 
 /* ------------------------------------------------------------------ */
@@ -206,7 +204,7 @@ const detectSpikes = (
         afterAverage: day.score,
         durationDays: 1,
         severity: severityFromDelta(dip),
-        summary: `Well-being dipped to ${day.score} for a single day and bounced back toward its usual level. A hard day rather than a lasting shift.`,
+        summary: `Dropped by ${Math.round((dip / Math.max(1, baseline)) * 100)}% for one day, then returned toward the prior level.`,
       })
     }
   }

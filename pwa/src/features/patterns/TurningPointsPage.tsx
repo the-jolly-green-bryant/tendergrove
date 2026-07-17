@@ -8,20 +8,62 @@ import type {
   TurningPointInsight,
   TurningPointType,
 } from './analytics'
-import { formatDayLabel } from './analytics/dateUtils'
+import { dateKeyToDate, daysBetween, formatDayLabel } from './analytics/dateUtils'
 import { PatternsEmptyState } from './components/PatternsEmptyState'
 import { PatternsFilterBar } from './components/PatternsFilterBar'
 import { useScopedPatterns } from './useScopedPatterns'
 
 import './patterns.scss'
 
-// className maps to a colour token: --increase = red, --recovery = green,
-// --spike = purple. Well-being rising is the good news, so it gets green.
 const TYPE_TAG: Record<TurningPointType, { label: string; className: string }> = {
-  sustainedIncrease: { label: 'Positive change', className: 'pattern-tag--recovery' },
-  recovery: { label: 'Bounced back', className: 'pattern-tag--recovery' },
-  sustainedDecrease: { label: 'Worth watching', className: 'pattern-tag--increase' },
-  spike: { label: 'One hard day', className: 'pattern-tag--spike' },
+  sustainedIncrease: { label: 'Increase', className: 'pattern-tag--recovery' },
+  recovery: { label: 'Return toward average', className: 'pattern-tag--recovery' },
+  sustainedDecrease: { label: 'Decrease', className: 'pattern-tag--increase' },
+  spike: { label: 'One-day drop', className: 'pattern-tag--spike' },
+}
+
+const formatShiftDate = (date: string): string => {
+  const parsed = dateKeyToDate(date)
+  if (parsed.getFullYear() === new Date().getFullYear()) return formatDayLabel(date)
+  return parsed.toLocaleDateString(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
+const CurrentState = ({ view }: { readonly view: ScopedPatternsView }) => {
+  const scored = view.calendar.filter(
+    (day): day is typeof day & { score: number } => day.score !== null,
+  )
+  if (scored.length === 0) return null
+
+  const average = Math.round(
+    scored.reduce((sum, day) => sum + day.score, 0) / scored.length,
+  )
+  const relation = (score: number) =>
+    score < average - 5
+      ? 'below average'
+      : score > average + 5
+        ? 'above average'
+        : 'near average'
+  const current = scored.at(-1)!
+  const currentRelation = relation(current.score)
+  let start = scored.length - 1
+  while (start > 0 && relation(scored[start - 1].score) === currentRelation) start--
+  const duration = daysBetween(current.date, scored[start].date) + 1
+
+  return (
+    <IonCard className="pattern-current-state">
+      <IonCardContent>
+        <h2>
+          {currentRelation.charAt(0).toUpperCase() + currentRelation.slice(1)} for{' '}
+          {duration} {duration === 1 ? 'day' : 'days'}.
+        </h2>
+      </IonCardContent>
+    </IonCard>
+  )
 }
 
 const TurningPointCard = ({
@@ -35,7 +77,7 @@ const TurningPointCard = ({
       <IonCardContent>
         <div className="pattern-turning-card__head">
           <h3 className="pattern-turning-card__date">
-            {formatDayLabel(turningPoint.date)}
+            {formatShiftDate(turningPoint.date)}
           </h3>
           <span className={`pattern-tag ${tag.className}`}>{tag.label}</span>
         </div>
@@ -45,7 +87,7 @@ const TurningPointCard = ({
   )
 }
 
-const TurningPointsContent = ({
+export const TurningPointsContent = ({
   view,
 }: {
   readonly view: ScopedPatternsView
@@ -55,22 +97,25 @@ const TurningPointsContent = ({
       ? `${view.personName}'s well-being has`
       : 'Things have'
     return (
-      <PatternsEmptyState
-        title="No big shifts detected"
-        message={`${subject} been fairly steady — we haven’t detected any lasting shifts recently. We’ll flag them here if a sustained change appears.`}
-      />
+      <>
+        <CurrentState view={view} />
+        <PatternsEmptyState
+          title="No shifts detected"
+          message={`${subject} not changed enough to identify a sustained shift in the available data.`}
+        />
+      </>
     )
   }
 
   // Most recent first — that's usually what a caregiver wants to see.
   const ordered = [...view.turningPoints].reverse()
-  const subject = view.personName ? `${view.personName}'s` : 'household'
+  const subject = view.personName ?? 'the household'
 
   return (
     <>
+      <CurrentState view={view} />
       <p className="patterns-lede">
-        Bigger shifts in {subject} well-being — moments where things changed and stayed
-        changed for a while. Everyday ups and downs are left out on purpose.
+        Sustained changes for {subject} and how long each shift lasted.
       </p>
       {ordered.map((turningPoint) => (
         <TurningPointCard
@@ -87,7 +132,7 @@ const TurningPointsPage = (): React.JSX.Element => {
 
   return (
     <Page
-      title="Turning points"
+      title="Shifts"
       className="patterns-page"
       backHref="/patterns"
     >

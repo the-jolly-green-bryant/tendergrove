@@ -168,7 +168,7 @@ const IndicatorsSection = (): React.JSX.Element => {
 
   return (
     <section className="patterns-section">
-      <h2 className="pattern-calendar-heading">Indicators</h2>
+      <h2 className="pattern-calendar-heading">Signals</h2>
       <IonSegment
         value={indicatorMode}
         onIonChange={(e) =>
@@ -176,7 +176,7 @@ const IndicatorsSection = (): React.JSX.Element => {
         }
       >
         <IonSegmentButton value="all">
-          <IonLabel>All indicators</IonLabel>
+          <IonLabel>All signals</IonLabel>
         </IonSegmentButton>
         <IonSegmentButton value="custom">
           <IonLabel>Custom</IonLabel>
@@ -258,7 +258,7 @@ const collectIndicators = (data: RawPerson[]): IndicatorOption[] => {
       if (indicator && indicator.active !== false) {
         options.push({
           id: indicator.id,
-          name: indicator.name ?? 'Indicator',
+          name: indicator.name ?? 'Signal',
           personName: person.displayName,
         })
       }
