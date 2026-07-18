@@ -1809,6 +1809,8 @@
   }
 
   .pattern-calendar-cell {
+    width: 100%;
+    min-width: 0;
     min-height: 42px;
     border-radius: 10px;
   }
@@ -1866,5 +1868,27 @@
   .household-breakdown h2 {
     margin: 0 0 8px;
     font-size: 1.15rem;
+  }
+}
+
+@media (max-width: 390px) {
+  .patterns-page {
+    .pattern-calendar-month {
+      padding: 12px;
+    }
+
+    .pattern-calendar-grid {
+      gap: 4px;
+    }
+
+    .pattern-calendar-cell {
+      min-height: 38px;
+      border-radius: 9px;
+    }
+
+    .pattern-calendar-dow {
+      min-width: 0;
+      font-size: 0.66rem;
+    }
   }
 }
