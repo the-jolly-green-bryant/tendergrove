@@ -29,6 +29,7 @@ import IndicatorFormPage from '../features/people/indicators/IndicatorFormPage'
 import ArchivedPeoplePage from '../features/people/ArchivedPeoplePage'
 import { CheckInWizardPage } from '../features/checkins/CheckInWizardPage'
 import { RouteModalProvider } from '../components/RouteModalContext'
+import { pushRouteAnimation } from './pushRouteAnimation'
 
 const appRoutes = [
   { path: '/dashboard', component: HouseholdPage },
@@ -135,7 +136,7 @@ const getBackgroundLocation = (location: ReturnType<typeof useLocation>) => {
 }
 
 const renderRoutes = (routeLocation: ReturnType<typeof useLocation>) => (
-  <IonRouterOutlet>
+  <IonRouterOutlet animation={pushRouteAnimation}>
     {appRoutes.map(({ path, component }) => (
       <Route
         key={path}

@@ -297,7 +297,6 @@ export const Page = ({
       <IonPage id="main-content">
         <IonHeader
           className={headerClassName}
-          collapse={'fade'}
           mode={'ios'}
         >
           <IonToolbar
