@@ -30,6 +30,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { PersonRole } from '../../lib/domain'
 import { client } from '../../lib/api'
 import { useAppAuth } from '../../auth/AuthContext'
+import { LoadingState } from '../../components/LoadingState'
 import { usePerson } from './usePerson'
 import { PersonAvatar } from '../../components/PersonAvatar'
 import { useRouteModal } from '../../components/RouteModalContext'
@@ -888,11 +889,12 @@ const useWizardActions = (config: WizardActionsArgs) => {
 
 const PersonFormPage = () => {
   const { personId } = useParams<{ personId?: string }>()
-  const { data: existingPerson } = usePerson(personId ? personId : undefined)
+  const requestedEdit = Boolean(personId)
+  const { data: existingPerson, isLoading } = usePerson(personId ? personId : undefined)
   const loadedPerson = existingPerson ?? undefined
-  const isEditing = loadedPerson !== undefined
+  const isEditing = requestedEdit
 
-  const [step, setStep] = useState<WizardStep>(isEditing ? 2 : 1)
+  const [step, setStep] = useState<WizardStep>(requestedEdit ? 2 : 1)
   const [roleKey, setRoleKey] = useState<RoleKey>(DEFAULT_ROLE)
   const [displayName, setDisplayName] = useState('')
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>()
@@ -903,7 +905,7 @@ const PersonFormPage = () => {
 
   const roleLabel = roleTemplates[roleKey].label
   const personRole: PersonRole = isEditing
-    ? ((loadedPerson.role as PersonRole | null) ?? 'other')
+    ? ((loadedPerson?.role as PersonRole | null | undefined) ?? 'other')
     : roleToPersonRole[roleKey]
 
   const actions = useWizardActions({
@@ -929,7 +931,15 @@ const PersonFormPage = () => {
         fullscreen
         className="ion-padding safe-content person-wizard-content"
       >
-        {step === 1 && (
+        {requestedEdit && isLoading ? (
+          <LoadingState
+            variant="form"
+            label="Loading person form"
+            rows={4}
+          />
+        ) : null}
+
+        {(!requestedEdit || !isLoading) && step === 1 && (
           <RoleStep
             role={roleKey}
             setRole={setRoleKey}
@@ -937,7 +947,7 @@ const PersonFormPage = () => {
           />
         )}
 
-        {step === 2 && (
+        {(!requestedEdit || !isLoading) && step === 2 && (
           <DetailsStep
             avatarUrl={avatarUrl}
             roleLabel={roleLabel}
@@ -954,7 +964,7 @@ const PersonFormPage = () => {
           />
         )}
 
-        {step === 3 && (
+        {(!requestedEdit || !isLoading) && step === 3 && (
           <SuggestedIndicatorsStep
             roleLabel={roleLabel}
             suggested={suggested}

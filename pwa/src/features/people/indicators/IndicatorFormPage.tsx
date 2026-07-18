@@ -17,6 +17,7 @@ import { trashOutline } from 'ionicons/icons'
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
+import { LoadingState } from '../../../components/LoadingState'
 import { useIndicators } from './useIndicators'
 import { type IndicatorInput, useIndicatorMutations } from './useIndicatorMutations'
 import { polarityMeta, type Polarity } from './indicatorMeta'
@@ -230,7 +231,9 @@ const IndicatorFormPage = (): React.JSX.Element => {
   }>()
 
   const isEditing = Boolean(indicatorId)
-  const { data: indicators } = useIndicators(isEditing ? personId : undefined)
+  const { data: indicators, isLoading } = useIndicators(
+    isEditing ? personId : undefined,
+  )
   const existing = isEditing
     ? indicators?.find((item) => item.id === indicatorId)
     : undefined
@@ -260,16 +263,29 @@ const IndicatorFormPage = (): React.JSX.Element => {
         personId={personId}
         title={`${isEditing ? 'Edit' : 'Add'} ${meta.title} Signal`}
       />
-      <IndicatorFormContent
-        blurb={meta.blurb}
-        color={meta.color}
-        exampleText={meta.examples}
-        icon={meta.icon}
-        name={draft.name}
-        saving={saving}
-        save={save}
-        setName={draft.setName}
-      />
+      {isEditing && isLoading ? (
+        <IonContent
+          fullscreen
+          className="ion-padding safe-content"
+        >
+          <LoadingState
+            variant="form"
+            label="Loading signal form"
+            rows={3}
+          />
+        </IonContent>
+      ) : (
+        <IndicatorFormContent
+          blurb={meta.blurb}
+          color={meta.color}
+          exampleText={meta.examples}
+          icon={meta.icon}
+          name={draft.name}
+          saving={saving}
+          save={save}
+          setName={draft.setName}
+        />
+      )}
     </IonPage>
   )
 }

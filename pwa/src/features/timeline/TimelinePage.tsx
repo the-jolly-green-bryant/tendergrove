@@ -77,48 +77,51 @@ const EMPTY_TIMELINE_STATE = (
   </div>
 )
 
-const LOADING_STATE = <LoadingState className="timeline-loading" />
+const LOADING_STATE = (
+  <LoadingState
+    className="timeline-loading"
+    variant="list"
+    label="Loading timeline"
+    rows={5}
+  />
+)
 
-const renderEventButton = (event: TimelineEvent) => {
-  const history = useHistory()
-  return (
-    <button
-      key={event.id}
-      className="timeline-event"
-      onClick={() =>
-        history.push(
-          `/person/${event.personId}?viewDate=${toDateKey(event.occurredAt)}`,
-        )
-      }
-    >
-      <div className="timeline-event__time">{formatTime(event.timestamp)}</div>
+const renderEventButton = (
+  event: TimelineEvent,
+  onOpen: (event: TimelineEvent) => void,
+) => (
+  <button
+    key={event.id}
+    className="timeline-event"
+    onClick={() => onOpen(event)}
+  >
+    <div className="timeline-event__time">{formatTime(event.timestamp)}</div>
 
-      <div className="timeline-event__line">
-        <span
-          className={`timeline-event__dot timeline-event__dot--${event.statusColor}`}
+    <div className="timeline-event__line">
+      <span
+        className={`timeline-event__dot timeline-event__dot--${event.statusColor}`}
+      />
+    </div>
+
+    <div className="timeline-event__card">
+      <div className="timeline-event__header">
+        <PersonAvatar
+          name={event.personName}
+          src={event.personAvatar}
+          className="timeline-event__avatar"
         />
-      </div>
-
-      <div className="timeline-event__card">
-        <div className="timeline-event__header">
-          <PersonAvatar
-            name={event.personName}
-            src={event.personAvatar}
-            className="timeline-event__avatar"
-          />
-          <div className="timeline-event__info">
-            <span className="timeline-event__name">
-              {event.personName}
-              {event.personRole === 'self' && ' (You)'}
-            </span>
-            <span className="timeline-event__type">Daily Check-In</span>
-          </div>
+        <div className="timeline-event__info">
+          <span className="timeline-event__name">
+            {event.personName}
+            {event.personRole === 'self' && ' (You)'}
+          </span>
+          <span className="timeline-event__type">Daily Check-In</span>
         </div>
-        <StatusChip label={event.statusLabel} />
       </div>
-    </button>
-  )
-}
+      <StatusChip label={event.statusLabel} />
+    </div>
+  </button>
+)
 
 const checkInToEvent = (person: RawPerson, ci: RawCheckIn): TimelineEvent => {
   const score = computeScore(person.indicators ?? [], ci)
@@ -149,6 +152,7 @@ const groupEventsByDate = (events: TimelineEvent[]): Map<string, TimelineEvent[]
 }
 
 const TimelinePage = () => {
+  const history = useHistory()
   const people = usePeople()
   const { selectedPeople, selectOnlyPerson, clearSelection } = usePersonFilter()
   const [selectedTypes] = useState<Set<EventType>>(new Set(['check-in']))
@@ -180,6 +184,8 @@ const TimelinePage = () => {
     () => groupEventsByDate(filteredEvents),
     [filteredEvents],
   )
+  const openEvent = (event: TimelineEvent) =>
+    history.push(`/person/${event.personId}?viewDate=${toDateKey(event.occurredAt)}`)
 
   return (
     <Page
@@ -213,7 +219,7 @@ const TimelinePage = () => {
                   <h3 className="timeline-day__heading">{formatDayHeading(dateKey)}</h3>
 
                   <div className="timeline-day__events">
-                    {events.map(renderEventButton)}
+                    {events.map((event) => renderEventButton(event, openEvent))}
                   </div>
                 </div>
               ))}

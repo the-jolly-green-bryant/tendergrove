@@ -118,7 +118,12 @@ const RelationshipsPage = (): React.JSX.Element => {
       className="patterns-page"
       backHref="/patterns"
     >
-      {isLoading && <LoadingState />}
+      {isLoading && (
+        <LoadingState
+          variant="chart"
+          label="Loading relationships"
+        />
+      )}
       {hasError && <p>We couldn’t load your patterns just now. Please try again.</p>}
       {!isLoading && !hasError && view && (
         <>

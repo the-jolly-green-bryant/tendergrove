@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
 
 import { PersonAvatar } from '../../components/PersonAvatar'
+import { LoadingState } from '../../components/LoadingState'
 import { toLocalDateKey } from '../../lib/dateKeys'
 import { PatternsEmptyState } from './components/PatternsEmptyState'
 import { PeriodSelector } from './components/PeriodSelector'
@@ -174,8 +175,17 @@ export const PersonPatternsSection = ({
 
   const setPerson = usePatternsFilterStore((s) => s.setPerson)
 
-  // The main Person page already surfaces loading/errors; stay quiet here.
-  if (isLoading || hasError || !result) return null
+  if (isLoading) {
+    return (
+      <section className="patterns-section person-patterns">
+        <LoadingState
+          variant="chart"
+          label="Loading person patterns"
+        />
+      </section>
+    )
+  }
+  if (hasError || !result) return null
 
   const personView = buildPersonView(result, personId)
   const scoped = scope === 'person'

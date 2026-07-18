@@ -16,7 +16,12 @@ const ArchivedPeoplePage = () => {
 
   return (
     <Page title="Archived">
-      {people.isLoading && <LoadingState />}
+      {people.isLoading && (
+        <LoadingState
+          variant="list"
+          label="Loading archived people"
+        />
+      )}
 
       {people.error && <p>Failed to load people.</p>}
 

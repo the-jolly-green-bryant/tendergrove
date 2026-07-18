@@ -189,10 +189,10 @@ const renderWeekdayChart = (patterns: AnomalyPatterns) =>
           <div className="anomaly-pattern-card__copy">
             <p className="anomaly-pattern-card__eyebrow">Day of the week</p>
 
-            <h3>{patterns.weekday.label}s tend to be more severe</h3>
+            <h3>{patterns.weekday.label}s are tough</h3>
 
             <p className="anomaly-pattern-card__description">
-              More severe behavior appears on{' '}
+              Notably severe behavior appears on{' '}
               <strong>{patterns.weekday.anomalyRate}%</strong> of{' '}
               {patterns.weekday.label}s, compared with{' '}
               <strong>{patterns.weekday.otherDaysRate}%</strong> on other days.
@@ -227,16 +227,12 @@ const renderEventsChart = (patterns: AnomalyPatterns) =>
             <div className="anomaly-pattern-card__copy">
               <p className="anomaly-pattern-card__eyebrow">Events</p>
 
-              <h3>
-                {top.evidence === 'repeated' && higherOnEventDays
-                  ? `${top.label} often overlaps with more severe days`
-                  : `${top.label} is an early pattern to watch`}
-              </h3>
+              <h3>{higherOnEventDays && `Watch for ${top.label}`}</h3>
 
               <p className="anomaly-pattern-card__description">
-                More severe behavior appears on <strong>{top.anomalyRate}%</strong> of
-                days with {top.label}, compared with <strong>{top.typicalRate}%</strong>{' '}
-                of days without it.
+                Behavior spikes on <strong>{top.anomalyRate}%</strong> of days with{' '}
+                {top.label}, compared with <strong>{top.typicalRate}%</strong> of days
+                without it.
               </p>
             </div>
 
@@ -268,9 +264,12 @@ export const AnomalyPatternsSection = ({
     >
       <div className="anomaly-patterns__heading">
         <div>
-          <h2 id="anomaly-patterns-title">Patterns worth watching</h2>
+          <h2 id="anomaly-patterns-title">Patterns at a Glance</h2>
 
-          <p>Based on recent check-ins with more severe behavior for {personName}.</p>
+          <p>
+            We've highlighted the patterns most likely to be useful today. Explore the
+            other analytics views for a deeper look.
+          </p>
         </div>
       </div>
 
@@ -288,12 +287,12 @@ export const AnomalyPatternsSection = ({
           <IonCardContent>
             <div className="anomaly-pattern-card__main">
               <div className="anomaly-pattern-card__copy">
-                <p className="anomaly-pattern-card__eyebrow">Others in your home</p>
+                <p className="anomaly-pattern-card__eyebrow">Others in the home</p>
 
                 <h3>
                   {patterns.otherPeople.top.evidence === 'repeated'
                     ? `${patterns.otherPeople.top.personName}’s ${patterns.otherPeople.top.label.toLowerCase()} often overlaps with ${personName}’s more severe days`
-                    : `${patterns.otherPeople.top.personName} may be having more severe days alongside ${personName}`}
+                    : `${patterns.otherPeople.top.personName}'s severe days map to ${personName}'s`}
                 </h3>
 
                 <p className="anomaly-pattern-card__description">

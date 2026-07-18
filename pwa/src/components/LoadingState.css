@@ -1,0 +1,130 @@
+.loading-skeleton {
+  display: grid;
+  gap: 14px;
+  width: 100%;
+  padding: 4px 0 24px;
+}
+
+.loading-skeleton ion-skeleton-text {
+  margin: 0;
+  --background: rgba(76, 119, 112, 0.12);
+  --background-rgb: 76, 119, 112;
+}
+
+.loading-skeleton__line {
+  height: 12px;
+  border-radius: 999px;
+}
+
+.loading-skeleton__card,
+.loading-skeleton__chart,
+.loading-skeleton__form-intro {
+  padding: 16px;
+  border: 1px solid var(--app-border-color);
+  border-radius: var(--app-radius-lg);
+  background: var(--ion-card-background);
+  box-shadow: var(--app-shadow-card);
+}
+
+.loading-skeleton__card {
+  display: grid;
+  min-height: 92px;
+  gap: 14px;
+}
+
+.loading-skeleton__card-head,
+.loading-skeleton__detail-head,
+.loading-skeleton__chart-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.loading-skeleton__copy {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 9px;
+}
+
+.loading-skeleton__avatar,
+.loading-skeleton__hero-avatar {
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+
+.loading-skeleton__avatar {
+  width: 42px;
+  height: 42px;
+}
+
+.loading-skeleton__hero-avatar {
+  width: 64px;
+  height: 64px;
+}
+
+.loading-skeleton__detail-head {
+  min-height: 82px;
+  padding: 4px 4px 8px;
+}
+
+.loading-skeleton__chart {
+  display: grid;
+  min-height: 270px;
+  gap: 14px;
+  background: linear-gradient(
+    180deg,
+    rgba(247, 251, 249, 0.98),
+    rgba(225, 241, 235, 0.82)
+  );
+}
+
+.loading-skeleton__chart-heading {
+  justify-content: space-between;
+}
+
+.loading-skeleton__chart-heading > div {
+  display: grid;
+  flex: 1;
+  gap: 8px;
+}
+
+.loading-skeleton__pill {
+  width: 68px;
+  height: 36px;
+  border-radius: 999px;
+}
+
+.loading-skeleton__plot {
+  width: 100%;
+  height: 150px;
+  border-radius: 12px;
+}
+
+.loading-skeleton__segment {
+  width: 100%;
+  height: 34px;
+  border-radius: 999px;
+}
+
+.loading-skeleton__form-intro {
+  display: grid;
+  gap: 10px;
+}
+
+.loading-skeleton--list .loading-skeleton__card {
+  min-height: 74px;
+}
+
+.loading-skeleton--form .loading-skeleton__card {
+  min-height: 68px;
+}
+
+.loading-skeleton__announcement {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

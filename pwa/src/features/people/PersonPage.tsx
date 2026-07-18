@@ -525,7 +525,15 @@ const PersonPage = (): React.JSX.Element | null => {
           isTimeTravel ? ' time-travel-surface' : ''
         }`}
       >
-        {isLoading && <LoadingState />}
+        {isLoading && (
+          <div className="ion-padding">
+            <LoadingState
+              variant="detail"
+              label="Loading person"
+              rows={2}
+            />
+          </div>
+        )}
 
         {error && <p className="ion-padding">Failed to load this person.</p>}
 

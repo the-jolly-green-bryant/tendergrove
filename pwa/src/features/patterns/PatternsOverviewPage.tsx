@@ -550,7 +550,12 @@ const PatternsOverviewPage = (): React.JSX.Element => {
       className="patterns-page"
       backHref="/dashboard"
     >
-      {isLoading && <LoadingState />}
+      {isLoading && (
+        <LoadingState
+          variant="chart"
+          label="Loading patterns"
+        />
+      )}
       {hasError && <p>We couldn’t load your patterns just now. Please try again.</p>}
       {!isLoading && !hasError && view && (
         <>

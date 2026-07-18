@@ -473,7 +473,14 @@ const WizardStep = ({ personId, selectedDate, step }: WizardStepProps) => {
   )
   const nothingToTrack = step.indicators.length === 0 && step.events.length === 0
 
-  if (step.isLoading) return <LoadingState />
+  if (step.isLoading)
+    return (
+      <LoadingState
+        variant="form"
+        label="Loading check-in"
+        rows={4}
+      />
+    )
   if (!step.person) return null
 
   return (
@@ -612,7 +619,12 @@ export const CheckInWizardPage = ({
         {isTimeTravel &&
           renderTimeTravelNotice(selectedDate, () => setSelectedDate(new Date()))}
 
-        {isLoadingPeople && <LoadingState />}
+        {isLoadingPeople && (
+          <LoadingState
+            variant="list"
+            label="Loading household members"
+          />
+        )}
 
         {!isLoadingPeople && activePeople.length === 0 && (
           <p className="section-empty">No household members to check in.</p>

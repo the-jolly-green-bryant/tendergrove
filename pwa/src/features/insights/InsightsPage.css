@@ -3,9 +3,8 @@
 /* ------------------------------------------------------------------ */
 
 .insights-loading {
-  display: flex;
-  justify-content: center;
-  padding: 3rem 0;
+  display: grid;
+  padding: 0 0 24px;
 }
 
 .insights-empty {

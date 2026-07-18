@@ -406,7 +406,13 @@ const HouseholdRecapPage = () => {
         scrollY={false}
         className="household-recap-content"
       >
-        {people.isLoading && <LoadingState />}
+        {people.isLoading && (
+          <LoadingState
+            variant="detail"
+            label="Loading household recap"
+            rows={2}
+          />
+        )}
         {people.error && <p className="recap-page__fallback">Failed to load recap.</p>}
         {!people.isLoading && !people.error && recap && (
           <HouseholdRecapContent

@@ -49,7 +49,13 @@ interface ChecklistState {
 
 let nextCustomId = 0
 
-const LOADING_STATE = <LoadingState className="ion-text-center ion-padding" />
+const LOADING_STATE = (
+  <LoadingState
+    variant="list"
+    label="Loading signal checklist"
+    rows={5}
+  />
+)
 
 const renameChecklistItem = (
   items: ChecklistItem[],

@@ -71,7 +71,13 @@ const formatMonthLabel = (monthKey: string): string => {
   return date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
 }
 
-const LOADING_STATE = <LoadingState className="insights-loading" />
+const LOADING_STATE = (
+  <LoadingState
+    className="insights-loading"
+    variant="chart"
+    label="Loading insights"
+  />
+)
 
 const EMPTY_STATE = (
   <div className="insights-empty">

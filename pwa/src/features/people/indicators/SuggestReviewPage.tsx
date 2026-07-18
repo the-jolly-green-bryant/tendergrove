@@ -247,7 +247,11 @@ const SuggestReviewPage = () => {
         </p>
 
         {review.isLoading ? (
-          <LoadingState />
+          <LoadingState
+            variant="list"
+            label="Loading suggested signals"
+            rows={5}
+          />
         ) : (
           <>
             {sections.map((section) => (

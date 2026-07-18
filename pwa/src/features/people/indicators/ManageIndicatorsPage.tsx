@@ -178,40 +178,50 @@ const ManageIndicatorsPage = () => {
       >
         <IndicatorsIntro />
 
-        {isLoading && <LoadingState />}
+        {isLoading && (
+          <LoadingState
+            variant="list"
+            label="Loading signals"
+            rows={4}
+          />
+        )}
         {error && <p>Failed to load signals.</p>}
 
-        <IndicatorSection
-          polarity="undesired"
-          indicators={byPolarity('undesired')}
-          onAdd={() => addIndicator('undesired')}
-          onEdit={editIndicator}
-          onArchive={confirmArchiveIndicator}
-        />
-
-        <IndicatorSection
-          polarity="desired"
-          indicators={byPolarity('desired')}
-          onAdd={() => addIndicator('desired')}
-          onEdit={editIndicator}
-          onArchive={confirmArchiveIndicator}
-        />
-
-        <div className="wizard-footer">
-          <IonButton
-            expand="block"
-            fill="outline"
-            onClick={() =>
-              router.push(`/person/${personId}/indicators/suggest`, 'forward')
-            }
-          >
-            <IonIcon
-              slot="start"
-              icon={sparklesOutline}
+        {!isLoading && !error && (
+          <>
+            <IndicatorSection
+              polarity="undesired"
+              indicators={byPolarity('undesired')}
+              onAdd={() => addIndicator('undesired')}
+              onEdit={editIndicator}
+              onArchive={confirmArchiveIndicator}
             />
-            Suggest signals
-          </IonButton>
-        </div>
+
+            <IndicatorSection
+              polarity="desired"
+              indicators={byPolarity('desired')}
+              onAdd={() => addIndicator('desired')}
+              onEdit={editIndicator}
+              onArchive={confirmArchiveIndicator}
+            />
+
+            <div className="wizard-footer">
+              <IonButton
+                expand="block"
+                fill="outline"
+                onClick={() =>
+                  router.push(`/person/${personId}/indicators/suggest`, 'forward')
+                }
+              >
+                <IonIcon
+                  slot="start"
+                  icon={sparklesOutline}
+                />
+                Suggest signals
+              </IonButton>
+            </div>
+          </>
+        )}
       </IonContent>
     </IonPage>
   )

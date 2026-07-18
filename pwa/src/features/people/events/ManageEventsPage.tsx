@@ -165,9 +165,10 @@ const EventRow = ({
 
 const ManageEventsPage = () => {
   const { personId } = useParams<{ personId: string }>()
-  const { data: person } = usePerson(personId)
+  const { data: person, isLoading: isLoadingPerson } = usePerson(personId)
   const householdId = person?.householdId
   const { data: events, isLoading, error } = useHouseholdLifeEvents(householdId)
+  const isPageLoading = isLoadingPerson || isLoading
   const { addEvent, editEvent, deleteEvent } = useEventAlertActions(
     householdId,
     events ?? [],
@@ -196,33 +197,41 @@ const ManageEventsPage = () => {
         </p>
         <EventsIntro />
 
-        {isLoading && <LoadingState />}
+        {isPageLoading && (
+          <LoadingState
+            variant="list"
+            label="Loading events"
+            rows={4}
+          />
+        )}
         {error && <p>Failed to load events.</p>}
 
-        <section className="indicator-group">
-          <div className="section-header">
-            <h2>Your Events</h2>
-          </div>
-          {(events ?? []).length === 0 ? (
-            <p className="section-empty">
-              No events yet. Add the ones that come up often.
-            </p>
-          ) : (
-            <IonList
-              lines="none"
-              className="indicator-list"
-            >
-              {(events ?? []).map((event) => (
-                <EventRow
-                  key={event.id}
-                  event={event}
-                  onEdit={editEvent}
-                  onDelete={deleteEvent}
-                />
-              ))}
-            </IonList>
-          )}
-        </section>
+        {!isPageLoading && !error && (
+          <section className="indicator-group">
+            <div className="section-header">
+              <h2>Your Events</h2>
+            </div>
+            {(events ?? []).length === 0 ? (
+              <p className="section-empty">
+                No events yet. Add the ones that come up often.
+              </p>
+            ) : (
+              <IonList
+                lines="none"
+                className="indicator-list"
+              >
+                {(events ?? []).map((event) => (
+                  <EventRow
+                    key={event.id}
+                    event={event}
+                    onEdit={editEvent}
+                    onDelete={deleteEvent}
+                  />
+                ))}
+              </IonList>
+            )}
+          </section>
+        )}
 
         <div className="wizard-footer">
           <IonButton
