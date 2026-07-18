@@ -18,6 +18,7 @@ import {
 import {
   analyticsOutline,
   archiveOutline,
+  chevronForwardOutline,
   homeOutline,
   logOutOutline,
   statsChartOutline,
@@ -25,6 +26,7 @@ import {
   timeOutline,
 } from 'ionicons/icons'
 import React, { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 
 import { useAppAuth } from '../auth/AuthContext'
 
@@ -49,13 +51,7 @@ const menuItems = [
     href: '/dashboard',
     direction: 'root',
     icon: homeOutline,
-    label: 'Household',
-  },
-  {
-    href: '/archived',
-    direction: 'forward',
-    icon: archiveOutline,
-    label: 'Archived',
+    label: 'Home',
   },
   {
     href: '/check-in',
@@ -64,16 +60,16 @@ const menuItems = [
     label: 'Timeline',
   },
   {
-    href: '/reports',
-    direction: 'forward',
-    icon: statsChartOutline,
-    label: 'Insights',
-  },
-  {
     href: '/patterns',
     direction: 'forward',
     icon: analyticsOutline,
     label: 'Patterns',
+  },
+  {
+    href: '/archived',
+    direction: 'forward',
+    icon: archiveOutline,
+    label: 'Archive',
   },
   {
     href: '/parent-care',
@@ -83,51 +79,122 @@ const menuItems = [
   },
 ] as const
 
-const MenuLink = ({ href, direction, icon, label }: (typeof menuItems)[number]) => (
+const MenuLink = ({
+  href,
+  direction,
+  icon,
+  label,
+  active,
+}: (typeof menuItems)[number] & { readonly active: boolean }) => (
   <IonMenuToggle autoHide={false}>
     <IonItem
       button
       routerLink={href}
       routerDirection={direction}
+      detail={false}
+      className={`app-menu-link${active ? ' app-menu-link--active' : ''}`}
     >
       <IonIcon
         slot="start"
         icon={icon}
       />
       <IonLabel>{label}</IonLabel>
+      <IonIcon
+        slot="end"
+        icon={chevronForwardOutline}
+        className="app-menu-link__chevron"
+      />
     </IonItem>
   </IonMenuToggle>
 )
 
-const renderMenu = () => {
+const AppMenu = () => {
   const { signOut } = useAppAuth()
-  return (
-    <IonMenu contentId="main-content">
-      <IonContent>
-        <div className="menu-logo-area">
-          <h2 className="menu-logo-text">Tendergrove</h2>
-        </div>
+  const location = useLocation()
+  const isActive = (href: string) =>
+    location.pathname === href ||
+    (href !== '/dashboard' && location.pathname.startsWith(`${href}/`))
 
-        <IonList lines="none">
-          {menuItems.map((item) => (
-            <MenuLink
-              key={item.href}
-              {...item}
+  return (
+    <IonMenu
+      contentId="main-content"
+      className="app-menu"
+    >
+      <IonContent className="app-menu__content">
+        <div className="app-menu__layout">
+          <div className="menu-logo-area">
+            <img
+              src="/favicon.png"
+              alt=""
+              className="menu-logo-mark"
             />
-          ))}
-          <IonMenuToggle autoHide={false}>
-            <IonItem
-              button
-              onClick={() => signOut?.()}
-            >
-              <IonIcon
-                slot="start"
-                icon={logOutOutline}
+            <div>
+              <h2 className="menu-logo-text">TenderGrove</h2>
+              <p className="menu-logo-tagline">
+                Helping families notice the little things.
+              </p>
+            </div>
+          </div>
+
+          <IonList
+            lines="none"
+            className="app-menu__list"
+          >
+            {menuItems.slice(0, 3).map((item) => (
+              <MenuLink
+                key={item.href}
+                {...item}
+                active={isActive(item.href)}
               />
-              <IonLabel>Sign Out</IonLabel>
-            </IonItem>
-          </IonMenuToggle>
-        </IonList>
+            ))}
+
+            <div
+              className="app-menu__divider"
+              aria-hidden="true"
+            >
+              <span>⌁</span>
+            </div>
+
+            {menuItems.slice(3).map((item) => (
+              <MenuLink
+                key={item.href}
+                {...item}
+                active={isActive(item.href)}
+              />
+            ))}
+
+            <div
+              className="app-menu__divider"
+              aria-hidden="true"
+            >
+              <span>⌁</span>
+            </div>
+
+            <IonMenuToggle autoHide={false}>
+              <IonItem
+                button
+                detail={false}
+                className="app-menu-link app-menu-link--sign-out"
+                onClick={() => signOut?.()}
+              >
+                <IonIcon
+                  slot="start"
+                  icon={logOutOutline}
+                />
+                <IonLabel>Sign Out</IonLabel>
+              </IonItem>
+            </IonMenuToggle>
+          </IonList>
+
+          <div
+            className="app-menu__version"
+            aria-label="App version 0.1.0"
+          >
+            <span aria-hidden="true">⌁</span>
+            <span>v0.1.0</span>
+            <span aria-hidden="true">⌁</span>
+          </div>
+        </div>
       </IonContent>
     </IonMenu>
   )
@@ -220,7 +287,7 @@ export const Page = ({
 
   return (
     <>
-      {renderMenu()}
+      <AppMenu />
       <IonPage id="main-content">
         <IonHeader
           className={headerClassName}
