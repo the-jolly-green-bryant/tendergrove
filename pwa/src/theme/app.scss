@@ -383,6 +383,171 @@ ion-header::after {
   display: none;
 }
 
+.page-header--illustrated {
+  --dashboard-page-background: #f8f3fa;
+  position: relative;
+  min-height: 110px;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.page-header--illustrated::before {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 110px;
+  background:
+    linear-gradient(rgba(239, 246, 224, 0.08), rgba(239, 246, 224, 0.08)),
+    url('/assets/header-landscape.png') center center / cover no-repeat;
+  content: '';
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 110' preserveAspectRatio='none'%3E%3Cpath fill='black' d='M0 0H1000V92C620 114 300 76 0 82Z'/%3E%3C/svg%3E");
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 110' preserveAspectRatio='none'%3E%3Cpath fill='black' d='M0 0H1000V92C620 114 300 76 0 82Z'/%3E%3C/svg%3E");
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-size: 100% 100%;
+  pointer-events: none;
+}
+
+.page-header--illustrated ion-toolbar {
+  --background: transparent;
+  --border-color: transparent;
+  --color: #174f4d;
+  --min-height: 76px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --padding-top: max(10px, env(safe-area-inset-top));
+  --padding-bottom: 10px;
+  position: relative;
+  z-index: 2;
+  background: transparent;
+}
+
+.page-header--illustrated ion-menu-button {
+  --background: #174f4d;
+  --background-activated: #103f3d;
+  --border-radius: 50%;
+  --color: #fff;
+  width: 44px;
+  height: 44px;
+  margin-inline-end: 5px;
+  color: #fff;
+}
+
+.page-header--illustrated ion-menu-button::part(native),
+.page-header--illustrated ion-menu-button ion-icon {
+  color: #fff;
+  opacity: 1;
+}
+
+.page-header--illustrated .date-navigator__header {
+  height: 48px;
+  gap: 6px;
+  padding: 0;
+}
+
+.page-header--illustrated .date-navigator__month-btn,
+.page-header--illustrated .date-navigator__arrow,
+.page-header--illustrated .date-navigator__today-btn {
+  min-width: 44px;
+  min-height: 44px;
+  color: #174f4d;
+}
+
+.page-header--illustrated .date-navigator__month-btn {
+  min-width: 0;
+  padding: 7px 5px;
+  font-weight: 750;
+}
+
+.page-header--illustrated .date-navigator__controls {
+  gap: 0;
+  margin-left: auto;
+}
+
+.page-header--illustrated .date-navigator__arrow {
+  --ionicon-stroke-width: 52px;
+  width: 44px;
+  height: 44px;
+  font-size: 1.35rem;
+}
+
+.page-header--illustrated .date-navigator__arrow:disabled {
+  opacity: 0.28;
+}
+
+.page-header--illustrated .date-navigator__today-btn {
+  width: 48px;
+  height: 48px;
+  margin-left: 3px;
+  border: 0;
+  border-radius: 12px;
+  background: #174f4d;
+}
+
+.page-header--illustrated .date-navigator__today-icon {
+  --ionicon-stroke-width: 42px;
+  font-size: 32px;
+}
+
+.page-header--illustrated .date-navigator__today-number {
+  top: 25px;
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.page-header--illustrated .date-navigator__today-icon,
+.page-header--illustrated .date-navigator__today-number {
+  color: #f7f9ee;
+}
+
+.page-header--illustrated .date-navigator__chevron {
+  --ionicon-stroke-width: 48px;
+  color: #174f4d;
+}
+
+.page-header--illustrated .date-navigator__calendar {
+  position: relative;
+  z-index: 3;
+}
+
+@media (max-width: 340px) {
+  .page-header--illustrated ion-toolbar {
+    --padding-start: 8px;
+    --padding-end: 8px;
+  }
+
+  .page-header--illustrated ion-menu-button {
+    margin-inline-end: 0;
+  }
+
+  .page-header--illustrated .date-navigator__header {
+    gap: 0;
+  }
+
+  .page-header--illustrated .date-navigator__month-btn {
+    padding-inline: 2px;
+    font-size: 0.95rem;
+  }
+
+  .page-header--illustrated .date-navigator__arrow {
+    width: 40px;
+    min-width: 40px;
+  }
+
+  .page-header--illustrated .date-navigator__today-btn {
+    width: 44px;
+    min-width: 44px;
+    margin-left: 0;
+  }
+}
+
 .page-header--transparent .date-navigator__chevron,
 .page-header--transparent .date-navigator__today-number {
   color: #5f6f70;

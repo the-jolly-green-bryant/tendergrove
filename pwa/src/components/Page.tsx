@@ -44,6 +44,8 @@ interface PageProps {
   readonly transparentHeaderUntilScroll?: boolean
   readonly transparentHeaderMode?: 'scroll' | 'snap-panel'
   readonly forceOverscroll?: boolean
+  /** Adds the dashboard's watercolor landscape and curved transition. */
+  readonly illustratedHeader?: boolean
 }
 
 const menuItems = [
@@ -268,6 +270,7 @@ export const Page = ({
   transparentHeaderUntilScroll,
   transparentHeaderMode = 'scroll',
   forceOverscroll,
+  illustratedHeader,
   backHref,
 }: PageProps): React.JSX.Element => {
   const { contentRef, isAtTop, updateHeaderPosition } = useHeaderScrollState(
@@ -278,9 +281,12 @@ export const Page = ({
   const headerScrollClassName = isAtTop
     ? 'page-header--at-top'
     : 'page-header--scrolled'
-  const headerClassName = transparentHeaderUntilScroll
-    ? `page-header--transparent ${headerScrollClassName}`
-    : ''
+  let headerClassName = ''
+  if (transparentHeaderUntilScroll) {
+    headerClassName = `page-header--transparent ${headerScrollClassName}`
+  } else if (illustratedHeader) {
+    headerClassName = 'page-header--illustrated'
+  }
   const toolbarClassName = transparentHeaderUntilScroll
     ? 'page-toolbar--transparent'
     : ''

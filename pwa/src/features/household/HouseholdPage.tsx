@@ -408,6 +408,7 @@ const HouseholdPage = () => {
       headerContent={headerElement}
       subHeaderContent={calendarElement}
       disablePadding
+      illustratedHeader
       className="household-dashboard-content"
       forceOverscroll={false}
     >

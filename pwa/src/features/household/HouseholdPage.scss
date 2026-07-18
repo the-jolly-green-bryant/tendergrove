@@ -1,12 +1,13 @@
 .household-dashboard-content {
-  --background: #e6f1ec;
+  --background: #f8f3fa;
+  --dashboard-page-background: #f8f3fa;
   --household-panel-height: 100dvh;
-  background: #e6f1ec;
+  background: #f8f3fa;
 }
 
 .household-dashboard-content::part(scroll) {
   scroll-behavior: smooth;
-  background: #e6f1ec;
+  background: #f8f3fa;
 }
 
 .household-snap {
@@ -14,7 +15,7 @@
   isolation: isolate;
   width: min(100%, 620px);
   margin: 0 auto;
-  padding: 88px 16px 28px;
+  padding: 12px 16px 28px;
   background: transparent;
 }
 
@@ -224,7 +225,7 @@
   z-index: 1;
   width: min(100%, 620px);
   margin: 0 auto;
-  padding: 88px 16px 28px;
+  padding: 12px 16px 28px;
 }
 
 .household-dashboard-loading ion-skeleton-text {
