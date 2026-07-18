@@ -20,12 +20,22 @@ export const pushRouteAnimation: AnimationBuilder = (
     .beforeRemoveClass('ion-page-invisible')
     .fromTo('transform', `translate3d(${enteringStart}, 0, 0)`, 'translate3d(0, 0, 0)')
 
-  const leaving = createAnimation()
-    .addElement(options.leavingEl)
-    .fromTo('transform', 'translate3d(0, 0, 0)', `translate3d(${leavingEnd}, 0, 0)`)
-
-  return createAnimation()
+  const transition = createAnimation()
     .duration(PUSH_DURATION_MS)
     .easing('cubic-bezier(0.32, 0.72, 0, 1)')
-    .addAnimation([entering, leaving])
+    .addAnimation(entering)
+
+  if (options.leavingEl) {
+    transition.addAnimation(
+      createAnimation()
+        .addElement(options.leavingEl)
+        .fromTo(
+          'transform',
+          'translate3d(0, 0, 0)',
+          `translate3d(${leavingEnd}, 0, 0)`,
+        ),
+    )
+  }
+
+  return transition
 }
