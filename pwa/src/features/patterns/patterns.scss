@@ -129,29 +129,7 @@
 }
 
 .trend-comparison-menu__section {
-  padding: 20px 14px;
-}
-
-.trend-comparison-menu__heading {
-  display: flex;
-  min-height: 48px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin: 0 0 18px 6px;
-}
-
-.trend-comparison-menu__heading h2 {
-  margin: 0;
-  color: var(--ion-text-color);
-  font-size: 1.35rem;
-}
-
-.trend-comparison-menu__heading ion-button {
-  --color: var(--ion-color-primary-shade);
-  width: 44px;
-  height: 44px;
-  margin: 0;
+  padding: 22px 14px;
 }
 
 .trend-comparison-menu__eyebrow {

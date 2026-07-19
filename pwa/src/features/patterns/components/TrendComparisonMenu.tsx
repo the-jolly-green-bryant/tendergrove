@@ -11,7 +11,7 @@ import { closeOutline } from 'ionicons/icons'
 import type { CSSProperties, RefObject } from 'react'
 
 import { PersonAvatar } from '../../../components/PersonAvatar'
-import { RightDrawer } from '../../../components/RightDrawer'
+import { RightDrawer, RightDrawerHeader } from '../../../components/RightDrawer'
 import type { AnalyticsPersonRef } from '../analytics'
 
 export const COMPARISON_COLORS = [
@@ -52,18 +52,20 @@ export const TrendComparisonMenu = ({
     menuId="trend-comparison-settings"
     className="trend-comparison-menu"
   >
-    <IonContent>
+    <RightDrawerHeader
+      title="Trend settings"
+      end={
+        <IonButton
+          fill="clear"
+          aria-label="Close trend settings"
+          onClick={() => void menuRef.current?.close()}
+        >
+          <IonIcon icon={closeOutline} />
+        </IonButton>
+      }
+    />
+    <IonContent className="app-right-drawer__content">
       <section className="trend-comparison-menu__section">
-        <div className="trend-comparison-menu__heading">
-          <h2>Trend settings</h2>
-          <IonButton
-            fill="clear"
-            aria-label="Close trend settings"
-            onClick={() => void menuRef.current?.close()}
-          >
-            <IonIcon icon={closeOutline} />
-          </IonButton>
-        </div>
         <p className="trend-comparison-menu__eyebrow">Compare</p>
         <p className="trend-comparison-menu__help">
           Add weighted averages to this chart.

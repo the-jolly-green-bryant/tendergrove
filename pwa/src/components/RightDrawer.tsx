@@ -1,4 +1,4 @@
-import { IonMenu } from '@ionic/react'
+import { IonButtons, IonHeader, IonMenu, IonTitle, IonToolbar } from '@ionic/react'
 import type { ReactNode, RefObject } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -31,3 +31,21 @@ export const RightDrawer = ({
     </IonMenu>,
     document.querySelector('ion-app') ?? document.body,
   )
+
+export const RightDrawerHeader = ({
+  title,
+  start,
+  end,
+}: {
+  readonly title: ReactNode
+  readonly start?: ReactNode
+  readonly end?: ReactNode
+}) => (
+  <IonHeader className="app-right-drawer__header">
+    <IonToolbar>
+      {start && <IonButtons slot="start">{start}</IonButtons>}
+      <IonTitle>{title}</IonTitle>
+      {end && <IonButtons slot="end">{end}</IonButtons>}
+    </IonToolbar>
+  </IonHeader>
+)

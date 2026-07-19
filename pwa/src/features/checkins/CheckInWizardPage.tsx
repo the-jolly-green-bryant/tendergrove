@@ -1,16 +1,12 @@
 import {
   IonButton,
-  IonButtons,
   IonCheckbox,
   IonContent,
-  IonHeader,
   IonIcon,
   IonItem,
   IonList,
   IonNote,
   IonTextarea,
-  IonTitle,
-  IonToolbar,
   useIonAlert,
   useIonRouter,
 } from '@ionic/react'
@@ -27,6 +23,7 @@ import { useLocation, useParams } from 'react-router-dom'
 
 import { LoadingState } from '../../components/LoadingState'
 import { PastDataNotice } from '../../components/PastDataNotice'
+import { RightDrawerHeader } from '../../components/RightDrawer'
 import { useRouteModal } from '../../components/RouteModalContext'
 import { useSelectedDate } from '../../context/SelectedDateContext'
 import { usePeople } from '../people/usePeople'
@@ -589,9 +586,10 @@ export const CheckInWizardPage = ({
 
   return (
     <>
-      <IonHeader>
-        <IonToolbar>
-          <IonButtons slot="start">
+      <RightDrawerHeader
+        title={`${step?.person?.displayName ?? ''} - ${formatDateLabel(selectedDate)}`}
+        start={
+          <>
             {currentIndex > 0 ? (
               <IonButton onClick={() => setCurrentIndex(currentIndex - 1)}>
                 <IonIcon
@@ -602,17 +600,12 @@ export const CheckInWizardPage = ({
             ) : (
               <IonButton onClick={() => routeModal.dismiss()}>Close</IonButton>
             )}
-          </IonButtons>
-
-          <IonTitle>
-            {step?.person?.displayName} - {formatDateLabel(selectedDate)}
-          </IonTitle>
-
-          <IonButtons slot="end">
-            <IonButton onClick={onSave}>{step.existing ? 'Update' : 'Save'}</IonButton>
-          </IonButtons>
-        </IonToolbar>
-      </IonHeader>
+          </>
+        }
+        end={
+          <IonButton onClick={onSave}>{step.existing ? 'Update' : 'Save'}</IonButton>
+        }
+      />
       <IonContent
         className={`ion-padding check-in-wizard-content${isTimeTravel ? ' time-travel-surface' : ''}`}
       >

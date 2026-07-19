@@ -72,6 +72,39 @@ ion-chip {
   overflow: hidden;
 }
 
+.app-right-drawer__header {
+  box-shadow: none;
+}
+
+.app-right-drawer__header ion-toolbar {
+  --min-height: 64px;
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --background: rgba(247, 251, 249, 0.96);
+  --border-color: rgba(20, 125, 126, 0.12);
+  --color: var(--ion-text-color);
+}
+
+.app-right-drawer__header ion-title {
+  padding-inline: 8px;
+  font-size: 1.08rem;
+  font-weight: 750;
+}
+
+.app-right-drawer__header ion-button {
+  --color: var(--ion-color-primary-shade);
+  min-width: 44px;
+  min-height: 44px;
+  margin: 0;
+  font-weight: 700;
+}
+
+.app-right-drawer__content {
+  --background:
+    radial-gradient(circle at 20% 0%, rgba(117, 200, 196, 0.22), transparent 34%),
+    linear-gradient(180deg, #f4fbfa 0%, #f8f3fa 64%, #f4eee4 100%);
+}
+
 .check-in-drawer {
   --width: min(94vw, 560px);
   --route-modal-action-inset: 16px;
