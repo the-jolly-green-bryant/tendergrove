@@ -41,6 +41,7 @@ export const TrendChartPanel = ({
       label: `${comparison.label} weighted average`,
       color: comparison.color,
       values: showDelta ? toDelta(values) : values,
+      secondary: true,
     }
   })
 

@@ -25,6 +25,8 @@ export interface ChartSeries {
   values: (number | null)[]
   /** Render as a dashed line (e.g. a rolling average). */
   dashed?: boolean
+  /** De-emphasize a comparison while keeping it available to the scrubber. */
+  secondary?: boolean
 }
 
 interface TrendChartProps {
@@ -135,6 +137,8 @@ const SeriesLine = ({
   const path = buildPath(series.values, domain)
   const [mX, mY] = path.split(' ')
   const missingData = ['M0', mY, mX.replace('M', 'L'), mY].join(' ')
+  const strokeDasharray = series.dashed ? '5 5' : series.secondary ? '8 5' : undefined
+  const opacity = series.dashed ? 0.5 : series.secondary ? 0.68 : 1
   return (
     <>
       <path
@@ -145,7 +149,7 @@ const SeriesLine = ({
         strokeLinejoin="round"
         strokeLinecap="round"
         strokeDasharray={'5 5'}
-        opacity={series.dashed ? 0.5 : 1}
+        opacity={series.secondary ? 0.35 : opacity}
       />
 
       <path
@@ -155,8 +159,8 @@ const SeriesLine = ({
         strokeWidth={2.5}
         strokeLinejoin="round"
         strokeLinecap="round"
-        strokeDasharray={series.dashed ? '5 5' : undefined}
-        opacity={series.dashed ? 0.5 : 1}
+        strokeDasharray={strokeDasharray}
+        opacity={opacity}
       />
     </>
   )
