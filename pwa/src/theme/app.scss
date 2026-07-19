@@ -62,6 +62,27 @@ ion-chip {
   background: rgba(36, 63, 66, 0.28);
 }
 
+.app-right-drawer {
+  --width: min(88vw, 380px);
+}
+
+.app-right-drawer::part(container) {
+  border-radius: 22px 0 0 22px;
+  box-shadow: -16px 0 42px rgba(36, 63, 66, 0.2);
+  overflow: hidden;
+}
+
+.check-in-drawer {
+  --width: min(94vw, 560px);
+  --route-modal-action-inset: 16px;
+}
+
+.check-in-drawer__page {
+  contain: layout size style;
+  position: relative;
+  height: 100%;
+}
+
 @media (min-width: 760px) {
   .route-modal {
     --border-radius: 18px;

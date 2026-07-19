@@ -1,7 +1,7 @@
 // src/AppShell.tsx
-import { IonModal, IonRouterOutlet } from '@ionic/react'
+import { IonModal, IonPage, IonRouterOutlet } from '@ionic/react'
 import { IonReactRouter } from '@ionic/react-router'
-import { ComponentType } from 'react'
+import { ComponentType, useEffect, useRef } from 'react'
 import { matchPath, Redirect, Route, useHistory, useLocation } from 'react-router-dom'
 
 import HouseholdPage from '../features/household/HouseholdPage'
@@ -29,6 +29,7 @@ import IndicatorFormPage from '../features/people/indicators/IndicatorFormPage'
 import ArchivedPeoplePage from '../features/people/ArchivedPeoplePage'
 import { CheckInWizardPage } from '../features/checkins/CheckInWizardPage'
 import { RouteModalProvider } from '../components/RouteModalContext'
+import { RightDrawer } from '../components/RightDrawer'
 import { pushRouteAnimation } from './pushRouteAnimation'
 
 const appRoutes = [
@@ -80,21 +81,25 @@ const modalRoutes = [
     path: '/household/recap',
     component: HouseholdRecapPage,
     fallback: '/dashboard',
+    presentation: 'modal',
   },
   {
     path: '/people/new',
     component: PersonFormPage,
     fallback: '/dashboard',
+    presentation: 'modal',
   },
   {
     path: '/person/:personId/check-in',
     component: CheckInWizardPage,
     fallback: '/person/:personId',
+    presentation: 'drawer',
   },
   {
     path: '/check-in/wizard',
     component: CheckInWizardPage,
     fallback: '/check-in',
+    presentation: 'drawer',
   },
 ] as const
 
@@ -210,14 +215,110 @@ const RouteModal = ({
 }
 
 const renderModalRoutes = () =>
-  modalRoutes.map(({ path, component, fallback }) => (
-    <RouteModal
-      key={path}
+  modalRoutes
+    .filter(({ presentation }) => presentation === 'modal')
+    .map(({ path, component, fallback }) => (
+      <RouteModal
+        key={path}
+        path={path}
+        component={component}
+        fallback={fallback}
+      />
+    ))
+
+const RouteDrawer = ({
+  path,
+  component: drawerComponent,
+  fallback,
+}: {
+  readonly path: string
+  readonly component: ComponentType
+  readonly fallback: string
+}) => {
+  const history = useHistory()
+  const location = useLocation()
+  const menuRef = useRef<HTMLIonMenuElement>(null)
+  const DrawerContent = drawerComponent
+  const menuId = `route-drawer-${path.replaceAll(/[^a-z0-9]/gi, '-')}`
+  const dismiss = (targetPath?: string) => {
+    const destination =
+      targetPath ??
+      returnToFromSearch(location.search) ??
+      resolveModalFallback(fallback, location.pathname)
+    history.replace(destination)
+  }
+
+  return (
+    <Route
+      exact
       path={path}
-      component={component}
-      fallback={fallback}
-    />
-  ))
+    >
+      {({ match }) => {
+        const isOpen = Boolean(match)
+        return (
+          <RouteDrawerSurface
+            isOpen={isOpen}
+            menuId={menuId}
+            menuRef={menuRef}
+            onDidClose={() => {
+              if (match && location.pathname === match.url) dismiss()
+            }}
+          >
+            {match && (
+              <IonPage className="check-in-drawer__page">
+                <RouteModalProvider value={{ isRouteModal: true, dismiss }}>
+                  <DrawerContent />
+                </RouteModalProvider>
+              </IonPage>
+            )}
+          </RouteDrawerSurface>
+        )
+      }}
+    </Route>
+  )
+}
+
+const RouteDrawerSurface = ({
+  children,
+  isOpen,
+  menuId,
+  menuRef,
+  onDidClose,
+}: {
+  readonly children: React.ReactNode
+  readonly isOpen: boolean
+  readonly menuId: string
+  readonly menuRef: React.RefObject<HTMLIonMenuElement | null>
+  readonly onDidClose: () => void
+}) => {
+  useEffect(() => {
+    if (isOpen) void menuRef.current?.open()
+    else void menuRef.current?.close()
+  }, [isOpen, menuRef])
+
+  return (
+    <RightDrawer
+      menuRef={menuRef}
+      menuId={menuId}
+      className="check-in-drawer"
+      onDidClose={onDidClose}
+    >
+      {children}
+    </RightDrawer>
+  )
+}
+
+const renderDrawerRoutes = () =>
+  modalRoutes
+    .filter(({ presentation }) => presentation === 'drawer')
+    .map(({ path, component, fallback }) => (
+      <RouteDrawer
+        key={path}
+        path={path}
+        component={component}
+        fallback={fallback}
+      />
+    ))
 
 const AppShellRoutes = () => {
   const location = useLocation()
@@ -227,6 +328,7 @@ const AppShellRoutes = () => {
     <>
       {renderRoutes(backgroundLocation)}
       {renderModalRoutes()}
+      {renderDrawerRoutes()}
     </>
   )
 }
