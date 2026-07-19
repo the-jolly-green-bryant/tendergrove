@@ -88,7 +88,10 @@ const MenuLink = ({
   label,
   active,
 }: (typeof menuItems)[number] & { readonly active: boolean }) => (
-  <IonMenuToggle autoHide={false}>
+  <IonMenuToggle
+    menu="main-navigation"
+    autoHide={false}
+  >
     <IonItem
       button
       routerLink={href}
@@ -110,7 +113,7 @@ const MenuLink = ({
   </IonMenuToggle>
 )
 
-const AppMenu = () => {
+export const AppMenu = () => {
   const { signOut } = useAppAuth()
   const location = useLocation()
   const isActive = (href: string) =>
@@ -119,7 +122,10 @@ const AppMenu = () => {
 
   return (
     <IonMenu
+      menuId="main-navigation"
       contentId="main-content"
+      side="start"
+      type="overlay"
       className="app-menu"
     >
       <IonContent className="app-menu__content">
@@ -172,7 +178,10 @@ const AppMenu = () => {
               <span>⌁</span>
             </div>
 
-            <IonMenuToggle autoHide={false}>
+            <IonMenuToggle
+              menu="main-navigation"
+              autoHide={false}
+            >
               <IonItem
                 button
                 detail={false}
@@ -292,38 +301,39 @@ export const Page = ({
     : ''
 
   return (
-    <>
-      <AppMenu />
-      <IonPage id="main-content">
-        <IonHeader
-          className={headerClassName}
+    <IonPage>
+      <IonHeader
+        className={headerClassName}
+        mode={'ios'}
+      >
+        <IonToolbar
+          className={toolbarClassName}
           mode={'ios'}
         >
-          <IonToolbar
-            className={toolbarClassName}
-            mode={'ios'}
-          >
-            <IonButtons slot="start">
-              {backHref ? <IonBackButton defaultHref={backHref} /> : <IonMenuButton />}
-            </IonButtons>
-            {headerContent ?? <IonTitle>{title}</IonTitle>}
-          </IonToolbar>
-          {subHeaderContent}
-        </IonHeader>
-        <IonContent
-          ref={contentRef}
-          fullscreen
-          forceOverscroll={forceOverscroll}
-          scrollEvents={transparentHeaderUntilScroll}
-          onIonScroll={(event) => {
-            if (!transparentHeaderUntilScroll) return
-            updateHeaderPosition(event.detail.scrollTop)
-          }}
-          className={`${disablePadding ? '' : 'ion-padding'} safe-content ${className ?? ''}`}
-        >
-          {children}
-        </IonContent>
-      </IonPage>
-    </>
+          <IonButtons slot="start">
+            {backHref ? (
+              <IonBackButton defaultHref={backHref} />
+            ) : (
+              <IonMenuButton menu="main-navigation" />
+            )}
+          </IonButtons>
+          {headerContent ?? <IonTitle>{title}</IonTitle>}
+        </IonToolbar>
+        {subHeaderContent}
+      </IonHeader>
+      <IonContent
+        ref={contentRef}
+        fullscreen
+        forceOverscroll={forceOverscroll}
+        scrollEvents={transparentHeaderUntilScroll}
+        onIonScroll={(event) => {
+          if (!transparentHeaderUntilScroll) return
+          updateHeaderPosition(event.detail.scrollTop)
+        }}
+        className={`${disablePadding ? '' : 'ion-padding'} safe-content ${className ?? ''}`}
+      >
+        {children}
+      </IonContent>
+    </IonPage>
   )
 }

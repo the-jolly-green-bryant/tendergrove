@@ -1,7 +1,7 @@
 // src/AppShell.tsx
-import { IonModal, IonPage, IonRouterOutlet } from '@ionic/react'
+import { IonModal, IonRouterOutlet } from '@ionic/react'
 import { IonReactRouter } from '@ionic/react-router'
-import { ComponentType, useEffect, useRef } from 'react'
+import { ComponentType } from 'react'
 import { matchPath, Redirect, Route, useHistory, useLocation } from 'react-router-dom'
 
 import HouseholdPage from '../features/household/HouseholdPage'
@@ -29,7 +29,8 @@ import IndicatorFormPage from '../features/people/indicators/IndicatorFormPage'
 import ArchivedPeoplePage from '../features/people/ArchivedPeoplePage'
 import { CheckInWizardPage } from '../features/checkins/CheckInWizardPage'
 import { RouteModalProvider } from '../components/RouteModalContext'
-import { RightDrawer } from '../components/RightDrawer'
+import { CheckInDrawerSurface } from '../components/CheckInDrawerSurface'
+import { AppMenu } from '../components/Page'
 import { pushRouteAnimation } from './pushRouteAnimation'
 
 const appRoutes = [
@@ -141,7 +142,10 @@ const getBackgroundLocation = (location: ReturnType<typeof useLocation>) => {
 }
 
 const renderRoutes = (routeLocation: ReturnType<typeof useLocation>) => (
-  <IonRouterOutlet animation={pushRouteAnimation}>
+  <IonRouterOutlet
+    id="main-content"
+    animation={pushRouteAnimation}
+  >
     {appRoutes.map(({ path, component }) => (
       <Route
         key={path}
@@ -237,7 +241,6 @@ const RouteDrawer = ({
 }) => {
   const history = useHistory()
   const location = useLocation()
-  const menuRef = useRef<HTMLIonMenuElement>(null)
   const DrawerContent = drawerComponent
   const menuId = `route-drawer-${path.replaceAll(/[^a-z0-9]/gi, '-')}`
   const dismiss = (targetPath?: string) => {
@@ -256,55 +259,22 @@ const RouteDrawer = ({
       {({ match }) => {
         const isOpen = Boolean(match)
         return (
-          <RouteDrawerSurface
+          <CheckInDrawerSurface
             isOpen={isOpen}
             menuId={menuId}
-            menuRef={menuRef}
             onDidClose={() => {
               if (match && location.pathname === match.url) dismiss()
             }}
           >
             {match && (
-              <IonPage className="check-in-drawer__page">
-                <RouteModalProvider value={{ isRouteModal: true, dismiss }}>
-                  <DrawerContent />
-                </RouteModalProvider>
-              </IonPage>
+              <RouteModalProvider value={{ isRouteModal: true, dismiss }}>
+                <DrawerContent />
+              </RouteModalProvider>
             )}
-          </RouteDrawerSurface>
+          </CheckInDrawerSurface>
         )
       }}
     </Route>
-  )
-}
-
-const RouteDrawerSurface = ({
-  children,
-  isOpen,
-  menuId,
-  menuRef,
-  onDidClose,
-}: {
-  readonly children: React.ReactNode
-  readonly isOpen: boolean
-  readonly menuId: string
-  readonly menuRef: React.RefObject<HTMLIonMenuElement | null>
-  readonly onDidClose: () => void
-}) => {
-  useEffect(() => {
-    if (isOpen) void menuRef.current?.open()
-    else void menuRef.current?.close()
-  }, [isOpen, menuRef])
-
-  return (
-    <RightDrawer
-      menuRef={menuRef}
-      menuId={menuId}
-      className="check-in-drawer"
-      onDidClose={onDidClose}
-    >
-      {children}
-    </RightDrawer>
   )
 }
 
@@ -326,6 +296,7 @@ const AppShellRoutes = () => {
 
   return (
     <>
+      <AppMenu />
       {renderRoutes(backgroundLocation)}
       {renderModalRoutes()}
       {renderDrawerRoutes()}

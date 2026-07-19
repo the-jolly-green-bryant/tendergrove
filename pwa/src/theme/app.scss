@@ -108,6 +108,7 @@ ion-chip {
 .check-in-drawer {
   --width: min(94vw, 560px);
   --route-modal-action-inset: 16px;
+  z-index: 30000;
 }
 
 .check-in-drawer__page {

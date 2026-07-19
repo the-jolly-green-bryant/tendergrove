@@ -1,7 +1,6 @@
 import {
   IonContent,
   IonIcon,
-  IonModal,
   IonPage,
   useIonViewWillEnter,
 } from '@ionic/react'
@@ -10,6 +9,7 @@ import { type ReactNode, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 
 import { LoadingState } from '../../components/LoadingState'
+import { CheckInDrawerSurface } from '../../components/CheckInDrawerSurface'
 import { PastDataNotice } from '../../components/PastDataNotice'
 import { PersonAvatar } from '../../components/PersonAvatar'
 import { RouteModalProvider, useRouteModal } from '../../components/RouteModalContext'
@@ -214,35 +214,6 @@ const RecapProgress = ({
   </div>
 )
 
-const RecapCheckInModal = ({
-  personId,
-  onDismiss,
-}: {
-  readonly personId: string | null
-  readonly onDismiss: () => void
-}) => (
-  <IonModal
-    isOpen={Boolean(personId)}
-    breakpoints={[0, 1]}
-    initialBreakpoint={1}
-    handle
-    handleBehavior="cycle"
-    className="route-modal"
-    onDidDismiss={onDismiss}
-  >
-    {personId && (
-      <RouteModalProvider
-        value={{
-          isRouteModal: true,
-          dismiss: onDismiss,
-        }}
-      >
-        <CheckInWizardPage personIdOverride={personId} />
-      </RouteModalProvider>
-    )}
-  </IonModal>
-)
-
 const RecapActions = ({
   isFirst,
   isLast,
@@ -378,10 +349,22 @@ const HouseholdRecapContent = ({
         />
       </div>
 
-      <RecapCheckInModal
-        personId={checkInPersonId}
-        onDismiss={() => setCheckInPersonId(null)}
-      />
+      <CheckInDrawerSurface
+        isOpen={Boolean(checkInPersonId)}
+        menuId="household-recap-check-in"
+        onDidClose={() => setCheckInPersonId(null)}
+      >
+        {checkInPersonId && (
+          <RouteModalProvider
+            value={{
+              isRouteModal: true,
+              dismiss: () => setCheckInPersonId(null),
+            }}
+          >
+            <CheckInWizardPage personIdOverride={checkInPersonId} />
+          </RouteModalProvider>
+        )}
+      </CheckInDrawerSurface>
     </>
   )
 }
