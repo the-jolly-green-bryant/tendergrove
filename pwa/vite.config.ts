@@ -14,6 +14,9 @@ import react from '@vitejs/plugin-react'
 const amplifyRedirectShim = fileURLToPath(
   new URL('./src/auth/amplifyGetRedirectUrl.ts', import.meta.url),
 )
+const amplifyAuthSessionShim = fileURLToPath(
+  new URL('./src/auth/amplifyOpenAuthSession.ts', import.meta.url),
+)
 
 export default defineConfig({
   plugins: [react()],
@@ -22,6 +25,10 @@ export default defineConfig({
       {
         find: /^.*[\\/]getRedirectUrl(\.native)?\.mjs$/,
         replacement: amplifyRedirectShim,
+      },
+      {
+        find: /^.*[\\/]openAuthSession(\.native)?\.mjs$/,
+        replacement: amplifyAuthSessionShim,
       },
     ],
   },
