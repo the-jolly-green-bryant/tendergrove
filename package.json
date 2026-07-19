@@ -11,6 +11,7 @@
     "build": "pnpm -r build",
     "format": "pnpm -r format",
     "mobile:build:debug": "pnpm --filter pwa build && cd pwa && (npx cap add android 2>/dev/null || true) && npx cap sync && cd android && JAVA_HOME=$(/usr/libexec/java_home -v 21) ./gradlew assembleDebug",
+    "mobile:build:ios": "pnpm --filter pwa build && pnpm --dir pwa exec cap sync ios && xcodebuild -project pwa/ios/App/App.xcodeproj -scheme App -configuration Debug -sdk iphonesimulator -derivedDataPath pwa/ios/DerivedData CODE_SIGNING_ALLOWED=NO build",
     "seed:test-person": "npx tsx scripts/seed-test-person.ts",
     "codemod:arrows": "tsx scripts/convert-functions-to-arrows.ts",
     "appflow:build": "pnpm --filter pwa build"
