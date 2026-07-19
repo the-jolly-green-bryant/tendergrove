@@ -16,34 +16,54 @@ const isNative = Capacitor.isNativePlatform()
 // redirect, so we hide it and drive sign-in through signInWithGoogleNative().
 const NativeGoogleButton = () => {
   const [busy, setBusy] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   return (
-    <button
-      type="button"
-      disabled={busy}
-      onClick={async () => {
-        setBusy(true)
-        try {
-          await signInWithGoogleNative()
-        } catch (error) {
-          handleGlobalError(error)
-        } finally {
-          setBusy(false)
-        }
-      }}
-      style={{
-        width: '100%',
-        padding: '12px',
-        marginTop: 8,
-        borderRadius: 8,
-        border: '1px solid #d0d0d0',
-        background: '#fff',
-        color: '#3c4043',
-        fontWeight: 600,
-        cursor: busy ? 'default' : 'pointer',
-      }}
-    >
-      {busy ? 'Opening Google…' : 'Sign in with Google'}
-    </button>
+    <div>
+      <button
+        type="button"
+        disabled={busy}
+        onClick={async () => {
+          if (busy) return
+          setBusy(true)
+          setErrorMessage(null)
+          try {
+            await signInWithGoogleNative()
+          } catch (error) {
+            // A native alert can collide with the OAuth browser sheet's
+            // dismissal transition and abort the iOS app. Keep feedback in
+            // the web view so presentation remains safe.
+            setErrorMessage(
+              error instanceof Error
+                ? error.message
+                : 'Google sign-in could not be completed. Please try again.',
+            )
+          } finally {
+            setBusy(false)
+          }
+        }}
+        style={{
+          width: '100%',
+          padding: '12px',
+          marginTop: 8,
+          borderRadius: 8,
+          border: '1px solid #d0d0d0',
+          background: '#fff',
+          color: '#3c4043',
+          fontWeight: 600,
+          cursor: busy ? 'default' : 'pointer',
+        }}
+      >
+        {busy ? 'Opening Google…' : 'Sign in with Google'}
+      </button>
+      {errorMessage && (
+        <p
+          role="alert"
+          style={{ margin: '8px 0 0', color: '#b42318', fontSize: 14 }}
+        >
+          {errorMessage}
+        </p>
+      )}
+    </div>
   )
 }
 
