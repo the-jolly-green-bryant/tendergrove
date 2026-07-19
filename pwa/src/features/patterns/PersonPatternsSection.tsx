@@ -1,6 +1,11 @@
 import { IonButton, IonIcon, IonSegment, IonSegmentButton } from '@ionic/react'
-import { chevronForwardOutline, homeOutline, triangleOutline } from 'ionicons/icons'
-import React, { useState } from 'react'
+import {
+  chevronForwardOutline,
+  homeOutline,
+  settingsOutline,
+  triangleOutline,
+} from 'ionicons/icons'
+import React, { useRef, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 
 import { PersonAvatar } from '../../components/PersonAvatar'
@@ -9,6 +14,7 @@ import { toLocalDateKey } from '../../lib/dateKeys'
 import { PatternsEmptyState } from './components/PatternsEmptyState'
 import { PeriodSelector } from './components/PeriodSelector'
 import { TrendChartPanel } from './components/TrendChartPanel'
+import { comparisonColor, TrendComparisonMenu } from './components/TrendComparisonMenu'
 import { usePatternsAnalytics } from './usePatternsAnalytics'
 import { usePatternsFilterStore } from './patternsFilterStore'
 
@@ -20,6 +26,7 @@ import {
   type AnomalyPatterns,
   type CorrelationInsight,
   type TrendResult,
+  type AnalyticsPersonRef,
 } from './analytics'
 
 type Scope = 'person' | 'household'
@@ -44,6 +51,9 @@ const PatternsBody = ({
   showDelta,
   onToggleDelta,
   viewDate,
+  comparisonPeople,
+  personTrends,
+  onExplore,
 }: {
   readonly data: ScopedData
   readonly rangeDays: number
@@ -56,7 +66,33 @@ const PatternsBody = ({
   readonly showDelta: boolean
   readonly onToggleDelta: () => void
   readonly viewDate: Date
+  readonly comparisonPeople: AnalyticsPersonRef[]
+  readonly personTrends: Record<string, TrendResult>
+  readonly onExplore: (tab: 'trend' | 'calendar' | 'household') => void
 }): React.JSX.Element => {
+  const [comparisonIds, setComparisonIds] = useState<string[]>([])
+  const comparisonMenuRef = useRef<HTMLIonMenuElement>(null)
+  const comparisons = comparisonIds.flatMap((personId) => {
+    const person = comparisonPeople.find((item) => item.id === personId)
+    const trend = personTrends[personId]
+    return person && trend
+      ? [
+          {
+            id: person.id,
+            label: person.displayName,
+            color: comparisonColor(person.id),
+            points: trend.points,
+          },
+        ]
+      : []
+  })
+  const toggleComparison = (personId: string) =>
+    setComparisonIds((current) =>
+      current.includes(personId)
+        ? current.filter((id) => id !== personId)
+        : [...current, personId],
+    )
+
   if (data.scoredDays === 0) {
     return (
       <PatternsEmptyState
@@ -80,19 +116,33 @@ const PatternsBody = ({
         points={eligiblePoints}
         rangeDays={rangeDays}
         showDelta={showDelta}
+        comparisons={comparisons}
         action={
-          <button
-            type="button"
-            className={`pattern-delta-toggle${showDelta ? ' pattern-delta-toggle--active' : ''}`}
-            aria-pressed={showDelta}
-            onClick={onToggleDelta}
-          >
-            <IonIcon
-              icon={triangleOutline}
-              aria-hidden="true"
-            />
-            Delta
-          </button>
+          <div className="pattern-chart__actions">
+            <button
+              type="button"
+              className={`pattern-delta-toggle${showDelta ? ' pattern-delta-toggle--active' : ''}`}
+              aria-pressed={showDelta}
+              onClick={onToggleDelta}
+            >
+              <IonIcon
+                icon={triangleOutline}
+                aria-hidden="true"
+              />
+              Delta
+            </button>
+            <button
+              type="button"
+              className={`pattern-chart__settings${comparisonIds.length > 0 ? ' pattern-chart__settings--active' : ''}`}
+              aria-label="Trend settings"
+              onClick={() => void comparisonMenuRef.current?.open()}
+            >
+              <IonIcon
+                icon={settingsOutline}
+                aria-hidden="true"
+              />
+            </button>
+          </div>
         }
         controls={
           <div className="person-patterns__chart-controls">
@@ -132,11 +182,18 @@ const PatternsBody = ({
           </div>
         }
       />
+      <TrendComparisonMenu
+        menuRef={comparisonMenuRef}
+        people={comparisonPeople}
+        selectedIds={comparisonIds}
+        onToggle={toggleComparison}
+      />
 
       {data.subjectName && data.anomalyPatterns && (
         <AnomalyPatternsSection
           personName={data.subjectName}
           patterns={data.anomalyPatterns}
+          onExplore={onExplore}
         />
       )}
 
@@ -212,6 +269,12 @@ export const PersonPatternsSection = ({
         showDelta={showDelta}
         onToggleDelta={() => setShowDelta((current) => !current)}
         viewDate={viewDate}
+        comparisonPeople={result.people.filter((person) => person.id !== personId)}
+        personTrends={result.personTrends}
+        onExplore={(tab) => {
+          setPerson(personId)
+          history.push(`/patterns?tab=${tab}`)
+        }}
         onViewAll={() => {
           // Carry the current scope into the Patterns section so it opens
           // pre-filtered to this person (or the whole household).

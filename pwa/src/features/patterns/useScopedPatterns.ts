@@ -1,6 +1,11 @@
 import { useMemo } from 'react'
 
-import { analyzeHousehold, buildScopedView, type ScopedPatternsView } from './analytics'
+import {
+  analyzeHousehold,
+  buildScopedView,
+  type AnalyticsResult,
+  type ScopedPatternsView,
+} from './analytics'
 import { daysBetween, dateKeyToDate } from './analytics/dateUtils'
 import { usePatternsData } from './usePatternsData'
 import {
@@ -21,6 +26,7 @@ export interface DisplayFilters {
  */
 export interface ScopedPatterns {
   view: ScopedPatternsView | null
+  result: AnalyticsResult | null
   isLoading: boolean
   hasError: boolean
   showDelta: boolean
@@ -97,6 +103,7 @@ export const useScopedPatterns = (): ScopedPatterns => {
 
   return {
     view,
+    result,
     isLoading,
     hasError: Boolean(error),
     showDelta,

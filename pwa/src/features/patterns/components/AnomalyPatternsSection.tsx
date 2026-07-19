@@ -8,7 +8,6 @@ import {
 } from 'ionicons/icons'
 
 import React from 'react'
-import { useHistory } from 'react-router-dom'
 
 import type {
   AnomalyOtherPersonItem,
@@ -20,6 +19,7 @@ import type {
 interface AnomalyPatternsSectionProps {
   readonly personName: string
   readonly patterns: AnomalyPatterns
+  readonly onExplore: (tab: 'trend' | 'calendar' | 'household') => void
 }
 
 const PercentBar = ({
@@ -179,9 +179,10 @@ const CardFooter = ({
   </div>
 )
 
-const history = () => useHistory()
-
-const renderWeekdayChart = (patterns: AnomalyPatterns) =>
+const renderWeekdayChart = (
+  patterns: AnomalyPatterns,
+  onExplore: AnomalyPatternsSectionProps['onExplore'],
+) =>
   patterns.weekday && (
     <IonCard className="anomaly-pattern-card anomaly-pattern-card--weekday">
       <IonCardContent>
@@ -208,13 +209,16 @@ const renderWeekdayChart = (patterns: AnomalyPatterns) =>
         <CardFooter
           icon={calendarOutline}
           action="Explore days"
-          onClick={() => history().push('/patterns?tab=calendar')}
+          onClick={() => onExplore('calendar')}
         />
       </IonCardContent>
     </IonCard>
   )
 
-const renderEventsChart = (patterns: AnomalyPatterns) =>
+const renderEventsChart = (
+  patterns: AnomalyPatterns,
+  onExplore: AnomalyPatternsSectionProps['onExplore'],
+) =>
   patterns.events &&
   (() => {
     const top = patterns.events.top
@@ -245,7 +249,7 @@ const renderEventsChart = (patterns: AnomalyPatterns) =>
           <CardFooter
             icon={pricetagOutline}
             action="Explore events"
-            onClick={() => history().push('/patterns?tab=trend')}
+            onClick={() => onExplore('trend')}
           />
         </IonCardContent>
       </IonCard>
@@ -255,6 +259,7 @@ const renderEventsChart = (patterns: AnomalyPatterns) =>
 export const AnomalyPatternsSection = ({
   personName,
   patterns,
+  onExplore,
 }: AnomalyPatternsSectionProps): React.JSX.Element | null =>
   patterns.baseline &&
   (() => (
@@ -279,8 +284,8 @@ export const AnomalyPatternsSection = ({
         patterns.otherPeople !== null
       ) && EMPTY_STATE}
 
-      {renderWeekdayChart(patterns)}
-      {renderEventsChart(patterns)}
+      {renderWeekdayChart(patterns, onExplore)}
+      {renderEventsChart(patterns, onExplore)}
 
       {patterns.otherPeople && (
         <IonCard className="anomaly-pattern-card anomaly-pattern-card--household">
@@ -319,7 +324,7 @@ export const AnomalyPatternsSection = ({
             <CardFooter
               icon={peopleOutline}
               action="Explore others"
-              onClick={() => history().push('/patterns?tab=household')}
+              onClick={() => onExplore('household')}
             />
           </IonCardContent>
         </IonCard>

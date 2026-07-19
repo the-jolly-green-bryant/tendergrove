@@ -3,6 +3,7 @@ import {
   calendarNumberOutline,
   gitNetworkOutline,
   pulseOutline,
+  settingsOutline,
   triangleOutline,
   trailSignOutline,
 } from 'ionicons/icons'
@@ -19,12 +20,14 @@ import type {
   IndicatorOverlap,
   IndicatorSignal,
   ScopedPatternsView,
+  AnalyticsResult,
 } from './analytics'
 import { dateKeyToDate } from './analytics/dateUtils'
 import { PatternsEmptyState } from './components/PatternsEmptyState'
 import { PatternsFilterBar } from './components/PatternsFilterBar'
 import { PeriodSelector } from './components/PeriodSelector'
 import { TrendChartPanel } from './components/TrendChartPanel'
+import { comparisonColor, TrendComparisonMenu } from './components/TrendComparisonMenu'
 import { usePatternsFilterStore } from './patternsFilterStore'
 import { useScopedPatterns } from './useScopedPatterns'
 import { CalendarContent } from './CalendarHeatmapPage'
@@ -90,34 +93,74 @@ const PatternsTabs = ({
 
 const TrendView = ({
   view,
+  result,
   showDelta,
 }: {
   view: ScopedPatternsView
+  result: AnalyticsResult
   showDelta: boolean
 }) => {
   const rangeDays = usePatternsFilterStore((state) => state.rangeDays)
   const setRangeDays = usePatternsFilterStore((state) => state.setRangeDays)
   const toggleDelta = usePatternsFilterStore((state) => state.toggleDelta)
+  const [comparisonIds, setComparisonIds] = React.useState<string[]>([])
+  const comparisonMenuRef = React.useRef<HTMLIonMenuElement>(null)
+  const comparisonPeople = result.people.filter((person) => person.id !== view.personId)
+  const comparisons = comparisonIds.flatMap((personId) => {
+    const person = comparisonPeople.find((item) => item.id === personId)
+    const trend = result.personTrends[personId]
+    return person && trend
+      ? [
+          {
+            id: person.id,
+            label: person.displayName,
+            color: comparisonColor(person.id),
+            points: trend.points,
+          },
+        ]
+      : []
+  })
+  const toggleComparison = (personId: string) =>
+    setComparisonIds((current) =>
+      current.includes(personId)
+        ? current.filter((id) => id !== personId)
+        : [...current, personId],
+    )
+
   return (
     <>
       <TrendChartPanel
         points={view.trend.points}
         rangeDays={rangeDays}
         showDelta={showDelta}
+        comparisons={comparisons}
         className="pattern-overview-chart"
         action={
-          <button
-            type="button"
-            className={`pattern-delta-toggle${showDelta ? ' pattern-delta-toggle--active' : ''}`}
-            onClick={toggleDelta}
-            aria-pressed={showDelta}
-          >
-            <IonIcon
-              icon={triangleOutline}
-              aria-hidden="true"
-            />
-            Delta
-          </button>
+          <div className="pattern-chart__actions">
+            <button
+              type="button"
+              className={`pattern-delta-toggle${showDelta ? ' pattern-delta-toggle--active' : ''}`}
+              onClick={toggleDelta}
+              aria-pressed={showDelta}
+            >
+              <IonIcon
+                icon={triangleOutline}
+                aria-hidden="true"
+              />
+              Delta
+            </button>
+            <button
+              type="button"
+              className={`pattern-chart__settings${comparisonIds.length > 0 ? ' pattern-chart__settings--active' : ''}`}
+              aria-label="Trend settings"
+              onClick={() => void comparisonMenuRef.current?.open()}
+            >
+              <IonIcon
+                icon={settingsOutline}
+                aria-hidden="true"
+              />
+            </button>
+          </div>
         }
         controls={
           <div className="pattern-overview-chart__period">
@@ -127,6 +170,12 @@ const TrendView = ({
             />
           </div>
         }
+      />
+      <TrendComparisonMenu
+        menuRef={comparisonMenuRef}
+        people={comparisonPeople}
+        selectedIds={comparisonIds}
+        onToggle={toggleComparison}
       />
     </>
   )
@@ -534,7 +583,7 @@ const HouseholdView = ({ view }: { view: ScopedPatternsView }) => {
 }
 
 const PatternsOverviewPage = (): React.JSX.Element => {
-  const { view, isLoading, hasError, showDelta } = useScopedPatterns()
+  const { view, result, isLoading, hasError, showDelta } = useScopedPatterns()
   const [tab, setTab] = usePatternsTab()
   const history = useHistory()
   const { setSelectedDate } = useSelectedDate()
@@ -557,7 +606,7 @@ const PatternsOverviewPage = (): React.JSX.Element => {
         />
       )}
       {hasError && <p>We couldn’t load your patterns just now. Please try again.</p>}
-      {!isLoading && !hasError && view && (
+      {!isLoading && !hasError && view && result && (
         <>
           <PatternsFilterBar />
           <PatternsTabs
@@ -570,6 +619,7 @@ const PatternsOverviewPage = (): React.JSX.Element => {
             ) : tab === 'trend' ? (
               <TrendView
                 view={view}
+                result={result}
                 showDelta={showDelta}
               />
             ) : tab === 'calendar' ? (

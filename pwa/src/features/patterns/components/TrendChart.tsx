@@ -544,6 +544,24 @@ export const TrendChart = ({
           activeIndex={activeIndex}
         />
       </svg>
+      {series.filter((item) => !item.dashed).length > 1 && (
+        <figcaption className="pattern-chart__legend">
+          {series
+            .filter((item) => !item.dashed)
+            .map((item) => (
+              <span
+                className="pattern-chart__legend-item"
+                key={item.label}
+              >
+                <i
+                  className="pattern-chart__legend-swatch"
+                  style={{ backgroundColor: item.color }}
+                />
+                {item.label}
+              </span>
+            ))}
+        </figcaption>
+      )}
     </figure>
   )
 }
