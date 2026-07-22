@@ -23,7 +23,7 @@ const ReportsPage = () => {
   const report = useMemo(() => selected ? buildProviderReport({ person: selected, reason, questions }) : null, [questions, reason, selected])
   const [editedText, setEditedText] = useState('')
   useEffect(() => setEditedText(report?.text ?? ''), [report])
-  const baseName = `tendergrove-${selected?.displayName.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-') || 'report'}`
+  const baseName = `grove-care-${selected?.displayName.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-') || 'report'}`
   const savePdf = async () => {
     if (!report) return
     const { jsPDF } = await import('jspdf')

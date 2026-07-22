@@ -116,7 +116,7 @@ const SafetyPage = () => {
         </IonCardContent>
       </IonCard>
 
-      <p className="safety-page__disclaimer">Tendergrove is an observation and organization tool. It does not diagnose a condition, predict an emergency, provide medical advice, or replace professional care. Resources require clinical and legal review before public release.</p>
+      <p className="safety-page__disclaimer">Grove is an observation and organization tool. It does not diagnose a condition, predict an emergency, provide medical advice, or replace professional care. Resources require clinical and legal review before public release.</p>
     </Page>
   )
 }

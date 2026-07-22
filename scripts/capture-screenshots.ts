@@ -97,7 +97,7 @@ function combineScreenshots(files: string[]) {
   const fileList = files.map((f) => `"${f}"`).join(' ')
 
   try {
-    const cmd = `magick montage ${fileList} -tile ${cols}x -geometry 390x844+20+20 -background '#f5f5f5' -border 2 -bordercolor '#e0e0e0' -title "Tendergrove – Current Design (${new Date().toISOString().slice(0, 10)})" "${COMBINED_OUTPUT}"`
+    const cmd = `magick montage ${fileList} -tile ${cols}x -geometry 390x844+20+20 -background '#f5f5f5' -border 2 -bordercolor '#e0e0e0' -title "Grove – Current Design (${new Date().toISOString().slice(0, 10)})" "${COMBINED_OUTPUT}"`
     execSync(cmd, { stdio: 'inherit' })
     console.log(`\n✅ Design overview saved to: ${COMBINED_OUTPUT}`)
   } catch (err) {
@@ -114,7 +114,7 @@ function combineWithSips(files: string[]) {
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Tendergrove – Design Overview</title>
+  <title>Grove – Design Overview</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
@@ -159,7 +159,7 @@ function combineWithSips(files: string[]) {
   </style>
 </head>
 <body>
-  <h1>🌿 Tendergrove – Current Design</h1>
+  <h1>🌿 Grove – Current Design</h1>
   <p class="date">Generated: ${new Date().toISOString().slice(0, 10)}</p>
   <div class="grid">
     ${files

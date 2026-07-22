@@ -209,7 +209,7 @@ const WizardHeader = ({
           alt=""
           className="wizard-brand__logo"
         />
-        <span className="wizard-brand__name">TenderGrove</span>
+        <span className="wizard-brand__name">Grove</span>
       </div>
 
       <IonButtons slot="end">

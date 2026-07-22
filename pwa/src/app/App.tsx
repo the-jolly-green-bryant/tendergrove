@@ -17,9 +17,9 @@ type AuthIntent = 'signIn' | 'signUp'
 
 const WELCOME_STEPS = [
   {
-    eyebrow: 'Welcome to Tendergrove',
+    eyebrow: 'Welcome to Grove',
     title: 'When every day is a lot, remembering the pattern shouldn’t be another burden.',
-    body: 'Tendergrove helps parents capture meaningful changes without requiring a diagnosis, a perfect timeline, or long journal entries.',
+    body: 'Grove helps parents capture meaningful changes without requiring a diagnosis, a perfect timeline, or long journal entries.',
     icon: '🌿',
     review: ['Built for overwhelmed caregivers', 'A few taps when words are hard', 'Track your child and your own burnout'],
   },
@@ -33,7 +33,7 @@ const WELCOME_STEPS = [
   {
     eyebrow: 'Turn memory into evidence',
     title: 'See what happened, what came before, and what may be helping.',
-    body: 'Tendergrove organizes daily observations into timelines, gentle patterns, and explainable status changes. Every insight shows the observations behind it and other possible explanations.',
+    body: 'Grove organizes daily observations into timelines, gentle patterns, and explainable status changes. Every insight shows the observations behind it and other possible explanations.',
     icon: '⌁',
     review: ['Evidence and sample size', 'One practical thing to notice next', 'No diagnosis or false certainty'],
   },
@@ -54,7 +54,7 @@ const WelcomeJourney = ({ onContinue }: { readonly onContinue: (intent: AuthInte
     <IonApp>
       <main className="welcome-journey">
         <header className="welcome-journey__header">
-          <div className="welcome-journey__brand"><img src="/favicon.png" alt="" /><span>Tendergrove</span></div>
+          <div className="welcome-journey__brand"><img src="/assets/brand/grove-wordmark.png" alt="Grove" /></div>
           <button type="button" onClick={() => onContinue('signIn')}>Already have an account</button>
         </header>
         <section className="welcome-journey__card">
@@ -73,7 +73,7 @@ const WelcomeJourney = ({ onContinue }: { readonly onContinue: (intent: AuthInte
             {step > 0 && <button type="button" className="welcome-journey__back" onClick={() => setStep((value) => value - 1)}>Back</button>}
             <button type="button" className="welcome-journey__next" onClick={() => last ? onContinue('signUp') : setStep((value) => value + 1)}>{last ? 'Create my account' : 'Continue'}</button>
           </div>
-          <small>{step + 1} of {WELCOME_STEPS.length} · Tendergrove does not diagnose or decide whether hospital care is needed.</small>
+          <small>{step + 1} of {WELCOME_STEPS.length} · Grove does not diagnose or decide whether hospital care is needed.</small>
         </section>
       </main>
     </IonApp>
@@ -139,7 +139,7 @@ const authComponents = {
   Header() {
     return (
       <div className="auth-brand">
-        <img className="brand-wordmark-image brand-wordmark-image--auth" src="/assets/brand/tendergrove-wordmark.svg" alt="Tendergrove" />
+        <img className="brand-wordmark-image brand-wordmark-image--auth" src="/assets/brand/grove-wordmark.png" alt="Grove" />
         <p>Notice gently. Remember clearly.</p>
       </div>
     )
@@ -157,16 +157,16 @@ const authComponents = {
   },
   ConfirmSignUp: {
     Header() {
-      return <div className="auth-code-intro"><img className="brand-wordmark-image brand-wordmark-image--compact" src="/assets/brand/tendergrove-wordmark.svg" alt="Tendergrove" /><p className="auth-code-intro__eyebrow">One last step</p><h1>Check your email</h1><p>Enter the Tendergrove confirmation code we sent you. This verifies that the email belongs to you.</p></div>
+      return <div className="auth-code-intro"><img className="brand-wordmark-image brand-wordmark-image--compact" src="/assets/brand/grove-wordmark.png" alt="Grove" /><p className="auth-code-intro__eyebrow">One last step</p><h1>Check your email</h1><p>Enter the Grove confirmation code we sent you. This verifies that the email belongs to you.</p></div>
     },
     Footer() {
-      return <p className="auth-code-footer">The code may take a minute to arrive. Check spam or request a new code if needed. Tendergrove will never ask you to share this code with another person.</p>
+      return <p className="auth-code-footer">The code may take a minute to arrive. Check spam or request a new code if needed. Grove will never ask you to share this code with another person.</p>
     },
   },
 }
 
 const handleGlobalError = (error: unknown) => {
-  console.error('Tendergrove request failed', error)
+  console.error('Grove request failed', error)
   alert(
     'We couldn’t complete that action. Your entries are still on this screen—check your connection and try again.',
   )

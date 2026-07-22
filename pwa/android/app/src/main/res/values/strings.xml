@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Tendergrove</string>
-    <string name="title_activity_main">Tendergrove</string>
+    <string name="app_name">Grove</string>
+    <string name="title_activity_main">Grove</string>
     <string name="package_name">com.bryantjames.tendergrove</string>
     <string name="custom_url_scheme">com.bryantjames.tendergrove</string>
 </resources>

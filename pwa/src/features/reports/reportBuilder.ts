@@ -49,7 +49,7 @@ export const buildProviderReport = ({ person, reason, questions, days = 30 }: Pr
   const lastDate = checkIns.at(-1) ? new Date(checkIns.at(-1)!.occurredAt).toLocaleDateString() : 'No check-ins yet'
   const completeness = Math.round((new Set(checkIns.map((item) => new Date(item.occurredAt).toDateString())).size / days) * 100)
   const lines = [
-    `TENDERGROVE APPOINTMENT-PREP SUMMARY — ${person.displayName}`,
+    `GROVE CARE APPOINTMENT-PREP SUMMARY — ${person.displayName}`,
     'Personal observations only — not a diagnosis, risk assessment, or recommendation for treatment or hospitalization.',
     '',
     'REASON FOR TRACKING', reason.trim() || 'Not entered.',
@@ -66,7 +66,7 @@ export const buildProviderReport = ({ person, reason, questions, days = 30 }: Pr
     '',
     'QUESTIONS FOR THE PROFESSIONAL', questions.trim() || 'What changes should we watch? What would indicate that urgent evaluation is needed? What information would be most useful to keep recording?',
     '',
-    'LIMITATIONS', 'Associations in this report may have other explanations. Entries reflect one caregiver’s observations and may be incomplete. Tendergrove does not determine diagnosis, immediate safety, or the appropriate level of care.',
+    'LIMITATIONS', 'Associations in this report may have other explanations. Entries reflect one caregiver’s observations and may be incomplete. Grove does not determine diagnosis, immediate safety, or the appropriate level of care.',
   ]
   return { text: lines.join('\n'), checkIns, difficult, positive, completeness, baseline, recent }
 }

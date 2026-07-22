@@ -1,5 +1,5 @@
 /**
- * Type definitions for the TenderGrove Patterns analytics layer.
+ * Type definitions for the Grove Patterns analytics layer.
  *
  * Everything here is framed around *well-being* (0–100, where **higher = doing
  * better**), matching the app's existing wellness score in `lib/status.ts`. A

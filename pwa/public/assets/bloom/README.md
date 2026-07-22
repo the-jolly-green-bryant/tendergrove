@@ -1,4 +1,4 @@
-# TenderGrove Bloom Procedural Art Kit
+# Grove Bloom Procedural Art Kit
 
 This kit is for rendering the household bloom in Ionic/React without needing one-off artwork for every household size.
 

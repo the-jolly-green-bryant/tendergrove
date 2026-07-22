@@ -553,7 +553,7 @@ const WizardStep = ({ personId, selectedDate, step }: WizardStepProps) => {
       {urgentSignal && (
         <section className="safety-escalation" role="alert">
           <h2>Pause and check immediate safety</h2>
-          <p>This entry may describe an urgent safety concern. Tendergrove cannot assess the danger. If anyone may be unsafe, contact trained help now.</p>
+          <p>This entry may describe an urgent safety concern. Grove cannot assess the danger. If anyone may be unsafe, contact trained help now.</p>
           <IonButton color="danger" routerLink="/help-now">Get help now</IonButton>
         </section>
       )}

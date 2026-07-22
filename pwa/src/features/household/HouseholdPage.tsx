@@ -397,8 +397,7 @@ const HouseholdPage = () => {
   const selectedDateHasData = eventDates.has(selectedDateKey)
   const goToToday = () => setSelectedDate(new Date())
 
-  const { calendarButtonElement, navigationElement, calendarElement } =
-    useDateNavigator({
+  const { navigationElement, calendarElement } = useDateNavigator({
       date: selectedDate,
       onChange: setSelectedDate,
       eventDates,
@@ -406,12 +405,11 @@ const HouseholdPage = () => {
 
   return (
     <Page
-      title="Tendergrove"
+      title="Grove"
       headerContent={
         <IllustratedHeaderTitle
-          title={<img className="brand-wordmark-image brand-wordmark-image--dashboard" src="/assets/brand/tendergrove-wordmark.svg" alt="Tendergrove" />}
+          title={<img className="brand-wordmark-image brand-wordmark-image--dashboard" src="/assets/brand/grove-wordmark.png" alt="Grove" />}
           start={<button className="dashboard-header-menu" type="button" aria-label="Open menu" onClick={() => void document.querySelector<HTMLIonMenuElement>('ion-menu')?.open()}><IonIcon icon={menuOutline} /></button>}
-          end={calendarButtonElement}
         />
       }
       subHeaderContent={

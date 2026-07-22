@@ -139,7 +139,7 @@ const EMPTY_STATE = (
       <h3>No repeated pattern stands out yet</h3>
 
       <p>
-        TenderGrove found days with more severe behavior, but no weekday, event, or
+        Grove found days with more severe behavior, but no weekday, event, or
         household connection currently appears often enough to call out.
       </p>
     </IonCardContent>

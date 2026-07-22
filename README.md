@@ -1,4 +1,7 @@
-# Tendergrove
+# Grove
+
+Grove Care is the formal product name. Existing package identifiers retain the
+`tendergrove` namespace for release continuity.
 
 Startup-quality Ionic React starter for fast parent observations, child distress tracking, incident logging, parent-care checks, and plain-text reporting.
 

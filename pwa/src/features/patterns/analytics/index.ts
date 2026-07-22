@@ -1,5 +1,5 @@
 /**
- * TenderGrove Patterns — analytics engine (public entry point).
+ * Grove Patterns — analytics engine (public entry point).
  *
  * This module is intentionally frontend-first and 100% deterministic: given the
  * same normalized input it always returns the same `AnalyticsResult`. There is

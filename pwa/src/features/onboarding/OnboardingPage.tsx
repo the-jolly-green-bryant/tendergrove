@@ -338,7 +338,7 @@ const OnboardingPage = () => {
                 <button type="button" role="radio" aria-checked={unsafe === false} onClick={() => setUnsafe(false)}>No immediate danger</button>
                 <button type="button" role="radio" aria-checked={unsafe === true} onClick={() => setUnsafe(true)}>Yes or not sure</button>
               </div>
-              {unsafe === true && <div className="safety-escalation"><strong>Do not wait on Tendergrove.</strong><p>If someone may be in immediate danger, contact emergency services or trained crisis support now.</p><IonButton color="danger" routerLink="/help-now">Get help now</IonButton></div>}
+              {unsafe === true && <div className="safety-escalation"><strong>Do not wait on Grove.</strong><p>If someone may be in immediate danger, contact emergency services or trained crisis support now.</p><IonButton color="danger" routerLink="/help-now">Get help now</IonButton></div>}
             </section>
           </>}
 
@@ -347,7 +347,7 @@ const OnboardingPage = () => {
             <p>Check only what happened. Leaving something unchecked does not mean you forgot it.</p>
             <div className="setup-checkin-group"><h2>{childName}</h2>{childSignals.map((signal) => <IonItem key={signal.key} lines="none"><IonCheckbox checked={yesterday.has(signal.key)} onIonChange={() => toggleYesterday(signal.key)}>{signal.name}</IonCheckbox></IonItem>)}</div>
             <div className="setup-checkin-group"><h2>{selfName}</h2>{selfSignals.map((signal) => <IonItem key={signal.key} lines="none"><IonCheckbox checked={yesterday.has(signal.key)} onIonChange={() => toggleYesterday(signal.key)}>{signal.name}</IonCheckbox></IonItem>)}</div>
-            <p className="legal-note">Tendergrove records observations. It does not diagnose, predict an emergency, or determine whether hospital care is needed.</p>
+            <p className="legal-note">Grove records observations. It does not diagnose, predict an emergency, or determine whether hospital care is needed.</p>
           </>}
 
           {saveError && <p className="setup-wizard__error" role="alert">{saveError}</p>}

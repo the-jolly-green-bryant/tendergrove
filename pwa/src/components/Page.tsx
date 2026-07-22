@@ -168,7 +168,7 @@ export const AppMenu = () => {
               className="menu-logo-mark"
             />
             <div>
-              <h2 className="menu-logo-text">TenderGrove</h2>
+              <img className="menu-wordmark" src="/assets/brand/grove-wordmark.png" alt="Grove" />
               <p className="menu-logo-tagline">
                 Helping families notice the little things.
               </p>

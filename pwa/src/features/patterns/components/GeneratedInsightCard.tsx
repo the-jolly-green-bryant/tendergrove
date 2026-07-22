@@ -31,7 +31,7 @@ export const GeneratedInsightCard = ({
     insight.description,
     insight.evidence,
     insight.action,
-    'Tendergrove observation — not a diagnosis.',
+    'Grove observation — not a diagnosis.',
   ].filter(Boolean).join('\n\n')
   const share = async () => {
     if (navigator.share) await navigator.share({ title: insight.title, text: shareText })

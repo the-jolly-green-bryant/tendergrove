@@ -1,14 +1,14 @@
 {
-  "name": "Tendergrove",
-  "short_name": "Tendergrove",
+  "name": "Grove Care",
+  "short_name": "Grove",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#4A2D8B",
+  "background_color": "#faf8ed",
+  "theme_color": "#819475",
   "icons": [
     {
       "src": "/favicon.png",
-      "sizes": "1254x1254",
+      "sizes": "512x512",
       "type": "image/png"
     }
   ]

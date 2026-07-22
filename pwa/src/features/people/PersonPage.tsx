@@ -506,7 +506,8 @@ const PersonPage = (): React.JSX.Element | null => {
   }
   const explainStatus = () => person && void presentStatusExplanation({
     header: `How ${summary.status.label.toLowerCase()} was calculated`,
-    message: explainPersonStatus((person.indicators ?? []) as RawIndicator[], (person.checkIns ?? []) as RawCheckIn[]).replaceAll('\n', '<br>'),
+    message: explainPersonStatus((person.indicators ?? []) as RawIndicator[], (person.checkIns ?? []) as RawCheckIn[]),
+    cssClass: 'status-explanation-alert',
     buttons: [
       { text: 'Review signals', handler: manageIndicators },
       { text: 'Close', role: 'cancel' },

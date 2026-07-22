@@ -459,23 +459,6 @@ const getWeekLabel = (date: Date): string => {
   return `${startLabel} – ${endLabel}`
 }
 
-const DateNavigatorCalendarButton = ({
-  today,
-  toggleCalendar,
-}: Pick<DateNavigatorHeaderProps, 'today' | 'toggleCalendar'>) => (
-  <button
-    className="date-navigator__today-btn date-navigator__title-calendar"
-    onClick={toggleCalendar}
-    aria-label="Open calendar"
-  >
-    <IonIcon
-      icon={calendarClearOutline}
-      className="date-navigator__today-icon"
-    />
-    <span className="date-navigator__today-number">{today.getDate()}</span>
-  </button>
-)
-
 const DateNavigatorSubrow = ({
   calendarOpen,
   goBack,
@@ -533,7 +516,6 @@ export const useDateNavigator = ({
   labelMode = 'day',
 }: DateNavigatorProps): {
   headerElement: React.JSX.Element
-  calendarButtonElement: React.JSX.Element
   navigationElement: React.JSX.Element
   calendarElement: React.JSX.Element | null
 } => {
@@ -558,13 +540,6 @@ export const useDateNavigator = ({
       goToToday={dayNavigation.goToToday}
       headerLabel={headerLabel}
       isToday={isToday}
-      today={today}
-      toggleCalendar={calendarState.toggleCalendar}
-    />
-  )
-
-  const calendarButtonElement = (
-    <DateNavigatorCalendarButton
       today={today}
       toggleCalendar={calendarState.toggleCalendar}
     />
@@ -598,5 +573,5 @@ export const useDateNavigator = ({
     />
   )
 
-  return { headerElement, calendarButtonElement, navigationElement, calendarElement }
+  return { headerElement, navigationElement, calendarElement }
 }
