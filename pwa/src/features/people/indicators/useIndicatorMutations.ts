@@ -41,8 +41,10 @@ export const useIndicatorMutations = (personId: string | undefined) => {
       }
 
       const person = await client.models.Person.get({ id: personId }, { selectionSet: ['collaborators'] })
-      const collaborators = person.data?.collaborators?.filter((item): item is string => Boolean(item)) ?? []
-      unwrap(await client.models.Indicator.create({ personId, collaborators, ...input }))
+      const collaborators = person.errors?.length
+        ? undefined
+        : person.data?.collaborators?.filter((item): item is string => Boolean(item))
+      unwrap(await client.models.Indicator.create({ personId, ...(collaborators ? { collaborators } : {}), ...input }))
       await invalidate()
     },
 

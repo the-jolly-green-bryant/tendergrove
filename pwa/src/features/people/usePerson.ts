@@ -11,7 +11,6 @@ const personSelectionSet = [
   'avatarUrl',
   'archived',
   'householdId',
-  'collaborators',
   'indicators.id',
   'indicators.name',
   'indicators.polarity',

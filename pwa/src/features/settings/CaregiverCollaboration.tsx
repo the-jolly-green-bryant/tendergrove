@@ -24,10 +24,16 @@ export const CaregiverCollaboration = () => {
   const [accesses, setAccesses] = useState<Access[]>([])
   const [message, setMessage] = useState('')
   const [saving, setSaving] = useState(false)
+  const [available, setAvailable] = useState(true)
 
   const load = async () => {
     const result = await client.models.CaregiverAccess.list()
-    if (!result.errors?.length) setAccesses(result.data as Access[])
+    if (result.errors?.length) {
+      setAvailable(false)
+      return
+    }
+    setAvailable(true)
+    setAccesses(result.data as Access[])
   }
   useEffect(() => { void load() }, [])
 
@@ -88,11 +94,12 @@ export const CaregiverCollaboration = () => {
     <h2>Caregiver collaboration</h2>
     <p>Give another Grove account read-only access to one person’s structured observations, check-ins, and events. Free-text notes and descriptions remain private to the account owner. They cannot edit or delete records.</p>
     <p className="legal-note">Your Grove account ID: <code>{user?.userId}</code></p>
+    {!available && <p>Collaboration will become available after the latest Grove backend deployment finishes.</p>}
     <IonList inset>
       <IonItem><IonSelect label="Person to share" value={personId || activePeople[0]?.id} onIonChange={(event) => setPersonId(event.detail.value)}>{activePeople.map((person) => <IonSelectOption key={person.id} value={person.id}>{person.displayName}</IonSelectOption>)}</IonSelect></IonItem>
       <IonItem><IonInput label="Collaborator’s Grove account ID" labelPlacement="stacked" value={collaboratorId} onIonInput={(event) => setCollaboratorId(event.detail.value ?? '')} /></IonItem>
     </IonList>
-    <IonButton disabled={saving || !collaboratorId.trim() || activePeople.length === 0} onClick={() => void grant()}>{saving ? 'Saving…' : 'Grant read-only access'}</IonButton>
+    <IonButton disabled={!available || saving || !collaboratorId.trim() || activePeople.length === 0} onClick={() => void grant()}>{saving ? 'Saving…' : 'Grant read-only access'}</IonButton>
     {message && <p>{message}</p>}
     {accesses.length > 0 && <IonList inset>{accesses.map((access) => <IonItem key={access.id}><IonLabel><h3>{access.personName}</h3><p>Viewer · {access.invitedUserId}</p></IonLabel><IonButton slot="end" color="danger" fill="clear" disabled={saving} onClick={() => void revoke(access)}>Revoke</IonButton></IonItem>)}</IonList>}
   </section>

@@ -12,7 +12,6 @@ const peopleSelectionSet = [
   'role',
   'avatarUrl',
   'archived',
-  'collaborators',
   'checkIns.id',
   'checkIns.createdAt',
   'checkIns.updatedAt',
