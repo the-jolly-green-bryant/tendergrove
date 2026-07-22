@@ -29,11 +29,24 @@ export const ReminderSettings = () => {
   const accountId = user?.userId
   const [value, setValue] = useState(() => read(accountId))
   const [saved, setSaved] = useState(false)
+  const [deliveryMessage, setDeliveryMessage] = useState('')
   useEffect(() => {
     setValue(read(accountId))
     setSaved(false)
   }, [accountId])
-  const save = async (next = value) => { setValue(next); await schedule(accountId, next); setSaved(true) }
+  const save = async (next = value) => {
+    setValue(next)
+    try {
+      await schedule(accountId, next)
+      setSaved(true)
+      setDeliveryMessage(Capacitor.isNativePlatform()
+        ? next.enabled ? `A device notification is scheduled for ${next.time}.` : 'Device notifications are turned off.'
+        : 'Preference saved. Browser delivery is not available; install the mobile app to receive notifications.')
+    } catch {
+      setSaved(false)
+      setDeliveryMessage('The reminder could not be scheduled. Check notification permission in device settings.')
+    }
+  }
   const notToday = () => void save({ ...value, skippedDate: new Date().toISOString().slice(0, 10) })
   return <section>
     <h2>Gentle reminders</h2>
@@ -45,6 +58,7 @@ export const ReminderSettings = () => {
     <IonButton onClick={() => void save()}>Save reminder</IonButton>
     <IonButton fill="clear" onClick={notToday}>Not today</IonButton>
     {saved && <IonLabel color="success"> Preference saved.</IonLabel>}
-    {!Capacitor.isNativePlatform() && <p className="legal-note">Notification delivery becomes available in the installed mobile app. Your preference is saved here.</p>}
+    {deliveryMessage && <p className="legal-note">{deliveryMessage}</p>}
+    {!deliveryMessage && !Capacitor.isNativePlatform() && <p className="legal-note">Browser delivery is not available. Install the mobile app to receive reminders.</p>}
   </section>
 }

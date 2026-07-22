@@ -5,9 +5,10 @@ const schema = a.schema({
     .model({
       name: a.string().required(),
       owner: a.string(),
+      collaborators: a.string().array(),
       people: a.hasMany('Person', 'householdId'),
     })
-    .authorization((allow) => [allow.owner()]),
+    .authorization((allow) => [allow.owner(), allow.ownersDefinedIn('collaborators').to(['read'])]),
 
   Person: a
     .model({
@@ -15,6 +16,7 @@ const schema = a.schema({
       household: a.belongsTo('Household', 'householdId'),
 
       owner: a.string(),
+      collaborators: a.string().array(),
       displayName: a.string().required(),
       role: a.enum(['child', 'parent', 'spouse', 'self', 'caregiver', 'other']),
       avatarUrl: a.string(),
@@ -24,7 +26,7 @@ const schema = a.schema({
       checkIns: a.hasMany('CheckIn', 'personId'),
       events: a.hasMany('Event', 'personId'),
     })
-    .authorization((allow) => [allow.owner()]),
+    .authorization((allow) => [allow.owner(), allow.ownersDefinedIn('collaborators').to(['read'])]),
 
   Indicator: a
     .model({
@@ -32,15 +34,16 @@ const schema = a.schema({
       person: a.belongsTo('Person', 'personId'),
 
       owner: a.string(),
+      collaborators: a.string().array(),
       name: a.string().required(),
       description: a.string(),
       questionText: a.string(),
-      notes: a.string(),
+      notes: a.string().authorization((allow) => [allow.owner()]),
       polarity: a.enum(['desired', 'undesired']),
       inputType: a.enum(['boolean', 'frequency', 'scale', 'count', 'duration', 'text']),
       active: a.boolean().default(true),
     })
-    .authorization((allow) => [allow.owner()]),
+    .authorization((allow) => [allow.owner(), allow.ownersDefinedIn('collaborators').to(['read'])]),
 
   // A configurable "thing that happened today" (School, Therapy, Vacation…),
   // checked off during check-ins for context. Distinct from `Event` (timeline
@@ -69,11 +72,12 @@ const schema = a.schema({
       person: a.belongsTo('Person', 'personId'),
 
       owner: a.string(),
+      collaborators: a.string().array(),
       occurredAt: a.datetime().required(),
       answersJson: a.json(),
-      note: a.string(),
+      note: a.string().authorization((allow) => [allow.owner()]),
     })
-    .authorization((allow) => [allow.owner()]),
+    .authorization((allow) => [allow.owner(), allow.ownersDefinedIn('collaborators').to(['read'])]),
 
   RoleTemplate: a
     .model({
@@ -93,6 +97,7 @@ const schema = a.schema({
       person: a.belongsTo('Person', 'personId'),
 
       owner: a.string(),
+      collaborators: a.string().array(),
       occurredAt: a.datetime().required(),
       type: a.enum([
         'note',
@@ -106,8 +111,26 @@ const schema = a.schema({
         'event',
       ]),
       title: a.string().required(),
-      description: a.string(),
+      description: a.string().authorization((allow) => [allow.owner()]),
       metadataJson: a.json(),
+    })
+    .authorization((allow) => [allow.owner(), allow.ownersDefinedIn('collaborators').to(['read'])]),
+
+  CaregiverAccess: a
+    .model({
+      personId: a.id().required(),
+      personName: a.string().required(),
+      invitedUserId: a.string().required(),
+      role: a.enum(['viewer']),
+      collaborators: a.string().array(),
+    })
+    .authorization((allow) => [allow.owner(), allow.ownersDefinedIn('collaborators').to(['read'])]),
+
+  CollaborationAudit: a
+    .model({
+      personId: a.id().required(),
+      action: a.enum(['granted', 'revoked']),
+      invitedUserId: a.string().required(),
     })
     .authorization((allow) => [allow.owner()]),
 })

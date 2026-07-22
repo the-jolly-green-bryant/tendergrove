@@ -29,9 +29,11 @@ export const useCheckInMutations = (personId: string | undefined) => {
       if (!personId) {
         throw new Error('Cannot create a check-in without a person')
       }
+      const person = await client.models.Person.get({ id: personId }, { selectionSet: ['collaborators'] })
 
       const result = await client.models.CheckIn.create({
         personId,
+        collaborators: person.data?.collaborators?.filter((item): item is string => Boolean(item)) ?? [],
         occurredAt: input.occurredAt,
         answersJson: JSON.stringify(input.answers),
         note: input.note,

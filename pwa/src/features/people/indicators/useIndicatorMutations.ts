@@ -40,7 +40,9 @@ export const useIndicatorMutations = (personId: string | undefined) => {
         throw new Error('Cannot create an indicator without a person')
       }
 
-      unwrap(await client.models.Indicator.create({ personId, ...input }))
+      const person = await client.models.Person.get({ id: personId }, { selectionSet: ['collaborators'] })
+      const collaborators = person.data?.collaborators?.filter((item): item is string => Boolean(item)) ?? []
+      unwrap(await client.models.Indicator.create({ personId, collaborators, ...input }))
       await invalidate()
     },
 
