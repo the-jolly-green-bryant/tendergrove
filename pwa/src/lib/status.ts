@@ -51,17 +51,15 @@ export const computeScore = (
 
   const checked = new Set(parseAnswers(checkIn.answersJson).checked)
 
-  let positives = 0
-  for (const ind of active) {
-    const wasChecked = checked.has(ind.id)
-    const isDesired = ind.polarity === 'desired'
+  const desired = active.filter((indicator) => indicator.polarity === 'desired')
+  const checkedDifficult = active.filter(
+    (indicator) => indicator.polarity === 'undesired' && checked.has(indicator.id),
+  )
+  const opportunities = desired.length + checkedDifficult.length
+  if (opportunities === 0) return null
 
-    if ((isDesired && wasChecked) || (!isDesired && !wasChecked)) {
-      positives++
-    }
-  }
-
-  return Math.round((positives / active.length) * 100)
+  const checkedDesired = desired.filter((indicator) => checked.has(indicator.id)).length
+  return Math.round((checkedDesired / opportunities) * 100)
 }
 
 /* ------------------------------------------------------------------ */
@@ -113,10 +111,10 @@ export const levelFromScore = (score: number): StatusLevel => {
 }
 
 const levelMeta: Record<StatusLevel, { label: string; color: Status['color'] }> = {
-  good: { label: 'Doing Well', color: 'success' },
-  trouble: { label: 'Moderate Risk', color: 'warning' },
+  good: { label: 'No notable change', color: 'success' },
+  trouble: { label: 'More changes recorded', color: 'warning' },
   'at-risk': { label: 'Needs attention', color: 'danger' },
-  unknown: { label: 'No Data', color: 'medium' },
+  unknown: { label: 'Not enough data', color: 'medium' },
 }
 
 export const statusFromScore = (score: number | null): Status => {
@@ -210,7 +208,7 @@ export const explainPersonStatus = (
   })
   return [
     `This status uses ${active.length} active signals and ${recent.length} check-ins from the last ${STATUS_LOOKBACK_DAYS} days.`,
-    'Desired signals count positively when checked. Difficult signals count positively when absent and lower the daily score when checked. Recent check-ins receive more weight. Missing days are ignored—not scored as good or bad.',
+    'Desired signals count positively when checked. Difficult signals lower the daily score only when they are explicitly recorded; leaving one unchecked is neutral. Recent check-ins receive more weight. Missing days are ignored—not scored as good or bad.',
     lines.length ? `Recent contributions:\n${lines.join('\n')}` : 'There are no scoreable recent check-ins.',
     'This score reflects only what was recorded. It is not a diagnosis or a measure of immediate safety.',
   ].join('\n\n')

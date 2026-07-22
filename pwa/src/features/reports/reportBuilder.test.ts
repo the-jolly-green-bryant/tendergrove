@@ -25,4 +25,23 @@ describe('provider report', () => {
     expect(reportCsv(person)).toContain('Major sleep disruption')
     expect(reportCsv(person)).toContain('Medication appointment scheduled')
   })
+
+  it('supports continued-care discussion when Beth has persistent difficult observations', () => {
+    const beth = {
+      ...person,
+      id: 'beth',
+      displayName: 'Beth',
+      checkIns: [
+        { occurredAt: new Date().toISOString(), answersJson: JSON.stringify({ checked: ['sleep'] }), note: 'Discussed medication with doctor.' },
+        { occurredAt: new Date(Date.now() - 86_400_000).toISOString(), answersJson: JSON.stringify({ checked: ['sleep'] }), note: 'Sleep disruption continued.' },
+        { occurredAt: new Date(Date.now() - 172_800_000).toISOString(), answersJson: JSON.stringify({ checked: ['sleep', 'support'] }), note: 'Accepted support after a difficult night.' },
+      ],
+    } as unknown as RawPerson
+
+    const report = buildProviderReport({ person: beth, reason: 'Ongoing changes', questions: '' })
+
+    expect(report.text).toContain('Difficult observations appeared in 3 of 3 check-ins')
+    expect(report.text).toContain('supports discussing continued clinical care')
+    expect(report.recent).not.toBeGreaterThan(50)
+  })
 })

@@ -9,14 +9,14 @@ interface PageProps {
 export const StatusChip = ({ label }: PageProps) => {
   const color = {
     'Needs attention': 'danger',
-    'Moderate Risk': 'warning',
-    'Doing Well': 'success',
-    'No Data': 'medium',
+    'More changes recorded': 'warning',
+    'No notable change': 'success',
+    'Not enough data': 'medium',
   }[label]
 
   return (
     <IonChip className={`timeline-status-chip timeline-status-chip--${color}`}>
-      {label.replace('Moderate ', '').replace('Doing ', '')}
+      {label}
     </IonChip>
   )
 }

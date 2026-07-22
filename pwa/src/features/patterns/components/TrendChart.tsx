@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react'
 
+import { statusFromScore } from '../../../lib/status'
 import { formatDayLabel } from '../analytics/dateUtils'
 import type { DateKey } from '../analytics'
 import { IonItem, IonLabel, IonNote } from '@ionic/react'
@@ -287,11 +288,11 @@ const Crosshair = ({
 }
 
 const _numberToStatus = (value: number | null): [string, string, string] => {
-  if (value == null) return ['-', 'gray', '']
-  if (value < 50) return ['Needs attention', '#D64F4F', '⛈️']
-  if (value < 70) return ['Elevated', '#D7B13A', '☁️']
-  if (value < 84) return ['Steady', '#63B66F', '🌤️']
-  return ['Settled', '#3FAE72', '☀️']
+  const status = statusFromScore(value)
+  if (status.level === 'unknown') return [status.label, 'gray', '']
+  if (status.level === 'at-risk') return [status.label, '#D64F4F', '⛈️']
+  if (status.level === 'trouble') return [status.label, '#D7B13A', '☁️']
+  return [status.label, '#3FAE72', '☀️']
 }
 
 const Readout = ({

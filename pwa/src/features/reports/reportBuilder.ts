@@ -1,5 +1,6 @@
 import { parseAnswers } from '../people/checkin/checkInUtils'
 import type { RawPerson } from '../patterns/analytics'
+import { computeScore } from '../../lib/status'
 
 export interface ProviderReportInput {
   person: RawPerson
@@ -24,11 +25,10 @@ const frequencyLines = (person: RawPerson, polarity: 'desired' | 'undesired') =>
 const averageScore = (person: RawPerson, checkIns: NonNullable<RawPerson['checkIns']>) => {
   const indicators = (person.indicators ?? []).filter((indicator) => indicator.active !== false)
   if (!indicators.length || !checkIns.length) return null
-  const scores = checkIns.map((checkIn) => {
-    const checked = new Set(parseAnswers(checkIn.answersJson).checked)
-    const positive = indicators.filter((indicator) => indicator.polarity === 'desired' ? checked.has(indicator.id) : !checked.has(indicator.id)).length
-    return Math.round((positive / indicators.length) * 100)
-  })
+  const scores = checkIns
+    .map((checkIn) => computeScore(indicators, checkIn))
+    .filter((score): score is number => score !== null)
+  if (!scores.length) return null
   return Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length)
 }
 
@@ -45,6 +45,9 @@ export const buildProviderReport = ({ person, reason, questions, days = 30 }: Pr
   const delta = baseline !== null && recent !== null ? recent - baseline : null
   const notes = checkIns.map((item) => item.note?.trim()).filter((note): note is string => Boolean(note))
   const medicationNotes = notes.filter((note) => /medicat|dose|therapy|hospital|doctor|intervention|appointment/i.test(note))
+  const difficultIds = new Set((person.indicators ?? []).filter((indicator) => indicator.active !== false && indicator.polarity === 'undesired').map((indicator) => indicator.id))
+  const difficultCheckIns = checkIns.filter((checkIn) => parseAnswers(checkIn.answersJson).checked.some((id) => difficultIds.has(id))).length
+  const careDiscussion = difficultCheckIns >= 2 || medicationNotes.length > 0
   const firstDate = checkIns[0] ? new Date(checkIns[0].occurredAt).toLocaleDateString() : 'No check-ins yet'
   const lastDate = checkIns.at(-1) ? new Date(checkIns.at(-1)!.occurredAt).toLocaleDateString() : 'No check-ins yet'
   const completeness = Math.round((new Set(checkIns.map((item) => new Date(item.occurredAt).toDateString())).size / days) * 100)
@@ -57,6 +60,12 @@ export const buildProviderReport = ({ person, reason, questions, days = 30 }: Pr
     'DATE RANGE AND COMPLETENESS', `${firstDate} to ${lastDate} · ${checkIns.length} check-ins · ${completeness}% of the selected ${days}-day window had data. Missing days were not treated as good or bad days.`,
     '',
     'BASELINE AND RECENT CHANGE', delta === null ? 'Not enough check-ins to compare an earlier baseline with recent observations.' : `Earlier average ${baseline}/100; recent average ${recent}/100; change ${delta > 0 ? '+' : ''}${delta} points. Scores summarize only the selected signals and their recorded presence.`,
+    '',
+    'OBSERVATION SUMMARY', checkIns.length === 0
+      ? 'No observations were recorded in this range.'
+      : careDiscussion
+        ? `Difficult observations appeared in ${difficultCheckIns} of ${checkIns.length} check-ins. This record supports discussing continued clinical care and current supports with the treating professional; it does not determine a diagnosis or treatment plan.`
+        : `Difficult observations appeared in ${difficultCheckIns} of ${checkIns.length} check-ins. Continue recording meaningful changes and discuss concerns with the treating professional.`,
     '',
     'MOST FREQUENT DIFFICULT SIGNALS', ...(difficult.length ? difficult.map((item) => `• ${item.name}: ${item.count} check-ins`) : ['None recorded in this range.']),
     '',
