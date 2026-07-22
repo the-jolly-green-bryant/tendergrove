@@ -444,7 +444,7 @@ const HouseholdPage = () => {
           selectedDateHasData={selectedDateHasData}
           onPersonClick={(personId) => history.push(`/person/${personId}`)}
           onRecapClick={() => history.push('/household/recap')}
-          onAddPersonClick={() => history.push('/people/new')}
+          onAddPersonClick={() => history.push(activePeople.length === 0 ? '/onboarding' : '/people/new')}
           onReturnToToday={goToToday}
         />
       )}

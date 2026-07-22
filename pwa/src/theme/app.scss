@@ -2283,3 +2283,16 @@ a:visited {
 .app-menu-link[href='/help-now'] {
   --color: var(--ion-color-danger);
 }
+
+.auth-preview { max-width: 360px; margin: 0 auto; padding: 0 1rem 1rem; color: #314235; }
+.auth-preview__toggle { padding: .7rem 1rem; border: 1px solid #617e65; border-radius: 999px; background: #fff; color: #314235; font-weight: 700; }
+.auth-preview__sample { display: grid; gap: .65rem; margin-top: .8rem; padding: 1rem; border-radius: 16px; background: #f3f5ee; text-align: left; }
+.auth-preview__sample label { display: block; }
+.auth-preview__payoff { display: grid; gap: .25rem; padding: .75rem; border-left: 3px solid #617e65; background: #fff; }
+.caregiver-onboarding { --background: #faf9f3; }
+.onboarding-lede { font-size: 1.1rem; line-height: 1.55; }
+.onboarding-chips { display: flex; flex-wrap: wrap; gap: .35rem; }
+.onboarding-safety, .onboarding-suggestions { margin: 1.25rem 0; padding: 1rem; border-radius: 18px; background: #fff; }
+.report-preview { min-height: 30rem; padding: 1rem; border: 1px solid var(--ion-color-light-shade); border-radius: 14px; font-family: ui-monospace, monospace; }
+.report-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0 2rem; }
+.first-week-payoff li { margin-bottom: .65rem; line-height: 1.45; }

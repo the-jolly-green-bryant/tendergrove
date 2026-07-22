@@ -1,11 +1,11 @@
 import React from 'react'
+import { IonButton, IonCard, IonCardContent } from '@ionic/react'
 
 import { Page } from '../../components/Page'
 import type { ScopedPatternsView } from './analytics'
 import { AnalyticsLoadingSkeleton } from './components/AnalyticsLoadingSkeleton'
 import { AnalyticsRefresher } from './components/AnalyticsRefresher'
 import { GeneratedInsightCard } from './components/GeneratedInsightCard'
-import { PatternsEmptyState } from './components/PatternsEmptyState'
 import { PatternsFilterBar } from './components/PatternsFilterBar'
 import { useHumanInsights } from './useHumanInsights'
 import { useScopedPatterns } from './useScopedPatterns'
@@ -23,12 +23,20 @@ const InsightsContent = ({
   )
 
   if (insights.length === 0) {
-    const who = view.personName ? `for ${view.personName}` : ''
     return (
-      <PatternsEmptyState
-        title="No clear takeaways yet"
-        message={`We don’t have enough to draw confident conclusions ${who} just yet. A week or two of check-ins usually does it.`}
-      />
+      <IonCard className="first-week-payoff"><IonCardContent>
+        <h2>Your starting picture</h2>
+        <p>{view.scoredDays === 0 ? 'Your first check-in will create a baseline.' : `${view.scoredDays} day${view.scoredDays === 1 ? '' : 's'} recorded so far. That is already useful context for an appointment.`}</p>
+        <h3>Questions worth noticing next</h3>
+        <ul>
+          <li>What changed in the hours before a difficult period?</li>
+          <li>How much sleep, food, and quiet time came beforehand?</li>
+          <li>What support was accepted, and what seemed to make things worse?</li>
+          <li>Did your own exhaustion change what help was available?</li>
+        </ul>
+        <p>We will wait for enough observations before calling something a pattern. Missing days are not treated as good days.</p>
+        <IonButton routerLink="/reports">Prepare for an appointment now</IonButton>
+      </IonCardContent></IonCard>
     )
   }
 

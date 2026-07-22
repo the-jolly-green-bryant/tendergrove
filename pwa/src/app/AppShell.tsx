@@ -35,9 +35,12 @@ import SafetyPage from '../features/safety/SafetyPage'
 import SettingsPage from '../features/settings/SettingsPage'
 import PrivacyPage from '../features/legal/PrivacyPage'
 import TermsPage from '../features/legal/TermsPage'
+import OnboardingPage from '../features/onboarding/OnboardingPage'
+import ReportsPage from '../features/reports/ReportsPage'
 
 export const appRoutes = [
   { path: '/dashboard', component: HouseholdPage },
+  { path: '/onboarding', component: OnboardingPage },
   { path: '/person/:personId', component: PersonPage },
   { path: '/person/:personId/edit', component: PersonFormPage },
   { path: '/person/:personId/indicators', component: ManageIndicatorsPage },
@@ -68,8 +71,8 @@ export const appRoutes = [
   },
   { path: '/archived', component: ArchivedPeoplePage },
   { path: '/check-in', component: TimelinePage },
-  { path: '/reports', component: InsightsPage },
-  { path: '/reports/export', component: InsightsPage },
+  { path: '/reports', component: ReportsPage },
+  { path: '/reports/export', component: ReportsPage },
   { path: '/patterns', component: PatternsOverviewPage },
   { path: '/patterns/calendar', component: CalendarHeatmapPage },
   { path: '/patterns/correlations', component: CorrelationsPage },

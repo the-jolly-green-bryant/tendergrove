@@ -34,7 +34,7 @@ import { parseAnswers } from './checkin/checkInUtils'
 import { useDateNavigator } from '../../components/DateNavigator'
 import { PersonAvatar } from '../../components/PersonAvatar'
 import { PersonRole } from '../../lib/domain'
-import { derivePersonStatus, todayEmoji } from '../../lib/status'
+import { derivePersonStatus, explainPersonStatus, todayEmoji } from '../../lib/status'
 import { PersonPatternsSection } from '../patterns/PersonPatternsSection'
 import { RawCheckIn, RawIndicator } from '../patterns/analytics'
 
@@ -301,12 +301,14 @@ const PersonCheckInPanel = ({
   emoji,
   viewDate,
   onStartCheckIn,
+  onExplainStatus,
 }: {
   readonly person: Person
   readonly status: PersonStatus
   readonly emoji?: string | null
   readonly viewDate: Date
   readonly onStartCheckIn: () => void
+  readonly onExplainStatus: () => void
 }) => (
   <section className="person-checkin-panel">
     <PersonCheckInButton
@@ -316,6 +318,7 @@ const PersonCheckInPanel = ({
       title={formatCheckInTitle(viewDate)}
       onClick={onStartCheckIn}
     />
+    <IonButton size="small" fill="clear" onClick={onExplainStatus}>Why this status?</IonButton>
   </section>
 )
 
@@ -412,6 +415,7 @@ const PersonPageLoadedContent = ({
   onShowMoreOptions,
   onManageIndicators,
   onManageEvents,
+  onExplainStatus,
 }: {
   readonly person: Person
   readonly viewDate: Date
@@ -423,6 +427,7 @@ const PersonPageLoadedContent = ({
   readonly onShowMoreOptions: () => void
   readonly onManageIndicators: () => void
   readonly onManageEvents: () => void
+  readonly onExplainStatus: () => void
 }) => (
   <>
     <div className="ion-padding">
@@ -438,6 +443,7 @@ const PersonPageLoadedContent = ({
         emoji={summary.emoji}
         viewDate={viewDate}
         onStartCheckIn={onStartCheckIn}
+        onExplainStatus={onExplainStatus}
       />
 
       <PersonPatternsSection
@@ -482,6 +488,7 @@ const PersonPage = (): React.JSX.Element | null => {
   const history = useHistory()
   const { startCheckIn, showMoreOptions, manageIndicators, manageEvents } =
     usePersonPageActions(person, personId)
+  const [presentStatusExplanation] = useIonAlert()
 
   const { viewDate, isTimelineView } = useMemo(
     () => getPersonPageDateView(location.search, selectedDate),
@@ -497,6 +504,14 @@ const PersonPage = (): React.JSX.Element | null => {
     setSelectedDate(new Date())
     if (isTimelineView) history.replace(`/person/${personId}`)
   }
+  const explainStatus = () => person && void presentStatusExplanation({
+    header: `How ${summary.status.label.toLowerCase()} was calculated`,
+    message: explainPersonStatus((person.indicators ?? []) as RawIndicator[], (person.checkIns ?? []) as RawCheckIn[]).replaceAll('\n', '<br>'),
+    buttons: [
+      { text: 'Review signals', handler: manageIndicators },
+      { text: 'Close', role: 'cancel' },
+    ],
+  })
 
   const { headerElement, calendarElement } = useDateNavigator({
     date: viewDate,
@@ -549,6 +564,7 @@ const PersonPage = (): React.JSX.Element | null => {
             onShowMoreOptions={showMoreOptions}
             onManageIndicators={manageIndicators}
             onManageEvents={manageEvents}
+            onExplainStatus={explainStatus}
           />
         )}
       </IonContent>

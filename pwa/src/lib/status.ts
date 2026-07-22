@@ -190,3 +190,28 @@ export const derivePersonStatus = (
   checkIns: CheckInLike[],
   now?: Date,
 ): Status => statusFromScore(computeWeightedScore(indicators, checkIns, now))
+
+export const explainPersonStatus = (
+  indicators: RawIndicator[],
+  checkIns: CheckInLike[],
+  now: Date = new Date(),
+): string => {
+  const active = indicators.filter((indicator) => indicator.active !== false)
+  const recent = [...checkIns]
+    .filter((checkIn) => {
+      const days = (now.getTime() - new Date(checkIn.occurredAt).getTime()) / 86_400_000
+      return days >= 0 && days < STATUS_LOOKBACK_DAYS
+    })
+    .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))
+  const lines = recent.slice(0, 7).map((checkIn) => {
+    const score = computeScore(active, checkIn)
+    const daysAgo = Math.max(0, Math.floor((now.getTime() - new Date(checkIn.occurredAt).getTime()) / 86_400_000))
+    return `${new Date(checkIn.occurredAt).toLocaleDateString()}: ${score ?? 'not scored'}/100 · ${daysAgo === 0 ? 'full recent weight' : `weight decreases with age (${daysAgo} days ago)`}`
+  })
+  return [
+    `This status uses ${active.length} active signals and ${recent.length} check-ins from the last ${STATUS_LOOKBACK_DAYS} days.`,
+    'Desired signals count positively when checked. Difficult signals count positively when absent and lower the daily score when checked. Recent check-ins receive more weight. Missing days are ignored—not scored as good or bad.',
+    lines.length ? `Recent contributions:\n${lines.join('\n')}` : 'There are no scoreable recent check-ins.',
+    'This score reflects only what was recorded. It is not a diagnosis or a measure of immediate safety.',
+  ].join('\n\n')
+}

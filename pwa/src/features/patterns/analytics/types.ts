@@ -553,6 +553,10 @@ export interface GeneratedInsight {
   icon: InsightIcon
   tone: InsightTone
   confidence: Confidence
+  evidence?: string
+  alternative?: string
+  action?: string
+  sampleSize?: number
 }
 
 /* ------------------------------------------------------------------ */

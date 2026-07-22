@@ -12,6 +12,7 @@ import { Page } from '../../components/Page'
 import { client } from '../../lib/api'
 import { clearOfflineCache } from '../../lib/resilientCache'
 import { usePeople } from '../people/usePeople'
+import { ReminderSettings } from './ReminderSettings'
 
 const downloadJson = (value: unknown) => {
   const blob = new Blob([JSON.stringify(value, null, 2)], { type: 'application/json' })
@@ -94,6 +95,12 @@ const SettingsPage = () => {
           <IonButton expand="block" color="danger" fill="clear" onClick={confirmAccountDelete}>Delete account</IonButton>
         </IonCardContent>
       </IonCard>
+      <IonCard><IonCardContent><ReminderSettings /></IonCardContent></IonCard>
+      <IonCard><IonCardContent>
+        <h2>Caregiver collaboration</h2>
+        <p><strong>No one else has access.</strong> Tendergrove will not expose a child’s records or private notes through a generic household share.</p>
+        <p>Invitations require person-by-person permissions, optional note access, attribution on every entry, and an audit history. Secure invitation redemption is not enabled in this build, so the app will not pretend an invitation is protected before that authorization layer exists.</p>
+      </IonCardContent></IonCard>
       <p className="legal-note">Tendergrove does not diagnose, predict emergencies, or replace professional care.</p>
     </Page>
   )

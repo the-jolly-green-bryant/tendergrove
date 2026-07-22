@@ -67,6 +67,10 @@ const hardestWeekdayInsight = (
     icon: 'calendar',
     tone: 'watch',
     confidence: hardest.sampleSize >= 4 ? 'high' : 'moderate',
+    evidence: `${hardest.sampleSize} recorded ${WEEKDAY_PLURAL[hardest.weekday].toLowerCase()} contributed to this pattern.`,
+    sampleSize: hardest.sampleSize,
+    alternative: 'Schedules, sleep, appointments, or missing check-ins may also affect this pattern.',
+    action: 'On the next similar day, note what happened beforehand and whether extra support changed what followed.',
   }
 }
 
@@ -95,6 +99,10 @@ const calmestWeekdayInsight = (
     icon: 'sparkle',
     tone: 'positive',
     confidence: best.sampleSize >= 4 ? 'high' : 'moderate',
+    evidence: `${best.sampleSize} recorded ${WEEKDAY_PLURAL[best.weekday].toLowerCase()} contributed to this pattern.`,
+    sampleSize: best.sampleSize,
+    alternative: 'A lighter schedule or another unrecorded difference may contribute.',
+    action: 'Write down one thing that was different on the next easier day.',
   }
 }
 
@@ -124,6 +132,10 @@ const timeOfDayInsight = (
     icon: 'moon',
     tone: 'watch',
     confidence: totalIncidents >= 12 ? 'high' : 'moderate',
+    evidence: `${Math.round(bestShare)}% of ${totalIncidents} recorded incidents fell in or near this time window.`,
+    sampleSize: totalIncidents,
+    alternative: 'Routine, hunger, medication timing, or when incidents get recorded may affect the result.',
+    action: 'Prepare one small support before this window and record whether it changes what follows.',
   }
 }
 
@@ -149,6 +161,12 @@ const correlationInsight = (
     icon: wantPositive ? 'leaf' : 'alert',
     tone: wantPositive ? 'positive' : 'watch',
     confidence: match.confidence,
+    evidence: `${match.sampleSize} scored days supported this comparison (relationship strength ${Math.abs(match.correlation).toFixed(2)}).`,
+    sampleSize: match.sampleSize,
+    alternative: 'The observations may share another cause. This pattern does not show that one caused the other.',
+    action: wantPositive
+      ? `Keep ${match.label.toLowerCase()} available where practical and record what happens next.`
+      : `When ${match.label.toLowerCase()} appears, note what happened beforehand and what support was tried.`,
   }
 }
 
@@ -166,6 +184,10 @@ const trendInsight = (
       icon: 'heart',
       tone: 'positive',
       confidence: trend.confidence,
+      evidence: `${trend.points.filter((point) => point.score !== null).length} scored days were available for this comparison.`,
+      sampleSize: trend.points.filter((point) => point.score !== null).length,
+      alternative: 'Missing days or changes in what was recorded may affect the apparent trend.',
+      action: 'Note one support or routine that may have contributed and try to keep it available.',
     }
   }
   if (trend.direction === 'worsening') {
@@ -178,6 +200,10 @@ const trendInsight = (
       icon: 'alert',
       tone: 'watch',
       confidence: trend.confidence,
+      evidence: `${trend.points.filter((point) => point.score !== null).length} scored days were available for this comparison.`,
+      sampleSize: trend.points.filter((point) => point.score !== null).length,
+      alternative: 'Missing days or changes in what was recorded may affect the apparent trend.',
+      action: 'Review the last few difficult days and bring the clearest change to a trusted professional.',
     }
   }
   return null
