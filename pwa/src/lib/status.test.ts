@@ -19,19 +19,19 @@ describe('shared observation status', () => {
     expect(score).toBe(100)
   })
 
-  it('keeps Beth in needs-attention when difficult observations persist', () => {
+  it('keeps Beth in concern when difficult observations persist', () => {
     const score = computeScore(indicators, {
       occurredAt: new Date().toISOString(),
       answersJson: JSON.stringify({ checked: ['sleep', 'voices'] }),
     })
 
     expect(score).toBe(0)
-    expect(statusFromScore(score).label).toBe('Needs attention')
+    expect(statusFromScore(score).label).toBe('Concern')
   })
 
   it('uses observation language rather than clinical risk classifications', () => {
-    expect(statusFromScore(90).label).toBe('No notable change')
-    expect(statusFromScore(70).label).toBe('More changes recorded')
-    expect(statusFromScore(null).label).toBe('Not enough data')
+    expect(statusFromScore(90).label).toBe('Steady')
+    expect(statusFromScore(70).label).toBe('Watch')
+    expect(statusFromScore(null).label).toBe('No data')
   })
 })

@@ -111,10 +111,10 @@ export const levelFromScore = (score: number): StatusLevel => {
 }
 
 const levelMeta: Record<StatusLevel, { label: string; color: Status['color'] }> = {
-  good: { label: 'No notable change', color: 'success' },
-  trouble: { label: 'More changes recorded', color: 'warning' },
-  'at-risk': { label: 'Needs attention', color: 'danger' },
-  unknown: { label: 'Not enough data', color: 'medium' },
+  good: { label: 'Steady', color: 'success' },
+  trouble: { label: 'Watch', color: 'warning' },
+  'at-risk': { label: 'Concern', color: 'danger' },
+  unknown: { label: 'No data', color: 'medium' },
 }
 
 export const statusFromScore = (score: number | null): Status => {

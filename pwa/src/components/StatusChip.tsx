@@ -8,10 +8,10 @@ interface PageProps {
 
 export const StatusChip = ({ label }: PageProps) => {
   const color = {
-    'Needs attention': 'danger',
-    'More changes recorded': 'warning',
-    'No notable change': 'success',
-    'Not enough data': 'medium',
+    Concern: 'danger',
+    Watch: 'warning',
+    Steady: 'success',
+    'No data': 'medium',
   }[label]
 
   return (
