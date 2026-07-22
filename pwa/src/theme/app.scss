@@ -2413,6 +2413,16 @@ a:visited {
   margin: 1rem;
 }
 
+.safety-escalation ion-button {
+  margin-top: 0.35rem;
+}
+
+.safety-escalation__pause {
+  margin: 0 1rem 1rem;
+  color: #6d4d49;
+  text-align: center;
+}
+
 .safety-page__urgent {
   padding: 1.15rem;
   border: 1px solid rgba(var(--ion-color-danger-rgb), 0.3);

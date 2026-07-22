@@ -1,5 +1,5 @@
-import { IonChip, IonIcon, IonSkeletonText } from '@ionic/react'
-import { chevronForwardOutline, menuOutline } from 'ionicons/icons'
+import { IonButton, IonChip, IonIcon, IonSkeletonText } from '@ionic/react'
+import { alertCircleOutline, chevronForwardOutline, menuOutline } from 'ionicons/icons'
 import { useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
 import { LoadErrorState } from '../../components/LoadErrorState'
@@ -294,6 +294,12 @@ const HouseholdHeroPanel = ({
           emptyPastDate={isTimeTravel && !selectedDateHasData}
           onRecapClick={onRecapClick}
         />
+      )}
+      {!isTimeTravel && (
+        <IonButton className="household-help-now" fill="clear" routerLink="/help-now">
+          <IonIcon slot="start" icon={alertCircleOutline} />
+          Get help now
+        </IonButton>
       )}
       {!isTimeTravel && <SelfCareQuote />}
     </section>

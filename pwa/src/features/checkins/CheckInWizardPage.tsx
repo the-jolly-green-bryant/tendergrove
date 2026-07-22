@@ -523,6 +523,7 @@ const CheckInSections = ({
 )
 
 const WizardStep = ({ personId, selectedDate, step }: WizardStepProps) => {
+  const [continuedAfterSafety, setContinuedAfterSafety] = useState(false)
   const challenges = indicatorItems(
     step.indicators.filter((i) => i.polarity === 'undesired'),
   )
@@ -536,6 +537,9 @@ const WizardStep = ({ personId, selectedDate, step }: WizardStepProps) => {
       .filter((indicator) => step.checked[indicator.id])
       .map((indicator) => indicator.name),
   ])
+  useEffect(() => {
+    if (!urgentSignal) setContinuedAfterSafety(false)
+  }, [urgentSignal])
 
   if (step.isLoading)
     return (
@@ -559,10 +563,17 @@ const WizardStep = ({ personId, selectedDate, step }: WizardStepProps) => {
         <section className="safety-escalation" role="alert">
           <h2>Pause and check immediate safety</h2>
           <p>This entry may describe an urgent safety concern. Grove cannot assess the danger. If anyone may be unsafe, contact trained help now.</p>
-          <IonButton color="danger" routerLink="/help-now">Get help now</IonButton>
+          <IonButton color="danger" routerLink="/help-now">Contact trained help</IonButton>
+          {!continuedAfterSafety && (
+            <IonButton fill="outline" color="danger" onClick={() => setContinuedAfterSafety(true)}>
+              I’m safe enough to continue recording
+            </IonButton>
+          )}
         </section>
       )}
-      {nothingToTrack ? (
+      {urgentSignal && !continuedAfterSafety ? (
+        <p className="safety-escalation__pause">The ordinary check-in is paused until you choose a safety option above.</p>
+      ) : nothingToTrack ? (
         <EmptyIndicatorsMessage personId={personId} />
       ) : (
         <CheckInSections
