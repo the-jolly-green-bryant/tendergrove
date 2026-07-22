@@ -23,6 +23,7 @@ import {
   chevronForwardOutline,
   homeOutline,
   logOutOutline,
+  menuOutline,
   statsChartOutline,
   settingsOutline,
   timeOutline,
@@ -52,12 +53,15 @@ interface PageProps {
 
 export const IllustratedHeaderTitle = ({
   title,
+  start,
   end,
 }: {
-  readonly title: string
+  readonly title: ReactNode
+  readonly start?: ReactNode
   readonly end?: ReactNode
 }) => (
   <div className="illustrated-header-title">
+    {start && <div className="illustrated-header-title__start">{start}</div>}
     <h1>{title}</h1>
     <span
       className="illustrated-header-title__flourish"
@@ -324,8 +328,8 @@ export const Page = ({
     headerClassName = `page-header--illustrated${subHeaderContent ? '' : ' page-header--illustrated-compact'}`
   }
   const toolbarClassName = transparentHeaderUntilScroll
-    ? 'page-toolbar--transparent'
-    : ''
+    ? 'page-toolbar page-toolbar--transparent'
+    : 'page-toolbar'
 
   return (
     <IonPage>
@@ -346,7 +350,9 @@ export const Page = ({
                 aria-label="Back"
               />
             ) : (
-              <IonMenuButton menu="main-navigation" />
+              <IonMenuButton menu="main-navigation" aria-label="Open menu">
+                <IonIcon icon={menuOutline} aria-hidden="true" />
+              </IonMenuButton>
             )}
           </IonButtons>
           {headerContent ?? <IonTitle>{title}</IonTitle>}

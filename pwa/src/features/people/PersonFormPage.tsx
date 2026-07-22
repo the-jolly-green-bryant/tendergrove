@@ -108,7 +108,7 @@ const loadImageFromFile = (file: File): Promise<HTMLImageElement> =>
     image.src = objectUrl
   })
 
-const createAvatarDataUrl = async (file: File): Promise<string> => {
+export const createAvatarDataUrl = async (file: File): Promise<string> => {
   if (!file.type.startsWith('image/')) {
     throw new Error('Choose an image file.')
   }

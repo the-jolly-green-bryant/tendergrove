@@ -1,5 +1,5 @@
 import { IonChip, IonIcon, IonSkeletonText } from '@ionic/react'
-import { chevronForwardOutline } from 'ionicons/icons'
+import { chevronForwardOutline, menuOutline } from 'ionicons/icons'
 import { useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
 import { LoadErrorState } from '../../components/LoadErrorState'
@@ -406,10 +406,11 @@ const HouseholdPage = () => {
 
   return (
     <Page
-      title="Home"
+      title="Tendergrove"
       headerContent={
         <IllustratedHeaderTitle
-          title="Home"
+          title={<img className="brand-wordmark-image brand-wordmark-image--dashboard" src="/assets/brand/tendergrove-wordmark.svg" alt="Tendergrove" />}
+          start={<button className="dashboard-header-menu" type="button" aria-label="Open menu" onClick={() => void document.querySelector<HTMLIonMenuElement>('ion-menu')?.open()}><IonIcon icon={menuOutline} /></button>}
           end={calendarButtonElement}
         />
       }

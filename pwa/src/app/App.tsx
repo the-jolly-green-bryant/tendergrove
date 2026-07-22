@@ -9,27 +9,74 @@ import { AuthProvider } from '../auth/AuthContext'
 import { signInWithGoogleNative } from '../auth/nativeGoogleSignIn'
 import { SelectedDateProvider } from '../context/SelectedDateContext'
 import AppShell from './AppShell'
+import { clearOfflineCache } from '../lib/resilientCache'
 
 const isNative = Capacitor.isNativePlatform()
 
-const ProductPreview = () => {
-  const [open, setOpen] = useState(false)
-  const [checked, setChecked] = useState<string[]>(['Only slept 3 hours'])
-  const signals = ['Only slept 3 hours', 'Unusually fearful', 'Accepted a meal', 'Let me sit nearby']
-  const toggle = (signal: string) => setChecked((current) => current.includes(signal) ? current.filter((item) => item !== signal) : [...current, signal])
+type AuthIntent = 'signIn' | 'signUp'
+
+const WELCOME_STEPS = [
+  {
+    eyebrow: 'Welcome to Tendergrove',
+    title: 'When every day is a lot, remembering the pattern shouldn’t be another burden.',
+    body: 'Tendergrove helps parents capture meaningful changes without requiring a diagnosis, a perfect timeline, or long journal entries.',
+    icon: '🌿',
+    review: ['Built for overwhelmed caregivers', 'A few taps when words are hard', 'Track your child and your own burnout'],
+  },
+  {
+    eyebrow: 'Notice what changed',
+    title: 'Start with the signals that matter in your home.',
+    body: 'Choose a small set of difficult and positive signs—sleep, fear, withdrawal, communication, eating, accepting support, or your own exhaustion.',
+    icon: '✓',
+    review: ['No giant symptom checklist', 'Signals can change as you learn', 'Check in when you can—gaps simply stay blank'],
+  },
+  {
+    eyebrow: 'Turn memory into evidence',
+    title: 'See what happened, what came before, and what may be helping.',
+    body: 'Tendergrove organizes daily observations into timelines, gentle patterns, and explainable status changes. Every insight shows the observations behind it and other possible explanations.',
+    icon: '⌁',
+    review: ['Evidence and sample size', 'One practical thing to notice next', 'No diagnosis or false certainty'],
+  },
+  {
+    eyebrow: 'Walk into the next conversation prepared',
+    title: 'Bring a clearer story to the people helping your family.',
+    body: 'Create an editable appointment summary with changes over time, frequent signals, interventions, notes, and the questions you need answered.',
+    icon: '↗',
+    review: ['Plain text, PDF, and CSV', 'Preview everything before sharing', 'Crisis support is always available'],
+  },
+] as const
+
+const WelcomeJourney = ({ onContinue }: { readonly onContinue: (intent: AuthIntent) => void }) => {
+  const [step, setStep] = useState(0)
+  const content = WELCOME_STEPS[step]
+  const last = step === WELCOME_STEPS.length - 1
   return (
-    <section className="auth-preview">
-      <p>For parents trying to remember what changed, what happened before, and what helped.</p>
-      <button type="button" className="auth-preview__toggle" onClick={() => setOpen((value) => !value)}>{open ? 'Close sample' : 'Try a 30-second sample check-in'}</button>
-      {open && (
-        <div className="auth-preview__sample">
-          <strong>Sample: what happened today?</strong>
-          {signals.map((signal) => <label key={signal}><input type="checkbox" checked={checked.includes(signal)} onChange={() => toggle(signal)} /> {signal}</label>)}
-          <div className="auth-preview__payoff"><strong>What Tendergrove will help reveal</strong><span>Changes over time, possible patterns, and an appointment-ready summary grounded in your observations.</span></div>
-          <small>This sample is not saved. Tendergrove does not diagnose or decide whether emergency or hospital care is needed.</small>
-        </div>
-      )}
-    </section>
+    <IonApp>
+      <main className="welcome-journey">
+        <header className="welcome-journey__header">
+          <div className="welcome-journey__brand"><img src="/favicon.png" alt="" /><span>Tendergrove</span></div>
+          <button type="button" onClick={() => onContinue('signIn')}>Already have an account</button>
+        </header>
+        <section className="welcome-journey__card">
+          <div className="welcome-journey__progress" aria-label={`Step ${step + 1} of ${WELCOME_STEPS.length}`}>
+            {WELCOME_STEPS.map((item, index) => <i key={item.eyebrow} className={index <= step ? 'is-active' : ''} />)}
+          </div>
+          <span className="welcome-journey__icon" aria-hidden="true">{content.icon}</span>
+          <p className="welcome-journey__eyebrow">{content.eyebrow}</p>
+          <h1>{content.title}</h1>
+          <p className="welcome-journey__body">{content.body}</p>
+          <div className="welcome-journey__review">
+            <p>What this means for you</p>
+            {content.review.map((item) => <span key={item}><b>✓</b>{item}</span>)}
+          </div>
+          <div className="welcome-journey__actions">
+            {step > 0 && <button type="button" className="welcome-journey__back" onClick={() => setStep((value) => value - 1)}>Back</button>}
+            <button type="button" className="welcome-journey__next" onClick={() => last ? onContinue('signUp') : setStep((value) => value + 1)}>{last ? 'Create my account' : 'Continue'}</button>
+          </div>
+          <small>{step + 1} of {WELCOME_STEPS.length} · Tendergrove does not diagnose or decide whether hospital care is needed.</small>
+        </section>
+      </main>
+    </IonApp>
   )
 }
 
@@ -91,21 +138,31 @@ const NativeGoogleButton = () => {
 const authComponents = {
   Header() {
     return (
-      <div style={{ textAlign: 'center', padding: '24px 0 8px' }}>
-        <img
-          src="/favicon.png"
-          alt="Tendergrove"
-          style={{ width: 80, height: 80, borderRadius: 16 }}
-        />
-        <h2 style={{ margin: '8px 0 0', color: '#4A2D8B', fontWeight: 600 }}>
-          Tendergrove
-        </h2>
-        <ProductPreview />
+      <div className="auth-brand">
+        <img className="brand-wordmark-image brand-wordmark-image--auth" src="/assets/brand/tendergrove-wordmark.svg" alt="Tendergrove" />
+        <p>Notice gently. Remember clearly.</p>
       </div>
     )
   },
-  // On native, render our own Google button under the sign-in form.
-  ...(isNative ? { SignIn: { Footer: NativeGoogleButton } } : {}),
+  SignIn: {
+    Header() {
+      return <div className="auth-form-intro"><h1>Welcome back</h1><p>Return to your household’s observations and notes.</p></div>
+    },
+    ...(isNative ? { Footer: NativeGoogleButton } : {}),
+  },
+  SignUp: {
+    Header() {
+      return <div className="auth-form-intro"><h1>Create your account</h1><p>Your household information stays connected to this private sign-in.</p></div>
+    },
+  },
+  ConfirmSignUp: {
+    Header() {
+      return <div className="auth-code-intro"><img className="brand-wordmark-image brand-wordmark-image--compact" src="/assets/brand/tendergrove-wordmark.svg" alt="Tendergrove" /><p className="auth-code-intro__eyebrow">One last step</p><h1>Check your email</h1><p>Enter the Tendergrove confirmation code we sent you. This verifies that the email belongs to you.</p></div>
+    },
+    Footer() {
+      return <p className="auth-code-footer">The code may take a minute to arrive. Check spam or request a new code if needed. Tendergrove will never ask you to share this code with another person.</p>
+    },
+  },
 }
 
 const handleGlobalError = (error: unknown) => {
@@ -131,26 +188,44 @@ const queryClient = new QueryClient({
 queryClient.getQueryCache().config.onError = handleGlobalError
 queryClient.getMutationCache().config.onError = handleGlobalError
 
-const App = () => (
-  <Authenticator
+const App = () => {
+  const [authIntent, setAuthIntent] = useState<AuthIntent | null>(() =>
+    localStorage.getItem('tendergrove:welcome-seen') ? 'signIn' : null,
+  )
+  const continueToAuth = (intent: AuthIntent) => {
+    localStorage.setItem('tendergrove:welcome-seen', 'true')
+    setAuthIntent(intent)
+  }
+  if (!authIntent) return <WelcomeJourney onContinue={continueToAuth} />
+  return <Authenticator
+    initialState={authIntent}
     socialProviders={isNative ? [] : ['google']}
     components={authComponents}
   >
-    {({ signOut, user }) => (
-      <AuthProvider
-        user={user}
-        signOut={signOut}
-      >
-        <QueryClientProvider client={queryClient}>
-          <SelectedDateProvider>
-            <IonApp>
-              <AppShell />
-            </IonApp>
-          </SelectedDateProvider>
-        </QueryClientProvider>
-      </AuthProvider>
-    )}
+    {({ signOut, user }) => {
+      const signOutToWelcome = async () => {
+        await signOut?.()
+        queryClient.clear()
+        clearOfflineCache()
+        localStorage.removeItem('tendergrove:welcome-seen')
+        setAuthIntent(null)
+      }
+      return (
+        <AuthProvider
+          user={user}
+          signOut={() => void signOutToWelcome()}
+        >
+          <QueryClientProvider client={queryClient}>
+            <SelectedDateProvider>
+              <IonApp>
+                <AppShell />
+              </IonApp>
+            </SelectedDateProvider>
+          </QueryClientProvider>
+        </AuthProvider>
+      )
+    }}
   </Authenticator>
-)
+}
 
 export default App
