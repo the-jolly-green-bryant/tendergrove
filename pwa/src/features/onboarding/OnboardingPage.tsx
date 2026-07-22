@@ -338,7 +338,7 @@ const OnboardingPage = () => {
                 <button type="button" role="radio" aria-checked={unsafe === false} onClick={() => setUnsafe(false)}>No immediate danger</button>
                 <button type="button" role="radio" aria-checked={unsafe === true} onClick={() => setUnsafe(true)}>Yes or not sure</button>
               </div>
-              {unsafe === true && <div className="safety-escalation"><strong>Do not wait on Grove.</strong><p>If someone may be in immediate danger, contact emergency services or trained crisis support now.</p><IonButton color="danger" routerLink="/help-now">Get help now</IonButton></div>}
+              {unsafe === true && <div className="safety-escalation"><strong>Do not wait on Grove.</strong><p>If someone may be in immediate danger, contact emergency services or trained crisis support now.</p><IonButton color="danger" routerLink="/help-now">View support options</IonButton></div>}
             </section>
           </>}
 

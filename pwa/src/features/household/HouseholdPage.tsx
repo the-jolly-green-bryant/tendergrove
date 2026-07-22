@@ -298,7 +298,7 @@ const HouseholdHeroPanel = ({
       {!isTimeTravel && (
         <IonButton className="household-help-now" fill="clear" routerLink="/help-now">
           <IonIcon slot="start" icon={alertCircleOutline} />
-          Get help now
+          Safety &amp; support
         </IonButton>
       )}
       {!isTimeTravel && <SelfCareQuote />}

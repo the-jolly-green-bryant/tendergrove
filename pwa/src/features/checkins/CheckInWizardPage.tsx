@@ -563,7 +563,7 @@ const WizardStep = ({ personId, selectedDate, step }: WizardStepProps) => {
         <section className="safety-escalation" role="alert">
           <h2>Pause and check immediate safety</h2>
           <p>This entry may describe an urgent safety concern. Grove cannot assess the danger. If anyone may be unsafe, contact trained help now.</p>
-          <IonButton color="danger" routerLink="/help-now">Contact trained help</IonButton>
+          <IonButton color="danger" routerLink="/help-now">View support options</IonButton>
           {!continuedAfterSafety && (
             <IonButton fill="outline" color="danger" onClick={() => setContinuedAfterSafety(true)}>
               I’m safe enough to continue recording

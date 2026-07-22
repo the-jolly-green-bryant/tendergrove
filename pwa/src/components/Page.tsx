@@ -78,7 +78,7 @@ export const menuItems = [
     href: '/help-now',
     direction: 'forward',
     icon: alertCircleOutline,
-    label: 'Get help now',
+    label: 'Safety & support',
   },
   {
     href: '/dashboard',

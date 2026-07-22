@@ -54,7 +54,7 @@ const SafetyPage = () => {
   }
 
   return (
-    <Page title="Get help now" backHref="/dashboard" className="safety-page">
+    <Page title="Safety & support" backHref="/dashboard" className="safety-page">
       <section className="safety-page__intro">
         <span className="safety-page__intro-icon"><IonIcon icon={heartOutline} /></span>
         <p className="safety-page__eyebrow">Support is available right now</p>
