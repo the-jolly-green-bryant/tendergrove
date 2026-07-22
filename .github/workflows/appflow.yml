@@ -130,7 +130,7 @@ jobs:
 
           notes="$(git log --format='• %s' "$before..$GITHUB_SHA" | head -20)"
           if [[ -z "$notes" ]]; then
-            notes="• Tendergrove closed testing update"
+            notes="• Grove closed testing update"
           fi
 
           {
@@ -145,8 +145,14 @@ jobs:
           GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
           PLAY_PACKAGE_NAME: com.bryantjames.tendergrove
           PLAY_TRACK: alpha
-          PLAY_RELEASE_NAME: Tendergrove ${{ steps.android_build.outputs.ANDROID_BUILD_NUMBER }}
+          PLAY_RELEASE_NAME: Grove ${{ steps.android_build.outputs.ANDROID_BUILD_NUMBER }}
           PLAY_RELEASE_NOTES: ${{ steps.release_notes.outputs.NOTES }}
+          PLAY_LISTING_LANGUAGE: en-US
+          PLAY_LISTING_TITLE: Grove
+          PLAY_LISTING_SHORT_DESCRIPTION: Track family wellbeing, daily changes, and caregiver observations.
+          PLAY_LISTING_FULL_DESCRIPTION: >-
+            Grove Care helps parents and caregivers record daily wellbeing, meaningful changes, difficult and positive signals, and what may be helping. Build a clearer history without needing a diagnosis or a perfect journal. Review explainable patterns, prepare editable appointment summaries, and bring organized observations to conversations with clinicians, schools, and other professionals. Grove is an observation and organization tool; it does not diagnose, predict emergencies, or replace professional care.
+          PLAY_LISTING_ICON_PATH: pwa/store/google-play/icon-512.png
         run: |
           set -euo pipefail
           test -n "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" || {
@@ -162,6 +168,8 @@ jobs:
           jq -e '
             .track == "alpha"
             and .status == "completed"
+            and .listingTitle == "Grove"
+            and .listingIconUpdated == true
             and (.versionCodes | length > 0)
           ' google-play-release.json > /dev/null
 
@@ -175,6 +183,7 @@ jobs:
             echo "- Android version code: ${{ steps.android_build.outputs.ANDROID_BUILD_NUMBER }}"
             echo "- Destination: $DESTINATION"
             echo "- Google Play track: Closed testing ($PLAY_TRACK)"
+            echo "- Google Play listing: Grove"
             echo "- Tester availability: Published"
             echo "- Release notes: commit summary"
             echo "- Commit: \`$GITHUB_SHA\`"
