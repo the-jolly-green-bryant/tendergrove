@@ -1,14 +1,15 @@
 import { IonButton, IonInput, IonItem, IonLabel, IonList, IonToggle } from '@ionic/react'
 import { Capacitor } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useAppAuth } from '../../auth/AuthContext'
+import { accountStorageKey } from '../../lib/accountStorage'
 
-const KEY = 'tendergrove:gentle-reminder'
 interface ReminderValue { enabled: boolean; time: string; skippedDate?: string }
-const read = (): ReminderValue => { try { return { enabled: false, time: '20:00', ...JSON.parse(localStorage.getItem(KEY) ?? '{}') } } catch { return { enabled: false, time: '20:00' } } }
+const read = (accountId?: string): ReminderValue => { try { return { enabled: false, time: '20:00', ...JSON.parse(localStorage.getItem(accountStorageKey(accountId, 'gentle-reminder')) ?? '{}') } } catch { return { enabled: false, time: '20:00' } } }
 
-const schedule = async (value: ReminderValue) => {
-  localStorage.setItem(KEY, JSON.stringify(value))
+const schedule = async (accountId: string | undefined, value: ReminderValue) => {
+  localStorage.setItem(accountStorageKey(accountId, 'gentle-reminder'), JSON.stringify(value))
   if (!Capacitor.isNativePlatform()) return
   await LocalNotifications.cancel({ notifications: Array.from({ length: 7 }, (_, index) => ({ id: 4200 + index })) })
   if (!value.enabled) return
@@ -24,9 +25,15 @@ const schedule = async (value: ReminderValue) => {
 }
 
 export const ReminderSettings = () => {
-  const [value, setValue] = useState(read)
+  const { user } = useAppAuth()
+  const accountId = user?.userId
+  const [value, setValue] = useState(() => read(accountId))
   const [saved, setSaved] = useState(false)
-  const save = async (next = value) => { setValue(next); await schedule(next); setSaved(true) }
+  useEffect(() => {
+    setValue(read(accountId))
+    setSaved(false)
+  }, [accountId])
+  const save = async (next = value) => { setValue(next); await schedule(accountId, next); setSaved(true) }
   const notToday = () => void save({ ...value, skippedDate: new Date().toISOString().slice(0, 10) })
   return <section>
     <h2>Gentle reminders</h2>

@@ -19,7 +19,8 @@ import {
   peopleOutline,
   shieldCheckmarkOutline,
 } from 'ionicons/icons'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useAppAuth } from '../../auth/AuthContext'
 import { Page } from '../../components/Page'
 import {
   readSafetySettings,
@@ -38,8 +39,14 @@ const crisisResource = (country: SafetySettings['country']) => {
 }
 
 const SafetyPage = () => {
-  const [settings, setSettings] = useState(readSafetySettings)
+  const { user } = useAppAuth()
+  const accountId = user?.userId
+  const [settings, setSettings] = useState(() => readSafetySettings(accountId))
   const [saved, setSaved] = useState(false)
+  useEffect(() => {
+    setSettings(readSafetySettings(accountId))
+    setSaved(false)
+  }, [accountId])
   const resource = crisisResource(settings.country)
   const update = <K extends keyof SafetySettings>(key: K, value: SafetySettings[K]) => {
     setSaved(false)
@@ -110,7 +117,7 @@ const SafetyPage = () => {
           </IonList>
           <div className="safety-page__plan-actions">
             {settings.trustedPhone && <IonButton fill="outline" href={`tel:${settings.trustedPhone}`}>Call {settings.trustedContact || 'trusted person'}</IonButton>}
-            <IonButton onClick={() => { writeSafetySettings(settings); setSaved(true) }}>Save safety plan</IonButton>
+            <IonButton onClick={() => { writeSafetySettings(accountId, settings); setSaved(true) }}>Save safety plan</IonButton>
           </div>
           {saved && <IonLabel className="safety-page__saved" color="success">Saved on this device.</IonLabel>}
         </IonCardContent>

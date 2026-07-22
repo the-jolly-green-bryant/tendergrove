@@ -6,7 +6,7 @@ export interface SafetySettings {
   calmingSteps: string
 }
 
-const KEY = 'tendergrove:safety-plan'
+import { accountStorageKey } from '../../lib/accountStorage'
 
 export const DEFAULT_SAFETY_SETTINGS: SafetySettings = {
   country: 'US',
@@ -16,13 +16,13 @@ export const DEFAULT_SAFETY_SETTINGS: SafetySettings = {
   calmingSteps: '',
 }
 
-export const readSafetySettings = (): SafetySettings => {
+export const readSafetySettings = (accountId?: string): SafetySettings => {
   try {
-    return { ...DEFAULT_SAFETY_SETTINGS, ...JSON.parse(localStorage.getItem(KEY) ?? '{}') }
+    return { ...DEFAULT_SAFETY_SETTINGS, ...JSON.parse(localStorage.getItem(accountStorageKey(accountId, 'safety-plan')) ?? '{}') }
   } catch {
     return DEFAULT_SAFETY_SETTINGS
   }
 }
 
-export const writeSafetySettings = (value: SafetySettings): void =>
-  localStorage.setItem(KEY, JSON.stringify(value))
+export const writeSafetySettings = (accountId: string | undefined, value: SafetySettings): void =>
+  localStorage.setItem(accountStorageKey(accountId, 'safety-plan'), JSON.stringify(value))

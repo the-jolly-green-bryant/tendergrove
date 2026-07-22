@@ -36,6 +36,8 @@ import { useCheckInMutations } from '../people/checkin/useCheckInMutations'
 import { PersonCheckInButton } from '../people/PersonPage'
 import { RawCheckIn, RawIndicator } from '../patterns/analytics'
 import { containsUrgentSafetySignal } from '../../lib/safety'
+import { useAppAuth } from '../../auth/AuthContext'
+import { accountStorageKey } from '../../lib/accountStorage'
 
 const isSameDay = (occurredAt: string, date: Date): boolean =>
   isSameLocalDay(new Date(occurredAt), date)
@@ -214,13 +216,14 @@ const commitCheckIn = async (
 }
 
 const useCheckInDraft = (
+  accountId: string | undefined,
   personId: string,
   selectedDate: Date,
   existing: RawCheckIn | undefined,
   householdEventIds: string[],
   householdEventsLoading: boolean,
 ) => {
-  const draftKey = `tendergrove:check-in-draft:${personId}:${toLocalDateKey(selectedDate)}`
+  const draftKey = accountStorageKey(accountId, `check-in-draft:${personId}:${toLocalDateKey(selectedDate)}`)
   const [checked, setChecked] = useState<CheckedIndicators>({})
   const [checkedEvents, setCheckedEvents] = useState<CheckedIndicators>({})
   const [note, setNote] = useState('')
@@ -278,6 +281,7 @@ const useWizardStepState = ({
   personId,
   selectedDate,
 }: Pick<WizardStepProps, 'personId' | 'selectedDate'>) => {
+  const { user } = useAppAuth()
   const { data: person, isLoading } = usePerson(personId)
   const peopleQuery = usePeople()
   const indicatorsQuery = useIndicators(personId)
@@ -312,6 +316,7 @@ const useWizardStepState = ({
     return [...ids].sort()
   }, [peopleQuery.data, person?.householdId, selectedDate])
   const draft = useCheckInDraft(
+    user?.userId,
     personId,
     selectedDate,
     existing,
