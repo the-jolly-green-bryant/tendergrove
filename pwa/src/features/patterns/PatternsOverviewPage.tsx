@@ -615,6 +615,14 @@ const PatternsOverviewPage = (): React.JSX.Element => {
       {hasError && <p>We couldn’t load your patterns just now. Please try again.</p>}
       {!isLoading && !hasError && view && result && (
         <>
+          <aside className="patterns-disclaimer" role="note">
+            <strong>Observations, not conclusions.</strong>
+            <span>
+              Patterns reflect only what was recorded. They may have other
+              explanations and do not diagnose a condition, predict an emergency,
+              or determine whether hospital care is needed.
+            </span>
+          </aside>
           <PatternsTabs
             active={tab}
             onChange={setTab}

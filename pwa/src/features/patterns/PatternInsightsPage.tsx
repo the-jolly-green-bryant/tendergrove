@@ -34,7 +34,7 @@ const InsightsContent = ({
           <li>What support was accepted, and what seemed to make things worse?</li>
           <li>Did your own exhaustion change what help was available?</li>
         </ul>
-        <p>We will wait for enough observations before calling something a pattern. Missing days are not treated as good days.</p>
+        <p>There is no streak to protect. Check in when you can; we will wait for enough observations before calling something a pattern.</p>
         <IonButton routerLink="/reports">Prepare for an appointment now</IonButton>
       </IonCardContent></IonCard>
     )

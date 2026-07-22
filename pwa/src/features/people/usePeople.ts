@@ -3,6 +3,7 @@ import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import { client } from '../../lib/api'
 import { RawPerson } from '../patterns/analytics'
 import { readCachedValue, writeCachedValue } from '../../lib/resilientCache'
+import { useAppAuth } from '../../auth/AuthContext'
 
 const peopleSelectionSet = [
   'id',
@@ -27,10 +28,14 @@ const peopleSelectionSet = [
   'indicators.name',
 ] as const
 
-export const usePeople = (): UseQueryResult<RawPerson[]> =>
-  useQuery({
-    queryKey: ['people'],
-    initialData: () => readCachedValue<RawPerson[]>('people')?.value,
+export const usePeople = (): UseQueryResult<RawPerson[]> => {
+  const { user } = useAppAuth()
+  const accountKey = user?.userId ?? 'signed-out'
+  return useQuery({
+    queryKey: ['people', accountKey],
+    enabled: Boolean(user),
+    refetchOnMount: 'always',
+    initialData: () => readCachedValue<RawPerson[]>(`${accountKey}:people`)?.value,
     queryFn: async () => {
       const result = await client.models.Person.list({
         selectionSet: peopleSelectionSet,
@@ -41,7 +46,8 @@ export const usePeople = (): UseQueryResult<RawPerson[]> =>
       }
 
       const people = result.data as unknown as RawPerson[]
-      writeCachedValue('people', people)
+      writeCachedValue(`${accountKey}:people`, people)
       return people
     },
   })
+}

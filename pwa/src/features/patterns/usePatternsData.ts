@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { client } from '../../lib/api'
 import type { RawLifeEvent, RawPerson } from './analytics'
 import { readCachedValue, writeCachedValue } from '../../lib/resilientCache'
+import { useAppAuth } from '../../auth/AuthContext'
 
 const patternsSelectionSet = [
   'id',
@@ -34,10 +35,13 @@ export interface PatternsData {
   lifeEvents: RawLifeEvent[]
 }
 
-export const usePatternsData = () =>
-  useQuery({
-    queryKey: ['patterns-data'],
-    initialData: () => readCachedValue<PatternsData>('patterns')?.value,
+export const usePatternsData = () => {
+  const { user } = useAppAuth()
+  const accountKey = user?.userId ?? 'signed-out'
+  return useQuery({
+    queryKey: ['patterns-data', accountKey],
+    enabled: Boolean(user),
+    initialData: () => readCachedValue<PatternsData>(`${accountKey}:patterns`)?.value,
 
     queryFn: async (): Promise<PatternsData> => {
       const [peopleResult, lifeEventsResult] = await Promise.all([
@@ -63,7 +67,8 @@ export const usePatternsData = () =>
           (event) => event.archived !== true,
         ),
       }
-      writeCachedValue('patterns', data)
+      writeCachedValue(`${accountKey}:patterns`, data)
       return data
     },
   })
+}
