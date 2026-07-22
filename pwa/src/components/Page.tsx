@@ -21,6 +21,7 @@ import {
   archiveOutline,
   chevronBackOutline,
   chevronForwardOutline,
+  documentTextOutline,
   homeOutline,
   logOutOutline,
   menuOutline,
@@ -97,6 +98,12 @@ export const menuItems = [
     direction: 'forward',
     icon: analyticsOutline,
     label: 'Patterns',
+  },
+  {
+    href: '/reports',
+    direction: 'forward',
+    icon: documentTextOutline,
+    label: 'Appointment prep',
   },
   {
     href: '/archived',

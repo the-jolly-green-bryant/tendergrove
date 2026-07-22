@@ -1,8 +1,10 @@
 import { IonButton, IonItem, IonList, IonSelect, IonSelectOption, IonTextarea } from '@ionic/react'
 import { useEffect, useMemo, useState } from 'react'
 import { Page } from '../../components/Page'
+import { useAppAuth } from '../../auth/AuthContext'
 import { usePeople } from '../people/usePeople'
 import { buildProviderReport, reportCsv } from './reportBuilder'
+import { readReportPins, removeReportPin } from './reportPins'
 
 const download = (name: string, content: string, type: string) => {
   const url = URL.createObjectURL(new Blob([content], { type }))
@@ -14,13 +16,19 @@ const download = (name: string, content: string, type: string) => {
 }
 
 const ReportsPage = () => {
+  const { user } = useAppAuth()
   const people = usePeople()
   const activePeople = (people.data ?? []).filter((person) => !person.archived)
   const [personId, setPersonId] = useState('')
   const selected = activePeople.find((person) => person.id === personId) ?? activePeople[0]
   const [reason, setReason] = useState('')
   const [questions, setQuestions] = useState('')
-  const report = useMemo(() => selected ? buildProviderReport({ person: selected, reason, questions }) : null, [questions, reason, selected])
+  const [pins, setPins] = useState(() => readReportPins(user?.userId))
+  const selectedPins = useMemo(
+    () => pins.filter((pin) => pin.personId === null || pin.personId === selected?.id),
+    [pins, selected?.id],
+  )
+  const report = useMemo(() => selected ? buildProviderReport({ person: selected, reason, questions, pinnedObservations: selectedPins.map((pin) => pin.text) }) : null, [questions, reason, selected, selectedPins])
   const [editedText, setEditedText] = useState('')
   useEffect(() => setEditedText(report?.text ?? ''), [report])
   const baseName = `grove-care-${selected?.displayName.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-') || 'report'}`
@@ -45,6 +53,10 @@ const ReportsPage = () => {
       <IonItem><IonTextarea label="Reason for tracking" labelPlacement="stacked" placeholder="What changed, what is happening now, and what you need help deciding" value={reason} onIonInput={(event) => setReason(event.detail.value ?? '')} /></IonItem>
       <IonItem><IonTextarea label="Questions for the professional" labelPlacement="stacked" value={questions} onIonInput={(event) => setQuestions(event.detail.value ?? '')} /></IonItem>
     </IonList>
+    {selectedPins.length > 0 && <section className="report-pins">
+      <h2>Added for this appointment</h2>
+      {selectedPins.map((pin) => <IonItem key={pin.id}><span>{pin.text.split('\n')[0]}</span><IonButton slot="end" fill="clear" color="medium" onClick={() => setPins(removeReportPin(user?.userId, pin.id))}>Remove</IonButton></IonItem>)}
+    </section>}
     {report && <>
       <h2>Preview before sharing</h2>
       <IonTextarea className="report-preview" autoGrow value={editedText} onIonInput={(event) => setEditedText(event.detail.value ?? '')} />

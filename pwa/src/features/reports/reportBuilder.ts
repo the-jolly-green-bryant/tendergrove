@@ -7,6 +7,7 @@ export interface ProviderReportInput {
   reason: string
   questions: string
   days?: number
+  pinnedObservations?: string[]
 }
 
 const frequencyLines = (person: RawPerson, polarity: 'desired' | 'undesired') => {
@@ -32,7 +33,7 @@ const averageScore = (person: RawPerson, checkIns: NonNullable<RawPerson['checkI
   return Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length)
 }
 
-export const buildProviderReport = ({ person, reason, questions, days = 30 }: ProviderReportInput) => {
+export const buildProviderReport = ({ person, reason, questions, days = 30, pinnedObservations = [] }: ProviderReportInput) => {
   const cutoff = new Date()
   cutoff.setDate(cutoff.getDate() - days + 1)
   cutoff.setHours(0, 0, 0, 0)
@@ -72,6 +73,8 @@ export const buildProviderReport = ({ person, reason, questions, days = 30 }: Pr
     'MOST FREQUENT POSITIVE SIGNALS', ...(positive.length ? positive.map((item) => `• ${item.name}: ${item.count} check-ins`) : ['None recorded in this range.']),
     '',
     'NOTABLE EVENTS, MEDICATION, OR INTERVENTION NOTES', ...(medicationNotes.length ? medicationNotes.slice(0, 8).map((note) => `• ${note}`) : ['None specifically identified. Review the full notes for context.']),
+    '',
+    'ITEMS ADDED FOR THIS APPOINTMENT', ...(pinnedObservations.length ? pinnedObservations.map((item) => `• ${item.replaceAll('\n', ' — ')}`) : ['None added.']),
     '',
     'QUESTIONS FOR THE PROFESSIONAL', questions.trim() || 'What changes should we watch? What would indicate that urgent evaluation is needed? What information would be most useful to keep recording?',
     '',

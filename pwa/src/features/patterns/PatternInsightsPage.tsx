@@ -50,6 +50,7 @@ const InsightsContent = ({
         <GeneratedInsightCard
           key={insight.id}
           insight={insight}
+          personId={view.personId}
         />
       ))}
     </>

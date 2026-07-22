@@ -459,9 +459,18 @@
   }
 }
 .household-help-now {
-  display: block;
-  width: fit-content;
-  margin: 0.35rem auto 0;
   --color: #9b3f37;
+  font-weight: 750;
+}
+
+.household-secondary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.15rem;
+  margin: 0.35rem auto 0;
+}
+
+.household-secondary-actions ion-button {
   font-weight: 750;
 }
