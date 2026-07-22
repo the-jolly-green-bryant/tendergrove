@@ -8,7 +8,7 @@ interface PageProps {
 
 export const StatusChip = ({ label }: PageProps) => {
   const color = {
-    Crisis: 'danger',
+    'Needs attention': 'danger',
     'Moderate Risk': 'warning',
     'Doing Well': 'success',
     'No Data': 'medium',

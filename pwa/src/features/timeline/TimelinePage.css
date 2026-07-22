@@ -1,229 +1,245 @@
-/* ------------------------------------------------------------------ */
-/*  Timeline filters                                                   */
-/* ------------------------------------------------------------------ */
-
-.timeline-loading {
-  display: grid;
-  padding: 0 0 24px;
+.timeline-page {
+  --background: #f8f3fa;
 }
 
-.timeline-filters {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  margin-bottom: 1rem;
+.timeline-loading,
+.timeline-layout {
+  width: min(100%, 620px);
+  margin: 0 auto;
+  padding: 14px 16px 34px;
 }
-
-.timeline-type-chips {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.timeline-filter-icon {
-  font-size: 1.1rem;
-  color: var(--ion-color-medium);
-  margin-left: 0.25rem;
-}
-
-.timeline-chip {
-  --background: var(--ion-color-light);
-  --color: var(--ion-text-color);
-  font-size: 0.875rem;
-  min-height: 36px;
-  flex-shrink: 0;
-}
-
-.timeline-chip--active {
-  --background: var(--ion-color-primary);
-  --color: #fff;
-}
-
-/* ------------------------------------------------------------------ */
-/*  Empty state                                                        */
-/* ------------------------------------------------------------------ */
 
 .timeline-empty {
-  text-align: center;
   padding: 3rem 1rem;
-  color: var(--ion-color-medium);
+  color: var(--app-muted-text);
+  text-align: center;
+}
+
+.timeline-empty p {
+  margin: 0;
 }
 
 .timeline-empty__hint {
+  margin-top: 0.3rem !important;
   font-size: 0.875rem;
-  margin-top: 0.25rem;
 }
-
-/* ------------------------------------------------------------------ */
-/*  Day groups                                                         */
-/* ------------------------------------------------------------------ */
 
 .timeline-groups {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.timeline-day__heading {
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--ion-color-medium);
-  margin: 0 0 0.5rem 0;
-}
-
-.timeline-day__events {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 0;
 }
 
-/* ------------------------------------------------------------------ */
-/*  Individual event row                                               */
-/* ------------------------------------------------------------------ */
-
-.timeline-event {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-  background: none;
-  border: none;
-  padding: 0.5rem 0;
-  min-height: 48px;
-  width: 100%;
-  text-align: left;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
+.timeline-groups::before {
+  position: absolute;
+  top: 30px;
+  bottom: 30px;
+  left: 84px;
+  width: 1px;
+  background: rgba(45, 88, 83, 0.17);
+  content: '';
 }
 
-.timeline-event:active {
-  opacity: 0.7;
+.timeline-day {
+  display: grid;
+  grid-template-columns: 70px minmax(0, 1fr);
+  gap: 18px;
+  scroll-margin-top: 164px;
 }
 
-.timeline-event__time {
-  flex-shrink: 0;
-  width: 4.5rem;
-  font-size: 0.875rem;
-  color: var(--ion-color-medium);
-  padding-top: 0.6rem;
-  text-align: right;
-}
-
-/* Vertical line + dot */
-.timeline-event__line {
+.timeline-day__badge {
+  position: sticky;
+  top: 170px;
+  align-self: start;
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex-shrink: 0;
-  width: 1.5rem;
+  justify-content: center;
+  min-height: 58px;
+  margin-top: 10px;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #1b625b, #124942);
+  box-shadow: 0 6px 14px rgba(22, 77, 71, 0.17);
+  color: #fff;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.timeline-day__badge strong {
+  font-size: 0.86rem;
+  letter-spacing: 0.035em;
+}
+
+.timeline-day__badge span {
+  margin-top: 2px;
+  font-size: 0.66rem;
+  font-weight: 650;
+  letter-spacing: 0.025em;
+}
+
+.timeline-day__events {
+  min-width: 0;
+  padding: 2px 0 12px;
+  border-bottom: 1px solid rgba(45, 88, 83, 0.12);
+}
+
+.timeline-day:last-child .timeline-day__events {
+  border-bottom: 0;
+}
+
+.timeline-event {
   position: relative;
-  padding-top: 0.6rem;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 58px;
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+  color: #244446;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
-.timeline-event__line::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: -0.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 2px;
-  background: var(--ion-color-light-shade);
+.timeline-event--household {
+  cursor: default;
 }
 
-.timeline-day__events .timeline-event:first-child .timeline-event__line::before {
-  top: 0.6rem;
-}
-
-.timeline-day__events .timeline-event:last-child .timeline-event__line::before {
-  bottom: 50%;
+.timeline-event:active {
+  opacity: 0.72;
 }
 
 .timeline-event__dot {
+  position: absolute;
+  top: 50%;
+  left: -22px;
+  z-index: 1;
   width: 10px;
   height: 10px;
+  transform: translate(-50%, -50%);
+  border: 2px solid #f8f3fa;
   border-radius: 50%;
-  z-index: 1;
-  background: var(--ion-color-medium);
-  flex-shrink: 0;
+  background: #7b8a88;
 }
 
 .timeline-event__dot--success {
-  background: var(--ion-color-success);
+  background: #459a5d;
 }
 
 .timeline-event__dot--warning {
-  background: var(--ion-color-warning);
+  background: #f39a25;
 }
 
 .timeline-event__dot--danger {
-  background: var(--ion-color-danger);
+  background: #e13d37;
 }
 
-/* Card */
-.timeline-event__card {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--ion-card-background, #fff);
-  border-radius: 12px;
-  padding: 0.65rem 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+.timeline-event__dot--event {
+  background: #8062b7;
 }
 
-.timeline-event__header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.timeline-event__avatar,
+.timeline-event__event-icon {
+  width: 42px;
+  height: 42px;
 }
 
-.timeline-event__avatar {
-  width: 36px;
-  height: 36px;
-  font-size: 0.8rem;
+.timeline-event__event-icon {
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #eee7fa;
+  color: #6745a4;
+  font-size: 1.35rem;
 }
 
 .timeline-event__info {
   display: flex;
+  min-width: 0;
   flex-direction: column;
 }
 
-.timeline-event__name {
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: var(--ion-text-color);
+.timeline-event__info strong {
+  overflow: hidden;
+  color: #174f4d;
+  font-size: 0.92rem;
+  font-weight: 760;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.timeline-event__type {
-  font-size: 0.8125rem;
-  color: var(--ion-color-medium);
+.timeline-event__info > span {
+  margin-top: 2px;
+  color: #647270;
+  font-size: 0.8rem;
 }
 
-/* Status chip */
-.timeline-status-chip {
-  font-size: 0.8125rem;
-  height: 1.75rem;
-  flex-shrink: 0;
+.timeline-event__audience {
+  color: #6745a4;
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.timeline-event .timeline-status-chip {
+  height: 1.7rem;
+  margin: 0;
+  font-size: 0.72rem;
 }
 
 .timeline-status-chip--success {
-  --background: var(--ion-color-success);
-  --color: #ffffff;
+  --background: #e5f1d7;
+  --color: #185737;
 }
 
 .timeline-status-chip--warning {
-  --background: var(--ion-color-warning);
-  --color: #ffffff;
+  --background: #fff0cf;
+  --color: #c65a12;
 }
 
 .timeline-status-chip--danger {
-  --background: var(--ion-color-danger);
-  --color: #ffffff;
+  --background: #e13d37;
+  --color: #fff;
 }
 
 .timeline-status-chip--medium {
-  --background: var(--ion-color-step-400);
-  --color: #ffffff;
+  --background: #e8eceb;
+  --color: #566260;
+}
+
+@media (max-width: 390px) {
+  .timeline-layout {
+    padding-inline: 12px;
+  }
+
+  .timeline-groups::before {
+    left: 65px;
+  }
+
+  .timeline-day {
+    grid-template-columns: 54px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .timeline-day__badge {
+    min-height: 52px;
+  }
+
+  .timeline-event__dot {
+    left: -13px;
+  }
+
+  .timeline-event {
+    grid-template-columns: 38px minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+
+  .timeline-event__avatar,
+  .timeline-event__event-icon {
+    width: 38px;
+    height: 38px;
+  }
 }

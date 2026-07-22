@@ -2,8 +2,9 @@ import { IonChip, IonIcon, IonSkeletonText } from '@ionic/react'
 import { chevronForwardOutline } from 'ionicons/icons'
 import { useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
+import { LoadErrorState } from '../../components/LoadErrorState'
 
-import { Page } from '../../components/Page'
+import { IllustratedHeaderTitle, Page } from '../../components/Page'
 import { useDateNavigator } from '../../components/DateNavigator'
 import { PastDataNotice } from '../../components/PastDataNotice'
 import { PersonAvatar } from '../../components/PersonAvatar'
@@ -396,26 +397,45 @@ const HouseholdPage = () => {
   const selectedDateHasData = eventDates.has(selectedDateKey)
   const goToToday = () => setSelectedDate(new Date())
 
-  const { headerElement, calendarElement } = useDateNavigator({
-    date: selectedDate,
-    onChange: setSelectedDate,
-    eventDates,
-  })
+  const { calendarButtonElement, navigationElement, calendarElement } =
+    useDateNavigator({
+      date: selectedDate,
+      onChange: setSelectedDate,
+      eventDates,
+    })
 
   return (
     <Page
       title="Home"
-      headerContent={headerElement}
-      subHeaderContent={calendarElement}
+      headerContent={
+        <IllustratedHeaderTitle
+          title="Home"
+          end={calendarButtonElement}
+        />
+      }
+      subHeaderContent={
+        <>
+          {navigationElement}
+          {calendarElement}
+        </>
+      }
       disablePadding
       illustratedHeader
       className="household-dashboard-content"
       forceOverscroll={false}
     >
       {people.isLoading && <HouseholdDashboardLoading />}
-      {people.error && <p className="ion-padding">Failed to load people.</p>}
+      {people.error && (
+        <div className="ion-padding">
+          <LoadErrorState
+            noun="your household"
+            showingSavedCopy={Boolean(people.data)}
+            onRetry={() => void people.refetch()}
+          />
+        </div>
+      )}
 
-      {!people.isLoading && (
+      {!people.isLoading && (people.data || !people.error) && (
         <HouseholdDashboardBody
           people={activePeople}
           recap={householdRecap}

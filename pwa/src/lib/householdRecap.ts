@@ -183,10 +183,10 @@ const attentionForPerson = (
               (AFTERCARE_DAYS - daysBeforeSelectedDate(historyDateKey)) /
               AFTERCARE_DAYS
             const personalDrop = Math.max(0, baseline - score)
-            const crisisDepth = Math.max(0, 40 - score)
-            return crisisDepth === 0
+            const attentionDepth = Math.max(0, 40 - score)
+            return attentionDepth === 0
               ? 0
-              : (personalDrop * 0.25 + crisisDepth * 2) * recency
+              : (personalDrop * 0.25 + attentionDepth * 2) * recency
           }),
         )
   const recentPressure =

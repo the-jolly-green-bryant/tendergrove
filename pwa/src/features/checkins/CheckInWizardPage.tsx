@@ -17,7 +17,7 @@ import {
   chevronBack,
   happyOutline,
 } from 'ionicons/icons'
-import { formatDateLabel, isSameLocalDay } from '../../lib/dateKeys'
+import { formatDateLabel, isSameLocalDay, toLocalDateKey } from '../../lib/dateKeys'
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useParams } from 'react-router-dom'
 
@@ -35,6 +35,7 @@ import { parseAnswers } from '../people/checkin/checkInUtils'
 import { useCheckInMutations } from '../people/checkin/useCheckInMutations'
 import { PersonCheckInButton } from '../people/PersonPage'
 import { RawCheckIn, RawIndicator } from '../patterns/analytics'
+import { containsUrgentSafetySignal } from '../../lib/safety'
 
 const isSameDay = (occurredAt: string, date: Date): boolean =>
   isSameLocalDay(new Date(occurredAt), date)
@@ -216,33 +217,57 @@ const useCheckInDraft = (
   personId: string,
   selectedDate: Date,
   existing: RawCheckIn | undefined,
+  householdEventIds: string[],
+  householdEventsLoading: boolean,
 ) => {
+  const draftKey = `tendergrove:check-in-draft:${personId}:${toLocalDateKey(selectedDate)}`
   const [checked, setChecked] = useState<CheckedIndicators>({})
   const [checkedEvents, setCheckedEvents] = useState<CheckedIndicators>({})
   const [note, setNote] = useState('')
   const [prefilled, setPrefilled] = useState(false)
 
   useEffect(() => {
-    setChecked({})
-    setCheckedEvents({})
-    setNote('')
+    let saved: { checked?: CheckedIndicators; checkedEvents?: CheckedIndicators; note?: string } = {}
+    try { saved = JSON.parse(localStorage.getItem(draftKey) ?? '{}') } catch { /* ignore damaged drafts */ }
+    setChecked(saved.checked ?? {})
+    setCheckedEvents(saved.checkedEvents ?? {})
+    setNote(saved.note ?? '')
     setPrefilled(false)
-  }, [personId, selectedDate])
+  }, [draftKey, personId, selectedDate])
 
   useEffect(() => {
-    if (prefilled || !existing) return
-    const answers = parseAnswers(existing.answersJson)
-    setChecked(Object.fromEntries(answers.checked.map((id) => [id, true])))
-    setCheckedEvents(Object.fromEntries(answers.events.map((id) => [id, true])))
-    setNote(existing.note ?? '')
+    if (prefilled || householdEventsLoading) return
+    const answers = existing
+      ? parseAnswers(existing.answersJson)
+      : { checked: [], events: [] }
+    const hasSavedDraft = localStorage.getItem(draftKey) !== null
+    if (!hasSavedDraft) {
+      setChecked(Object.fromEntries(answers.checked.map((id) => [id, true])))
+      setCheckedEvents(Object.fromEntries(householdEventIds.map((id) => [id, true])))
+      setNote(existing?.note ?? '')
+    }
     setPrefilled(true)
-  }, [existing, prefilled, personId, selectedDate])
+  }, [
+    existing,
+    householdEventIds,
+    householdEventsLoading,
+    prefilled,
+    personId,
+    selectedDate,
+    draftKey,
+  ])
+
+  useEffect(() => {
+    if (!prefilled) return
+    localStorage.setItem(draftKey, JSON.stringify({ checked, checkedEvents, note }))
+  }, [checked, checkedEvents, draftKey, note, prefilled])
 
   return {
     checked,
     checkedEvents,
     note,
     setNote,
+    clearDraft: () => localStorage.removeItem(draftKey),
     toggle: (id: string) => setChecked((prev) => ({ ...prev, [id]: !prev[id] })),
     toggleEvent: (id: string) =>
       setCheckedEvents((prev) => ({ ...prev, [id]: !prev[id] })),
@@ -254,6 +279,7 @@ const useWizardStepState = ({
   selectedDate,
 }: Pick<WizardStepProps, 'personId' | 'selectedDate'>) => {
   const { data: person, isLoading } = usePerson(personId)
+  const peopleQuery = usePeople()
   const indicatorsQuery = useIndicators(personId)
   const lifeEventsQuery = useHouseholdLifeEvents(person?.householdId)
   const mutations = useCheckInMutations(personId)
@@ -273,7 +299,25 @@ const useWizardStepState = ({
     () => (person?.checkIns ?? []).find((ci) => isSameDay(ci.occurredAt, selectedDate)),
     [person, selectedDate],
   )
-  const draft = useCheckInDraft(personId, selectedDate, existing)
+  const householdEventIds = useMemo(() => {
+    if (!person?.householdId) return []
+    const ids = new Set<string>()
+    for (const householdPerson of peopleQuery.data ?? []) {
+      if (householdPerson.householdId !== person.householdId) continue
+      for (const checkIn of householdPerson.checkIns ?? []) {
+        if (!isSameDay(checkIn.occurredAt, selectedDate)) continue
+        for (const eventId of parseAnswers(checkIn.answersJson).events) ids.add(eventId)
+      }
+    }
+    return [...ids].sort()
+  }, [peopleQuery.data, person?.householdId, selectedDate])
+  const draft = useCheckInDraft(
+    personId,
+    selectedDate,
+    existing,
+    householdEventIds,
+    peopleQuery.isLoading,
+  )
 
   const save = async (): Promise<boolean> => {
     if (saving) return false
@@ -286,6 +330,14 @@ const useWizardStepState = ({
         draft.note,
       )
       await commitCheckIn(mutations, existing, payload)
+      if (person?.householdId) {
+        await mutations.syncHouseholdEventsForDate(
+          person.householdId,
+          payload.occurredAt,
+          payload.answers.events,
+        )
+      }
+      draft.clearDraft()
       return true
     } finally {
       setSaving(false)
@@ -295,7 +347,11 @@ const useWizardStepState = ({
   return {
     person,
     householdId: person?.householdId,
-    isLoading: isLoading || indicatorsQuery.isLoading || lifeEventsQuery.isLoading,
+    isLoading:
+      isLoading ||
+      peopleQuery.isLoading ||
+      indicatorsQuery.isLoading ||
+      lifeEventsQuery.isLoading,
     indicators,
     events,
     existing,
@@ -469,6 +525,12 @@ const WizardStep = ({ personId, selectedDate, step }: WizardStepProps) => {
     step.indicators.filter((i) => i.polarity === 'desired'),
   )
   const nothingToTrack = step.indicators.length === 0 && step.events.length === 0
+  const urgentSignal = containsUrgentSafetySignal([
+    step.note,
+    ...step.indicators
+      .filter((indicator) => step.checked[indicator.id])
+      .map((indicator) => indicator.name),
+  ])
 
   if (step.isLoading)
     return (
@@ -488,6 +550,13 @@ const WizardStep = ({ personId, selectedDate, step }: WizardStepProps) => {
         title={formatDateLabel(selectedDate)}
         onClick={undefined}
       />
+      {urgentSignal && (
+        <section className="safety-escalation" role="alert">
+          <h2>Pause and check immediate safety</h2>
+          <p>This entry may describe an urgent safety concern. Tendergrove cannot assess the danger. If anyone may be unsafe, contact trained help now.</p>
+          <IonButton color="danger" routerLink="/help-now">Get help now</IonButton>
+        </section>
+      )}
       {nothingToTrack ? (
         <EmptyIndicatorsMessage personId={personId} />
       ) : (

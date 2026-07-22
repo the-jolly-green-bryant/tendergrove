@@ -13,6 +13,7 @@ import { parseAnswers } from '../people/checkin/checkInUtils'
 import './InsightsPage.css'
 import { not } from '../../lib/helpers'
 import { RawPerson } from '../patterns/analytics'
+import { LoadErrorState } from '../../components/LoadErrorState'
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -49,6 +50,8 @@ interface RenderPageParams {
   monthGroups: MonthGroup[]
   selectedPeople: Set<string>
   selectOnlyPerson: (personId: string) => void
+  retry: () => void
+  showingSavedCopy: boolean
 }
 
 /* ------------------------------------------------------------------ */
@@ -97,15 +100,17 @@ const renderPage = ({
   monthGroups,
   selectedPeople,
   selectOnlyPerson,
+  retry,
+  showingSavedCopy,
 }: RenderPageParams): React.JSX.Element => (
   <Page
     title="Insights"
     backHref="/dashboard"
   >
     {isLoading && LOADING_STATE}
-    {hasError && <p>Failed to load data.</p>}
+    {hasError && <LoadErrorState noun="your insights" onRetry={retry} showingSavedCopy={showingSavedCopy} />}
 
-    {!isLoading && !hasError && (
+    {!isLoading && (!hasError || showingSavedCopy) && (
       <>
         <PersonFilterChips
           people={activePeople}
@@ -244,6 +249,8 @@ const InsightsPage = (): React.JSX.Element => {
     monthGroups,
     selectedPeople,
     selectOnlyPerson,
+    retry: () => void people.refetch(),
+    showingSavedCopy: Boolean(people.data),
   })
 }
 

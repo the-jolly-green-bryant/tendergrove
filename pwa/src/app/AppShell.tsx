@@ -7,7 +7,6 @@ import { matchPath, Redirect, Route, useHistory, useLocation } from 'react-route
 import HouseholdPage from '../features/household/HouseholdPage'
 import HouseholdRecapPage from '../features/household/HouseholdRecapPage'
 import TimelinePage from '../features/timeline/TimelinePage'
-import ReportsPage from '../features/reports/ReportsPage'
 import InsightsPage from '../features/insights/InsightsPage'
 import PatternsOverviewPage from '../features/patterns/PatternsOverviewPage'
 import CalendarHeatmapPage from '../features/patterns/CalendarHeatmapPage'
@@ -32,8 +31,12 @@ import { RouteModalProvider } from '../components/RouteModalContext'
 import { CheckInDrawerSurface } from '../components/CheckInDrawerSurface'
 import { AppMenu } from '../components/Page'
 import { pushRouteAnimation } from './pushRouteAnimation'
+import SafetyPage from '../features/safety/SafetyPage'
+import SettingsPage from '../features/settings/SettingsPage'
+import PrivacyPage from '../features/legal/PrivacyPage'
+import TermsPage from '../features/legal/TermsPage'
 
-const appRoutes = [
+export const appRoutes = [
   { path: '/dashboard', component: HouseholdPage },
   { path: '/person/:personId', component: PersonPage },
   { path: '/person/:personId/edit', component: PersonFormPage },
@@ -66,7 +69,7 @@ const appRoutes = [
   { path: '/archived', component: ArchivedPeoplePage },
   { path: '/check-in', component: TimelinePage },
   { path: '/reports', component: InsightsPage },
-  { path: '/reports/export', component: ReportsPage },
+  { path: '/reports/export', component: InsightsPage },
   { path: '/patterns', component: PatternsOverviewPage },
   { path: '/patterns/calendar', component: CalendarHeatmapPage },
   { path: '/patterns/correlations', component: CorrelationsPage },
@@ -75,6 +78,10 @@ const appRoutes = [
   { path: '/patterns/trends', component: TrendsPage },
   { path: '/patterns/heatmap', component: HeatmapPage },
   { path: '/patterns/insights', component: PatternInsightsPage },
+  { path: '/help-now', component: SafetyPage },
+  { path: '/settings', component: SettingsPage },
+  { path: '/privacy', component: PrivacyPage },
+  { path: '/terms', component: TermsPage },
 ]
 
 const modalRoutes = [

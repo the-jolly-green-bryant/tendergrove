@@ -2,9 +2,11 @@ import { useQuery, UseQueryResult } from '@tanstack/react-query'
 
 import { client } from '../../lib/api'
 import { RawPerson } from '../patterns/analytics'
+import { readCachedValue, writeCachedValue } from '../../lib/resilientCache'
 
 const peopleSelectionSet = [
   'id',
+  'householdId',
   'displayName',
   'role',
   'avatarUrl',
@@ -23,6 +25,7 @@ const peopleSelectionSet = [
 export const usePeople = (): UseQueryResult<RawPerson[]> =>
   useQuery({
     queryKey: ['people'],
+    initialData: () => readCachedValue<RawPerson[]>('people')?.value,
     queryFn: async () => {
       const result = await client.models.Person.list({
         selectionSet: peopleSelectionSet,
@@ -32,6 +35,8 @@ export const usePeople = (): UseQueryResult<RawPerson[]> =>
         throw new Error(result.errors[0].message)
       }
 
-      return result.data
+      const people = result.data as unknown as RawPerson[]
+      writeCachedValue('people', people)
+      return people
     },
   })

@@ -17,7 +17,9 @@ import {
 } from '@ionic/react'
 import {
   analyticsOutline,
+  alertCircleOutline,
   archiveOutline,
+  chevronBackOutline,
   chevronForwardOutline,
   homeOutline,
   logOutOutline,
@@ -48,7 +50,32 @@ interface PageProps {
   readonly illustratedHeader?: boolean
 }
 
-const menuItems = [
+export const IllustratedHeaderTitle = ({
+  title,
+  end,
+}: {
+  readonly title: string
+  readonly end?: ReactNode
+}) => (
+  <div className="illustrated-header-title">
+    <h1>{title}</h1>
+    <span
+      className="illustrated-header-title__flourish"
+      aria-hidden="true"
+    >
+      ⌁
+    </span>
+    {end && <div className="illustrated-header-title__end">{end}</div>}
+  </div>
+)
+
+export const menuItems = [
+  {
+    href: '/help-now',
+    direction: 'forward',
+    icon: alertCircleOutline,
+    label: 'Get help now',
+  },
   {
     href: '/dashboard',
     direction: 'root',
@@ -74,7 +101,7 @@ const menuItems = [
     label: 'Archive',
   },
   {
-    href: '/parent-care',
+    href: '/settings',
     direction: 'forward',
     icon: settingsOutline,
     label: 'Settings',
@@ -294,7 +321,7 @@ export const Page = ({
   if (transparentHeaderUntilScroll) {
     headerClassName = `page-header--transparent ${headerScrollClassName}`
   } else if (illustratedHeader) {
-    headerClassName = 'page-header--illustrated'
+    headerClassName = `page-header--illustrated${subHeaderContent ? '' : ' page-header--illustrated-compact'}`
   }
   const toolbarClassName = transparentHeaderUntilScroll
     ? 'page-toolbar--transparent'
@@ -312,7 +339,12 @@ export const Page = ({
         >
           <IonButtons slot="start">
             {backHref ? (
-              <IonBackButton defaultHref={backHref} />
+              <IonBackButton
+                defaultHref={backHref}
+                icon={chevronBackOutline}
+                text=""
+                aria-label="Back"
+              />
             ) : (
               <IonMenuButton menu="main-navigation" />
             )}

@@ -2,6 +2,8 @@ import { useQueryClient } from '@tanstack/react-query'
 
 import { client } from '../../../lib/api'
 import type { CheckInAnswers } from './checkInUtils'
+import { parseAnswers } from './checkInUtils'
+import { isSameLocalDay } from '../../../lib/dateKeys'
 
 /**
  *
@@ -57,6 +59,48 @@ export const useCheckInMutations = (personId: string | undefined) => {
 
       await invalidate()
       return result.data
+    },
+
+    /**
+     * Events describe the household's day, even though legacy storage keeps
+     * them inside check-in JSON. Keep every existing check-in for this
+     * household/date in sync without creating empty check-ins for people who
+     * have not checked in (which would incorrectly affect their score).
+     */
+    async syncHouseholdEventsForDate(
+      householdId: string,
+      occurredAt: string,
+      eventIds: string[],
+    ) {
+      const peopleResult = await client.models.Person.list({
+        filter: { householdId: { eq: householdId } },
+        selectionSet: ['checkIns.id', 'checkIns.occurredAt', 'checkIns.answersJson'],
+      })
+
+      if (peopleResult.errors?.length) {
+        throw new Error(peopleResult.errors[0].message)
+      }
+
+      const targetDate = new Date(occurredAt)
+      const checkIns = peopleResult.data.flatMap((person) => person.checkIns ?? [])
+      const matching = checkIns.filter((checkIn) =>
+        isSameLocalDay(new Date(checkIn.occurredAt), targetDate),
+      )
+
+      const updates = await Promise.all(
+        matching.map((checkIn) => {
+          const answers = parseAnswers(checkIn.answersJson)
+          return client.models.CheckIn.update({
+            id: checkIn.id,
+            answersJson: JSON.stringify({ ...answers, events: eventIds }),
+          })
+        }),
+      )
+
+      const firstError = updates.flatMap((result) => result.errors ?? [])[0]
+      if (firstError) throw new Error(firstError.message)
+
+      await invalidate()
     },
   }
 }

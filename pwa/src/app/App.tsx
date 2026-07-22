@@ -86,10 +86,12 @@ const authComponents = {
   ...(isNative ? { SignIn: { Footer: NativeGoogleButton } } : {}),
 }
 
-const handleGlobalError = (error: unknown) =>
+const handleGlobalError = (error: unknown) => {
+  console.error('Tendergrove request failed', error)
   alert(
-    `Request failed:\n\n${error instanceof Error ? error.message : JSON.stringify(error, null, 2)}`,
+    'We couldn’t complete that action. Your entries are still on this screen—check your connection and try again.',
   )
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {

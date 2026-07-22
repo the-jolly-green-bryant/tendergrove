@@ -82,6 +82,68 @@ describe('normalizeHousehold', () => {
     const [p1] = normalizeHousehold(raw, { now: NOW }).people
     expect(p1.checkIns[0].checkedIndicatorIds).toEqual(['i1'])
   })
+
+  it('shares daily events across check-ins in the same household', () => {
+    const occurredAt = NOW.toISOString()
+    const people: RawPerson[] = [
+      {
+        id: 'p1',
+        householdId: 'home-1',
+        displayName: 'Person One',
+        role: 'self',
+        avatarUrl: null,
+        archived: false,
+        checkIns: [
+          {
+            id: 'c1',
+            occurredAt,
+            answersJson: { checked: [], events: ['family-therapy'] },
+          },
+        ],
+      },
+      {
+        id: 'p2',
+        householdId: 'home-1',
+        displayName: 'Person Two',
+        role: 'child',
+        avatarUrl: null,
+        archived: false,
+        checkIns: [
+          {
+            id: 'c2',
+            occurredAt,
+            answersJson: { checked: [], events: [] },
+          },
+        ],
+      },
+      {
+        id: 'p3',
+        householdId: 'home-2',
+        displayName: 'Other Home',
+        role: 'other',
+        avatarUrl: null,
+        archived: false,
+        checkIns: [
+          {
+            id: 'c3',
+            occurredAt,
+            answersJson: { checked: [], events: ['different-event'] },
+          },
+        ],
+      },
+    ]
+
+    const normalized = normalizeHousehold(people, { now: NOW }).people
+    expect(
+      normalized.find((person) => person.id === 'p1')!.checkIns[0].eventIds,
+    ).toEqual(['family-therapy'])
+    expect(
+      normalized.find((person) => person.id === 'p2')!.checkIns[0].eventIds,
+    ).toEqual(['family-therapy'])
+    expect(
+      normalized.find((person) => person.id === 'p3')!.checkIns[0].eventIds,
+    ).toEqual(['different-event'])
+  })
 })
 
 describe('runAnalytics / analyzeHousehold', () => {

@@ -192,7 +192,13 @@ const normalizePolarity = (polarity: string | null | undefined): Polarity | null
 const normalizeRole = (role: string | null | undefined): PersonRole | null =>
   VALID_ROLES.includes(role as PersonRole) ? (role as PersonRole) : null
 
-const normalizePerson = (raw: RawPerson): AnalyticsPerson => {
+const householdDateKey = (person: RawPerson, occurredAt: string): string =>
+  `${person.householdId ?? '__household'}:${isoToDateKey(occurredAt)}`
+
+const normalizePerson = (
+  raw: RawPerson,
+  householdEventsByDate: ReadonlyMap<string, string[]>,
+): AnalyticsPerson => {
   const indicators = (raw.indicators ?? [])
     .filter((i): i is RawIndicator => i !== null)
     .map((i) => ({
@@ -213,7 +219,9 @@ const normalizePerson = (raw: RawPerson): AnalyticsPerson => {
       return {
         occurredAt: checkIn.occurredAt,
         checkedIndicatorIds: answers.checked,
-        eventIds: answers.events,
+        eventIds:
+          householdEventsByDate.get(householdDateKey(raw, checkIn.occurredAt)) ??
+          answers.events,
       }
     })
 
@@ -253,9 +261,25 @@ export const normalizeHousehold = (
     lifeEvents: rawLifeEvents = [],
   } = options
 
+  // Event selections historically live inside individual check-ins. Treat the
+  // union for a household/date as the shared daily context so an event checked
+  // for one person affects every household member's analytics for that day.
+  const householdEventSets = new Map<string, Set<string>>()
+  for (const person of rawPeople) {
+    for (const checkIn of person.checkIns ?? []) {
+      const key = householdDateKey(person, checkIn.occurredAt)
+      const ids = householdEventSets.get(key) ?? new Set<string>()
+      for (const eventId of parseAnswers(checkIn.answersJson).events) ids.add(eventId)
+      householdEventSets.set(key, ids)
+    }
+  }
+  const householdEventsByDate = new Map(
+    [...householdEventSets].map(([key, ids]) => [key, [...ids].sort()]),
+  )
+
   const people = rawPeople
     .filter((person) => includeArchived || person.archived !== true)
-    .map(normalizePerson)
+    .map((person) => normalizePerson(person, householdEventsByDate))
 
   const lifeEvents: AnalyticsLifeEvent[] = rawLifeEvents
     .filter((event) => event.archived !== true)

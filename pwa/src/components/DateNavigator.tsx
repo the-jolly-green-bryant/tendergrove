@@ -6,6 +6,7 @@ import {
   chevronDownOutline,
   chevronForwardOutline,
   chevronUpOutline,
+  todayOutline,
 } from 'ionicons/icons'
 
 import { isSameLocalDay, toLocalDateKey } from '../lib/dateKeys'
@@ -50,6 +51,7 @@ const CALENDAR_ANIMATION_MS = 240
 interface DateNavigatorProps {
   date: Date
   onChange: (date: Date) => void
+  labelMode?: 'day' | 'week'
   /** Set of YYYY-MM-DD strings that have events (shown as dots). */
   eventDates?: Set<string>
 }
@@ -407,11 +409,15 @@ const useDayNavigation = (
   today: Date,
   closeCalendar: () => void,
   showTodayMonth: () => void,
+  stepDays = 1,
 ): DayNavigation => {
-  const goBack = useCallback(() => onChange(addDays(date, -1)), [date, onChange])
+  const goBack = useCallback(
+    () => onChange(addDays(date, -stepDays)),
+    [date, onChange, stepDays],
+  )
   const goForward = useCallback(() => {
-    if (!isSameLocalDay(date, today)) onChange(min([addDays(date, 1), today]))
-  }, [date, onChange, today])
+    if (!isSameLocalDay(date, today)) onChange(min([addDays(date, stepDays), today]))
+  }, [date, onChange, stepDays, today])
 
   const goToToday = useCallback(() => {
     onChange(today)
@@ -430,8 +436,7 @@ const useDayNavigation = (
   return { goBack, goForward, goToToday, handleDayClick }
 }
 
-const getHeaderLabel = (date: Date, today: Date): string => {
-  if (isSameLocalDay(date, today)) return 'Today'
+const getHeaderLabel = (date: Date): string => {
   return date.toLocaleDateString(undefined, {
     month: 'short',
     day: 'numeric',
@@ -439,12 +444,97 @@ const getHeaderLabel = (date: Date, today: Date): string => {
   })
 }
 
+const getWeekLabel = (date: Date): string => {
+  const start = addDays(date, -((date.getDay() + 6) % 7))
+  const end = addDays(start, 6)
+  const startLabel = start.toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+  })
+  const endLabel = end.toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+  return `${startLabel} – ${endLabel}`
+}
+
+const DateNavigatorCalendarButton = ({
+  today,
+  toggleCalendar,
+}: Pick<DateNavigatorHeaderProps, 'today' | 'toggleCalendar'>) => (
+  <button
+    className="date-navigator__today-btn date-navigator__title-calendar"
+    onClick={toggleCalendar}
+    aria-label="Open calendar"
+  >
+    <IonIcon
+      icon={calendarClearOutline}
+      className="date-navigator__today-icon"
+    />
+    <span className="date-navigator__today-number">{today.getDate()}</span>
+  </button>
+)
+
+const DateNavigatorSubrow = ({
+  calendarOpen,
+  goBack,
+  goForward,
+  goToToday,
+  headerLabel,
+  isToday,
+  toggleCalendar,
+}: Omit<DateNavigatorHeaderProps, 'today'>) => (
+  <div className="date-navigator__subrow">
+    <button
+      className="date-navigator__arrow"
+      onClick={goBack}
+      aria-label="Previous date range"
+    >
+      <IonIcon icon={chevronBackOutline} />
+    </button>
+    <button
+      className="date-navigator__month-btn"
+      onClick={toggleCalendar}
+      aria-label="Toggle calendar"
+    >
+      <span className="date-navigator__month-label">{headerLabel}</span>
+      <IonIcon
+        icon={calendarOpen ? chevronUpOutline : chevronDownOutline}
+        className="date-navigator__chevron"
+      />
+    </button>
+    <button
+      className="date-navigator__jump-today"
+      onClick={goToToday}
+      disabled={isToday}
+      aria-label="Return to today"
+    >
+      <IonIcon
+        icon={todayOutline}
+        aria-hidden="true"
+      />
+    </button>
+    <button
+      className="date-navigator__arrow"
+      onClick={goForward}
+      disabled={isToday}
+      aria-label="Next date range"
+    >
+      <IonIcon icon={chevronForwardOutline} />
+    </button>
+  </div>
+)
+
 export const useDateNavigator = ({
   date,
   onChange,
   eventDates,
+  labelMode = 'day',
 }: DateNavigatorProps): {
   headerElement: React.JSX.Element
+  calendarButtonElement: React.JSX.Element
+  navigationElement: React.JSX.Element
   calendarElement: React.JSX.Element | null
 } => {
   const today = new Date()
@@ -456,7 +546,9 @@ export const useDateNavigator = ({
     today,
     calendarState.closeCalendar,
     calendarState.showTodayMonth,
+    labelMode === 'week' ? 7 : 1,
   )
+  const headerLabel = labelMode === 'week' ? getWeekLabel(date) : getHeaderLabel(date)
 
   const headerElement = (
     <DateNavigatorHeader
@@ -464,9 +556,28 @@ export const useDateNavigator = ({
       goBack={dayNavigation.goBack}
       goForward={dayNavigation.goForward}
       goToToday={dayNavigation.goToToday}
-      headerLabel={getHeaderLabel(date, today)}
+      headerLabel={headerLabel}
       isToday={isToday}
       today={today}
+      toggleCalendar={calendarState.toggleCalendar}
+    />
+  )
+
+  const calendarButtonElement = (
+    <DateNavigatorCalendarButton
+      today={today}
+      toggleCalendar={calendarState.toggleCalendar}
+    />
+  )
+
+  const navigationElement = (
+    <DateNavigatorSubrow
+      calendarOpen={calendarState.calendarOpen}
+      goBack={dayNavigation.goBack}
+      goForward={dayNavigation.goForward}
+      goToToday={dayNavigation.goToToday}
+      headerLabel={headerLabel}
+      isToday={isToday}
       toggleCalendar={calendarState.toggleCalendar}
     />
   )
@@ -487,5 +598,5 @@ export const useDateNavigator = ({
     />
   )
 
-  return { headerElement, calendarElement }
+  return { headerElement, calendarButtonElement, navigationElement, calendarElement }
 }

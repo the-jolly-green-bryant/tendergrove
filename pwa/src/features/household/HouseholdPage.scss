@@ -48,27 +48,13 @@
   padding: 18px 14px 14px;
   border: 1px solid rgba(20, 125, 126, 0.14);
   border-radius: 18px;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.96),
-    rgba(231, 245, 239, 0.82)
-  );
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(231, 245, 239, 0.5)),
+    url('/assets/graph_background.png') center bottom / cover no-repeat;
   box-shadow:
     0 2px 5px rgba(24, 58, 58, 0.04),
     0 12px 28px rgba(24, 58, 58, 0.1);
   isolation: isolate;
-}
-
-.household-overview-card::after {
-  content: '';
-  position: absolute;
-  inset: 42% 0 0;
-  z-index: -1;
-  background:
-    linear-gradient(180deg, transparent, rgba(135, 194, 180, 0.18)),
-    url('/assets/graph_background.png') center bottom / 100% auto no-repeat;
-  opacity: 0.55;
-  pointer-events: none;
 }
 
 .household-overview-heading {

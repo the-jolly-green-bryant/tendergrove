@@ -2,9 +2,11 @@ import { useQuery } from '@tanstack/react-query'
 
 import { client } from '../../lib/api'
 import type { RawLifeEvent, RawPerson } from './analytics'
+import { readCachedValue, writeCachedValue } from '../../lib/resilientCache'
 
 const patternsSelectionSet = [
   'id',
+  'householdId',
   'displayName',
   'role',
   'avatarUrl',
@@ -35,6 +37,7 @@ export interface PatternsData {
 export const usePatternsData = () =>
   useQuery({
     queryKey: ['patterns-data'],
+    initialData: () => readCachedValue<PatternsData>('patterns')?.value,
 
     queryFn: async (): Promise<PatternsData> => {
       const [peopleResult, lifeEventsResult] = await Promise.all([
@@ -53,12 +56,14 @@ export const usePatternsData = () =>
         throw new Error(firstError.message)
       }
 
-      return {
+      const data = {
         people: peopleResult.data as unknown as RawPerson[],
 
         lifeEvents: (lifeEventsResult.data as unknown as RawLifeEvent[]).filter(
           (event) => event.archived !== true,
         ),
       }
+      writeCachedValue('patterns', data)
+      return data
     },
   })

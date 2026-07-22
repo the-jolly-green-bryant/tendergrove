@@ -1,79 +1,44 @@
-import { useMemo, useState } from 'react'
+import { IonIcon } from '@ionic/react'
+import { calendarOutline } from 'ionicons/icons'
+import { useEffect, useMemo, useRef } from 'react'
 import { useHistory } from 'react-router-dom'
 
+import { useSelectedDate } from '../../context/SelectedDateContext'
 import { LoadingState } from '../../components/LoadingState'
-import { Page } from '../../components/Page'
+import { IllustratedHeaderTitle, Page } from '../../components/Page'
 import { PersonAvatar } from '../../components/PersonAvatar'
 import { PersonFilterChips, usePersonFilter } from '../../components/PersonFilterChips'
-import { usePeople } from '../people/usePeople'
+import { StatusChip } from '../../components/StatusChip'
+import { formatDateLabel, toLocalDateKey } from '../../lib/dateKeys'
 import { computeScore, statusFromScore, type Status } from '../../lib/status'
+import { parseAnswers } from '../people/checkin/checkInUtils'
+import { useHouseholdLifeEvents } from '../people/events/useLifeEvents'
+import { usePeople } from '../people/usePeople'
+import type { RawCheckIn, RawPerson } from '../patterns/analytics'
 
 import './TimelinePage.css'
-import { StatusChip } from '../../components/StatusChip'
-import { RawCheckIn, RawPerson } from '../patterns/analytics'
 
-type EventType = 'check-in'
-type TimelinePerson = NonNullable<ReturnType<typeof usePeople>['data']>[number]
-type TimelineCheckIn = NonNullable<TimelinePerson['checkIns']>[number]
+type TimelineEventType = 'check-in' | 'household-event'
 
 interface TimelineEvent {
   id: string
-  personId: string
-  personName: string
-  personAvatar: string | null
-  personRole: string | null
   occurredAt: string
-  timestamp: string
-  type: EventType
-  statusLabel: Status['label']
-  statusColor: Status['color']
-}
-
-const formatDayHeading = (dateStr: string): string => {
-  const date = new Date(`${dateStr}T00:00:00`)
-  const today = new Date()
-  const yesterday = new Date()
-  yesterday.setDate(yesterday.getDate() - 1)
-
-  if (
-    date.getFullYear() === today.getFullYear() &&
-    date.getMonth() === today.getMonth() &&
-    date.getDate() === today.getDate()
-  ) {
-    return 'Today'
-  }
-  if (
-    date.getFullYear() === yesterday.getFullYear() &&
-    date.getMonth() === yesterday.getMonth() &&
-    date.getDate() === yesterday.getDate()
-  ) {
-    return 'Yesterday'
-  }
-  return date.toLocaleDateString(undefined, {
-    weekday: 'long',
-    month: 'short',
-    day: 'numeric',
-  })
-}
-
-const formatTime = (isoString: string): string =>
-  new Date(isoString).toLocaleTimeString(undefined, {
-    hour: 'numeric',
-    minute: '2-digit',
-  })
-
-const toDateKey = (isoString: string): string => {
-  const d = new Date(isoString)
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
+  type: TimelineEventType
+  personId?: string
+  personName?: string
+  personAvatar?: string | null
+  personRole?: string | null
+  label?: string
+  statusLabel?: Status['label']
+  statusColor: Status['color'] | 'event'
 }
 
 const EMPTY_TIMELINE_STATE = (
   <div className="timeline-empty">
-    <p>No events to show.</p>
-    <p className="timeline-empty__hint">Check-ins will appear here once recorded.</p>
+    <p>No activity to show.</p>
+    <p className="timeline-empty__hint">
+      Check-ins and household events will appear here once recorded.
+    </p>
   </div>
 )
 
@@ -82,151 +47,271 @@ const LOADING_STATE = (
     className="timeline-loading"
     variant="list"
     label="Loading timeline"
-    rows={5}
+    rows={7}
   />
 )
 
-const renderEventButton = (
-  event: TimelineEvent,
-  onOpen: (event: TimelineEvent) => void,
-) => (
-  <button
-    key={event.id}
-    className="timeline-event"
-    onClick={() => onOpen(event)}
-  >
-    <div className="timeline-event__time">{formatTime(event.timestamp)}</div>
-
-    <div className="timeline-event__line">
-      <span
-        className={`timeline-event__dot timeline-event__dot--${event.statusColor}`}
-      />
-    </div>
-
-    <div className="timeline-event__card">
-      <div className="timeline-event__header">
-        <PersonAvatar
-          name={event.personName}
-          src={event.personAvatar}
-          className="timeline-event__avatar"
-        />
-        <div className="timeline-event__info">
-          <span className="timeline-event__name">
-            {event.personName}
-            {event.personRole === 'self' && ' (You)'}
-          </span>
-          <span className="timeline-event__type">Daily Check-In</span>
-        </div>
-      </div>
-      <StatusChip label={event.statusLabel} />
-    </div>
-  </button>
-)
-
-const checkInToEvent = (person: RawPerson, ci: RawCheckIn): TimelineEvent => {
-  const score = computeScore(person.indicators ?? [], ci)
-  const status = statusFromScore(score)
-
+const checkInToEvent = (person: RawPerson, checkIn: RawCheckIn): TimelineEvent => {
+  const status = statusFromScore(computeScore(person.indicators ?? [], checkIn))
   return {
-    id: ci.id,
+    id: checkIn.id,
+    occurredAt: checkIn.occurredAt,
+    type: 'check-in',
     personId: person.id,
     personName: person.displayName,
     personAvatar: person.avatarUrl,
     personRole: person.role,
-    occurredAt: ci.occurredAt,
-    timestamp: ci.updatedAt ?? ci.createdAt ?? ci.occurredAt,
-    type: 'check-in',
     statusLabel: status.label,
     statusColor: status.color,
   }
 }
 
 const groupEventsByDate = (events: TimelineEvent[]): Map<string, TimelineEvent[]> => {
-  const groups: Map<string, TimelineEvent[]> = new Map()
+  const groups = new Map<string, TimelineEvent[]>()
   for (const event of events) {
-    const key = toDateKey(event.occurredAt)
-    if (!groups.has(key)) groups.set(key, [])
-    groups.get(key)!.push(event)
+    const key = toLocalDateKey(new Date(event.occurredAt))
+    groups.set(key, [...(groups.get(key) ?? []), event])
   }
   return groups
+}
+
+const DayBadge = ({ dateKey }: { readonly dateKey: string }) => {
+  const date = new Date(`${dateKey}T12:00:00`)
+  return (
+    <div
+      className="timeline-day__badge"
+      aria-label={formatDateLabel(date)}
+    >
+      <strong>{date.toLocaleDateString(undefined, { weekday: 'short' })}</strong>
+      <span>
+        {date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+      </span>
+    </div>
+  )
+}
+
+const TimelineEventRow = ({
+  event,
+  onOpen,
+}: {
+  readonly event: TimelineEvent
+  readonly onOpen: (event: TimelineEvent) => void
+}) => {
+  const content = (
+    <>
+      <span
+        className={`timeline-event__dot timeline-event__dot--${event.statusColor}`}
+      />
+      {event.type === 'check-in' ? (
+        <PersonAvatar
+          name={event.personName ?? 'Person'}
+          src={event.personAvatar}
+          className="timeline-event__avatar"
+        />
+      ) : (
+        <span className="timeline-event__event-icon">
+          <IonIcon
+            icon={calendarOutline}
+            aria-hidden="true"
+          />
+        </span>
+      )}
+      <span className="timeline-event__info">
+        <strong>
+          {event.type === 'check-in' ? event.personName : event.label}
+          {event.personRole === 'self' && ' (You)'}
+        </strong>
+        <span>{event.type === 'check-in' ? 'Daily Check-in' : 'Event'}</span>
+      </span>
+      {event.type === 'check-in' && event.statusLabel ? (
+        <StatusChip label={event.statusLabel} />
+      ) : (
+        <span className="timeline-event__audience">Everyone</span>
+      )}
+    </>
+  )
+
+  return event.type === 'check-in' ? (
+    <button
+      className="timeline-event"
+      onClick={() => onOpen(event)}
+    >
+      {content}
+    </button>
+  ) : (
+    <div className="timeline-event timeline-event--household">{content}</div>
+  )
+}
+
+const useTimelineDateSync = (
+  dateKeys: string[],
+  selectedDate: Date,
+  setSelectedDate: (date: Date) => void,
+) => {
+  const dayRefs = useRef(new Map<string, HTMLElement>())
+  const scrollDriven = useRef(false)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0]
+        const key = (visible?.target as HTMLElement | undefined)?.dataset.date
+        if (!key || key === toLocalDateKey(selectedDate)) return
+        scrollDriven.current = true
+        setSelectedDate(new Date(`${key}T12:00:00`))
+      },
+      { rootMargin: '-20% 0px -65% 0px', threshold: [0, 0.2, 0.6] },
+    )
+    for (const element of dayRefs.current.values()) observer.observe(element)
+    return () => observer.disconnect()
+  }, [dateKeys, selectedDate, setSelectedDate])
+
+  useEffect(() => {
+    if (scrollDriven.current) {
+      scrollDriven.current = false
+      return
+    }
+    const selectedKey = toLocalDateKey(selectedDate)
+    const targetKey = dayRefs.current.has(selectedKey)
+      ? selectedKey
+      : dateKeys.reduce<string | undefined>((closest, key) => {
+          if (!closest) return key
+          const target = selectedDate.getTime()
+          return Math.abs(new Date(`${key}T12:00:00`).getTime() - target) <
+            Math.abs(new Date(`${closest}T12:00:00`).getTime() - target)
+            ? key
+            : closest
+        }, undefined)
+    dayRefs.current.get(targetKey ?? '')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
+  }, [dateKeys, selectedDate])
+
+  return (dateKey: string, element: HTMLElement | null) => {
+    if (element) dayRefs.current.set(dateKey, element)
+    else dayRefs.current.delete(dateKey)
+  }
 }
 
 const TimelinePage = () => {
   const history = useHistory()
   const people = usePeople()
+  const { selectedDate, setSelectedDate } = useSelectedDate()
   const { selectedPeople, selectOnlyPerson, clearSelection } = usePersonFilter()
-  const [selectedTypes] = useState<Set<EventType>>(new Set(['check-in']))
 
   const activePeople = useMemo(
-    () => (people.data ?? []).filter((p) => !p.archived),
+    () => (people.data ?? []).filter((person) => !person.archived),
     [people.data],
   )
+  const householdId = activePeople[0]?.householdId
+  const lifeEvents = useHouseholdLifeEvents(householdId)
+  const eventLabels = useMemo(
+    () => new Map((lifeEvents.data ?? []).map((event) => [event.id, event.label])),
+    [lifeEvents.data],
+  )
 
-  const allEvents: TimelineEvent[] = useMemo(() => {
-    const events: TimelineEvent[] = activePeople.flatMap((person) =>
-      (person.checkIns ?? []).map((ci) => checkInToEvent(person, ci)),
+  const allEvents = useMemo(() => {
+    const checkIns = activePeople.flatMap((person) =>
+      (person.checkIns ?? []).map((checkIn) => checkInToEvent(person, checkIn)),
     )
-
-    events.sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))
-    return events
-  }, [activePeople])
+    const householdEvents = new Map<string, TimelineEvent>()
+    for (const person of activePeople) {
+      for (const checkIn of person.checkIns ?? []) {
+        const date = toLocalDateKey(new Date(checkIn.occurredAt))
+        for (const eventId of parseAnswers(checkIn.answersJson).events) {
+          const key = `${date}:${eventId}`
+          if (householdEvents.has(key)) continue
+          householdEvents.set(key, {
+            id: key,
+            occurredAt: `${date}T12:00:00`,
+            type: 'household-event',
+            label: eventLabels.get(eventId) ?? 'Household event',
+            statusColor: 'event',
+          })
+        }
+      }
+    }
+    return [...checkIns, ...householdEvents.values()].sort((a, b) =>
+      b.occurredAt.localeCompare(a.occurredAt),
+    )
+  }, [activePeople, eventLabels])
 
   const filteredEvents = useMemo(
     () =>
-      allEvents.filter((e) => {
-        if (selectedPeople.size > 0 && !selectedPeople.has(e.personId)) return false
-        return !(selectedTypes.size > 0 && !selectedTypes.has(e.type))
-      }),
-    [allEvents, selectedPeople, selectedTypes],
+      allEvents.filter(
+        (event) =>
+          event.type === 'household-event' ||
+          selectedPeople.size === 0 ||
+          (event.personId && selectedPeople.has(event.personId)),
+      ),
+    [allEvents, selectedPeople],
   )
-
   const groupedEvents = useMemo(
     () => groupEventsByDate(filteredEvents),
     [filteredEvents],
   )
-  const openEvent = (event: TimelineEvent) =>
-    history.push(`/person/${event.personId}?viewDate=${toDateKey(event.occurredAt)}`)
-
+  const dateKeys = useMemo(() => [...groupedEvents.keys()], [groupedEvents])
+  const setDayRef = useTimelineDateSync(dateKeys, selectedDate, setSelectedDate)
   return (
     <Page
       title="Timeline"
+      headerContent={<IllustratedHeaderTitle title="Timeline" />}
+      subHeaderContent={
+        <div className="page-header-person-filter">
+          <PersonFilterChips
+            people={activePeople}
+            selectedPeople={selectedPeople}
+            onSelectPerson={selectOnlyPerson}
+            onClear={clearSelection}
+          />
+        </div>
+      }
       backHref="/dashboard"
+      illustratedHeader
+      disablePadding
+      className="timeline-page"
     >
-      {people.isLoading && LOADING_STATE}
-      {people.error && <p>Failed to load timeline.</p>}
-      {!people.isLoading && !people.error && (
-        <>
-          {/* Person filter chips */}
-          <div className="timeline-filters">
-            <PersonFilterChips
-              people={activePeople}
-              selectedPeople={selectedPeople}
-              onSelectPerson={selectOnlyPerson}
-              onClear={clearSelection}
-            />
+      {(people.isLoading || lifeEvents.isLoading) && LOADING_STATE}
+      {(people.error || lifeEvents.error) && <p>Failed to load timeline.</p>}
+      {!people.isLoading &&
+        !lifeEvents.isLoading &&
+        !people.error &&
+        !lifeEvents.error && (
+          <div className="timeline-layout">
+            {filteredEvents.length === 0 ? (
+              EMPTY_TIMELINE_STATE
+            ) : (
+              <div className="timeline-groups">
+                {Array.from(groupedEvents.entries()).map(([dateKey, events]) => (
+                  <section
+                    key={dateKey}
+                    ref={(element) => setDayRef(dateKey, element)}
+                    data-date={dateKey}
+                    className="timeline-day"
+                  >
+                    <DayBadge dateKey={dateKey} />
+                    <div className="timeline-day__events">
+                      {events.map((event) => (
+                        <TimelineEventRow
+                          key={event.id}
+                          event={event}
+                          onOpen={(selected) =>
+                            history.push(
+                              `/person/${selected.personId}?viewDate=${toLocalDateKey(new Date(selected.occurredAt))}`,
+                            )
+                          }
+                        />
+                      ))}
+                    </div>
+                  </section>
+                ))}
+              </div>
+            )}
           </div>
-
-          {/* Timeline events grouped by day */}
-          {filteredEvents.length === 0 ? (
-            EMPTY_TIMELINE_STATE
-          ) : (
-            <div className="timeline-groups">
-              {Array.from(groupedEvents.entries()).map(([dateKey, events]) => (
-                <div
-                  key={dateKey}
-                  className="timeline-day"
-                >
-                  <h3 className="timeline-day__heading">{formatDayHeading(dateKey)}</h3>
-
-                  <div className="timeline-day__events">
-                    {events.map((event) => renderEventButton(event, openEvent))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </>
-      )}
+        )}
     </Page>
   )
 }

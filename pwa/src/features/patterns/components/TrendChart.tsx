@@ -288,7 +288,7 @@ const Crosshair = ({
 
 const _numberToStatus = (value: number | null): [string, string, string] => {
   if (value == null) return ['-', 'gray', '']
-  if (value < 50) return ['Crisis', '#D64F4F', '⛈️']
+  if (value < 50) return ['Needs attention', '#D64F4F', '⛈️']
   if (value < 70) return ['Elevated', '#D7B13A', '☁️']
   if (value < 84) return ['Steady', '#63B66F', '🌤️']
   return ['Settled', '#3FAE72', '☀️']

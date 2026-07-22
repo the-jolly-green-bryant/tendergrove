@@ -11,7 +11,7 @@ import React from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 
 import { LoadingState } from '../../components/LoadingState'
-import { Page } from '../../components/Page'
+import { IllustratedHeaderTitle, Page } from '../../components/Page'
 import { PersonAvatar } from '../../components/PersonAvatar'
 import { useSelectedDate } from '../../context/SelectedDateContext'
 import type {
@@ -596,8 +596,15 @@ const PatternsOverviewPage = (): React.JSX.Element => {
   return (
     <Page
       title="Patterns"
+      headerContent={<IllustratedHeaderTitle title="Patterns" />}
+      subHeaderContent={
+        <div className="page-header-person-filter">
+          <PatternsFilterBar />
+        </div>
+      }
       className="patterns-page"
       backHref="/dashboard"
+      illustratedHeader
     >
       {isLoading && (
         <LoadingState
@@ -608,7 +615,6 @@ const PatternsOverviewPage = (): React.JSX.Element => {
       {hasError && <p>We couldn’t load your patterns just now. Please try again.</p>}
       {!isLoading && !hasError && view && result && (
         <>
-          <PatternsFilterBar />
           <PatternsTabs
             active={tab}
             onChange={setTab}
