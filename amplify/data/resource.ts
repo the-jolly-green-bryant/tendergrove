@@ -1,6 +1,39 @@
-import { a, defineData, type ClientSchema } from '@aws-amplify/backend'
+import { a, defineData, defineFunction, type ClientSchema } from '@aws-amplify/backend'
+
+export const NARRATIVE_BASE_MODEL_ID = 'amazon.nova-micro-v1:0'
+export const NARRATIVE_MODEL_ID = `us.${NARRATIVE_BASE_MODEL_ID}`
+
+export const generateReportNarrativeFunction = defineFunction({
+  entry: './generateReportNarrative.ts',
+  name: 'grove-report-narrative',
+  timeoutSeconds: 20,
+  memoryMB: 256,
+  environment: {
+    MODEL_ID: NARRATIVE_MODEL_ID,
+  },
+})
 
 const schema = a.schema({
+  ReportNarrative: a
+    .model({
+      personId: a.id().required(),
+      factsHash: a.string().required(),
+      schemaVersion: a.integer().required(),
+      narrative: a.string().required(),
+      model: a.string().required(),
+    })
+    .authorization((allow) => [allow.owner()]),
+
+  generateReportNarrative: a
+    .query()
+    .arguments({
+      factsJson: a.string().required(),
+      factsHash: a.string().required(),
+    })
+    .returns(a.string())
+    .authorization((allow) => [allow.authenticated()])
+    .handler(a.handler.function(generateReportNarrativeFunction)),
+
   Household: a
     .model({
       name: a.string().required(),

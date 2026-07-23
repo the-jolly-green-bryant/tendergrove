@@ -1,12 +1,30 @@
 import { defineBackend } from '@aws-amplify/backend'
+import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
 
 import { auth } from './auth/resource.ts'
-import { data } from './data/resource.ts'
+import {
+  data,
+  generateReportNarrativeFunction,
+  NARRATIVE_BASE_MODEL_ID,
+  NARRATIVE_MODEL_ID,
+} from './data/resource.ts'
 
 const backend = defineBackend({
   auth,
   data,
+  generateReportNarrativeFunction,
 })
+
+backend.generateReportNarrativeFunction.resources.lambda.addToRolePolicy(
+  new PolicyStatement({
+    effect: Effect.ALLOW,
+    actions: ['bedrock:InvokeModel'],
+    resources: [
+      `arn:aws:bedrock:*:*:inference-profile/${NARRATIVE_MODEL_ID}`,
+      `arn:aws:bedrock:*::foundation-model/${NARRATIVE_BASE_MODEL_ID}`,
+    ],
+  }),
+)
 
 // Cognito requires the {####} token and replaces it with the recipient's code.
 // Keep this message calm, recognizable, and explicit about code safety.
