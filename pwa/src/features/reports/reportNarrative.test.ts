@@ -30,19 +30,20 @@ describe('report narrative facts', () => {
     expect(envelope.facts.find((fact) => fact.id === 'sustainability')?.replacement)
       .toContain('does not look sustainable')
     expect(envelope.facts.find((fact) => fact.id === 'recent_regressive_days')?.replacement)
-      .toContain('1 of 2 recent scored days (50%) were regressive—below the 90-day average of 40%')
+      .toContain('1 of 2 recent scored days (50%) fell below the 90-day average of 40%')
     expect(envelope.facts.find((fact) => fact.id === 'wellness_comparison')?.replacement)
-      .toContain('35% wellness, compared with the 90-day average of 40% (5 percentage points lower)')
+      .toContain('Recent 30-day wellness averaged 35%—5 points below the 90-day average of 40%')
     expect(envelope.facts.find((fact) => fact.id === 'concern_stretch_1')?.replacement)
       .toContain('2 consecutive scored days')
   })
 
   it('substitutes approved placeholders without changing their values', () => {
     const envelope = buildNarrativeEnvelope(report)
+    const wording = (id: string) => envelope.facts.find((fact) => fact.id === id)?.replacement
     const rendered = renderNarrative([
-      '- {{sustainability}}',
-      '- {{recent_regressive_days}}',
-      '- {{concern_stretch_1}}',
+      `- {{sustainability}} ${wording('sustainability')}`,
+      `- {{recent_regressive_days}} ${wording('recent_regressive_days')}`,
+      `- {{concern_stretch_1}} ${wording('concern_stretch_1')}`,
     ].join('\n'), envelope)
     expect(rendered).toContain('50%')
     expect(rendered).toContain('40%')

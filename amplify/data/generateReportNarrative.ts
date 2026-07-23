@@ -24,7 +24,7 @@ const unsafeClinicalLanguage = /\b(diagnos(?:e|is|ed)|psychosis|schizophren|hosp
 const parseEnvelope = (value: string): NarrativeEnvelope => {
   if (value.length > 16_000) throw new Error('Facts payload is too large')
   const parsed = JSON.parse(value) as Partial<NarrativeEnvelope>
-  if (parsed.schemaVersion !== 4 || !Array.isArray(parsed.facts) || parsed.facts.length < 2 || parsed.facts.length > 16) {
+  if (parsed.schemaVersion !== 5 || !Array.isArray(parsed.facts) || parsed.facts.length < 2 || parsed.facts.length > 16) {
     throw new Error('Unsupported facts payload')
   }
   const facts = parsed.facts.map((fact) => {
@@ -40,13 +40,15 @@ const parseEnvelope = (value: string): NarrativeEnvelope => {
     return fact as NarrativeFact
   })
   if (new Set(facts.map((fact) => fact.id)).size !== facts.length) throw new Error('Duplicate narrative fact')
-  return { schemaVersion: 4, facts }
+  return { schemaVersion: 5, facts }
 }
+
+const lockedValuePattern = /\d+(?:\.\d+)?%?|“[^”]+”/g
+const lockedValues = (text: string) => (text.match(lockedValuePattern) ?? []).sort()
 
 export const validateNarrativeTemplate = (text: string, facts: NarrativeFact[]) => {
   const trimmed = text.trim()
   if (trimmed.length < 40 || trimmed.length > 1_800) throw new Error('Narrative length is invalid')
-  if (/[0-9%]/.test(trimmed.replace(placeholderPattern, ''))) throw new Error('Narrative contains model-authored numbers')
   if (unsafeClinicalLanguage.test(trimmed)) throw new Error('Narrative contains clinical conclusions')
   const allowed = new Set(facts.map((fact) => `{{${fact.id}}}`))
   const placeholders: string[] = trimmed.match(placeholderPattern) ?? []
@@ -57,9 +59,17 @@ export const validateNarrativeTemplate = (text: string, facts: NarrativeFact[]) 
     throw new Error('Narrative contains malformed placeholders')
   }
   const takeaways = trimmed.split('\n').map((line) => line.trim()).filter(Boolean)
-  if (takeaways.length !== 3 || takeaways.some((line) => !/^- \{\{[a-z][a-z0-9_]*\}\}$/.test(line))) {
+  if (takeaways.length !== 3 || takeaways.some((line) => !/^- \{\{[a-z][a-z0-9_]*\}\} .+/.test(line))) {
     throw new Error('Narrative must contain exactly three evidence-backed takeaways')
   }
+  takeaways.forEach((line) => {
+    const marker = line.match(placeholderPattern)?.[0]
+    const fact = facts.find(({ id }) => `{{${id}}}` === marker)
+    const paraphrase = line.replace(/^- \{\{[a-z][a-z0-9_]*\}\}\s*/, '')
+    if (!fact || JSON.stringify(lockedValues(paraphrase)) !== JSON.stringify(lockedValues(fact.replacement))) {
+      throw new Error('Narrative changed or omitted a locked value')
+    }
+  })
   if (facts.some((fact) => fact.id === 'sustainability') && !placeholders.includes('{{sustainability}}')) {
     throw new Error('Narrative must address day-to-day sustainability')
   }
@@ -75,7 +85,11 @@ export const handler: Schema['generateReportNarrative']['functionHandler'] = asy
   const actualHash = createHash('sha256').update(factsJson).digest('hex')
   if (actualHash !== factsHash) throw new Error('Facts hash does not match payload')
   const envelope = parseEnvelope(factsJson)
-  const availableFacts = envelope.facts.map(({ id, meaning }) => ({ placeholder: `{{${id}}}`, meaning }))
+  const availableFacts = envelope.facts.map(({ id, meaning, replacement }) => ({
+    marker: `{{${id}}}`,
+    priority: meaning,
+    exactSourceWording: replacement,
+  }))
 
   const response = await bedrock.send(new ConverseCommand({
     modelId: process.env.MODEL_ID,
@@ -83,13 +97,14 @@ export const handler: Schema['generateReportNarrative']['functionHandler'] = asy
       text: [
         'You write a calm, concise overview of caregiver-recorded observations.',
         'The deterministic Grove report is the only source of facts.',
-        'Use the supplied placeholders verbatim wherever evidence belongs.',
-        'Never write a number, percent sign, date, diagnosis, cause, treatment recommendation, urgency judgment, or level-of-care conclusion.',
+        'Paraphrase the supplied source wording into shorter, natural caregiver language.',
+        'Every number, percent, date, and quoted label in a selected source must appear exactly once and unchanged in its paraphrase. Never add a new one.',
+        'Never add a diagnosis, cause, treatment recommendation, urgency judgment, or level-of-care conclusion.',
         'Do not mention AI. Do not add a heading.',
-        'Select and rank exactly three evidence placeholders. Return exactly three lines in the format "- {{placeholder}}" with no other words or punctuation.',
-        'The first takeaway must be {{sustainability}} so the rendered evidence plainly addresses whether the observed day-to-day pattern looks sustainable.',
-        'The second takeaway must use the strongest recent concern evidence, prioritizing {{recent_regressive_days}}, then {{recent_concern_days}}, then a sustained concern stretch.',
-        'The third takeaway should prioritize a recent concern stretch, {{wellness_comparison}}, or {{recent_concern_days}}. Use other context only when none is available.',
+        'Return exactly three single-line bullets in the format "- {{marker}} concise paraphrase". Keep each as short as the required evidence permits.',
+        'The first marker must be {{sustainability}}.',
+        'The second marker should prioritize {{recent_regressive_days}}, then {{recent_concern_days}}, then a sustained concern stretch.',
+        'The third marker should prioritize a recent concern stretch, {{wellness_comparison}}, or {{recent_concern_days}}.',
         'Associations are observations and may have other explanations.',
       ].join(' '),
     }],

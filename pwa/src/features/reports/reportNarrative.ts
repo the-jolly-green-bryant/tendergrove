@@ -1,6 +1,6 @@
 import type { buildProviderReport } from './reportBuilder'
 
-export const REPORT_NARRATIVE_SCHEMA_VERSION = 4
+export const REPORT_NARRATIVE_SCHEMA_VERSION = 5
 
 export interface NarrativeFact {
   id: string
@@ -64,7 +64,7 @@ export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelop
   const difficultToSustain = primaryRate >= 50 || primaryStretch >= 3
   const recentPattern = recentTrendImproved
     ? `${recentConcernDays} of ${recent.length} recent scored days (${recentConcernRate}%) remained in the concern range`
-    : `${recentRegressiveDays.length} of ${recent.length} recent scored days (${recentRegressiveRate}%) were regressive, indicating decreased recorded well-being from the 90-day average`
+    : `${recentRegressiveDays.length} of ${recent.length} recent scored days (${recentRegressiveRate}%) were regressive versus the 90-day average`
   const facts: NarrativeFact[] = recent.length ? [
     {
       id: 'sustainability',
@@ -93,7 +93,7 @@ export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelop
     facts.push({
       id: 'recent_regressive_days',
       meaning: 'HIGH PRIORITY: recent regressive days scored below the 90-day average.',
-      replacement: `${recentRegressiveDays.length} of ${recent.length} recent scored days (${recentRegressiveRate}%) were regressive—below the 90-day average of ${report.baseline}%${recentRegressiveStretch >= 2 ? `, with a longest stretch of ${recentRegressiveStretch} consecutive days` : ''}.`,
+      replacement: `${recentRegressiveDays.length} of ${recent.length} recent scored days (${recentRegressiveRate}%) fell below the 90-day average of ${report.baseline}%${recentRegressiveStretch >= 2 ? `; longest stretch: ${recentRegressiveStretch} days` : ''}.`,
     })
   }
 
@@ -104,7 +104,7 @@ export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelop
       meaning: delta === 0
         ? 'Recent weighted wellness is unchanged from the longer-window average.'
         : `Recent weighted wellness is ${delta > 0 ? 'higher' : 'lower'} than the longer-window average.`,
-      replacement: `The most recent 30 days averaged ${report.recent}% wellness, compared with the 90-day average of ${report.baseline}% (${delta === 0 ? 'no change' : `${Math.abs(delta)} percentage points ${delta > 0 ? 'higher' : 'lower'}`}).`,
+      replacement: `Recent 30-day wellness averaged ${report.recent}%—${delta === 0 ? 'matching' : `${Math.abs(delta)} points ${delta > 0 ? 'above' : 'below'}`} the 90-day average of ${report.baseline}%.`,
     })
   }
 
@@ -171,16 +171,24 @@ export const validateNarrativeTemplate = (template: string, envelope: NarrativeE
   if (
     trimmed.length < 40
     || trimmed.length > 1_800
-    || /[0-9%]/.test(trimmed.replace(/\{\{[a-z][a-z0-9_]*\}\}/g, ''))
     || new Set(placeholders).size < 2
     || placeholders.some((placeholder) => !allowed.has(placeholder))
     || trimmed.replace(/\{\{[a-z][a-z0-9_]*\}\}/g, '').includes('{{')
     || trimmed.replace(/\{\{[a-z][a-z0-9_]*\}\}/g, '').includes('}}')
   ) throw new Error('Invalid narrative template')
   const takeaways = trimmed.split('\n').map((line) => line.trim()).filter(Boolean)
-  if (takeaways.length !== 3 || takeaways.some((line) => !/^- \{\{[a-z][a-z0-9_]*\}\}$/.test(line))) {
+  if (takeaways.length !== 3 || takeaways.some((line) => !/^- \{\{[a-z][a-z0-9_]*\}\} .+/.test(line))) {
     throw new Error('Narrative must contain exactly three evidence-backed takeaways')
   }
+  const lockedValues = (text: string) => (text.match(/\d+(?:\.\d+)?%?|“[^”]+”/g) ?? []).sort()
+  takeaways.forEach((line) => {
+    const marker = line.match(/\{\{[a-z][a-z0-9_]*\}\}/)?.[0]
+    const fact = envelope.facts.find(({ id }) => `{{${id}}}` === marker)
+    const paraphrase = line.replace(/^- \{\{[a-z][a-z0-9_]*\}\}\s*/, '')
+    if (!fact || JSON.stringify(lockedValues(paraphrase)) !== JSON.stringify(lockedValues(fact.replacement))) {
+      throw new Error('Narrative changed or omitted a locked value')
+    }
+  })
   if (envelope.facts.some((fact) => fact.id === 'sustainability') && !placeholders.includes('{{sustainability}}')) {
     throw new Error('Narrative must address day-to-day sustainability')
   }
@@ -194,9 +202,8 @@ export const validateNarrativeTemplate = (template: string, envelope: NarrativeE
 
 export const renderNarrative = (template: string, envelope: NarrativeEnvelope) => {
   const validated = validateNarrativeTemplate(template, envelope)
-  const facts = new Map(envelope.facts.map((fact) => [`{{${fact.id}}}`, fact.replacement]))
   return validated
-    .replace(/\{\{[a-z][a-z0-9_]*\}\}/g, (placeholder) => facts.get(placeholder) ?? '')
+    .replace(/^- \{\{[a-z][a-z0-9_]*\}\}\s*/gm, '• ')
     .replace(/^- /gm, '• ')
 }
 
