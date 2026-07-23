@@ -29,8 +29,8 @@ describe('report narrative facts', () => {
     const envelope = buildNarrativeEnvelope(report)
     expect(envelope.facts.find((fact) => fact.id === 'sustainability')?.replacement)
       .toContain('does not look sustainable')
-    expect(envelope.facts.find((fact) => fact.id === 'noteworthy_low_days')?.replacement)
-      .toContain('below the stricter 40% benchmark')
+    expect(envelope.facts.find((fact) => fact.id === 'recent_regressive_days')?.replacement)
+      .toContain('1 of 2 recent scored days (50%) were regressive—below the 90-day average of 40%')
     expect(envelope.facts.find((fact) => fact.id === 'wellness_comparison')?.replacement)
       .toContain('35% wellness, compared with the 90-day average of 40% (5 percentage points lower)')
     expect(envelope.facts.find((fact) => fact.id === 'concern_stretch_1')?.replacement)
@@ -41,24 +41,24 @@ describe('report narrative facts', () => {
     const envelope = buildNarrativeEnvelope(report)
     const rendered = renderNarrative([
       '- {{sustainability}}',
-      '- {{noteworthy_low_days}}',
+      '- {{recent_regressive_days}}',
       '- {{concern_stretch_1}}',
     ].join('\n'), envelope)
-    expect(rendered).toContain('35%')
+    expect(rendered).toContain('50%')
     expect(rendered).toContain('40%')
     expect(rendered).not.toContain('{{')
   })
 
   it('provides a deterministic explanation when the model is unavailable', () => {
     const fallback = fallbackNarrative(buildNarrativeEnvelope(report))
-    expect(fallback).toContain('35%')
+    expect(fallback).toContain('50%')
     expect(narrativeTakeaways(fallback)).toHaveLength(3)
   })
 
   it('rejects model-authored numbers and unknown placeholders', () => {
     const envelope = buildNarrativeEnvelope(report)
     expect(() => validateNarrativeTemplate(
-      '- The score was 35 percent. {{sustainability}}\n- Context: {{noteworthy_low_days}}\n- Sustained period: {{concern_stretch_1}}',
+      '- The score was 35 percent. {{sustainability}}\n- Context: {{recent_regressive_days}}\n- Sustained period: {{concern_stretch_1}}',
       envelope,
     )).toThrow()
     expect(() => validateNarrativeTemplate(

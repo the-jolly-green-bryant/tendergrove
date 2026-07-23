@@ -24,7 +24,7 @@ const unsafeClinicalLanguage = /\b(diagnos(?:e|is|ed)|psychosis|schizophren|hosp
 const parseEnvelope = (value: string): NarrativeEnvelope => {
   if (value.length > 16_000) throw new Error('Facts payload is too large')
   const parsed = JSON.parse(value) as Partial<NarrativeEnvelope>
-  if (parsed.schemaVersion !== 3 || !Array.isArray(parsed.facts) || parsed.facts.length < 2 || parsed.facts.length > 16) {
+  if (parsed.schemaVersion !== 4 || !Array.isArray(parsed.facts) || parsed.facts.length < 2 || parsed.facts.length > 16) {
     throw new Error('Unsupported facts payload')
   }
   const facts = parsed.facts.map((fact) => {
@@ -40,7 +40,7 @@ const parseEnvelope = (value: string): NarrativeEnvelope => {
     return fact as NarrativeFact
   })
   if (new Set(facts.map((fact) => fact.id)).size !== facts.length) throw new Error('Duplicate narrative fact')
-  return { schemaVersion: 3, facts }
+  return { schemaVersion: 4, facts }
 }
 
 export const validateNarrativeTemplate = (text: string, facts: NarrativeFact[]) => {
@@ -63,7 +63,7 @@ export const validateNarrativeTemplate = (text: string, facts: NarrativeFact[]) 
   if (facts.some((fact) => fact.id === 'sustainability') && !placeholders.includes('{{sustainability}}')) {
     throw new Error('Narrative must address day-to-day sustainability')
   }
-  const noteworthyIds = new Set(['noteworthy_low_days', 'concern_stretch_1', 'concern_comparison'])
+  const noteworthyIds = new Set(['recent_regressive_days', 'recent_concern_days', 'concern_stretch_1'])
   if (facts.some((fact) => noteworthyIds.has(fact.id)) && !placeholders.some((placeholder) => noteworthyIds.has(placeholder.slice(2, -2)))) {
     throw new Error('Narrative must include noteworthy concern evidence')
   }
@@ -88,8 +88,8 @@ export const handler: Schema['generateReportNarrative']['functionHandler'] = asy
         'Do not mention AI. Do not add a heading.',
         'Select and rank exactly three evidence placeholders. Return exactly three lines in the format "- {{placeholder}}" with no other words or punctuation.',
         'The first takeaway must be {{sustainability}} so the rendered evidence plainly addresses whether the observed day-to-day pattern looks sustainable.',
-        'The second takeaway must use the strongest supplied concern evidence, prioritizing {{noteworthy_low_days}}, a sustained concern stretch, or a high concern-day percentage.',
-        'The third takeaway should explain the most useful event, signal, or improvement context. Use coverage only when none of those facts is available.',
+        'The second takeaway must use the strongest recent concern evidence, prioritizing {{recent_regressive_days}}, then {{recent_concern_days}}, then a sustained concern stretch.',
+        'The third takeaway should prioritize a recent concern stretch, {{wellness_comparison}}, or {{recent_concern_days}}. Use other context only when none is available.',
         'Associations are observations and may have other explanations.',
       ].join(' '),
     }],
