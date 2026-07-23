@@ -211,7 +211,7 @@ const ReportsPage = () => {
   return <Page title="Appointment prep" backHref="/dashboard" className="reports-page">
     {report && <>
       <section className={`report-narrative report-narrative--${narrative.source}`} aria-live="polite">
-        <p className="report-narrative__eyebrow">Grove Narrative Engine</p>
+        <p className="report-narrative__eyebrow">Grove’s Care Notes</p>
         <h2>Three noteworthy takeaways</h2>
         <ol>{topTakeaways.map((takeaway, index) => <li key={`${index}-${takeaway}`}>{takeaway}</li>)}</ol>
         <small>{narrativeStatus} This explanation does not diagnose or determine care.</small>
