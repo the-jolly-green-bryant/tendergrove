@@ -24,7 +24,7 @@ const unsafeClinicalLanguage = /\b(diagnos(?:e|is|ed)|psychosis|schizophren|hosp
 const parseEnvelope = (value: string): NarrativeEnvelope => {
   if (value.length > 16_000) throw new Error('Facts payload is too large')
   const parsed = JSON.parse(value) as Partial<NarrativeEnvelope>
-  if (parsed.schemaVersion !== 5 || !Array.isArray(parsed.facts) || parsed.facts.length < 2 || parsed.facts.length > 16) {
+  if (parsed.schemaVersion !== 6 || !Array.isArray(parsed.facts) || parsed.facts.length < 2 || parsed.facts.length > 16) {
     throw new Error('Unsupported facts payload')
   }
   const facts = parsed.facts.map((fact) => {
@@ -40,7 +40,7 @@ const parseEnvelope = (value: string): NarrativeEnvelope => {
     return fact as NarrativeFact
   })
   if (new Set(facts.map((fact) => fact.id)).size !== facts.length) throw new Error('Duplicate narrative fact')
-  return { schemaVersion: 5, facts }
+  return { schemaVersion: 6, facts }
 }
 
 const lockedValuePattern = /\d+(?:\.\d+)?%?|“[^”]+”/g
@@ -59,8 +59,8 @@ export const validateNarrativeTemplate = (text: string, facts: NarrativeFact[]) 
     throw new Error('Narrative contains malformed placeholders')
   }
   const takeaways = trimmed.split('\n').map((line) => line.trim()).filter(Boolean)
-  if (takeaways.length !== 3 || takeaways.some((line) => !/^- \{\{[a-z][a-z0-9_]*\}\} .+/.test(line))) {
-    throw new Error('Narrative must contain exactly three evidence-backed takeaways')
+  if (takeaways.length !== facts.length || takeaways.some((line) => !/^- \{\{[a-z][a-z0-9_]*\}\} .+/.test(line))) {
+    throw new Error('Narrative must paraphrase every evidence section')
   }
   takeaways.forEach((line) => {
     const marker = line.match(placeholderPattern)?.[0]
@@ -70,6 +70,7 @@ export const validateNarrativeTemplate = (text: string, facts: NarrativeFact[]) 
       throw new Error('Narrative changed or omitted a locked value')
     }
   })
+  if (new Set(placeholders).size !== facts.length) throw new Error('Narrative omitted an evidence section')
   if (facts.some((fact) => fact.id === 'sustainability') && !placeholders.includes('{{sustainability}}')) {
     throw new Error('Narrative must address day-to-day sustainability')
   }
@@ -98,13 +99,12 @@ export const handler: Schema['generateReportNarrative']['functionHandler'] = asy
         'You write a calm, concise overview of caregiver-recorded observations.',
         'The deterministic Grove report is the only source of facts.',
         'Paraphrase the supplied source wording into shorter, natural caregiver language.',
+        'Do not copy a source sentence verbatim. Change and tighten its non-locked wording while preserving its meaning.',
         'Every number, percent, date, and quoted label in a selected source must appear exactly once and unchanged in its paraphrase. Never add a new one.',
         'Never add a diagnosis, cause, treatment recommendation, urgency judgment, or level-of-care conclusion.',
         'Do not mention AI. Do not add a heading.',
-        'Return exactly three single-line bullets in the format "- {{marker}} concise paraphrase". Keep each as short as the required evidence permits.',
-        'The first marker must be {{sustainability}}.',
-        'The second marker should prioritize {{recent_regressive_days}}, then {{recent_concern_days}}, then a sustained concern stretch.',
-        'The third marker should prioritize a recent concern stretch, {{wellness_comparison}}, or {{recent_concern_days}}.',
+        'Return one single-line bullet for every supplied fact, in the supplied order, using the format "- {{marker}} concise paraphrase". Do not skip or repeat a marker.',
+        'Keep each line as short as the required evidence permits.',
         'Associations are observations and may have other explanations.',
       ].join(' '),
     }],
