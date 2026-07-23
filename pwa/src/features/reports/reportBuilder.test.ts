@@ -93,4 +93,39 @@ describe('provider report', () => {
     expect(report.text).toContain('coincided with a wellness score 100 points lower')
     expect(report.text).not.toContain('continued clinical care')
   })
+
+  it('compares a person with other household members on overlapping recorded days', () => {
+    const dates = Array.from({ length: 4 }, (_, index) => {
+      const date = new Date()
+      date.setHours(12, 0, 0, 0)
+      date.setDate(date.getDate() - index)
+      return date.toISOString()
+    })
+    const checkIns = dates.map((occurredAt, index) => ({
+      occurredAt,
+      answersJson: JSON.stringify({ checked: index % 2 ? ['sleep'] : ['support'] }),
+    }))
+    const other = {
+      ...person,
+      id: 'caregiver-1',
+      displayName: 'Alex',
+      checkIns,
+    } as unknown as RawPerson
+    const selected = { ...person, checkIns } as unknown as RawPerson
+
+    const report = buildProviderReport({
+      person: selected,
+      householdPeople: [selected, other],
+      reason: '',
+      questions: '',
+    })
+
+    expect(report.householdCorrelation).toMatchObject({
+      coefficient: 1,
+      pairedDays: 4,
+      strength: 'strong',
+      direction: 'positive',
+    })
+    expect(report.text).toContain('average wellness of other household members')
+  })
 })

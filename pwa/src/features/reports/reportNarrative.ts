@@ -1,6 +1,6 @@
 import type { buildProviderReport } from './reportBuilder'
 
-export const REPORT_NARRATIVE_SCHEMA_VERSION = 9
+export const REPORT_NARRATIVE_SCHEMA_VERSION = 10
 
 export interface NarrativeFact {
   id: string
@@ -184,6 +184,13 @@ export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelop
       replacement: `“${event.label}” appeared on ${event.eventDays} scored days averaging ${event.eventAverage} wellness points versus ${event.otherAverage} points on other scored days, a ${Math.abs(event.difference)}-point ${event.difference < 0 ? 'decrease' : 'increase'}. This suggests an association worth discussing, not a known cause.`,
     })
   }
+  if (report.householdCorrelation) {
+    facts.push({
+      id: 'household_correlation',
+      meaning: 'How this person’s wellness scores moved alongside the average score of other household members on the same recorded days.',
+      replacement: report.householdCorrelationNarrative,
+    })
+  }
   report.recentDifficult.slice(0, 2).forEach((signal, index) => {
     facts.push({
       id: `frequent_concern_${index + 1}`,
@@ -206,6 +213,7 @@ export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelop
     'calendar_context',
     'important_stretches',
     'event_summary',
+    'household_correlation',
     'frequent_concern_1',
     'frequent_positive',
     'coverage',

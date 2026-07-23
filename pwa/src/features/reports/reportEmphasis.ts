@@ -5,8 +5,8 @@ export const emphasisDirection = (
   phrase: string,
   signalPolarity?: SignalPolarity,
 ): EmphasisDirection => {
-  const increase = /^(more common|up|above|improving|increase|higher)$/i.test(phrase)
-  const decrease = /^(less common|down|below|declining|decrease|lower)$/i.test(phrase)
+  const increase = /(?:^|\s)(more common|up|above|improving|increase|higher)$/i.test(phrase)
+  const decrease = /(?:^|\s)(less common|down|below|declining|decrease|lower)$/i.test(phrase)
 
   if (signalPolarity === 'concern') {
     if (decrease) return 'positive'

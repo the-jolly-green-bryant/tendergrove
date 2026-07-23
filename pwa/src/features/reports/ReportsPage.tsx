@@ -35,7 +35,7 @@ const SignalTrend = ({ observations, kind }: { observations: NonNullable<ReturnT
 }
 
 const EmphasizedText = ({ text, signalPolarity }: { text: string; signalPolarity?: SignalPolarity }) => {
-  const parts = text.split(/([“"][^”"]+[”"]|\b\d+(?:\.\d+)?(?:%|-point)?\b|\b(?:more common|less common|up|down|above|below|improving|declining|increase|decrease|higher|lower)\b)/gi)
+  const parts = text.split(/([“"][^”"]+[”"]|\b\d+(?:\.\d+)?\s+(?:of\s+\d+(?:\.\d+)?|points?(?:\s+(?:up|down|above|below|higher|lower))?)\b|\b\d+(?:\.\d+)?(?:%|-point)?\b|\b(?:more common|less common|up|down|above|below|improving|declining|increase|decrease|higher|lower)\b)/gi)
   return <>{parts.map((part, index) => {
     if (!part) return null
     const direction = emphasisDirection(part, signalPolarity)
@@ -109,7 +109,7 @@ const ReportsPage = () => {
     () => pins.filter((pin) => pin.personId === null || pin.personId === selected?.id),
     [pins, selected?.id],
   )
-  const report = useMemo(() => selected ? buildProviderReport({ person: selected, reason: '', questions: '', pinnedObservations: selectedPins.map((pin) => pin.text), lifeEvents: patterns.data?.lifeEvents }) : null, [patterns.data?.lifeEvents, selected, selectedPins])
+  const report = useMemo(() => selected ? buildProviderReport({ person: selected, householdPeople: activePeople, reason: '', questions: '', pinnedObservations: selectedPins.map((pin) => pin.text), lifeEvents: patterns.data?.lifeEvents }) : null, [activePeople, patterns.data?.lifeEvents, selected, selectedPins])
   const narrative = useReportNarrative(selected?.id, report)
   const topTakeaways = useMemo(() => narrativeTakeaways(narrative.text), [narrative.text])
   const reportText = report ? [
@@ -237,6 +237,9 @@ const ReportsPage = () => {
       <ReportVisuals observations={report.observations} calendarDays={report.calendarDays} sections={narrative.sections} />
       <section className="report-evidence-section">
         <div className="report-visual__heading"><h3>Events and observed associations</h3><span><EmphasizedText text={narrative.sections.event_summary ?? 'No event has enough recorded days for a meaningful comparison yet.'} /></span></div>
+      </section>
+      <section className="report-evidence-section">
+        <div className="report-visual__heading"><h3>Household wellness relationship</h3><span><EmphasizedText text={narrative.sections.household_correlation ?? report.householdCorrelationNarrative} /></span></div>
       </section>
     </>}
 

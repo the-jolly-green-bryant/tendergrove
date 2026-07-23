@@ -5,6 +5,7 @@ import { buildDailyScores, computeTrend, normalizeHousehold } from '../patterns/
 
 export interface ProviderReportInput {
   person: RawPerson
+  householdPeople?: RawPerson[]
   reason: string
   questions: string
   days?: number
@@ -70,6 +71,13 @@ export interface ReportPeriod {
   days: number
 }
 
+export interface HouseholdCorrelation {
+  coefficient: number
+  pairedDays: number
+  strength: 'strong' | 'moderate' | 'slight' | 'little or no'
+  direction: 'positive' | 'negative'
+}
+
 const dateKey = (value: string) => {
   const date = new Date(value)
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
@@ -122,6 +130,39 @@ const dailyScores = (person: RawPerson, checkIns: NonNullable<RawPerson['checkIn
   })
 }
 
+const householdCorrelation = (
+  person: RawPerson,
+  householdPeople: RawPerson[],
+  cutoff: Date,
+): HouseholdCorrelation | null => {
+  const others = householdPeople.filter((member) => member.id !== person.id && !member.archived)
+  if (!others.length) return null
+  const selectedDays = new Map(dailyScores(person, (person.checkIns ?? []).filter((item) => new Date(item.occurredAt) >= cutoff)).map((day) => [day.date, day.score]))
+  const otherScoresByDate = new Map<string, number[]>()
+  others.forEach((member) => {
+    dailyScores(member, (member.checkIns ?? []).filter((item) => new Date(item.occurredAt) >= cutoff)).forEach((day) => {
+      otherScoresByDate.set(day.date, [...(otherScoresByDate.get(day.date) ?? []), day.score])
+    })
+  })
+  const pairs = [...selectedDays].flatMap(([date, selectedScore]) => {
+    const otherScores = otherScoresByDate.get(date)
+    return otherScores?.length
+      ? [[selectedScore, otherScores.reduce((sum, score) => sum + score, 0) / otherScores.length] as const]
+      : []
+  })
+  if (pairs.length < 3) return null
+  const selectedMean = pairs.reduce((sum, [score]) => sum + score, 0) / pairs.length
+  const householdMean = pairs.reduce((sum, [, score]) => sum + score, 0) / pairs.length
+  const covariance = pairs.reduce((sum, [selectedScore, householdScore]) => sum + ((selectedScore - selectedMean) * (householdScore - householdMean)), 0)
+  const selectedSpread = Math.sqrt(pairs.reduce((sum, [score]) => sum + ((score - selectedMean) ** 2), 0))
+  const householdSpread = Math.sqrt(pairs.reduce((sum, [, score]) => sum + ((score - householdMean) ** 2), 0))
+  if (!selectedSpread || !householdSpread) return null
+  const coefficient = Math.round((covariance / (selectedSpread * householdSpread)) * 100) / 100
+  const magnitude = Math.abs(coefficient)
+  const strength = magnitude >= .7 ? 'strong' : magnitude >= .4 ? 'moderate' : magnitude >= .2 ? 'slight' : 'little or no'
+  return { coefficient, pairedDays: pairs.length, strength, direction: coefficient >= 0 ? 'positive' : 'negative' }
+}
+
 const findPeriods = (days: ReportDay[], kind: ReportPeriod['kind']): ReportPeriod[] => {
   const matches = (day: ReportDay) => kind === 'difficult' ? day.level === 'concern' : day.level === 'steady'
   const periods: ReportPeriod[] = []
@@ -140,7 +181,7 @@ const findPeriods = (days: ReportDay[], kind: ReportPeriod['kind']): ReportPerio
   return periods.sort((a, b) => b.days - a.days || a.start.localeCompare(b.start))
 }
 
-export const buildProviderReport = ({ person, days = 90, pinnedObservations = [], lifeEvents = [] }: ProviderReportInput) => {
+export const buildProviderReport = ({ person, householdPeople = [person], days = 90, pinnedObservations = [], lifeEvents = [] }: ProviderReportInput) => {
   const cutoff = new Date()
   cutoff.setDate(cutoff.getDate() - days + 1)
   cutoff.setHours(0, 0, 0, 0)
@@ -217,6 +258,10 @@ export const buildProviderReport = ({ person, days = 90, pinnedObservations = []
   const eventNarrative = eventComparisons.length
     ? eventComparisons.slice(0, 3).map((event) => `• “${event.label}” was recorded on ${event.eventDays} scored days. Those days averaged ${event.eventAverage} wellness points, compared with ${event.otherAverage} points on other scored days and a baseline of ${baseline ?? 'unavailable'} points. The event-day average was ${baseline === null ? 'not comparable with baseline' : event.eventAverage === baseline ? 'unchanged from baseline' : `${Math.abs(event.eventAverage - baseline)} points ${event.eventAverage > baseline ? 'higher than' : 'lower than'} baseline`}. ${event.concernDays} of ${event.eventDays} event days were in the concern range (${percentage(event.concernDays, event.eventDays)}%). ${event.difference < 0 ? `In this sample, the event coincided with a wellness score ${Math.abs(event.difference)} points lower than other scored days.` : `In this sample, the event did not coincide with a lower average wellness score.`}`)
     : 'No event has enough recorded days yet for a meaningful comparison with other observations.'
+  const correlation = householdCorrelation(person, householdPeople, cutoff)
+  const correlationNarrative = correlation
+    ? `Across ${correlation.pairedDays} same-day observations, ${person.displayName}’s wellness had a ${correlation.strength} ${correlation.direction} correlation with the average wellness of other household members (r = ${correlation.coefficient}). This describes whether scores tended to move together, not why they changed.`
+    : 'At least 3 same-day observations with changing scores for this person and another household member are needed to estimate household correlation.'
   const lines = [
     `GROVE CARE APPOINTMENT-PREP SUMMARY: ${person.displayName}`,
     'Personal observations only: not a diagnosis, risk assessment, or recommendation for treatment or hospitalization.',
@@ -229,6 +274,8 @@ export const buildProviderReport = ({ person, days = 90, pinnedObservations = []
     'IMPORTANT STRETCHES OF TIME', ...(observations.length ? significantPeriods : ['There are not enough scored observations yet to identify a sustained stretch.']),
     '',
     'EVENTS AND OBSERVED ASSOCIATIONS', ...(Array.isArray(eventNarrative) ? eventNarrative : [eventNarrative]),
+    '',
+    'HOUSEHOLD WELLNESS RELATIONSHIP', correlationNarrative,
     '',
     'OBSERVATION SUMMARY', checkIns.length === 0
       ? 'No observations were recorded in this range.'
@@ -251,7 +298,7 @@ export const buildProviderReport = ({ person, days = 90, pinnedObservations = []
     '',
     'AI DISCLOSURE', 'This report includes AI-generated language. Grove verifies the displayed values; the language does not diagnose or determine care.',
   ]
-  return { text: lines.join('\n'), checkIns, recentCheckIns, difficult, positive, recentDifficult, recentPositive, completeness, baseline, recent, observations, calendarDays, difficultPeriods, positivePeriods, eventNarrative, eventComparisons }
+  return { text: lines.join('\n'), checkIns, recentCheckIns, difficult, positive, recentDifficult, recentPositive, completeness, baseline, recent, observations, calendarDays, difficultPeriods, positivePeriods, eventNarrative, eventComparisons, householdCorrelation: correlation, householdCorrelationNarrative: correlationNarrative }
 }
 
 export const reportCsv = (person: RawPerson) => {

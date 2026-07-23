@@ -6,6 +6,7 @@ describe('report emphasis direction', () => {
     expect(emphasisDirection('down', 'concern')).toBe('positive')
     expect(emphasisDirection('decrease', 'concern')).toBe('positive')
     expect(emphasisDirection('less common', 'concern')).toBe('positive')
+    expect(emphasisDirection('8 points down', 'concern')).toBe('positive')
   })
 
   it('treats increases in difficult signals as negative', () => {
