@@ -2697,6 +2697,11 @@ a:visited {
 .report-narrative li { position: relative; min-height: 2rem; padding-left: 2.65rem; color: #40584e; line-height: 1.58; counter-increment: takeaway; }
 .report-narrative li::before { content: counter(takeaway); position: absolute; top: -.08rem; left: 0; display: grid; width: 1.9rem; height: 1.9rem; place-items: center; border-radius: 50%; background: #568264; color: #fff; font-size: .8rem; font-weight: 850; }
 .report-narrative small { display: block; margin-top: .8rem; color: #6a786f; line-height: 1.45; }
+.report-narrative--fallback { border-style: dashed; }
+.report-flow-section { max-width: 760px; margin: 2rem auto .85rem; }
+.report-flow-section__eyebrow { margin: 0 0 .25rem; color: #568264; font-size: .75rem; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
+.report-flow-section h2 { margin: 0 0 .35rem; color: #234d42; font-family: Georgia, 'Times New Roman', serif; }
+.report-flow-section > p:not(.report-flow-section__eyebrow) { margin: 0; color: #64736b; line-height: 1.52; }
 .report-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0 2rem; }
 .settings-page ion-card,
 .settings-page ion-list[inset],

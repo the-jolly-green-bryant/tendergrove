@@ -100,6 +100,13 @@ const ReportsPage = () => {
   const report = useMemo(() => selected ? buildProviderReport({ person: selected, reason, questions, pinnedObservations: selectedPins.map((pin) => pin.text), lifeEvents: patterns.data?.lifeEvents }) : null, [patterns.data?.lifeEvents, questions, reason, selected, selectedPins])
   const narrative = useReportNarrative(selected?.id, report)
   const topTakeaways = useMemo(() => narrativeTakeaways(narrative.text), [narrative.text])
+  const narrativeStatus = narrative.pending
+    ? 'Nova Micro is reviewing Grove’s calculated facts…'
+    : narrative.source === 'nova'
+      ? 'Generated with Amazon Nova Micro. Grove supplied and verified every number and date.'
+      : narrative.source === 'cache'
+        ? 'Generated with Amazon Nova Micro and loaded from Grove’s private cache. Grove verified every number and date.'
+        : 'Built-in summary shown. Nova Micro is not available right now; Grove’s calculated evidence remains unchanged.'
   const reportText = report ? [
     report.text.split('\n\n').slice(0, 1).join('\n\n'),
     `PLAIN-LANGUAGE OVERVIEW\n${narrative.text}`,
@@ -202,7 +209,26 @@ const ReportsPage = () => {
   }
 
   return <Page title="Appointment prep" backHref="/dashboard" className="reports-page">
-    <section className="report-intro"><p className="report-intro__eyebrow">Bring observations into the conversation</p><h2>Prepare a clearer appointment</h2><p>Select a person and describe why you are seeking support. Grove organizes the recorded days into significant periods, trends, and a calendar. Review the result, then download or copy it for the professional.</p><ol><li>Add the reason for the appointment and your questions.</li><li>Review the evidence. Update the underlying check-ins if an observation is incorrect.</li><li>Export only after you are comfortable sharing it.</li></ol></section>
+    {report && <>
+      <section className={`report-narrative report-narrative--${narrative.source}`} aria-live="polite">
+        <p className="report-narrative__eyebrow">Grove Narrative Engine</p>
+        <h2>Three noteworthy takeaways</h2>
+        <ol>{topTakeaways.map((takeaway, index) => <li key={`${index}-${takeaway}`}>{takeaway}</li>)}</ol>
+        <small>{narrativeStatus} This explanation does not diagnose or determine care.</small>
+      </section>
+      <section className="report-flow-section">
+        <p className="report-flow-section__eyebrow">1 · Here are the observations</p>
+        <h2>See the recorded evidence</h2>
+        <p>Review the weighted trend, missing days, signal counts, and dates behind the takeaways. Correct the underlying check-ins if something is inaccurate.</p>
+      </section>
+      <ReportVisuals observations={report.observations} calendarDays={report.calendarDays} />
+    </>}
+
+    <section className="report-flow-section">
+      <p className="report-flow-section__eyebrow">2 · Make it useful for this conversation</p>
+      <h2>Tailor your report</h2>
+      <p>Choose the person, add the reason for this appointment, and include the questions you want the professional to address.</p>
+    </section>
     <IonList inset className="report-form">
       <IonItem><IonSelect label="Person" labelPlacement="stacked" value={selected?.id} onIonChange={(event) => setPersonId(event.detail.value)}>{activePeople.map((person) => <IonSelectOption key={person.id} value={person.id}>{person.displayName}</IonSelectOption>)}</IonSelect></IonItem>
       <IonItem><IonTextarea label="Reason for this appointment" labelPlacement="stacked" placeholder="What changed, what is happening now, and what do you need help deciding?" value={reason} onIonInput={(event) => setReason(event.detail.value ?? '')} /></IonItem>
@@ -212,19 +238,15 @@ const ReportsPage = () => {
       <h2>Added for this appointment</h2>
       {selectedPins.map((pin) => <IonItem key={pin.id}><span>{pin.text.split('\n')[0]}</span><IonButton slot="end" fill="clear" color="medium" onClick={() => setPins(removeReportPin(user?.userId, pin.id))}>Remove</IonButton></IonItem>)}
     </section>}
+
     {report && <>
-      <h2>Evidence at a glance</h2>
-      <ReportActions />
-      <ReportVisuals observations={report.observations} calendarDays={report.calendarDays} />
-      <h2>Everything you need to know</h2>
-      <section className="report-narrative" aria-live="polite">
-        <p className="report-narrative__eyebrow">Grove Narrative Engine</p>
-        <h2>Top three takeaways</h2>
-        <ol>{topTakeaways.map((takeaway, index) => <li key={`${index}-${takeaway}`}>{takeaway}</li>)}</ol>
-        <small>{narrative.pending ? 'Preparing a clearer explanation…' : 'Numbers and dates come directly from Grove’s calculated report. The explanation does not diagnose or determine care.'}</small>
+      <section className="report-flow-section">
+        <p className="report-flow-section__eyebrow">3 · Here is your report</p>
+        <h2>Preview before sharing</h2>
+        <p>The report combines Grove’s calculated observations, the plain-language takeaways, and the appointment context you added.</p>
       </section>
-      <h2>Detailed appointment report</h2>
-      <FormattedReport text={report.text} />
+      <ReportActions />
+      <FormattedReport text={reportText} />
       <ReportActions />
       {pdfState === 'ready' && preparedPdf && <p className="report-download-status">Your PDF is ready. If it did not download automatically, <a href={preparedPdf.url} download={preparedPdf.name}>download it here</a>.</p>}
       {pdfState === 'error' && <p className="report-download-status report-download-status--error">The PDF could not be prepared. Your report is still here; try again or copy the plain text.</p>}
