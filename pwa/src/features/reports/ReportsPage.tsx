@@ -40,7 +40,7 @@ const FormattedReport = ({ text }: { text: string }) => <article className="repo
     const content = hasHeading ? lines.slice(1) : lines
     const bullets = content.filter((line) => line.startsWith('• '))
     const paragraphs = content.filter((line) => !line.startsWith('• '))
-    return <section key={`${heading}-${blockIndex}`}>
+    return <section className="report-preview__section" key={`${heading}-${blockIndex}`}>
       {hasHeading && (blockIndex === 0 ? <h2>{heading}</h2> : <h3>{heading}</h3>)}
       {paragraphs.map((line, index) => <p key={`${line}-${index}`}>{line}</p>)}
       {bullets.length > 0 && <ul>{bullets.map((line) => <li key={line}>{line.slice(2)}</li>)}</ul>}
@@ -48,7 +48,7 @@ const FormattedReport = ({ text }: { text: string }) => <article className="repo
   })}
 </article>
 
-const ReportVisuals = ({ observations, calendarDays }: Pick<NonNullable<ReturnType<typeof buildProviderReport>>, 'observations' | 'calendarDays'>) => {
+const ReportVisuals = ({ observations, calendarDays, sections }: Pick<NonNullable<ReturnType<typeof buildProviderReport>>, 'observations' | 'calendarDays'> & { sections: Record<string, string> }) => {
   if (!observations.length) return <p className="report-empty-visual">Complete check-ins to add a trend and observation calendar.</p>
   const width = 680
   const height = 170
@@ -64,7 +64,7 @@ const ReportVisuals = ({ observations, calendarDays }: Pick<NonNullable<ReturnTy
   const firstWeekday = new Date(`${calendarDays[0].date}T12:00:00`).getDay()
   return <>
     <section className="report-visual" aria-labelledby="report-trend-title">
-      <div className="report-visual__heading"><h3 id="report-trend-title">Weighted wellness trend</h3><span>The same proprietary weighted trend used on the person page. Missing or incomplete data is excluded.</span></div>
+      <div className="report-visual__heading"><h3 id="report-trend-title">Recent 30-day trend</h3><span>{sections.trend_description}</span></div>
       <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Weighted wellness trend across ${calendarDays.length} calendar days`}>
         <text x="18" y="10" className="report-trend__bound">{upperBound}%</text><text x="18" y={height - 2} className="report-trend__bound">{lowerBound}%</text>
         {upperBound >= 80 && lowerBound <= 80 && <line x1="18" x2={width - 18} y1={y(80)} y2={y(80)} className="report-trend__guide report-trend__guide--steady" />}
@@ -74,12 +74,20 @@ const ReportVisuals = ({ observations, calendarDays }: Pick<NonNullable<ReturnTy
       </svg>
     </section>
     <section className="report-visual" aria-labelledby="report-calendar-title">
-      <div className="report-visual__heading"><h3 id="report-calendar-title">Observation calendar</h3><span>Grey dates have no scored check-in and are excluded from analysis.</span></div>
+      <div className="report-visual__heading">
+        <h3 id="report-calendar-title">Observation calendar</h3>
+        <span>{sections.calendar_context}</span>
+        {sections.important_stretches && <span><strong>Important stretches:</strong> {sections.important_stretches}</span>}
+        <span>Grey dates have no scored check-in and are excluded from analysis.</span>
+      </div>
       <div className="report-calendar__weekdays">{['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((day) => <span key={day}>{day}</span>)}</div>
       <div className="report-calendar">{Array.from({ length: firstWeekday }, (_, index) => <i key={`blank-${index}`} />)}{calendarDays.map((day) => <div key={day.date} className={`report-calendar__day report-day--${day.level}`} title={day.score === null ? `${day.date}: No scored check-in` : `${day.date}: ${day.score}% wellness score`}><span>{new Date(`${day.date}T12:00:00`).toLocaleDateString(undefined, { month: 'short' })}</span><b>{Number(day.date.slice(-2))}</b><small>{day.score === null ? '—' : `${day.score}%`}</small></div>)}</div>
       <div className="report-legend"><span><i className="report-day--steady" />Steady</span><span><i className="report-day--watch" />Watch</span><span><i className="report-day--concern" />Concern</span><span><i className="report-day--missing" />No scored check-in</span></div>
     </section>
-    <div className="report-signal-trends"><SignalTrend observations={observations} kind="concern" /><SignalTrend observations={observations} kind="positive" /></div>
+    <section className="report-evidence-section">
+      <div className="report-visual__heading"><h3>Recorded signals</h3><span>{sections.frequent_concern_1 ?? sections.frequent_positive ?? 'Daily signal counts provide additional context for the weighted trend.'}</span></div>
+      <div className="report-signal-trends"><SignalTrend observations={observations} kind="concern" /><SignalTrend observations={observations} kind="positive" /></div>
+    </section>
   </>
 }
 
@@ -101,12 +109,10 @@ const ReportsPage = () => {
   const narrative = useReportNarrative(selected?.id, report)
   const topTakeaways = useMemo(() => narrativeTakeaways(narrative.text), [narrative.text])
   const narrativeStatus = narrative.pending
-    ? 'Nova Micro is reviewing Grove’s calculated facts…'
-    : narrative.source === 'nova'
-      ? 'Generated with Amazon Nova Micro. Grove supplied and verified every number and date.'
-      : narrative.source === 'cache'
-        ? 'Generated with Amazon Nova Micro and loaded from Grove’s private cache. Grove verified every number and date.'
-        : 'Built-in summary shown. Nova Micro is not available right now; Grove’s calculated evidence remains unchanged.'
+    ? 'AI is reviewing Grove’s calculated facts…'
+    : narrative.source === 'fallback'
+      ? 'Grove’s verified summary is shown because AI is currently unavailable.'
+      : 'AI-generated from Grove’s verified observations.'
   const reportText = report ? [
     report.text.split('\n\n').slice(0, 1).join('\n\n'),
     `PLAIN-LANGUAGE OVERVIEW\n${narrative.text}`,
@@ -214,14 +220,18 @@ const ReportsPage = () => {
         <p className="report-narrative__eyebrow">Grove’s Care Notes</p>
         <h2>Three noteworthy takeaways</h2>
         <ol>{topTakeaways.map((takeaway, index) => <li key={`${index}-${takeaway}`}>{takeaway}</li>)}</ol>
-        <small>{narrativeStatus} This explanation does not diagnose or determine care.</small>
+        <small>{narrativeStatus} It does not diagnose or determine care.</small>
       </section>
       <section className="report-flow-section">
         <p className="report-flow-section__eyebrow">1 · Here are the observations</p>
         <h2>See the recorded evidence</h2>
-        <p>Review the weighted trend, missing days, signal counts, and dates behind the takeaways. Correct the underlying check-ins if something is inaccurate.</p>
+        <p>{narrative.sections.trend_description}</p>
       </section>
-      <ReportVisuals observations={report.observations} calendarDays={report.calendarDays} />
+      <ReportVisuals observations={report.observations} calendarDays={report.calendarDays} sections={narrative.sections} />
+      <section className="report-evidence-section">
+        <div className="report-visual__heading"><h3>Events and observed associations</h3><span>{narrative.sections.event_summary ?? 'No event has enough recorded days for a meaningful comparison yet.'}</span></div>
+        <p className="report-evidence-note">Associations may have other explanations and do not establish cause.</p>
+      </section>
     </>}
 
     <section className="report-flow-section">
@@ -246,6 +256,13 @@ const ReportsPage = () => {
         <p>The report combines Grove’s calculated observations, the plain-language takeaways, and the appointment context you added.</p>
       </section>
       <ReportActions />
+      <section className="report-provider-intro">
+        <p className="report-flow-section__eyebrow">For the receiving professional</p>
+        <h2>How to read this report</h2>
+        <p>This report organizes caregiver-recorded observations from the recent 30 days against a 90-day baseline. AI helps condense the wording; Grove verifies the underlying values. The report is observational and does not diagnose or determine care.</p>
+        <h3>Important points</h3>
+        <ul>{topTakeaways.map((takeaway) => <li key={takeaway}>{takeaway}</li>)}</ul>
+      </section>
       <FormattedReport text={reportText} />
       <ReportActions />
       {pdfState === 'ready' && preparedPdf && <p className="report-download-status">Your PDF is ready. If it did not download automatically, <a href={preparedPdf.url} download={preparedPdf.name}>download it here</a>.</p>}
