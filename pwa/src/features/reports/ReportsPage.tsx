@@ -6,6 +6,7 @@ import { usePeople } from '../people/usePeople'
 import { usePatternsData } from '../patterns/usePatternsData'
 import { buildProviderReport } from './reportBuilder'
 import { readReportPins, removeReportPin } from './reportPins'
+import { useReportNarrative } from './useReportNarrative'
 
 const imageDataUrl = async (url: string) => {
   const blob = await fetch(url).then((response) => response.blob())
@@ -96,6 +97,12 @@ const ReportsPage = () => {
     [pins, selected?.id],
   )
   const report = useMemo(() => selected ? buildProviderReport({ person: selected, reason, questions, pinnedObservations: selectedPins.map((pin) => pin.text), lifeEvents: patterns.data?.lifeEvents }) : null, [patterns.data?.lifeEvents, questions, reason, selected, selectedPins])
+  const narrative = useReportNarrative(selected?.id, report)
+  const reportText = report ? [
+    report.text.split('\n\n').slice(0, 1).join('\n\n'),
+    `PLAIN-LANGUAGE OVERVIEW\n${narrative.text}`,
+    report.text.split('\n\n').slice(1).join('\n\n'),
+  ].join('\n\n') : ''
   const [pdfState, setPdfState] = useState<'idle' | 'preparing' | 'ready' | 'error'>('idle')
   const [preparedPdf, setPreparedPdf] = useState<{ url: string; name: string } | null>(null)
   useEffect(() => () => { if (preparedPdf) URL.revokeObjectURL(preparedPdf.url) }, [preparedPdf])
@@ -118,7 +125,7 @@ const ReportsPage = () => {
       }
       addHeader(true)
       pdf.setTextColor(37, 52, 47); pdf.setFont('helvetica', 'normal'); pdf.setFontSize(9.2)
-      const lines = pdf.splitTextToSize(report.text, pageWidth - margin * 2)
+      const lines = pdf.splitTextToSize(reportText, pageWidth - margin * 2)
       let y = 102
       for (const line of lines) {
         if (y > pageHeight - 42) { pdf.addPage(); addHeader(); pdf.setTextColor(37, 52, 47); pdf.setFont('helvetica', 'normal'); pdf.setFontSize(9.2); y = 72 }
@@ -207,7 +214,14 @@ const ReportsPage = () => {
       <h2>Evidence at a glance</h2>
       <ReportActions />
       <ReportVisuals observations={report.observations} calendarDays={report.calendarDays} />
-      <h2>Preview before sharing</h2>
+      <h2>Plain-language overview</h2>
+      <section className="report-narrative" aria-live="polite">
+        <p className="report-narrative__eyebrow">Grove Narrative Engine</p>
+        <h2>What the recorded information may be showing</h2>
+        <p>{narrative.text}</p>
+        <small>{narrative.pending ? 'Preparing a clearer explanation…' : 'Numbers and dates come directly from Grove’s calculated report. The explanation does not diagnose or determine care.'}</small>
+      </section>
+      <h2>Detailed appointment report</h2>
       <FormattedReport text={report.text} />
       <ReportActions />
       {pdfState === 'ready' && preparedPdf && <p className="report-download-status">Your PDF is ready. If it did not download automatically, <a href={preparedPdf.url} download={preparedPdf.name}>download it here</a>.</p>}
@@ -218,7 +232,7 @@ const ReportsPage = () => {
 
   function ReportActions() {
     return <div className="report-actions">
-      <IonButton onClick={() => void navigator.clipboard.writeText(report?.text ?? '')}>Copy report</IonButton>
+      <IonButton onClick={() => void navigator.clipboard.writeText(reportText)}>Copy report</IonButton>
       <IonButton fill="outline" disabled={pdfState === 'preparing'} onClick={() => void savePdf()}>{pdfState === 'preparing' ? 'Preparing PDF…' : 'Download PDF'}</IonButton>
     </div>
   }

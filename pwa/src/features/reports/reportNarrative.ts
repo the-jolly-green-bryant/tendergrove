@@ -1,0 +1,139 @@
+import type { buildProviderReport } from './reportBuilder'
+
+export const REPORT_NARRATIVE_SCHEMA_VERSION = 1
+
+export interface NarrativeFact {
+  id: string
+  meaning: string
+  replacement: string
+}
+
+export interface NarrativeEnvelope {
+  schemaVersion: typeof REPORT_NARRATIVE_SCHEMA_VERSION
+  facts: NarrativeFact[]
+}
+
+type ProviderReport = ReturnType<typeof buildProviderReport>
+
+const percentage = (count: number, total: number) => total ? Math.round((count / total) * 100) : 0
+const formatDay = (key: string) => new Date(`${key}T12:00:00`).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })
+
+export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelope => {
+  const observations = report.observations
+  const recentCutoff = new Date()
+  recentCutoff.setDate(recentCutoff.getDate() - 29)
+  recentCutoff.setHours(0, 0, 0, 0)
+  const recentKey = [
+    recentCutoff.getFullYear(),
+    String(recentCutoff.getMonth() + 1).padStart(2, '0'),
+    String(recentCutoff.getDate()).padStart(2, '0'),
+  ].join('-')
+  const recent = observations.filter((day) => day.date >= recentKey)
+  const concernDays = observations.filter((day) => day.level === 'concern').length
+  const recentConcernDays = recent.filter((day) => day.level === 'concern').length
+  const concernRate = percentage(concernDays, observations.length)
+  const recentConcernRate = percentage(recentConcernDays, recent.length)
+  const facts: NarrativeFact[] = [
+    {
+      id: 'coverage',
+      meaning: 'How much recorded evidence is available in the longer comparison window.',
+      replacement: `${observations.length} scored days were available across the selected window, representing ${report.completeness}% recorded-data coverage.`,
+    },
+  ]
+
+  if (report.baseline !== null && report.recent !== null) {
+    const delta = report.recent - report.baseline
+    facts.push({
+      id: 'wellness_comparison',
+      meaning: delta === 0
+        ? 'Recent weighted wellness is unchanged from the longer-window average.'
+        : `Recent weighted wellness is ${delta > 0 ? 'higher' : 'lower'} than the longer-window average.`,
+      replacement: `The most recent 30 days averaged ${report.recent}% wellness, compared with the 90-day average of ${report.baseline}% (${delta === 0 ? 'no change' : `${Math.abs(delta)} percentage points ${delta > 0 ? 'higher' : 'lower'}`}).`,
+    })
+  }
+
+  if (observations.length) {
+    const delta = recentConcernRate - concernRate
+    facts.push({
+      id: 'concern_comparison',
+      meaning: delta === 0
+        ? 'The share of recent concern-range days matches the longer-window share.'
+        : `The share of recent concern-range days is ${delta > 0 ? 'higher' : 'lower'} than the longer-window share.`,
+      replacement: `${concernDays} of ${observations.length} scored days were in the concern range (${concernRate}%). In the most recent 30 days, ${recentConcernDays} of ${recent.length} scored days were in that range (${recentConcernRate}%; ${delta === 0 ? 'no change' : `${Math.abs(delta)} percentage points ${delta > 0 ? 'higher' : 'lower'}`}).`,
+    })
+  }
+
+  report.difficultPeriods.filter((period) => period.days >= 2).slice(0, 2).forEach((period, index) => {
+    facts.push({
+      id: `concern_stretch_${index + 1}`,
+      meaning: 'A sustained consecutive stretch of concern-range observations that should not be obscured by averages.',
+      replacement: `A concern-range stretch lasted ${period.days} consecutive scored days, from ${formatDay(period.start)} through ${formatDay(period.end)}.`,
+    })
+  })
+  report.positivePeriods.filter((period) => period.days >= 2).slice(0, 1).forEach((period) => {
+    facts.push({
+      id: 'steady_stretch',
+      meaning: 'A sustained consecutive stretch of steady-range observations.',
+      replacement: `A steady-range stretch lasted ${period.days} consecutive scored days, from ${formatDay(period.start)} through ${formatDay(period.end)}.`,
+    })
+  })
+  report.eventComparisons.slice(0, 2).forEach((event, index) => {
+    facts.push({
+      id: `event_association_${index + 1}`,
+      meaning: `An observed event association whose event-day wellness was ${event.difference < 0 ? 'lower' : 'not lower'} than other scored days; it is not proof of causation.`,
+      replacement: `“${event.label}” was recorded on ${event.eventDays} scored days. Those days averaged ${event.eventAverage}% wellness, compared with ${event.otherAverage}% on other scored days. This is an observed association and may have other explanations.`,
+    })
+  })
+  report.difficult.slice(0, 2).forEach((signal, index) => {
+    facts.push({
+      id: `frequent_concern_${index + 1}`,
+      meaning: 'A difficult signal recorded frequently enough to provide useful discussion context.',
+      replacement: `“${signal.name}” was noted in ${signal.count} of ${report.checkIns.length} check-ins (${percentage(signal.count, report.checkIns.length)}%).`,
+    })
+  })
+  report.positive.slice(0, 1).forEach((signal) => {
+    facts.push({
+      id: 'frequent_positive',
+      meaning: 'A frequently recorded positive signal that provides balance and context.',
+      replacement: `“${signal.name}” was noted in ${signal.count} of ${report.checkIns.length} check-ins (${percentage(signal.count, report.checkIns.length)}%).`,
+    })
+  })
+  return { schemaVersion: REPORT_NARRATIVE_SCHEMA_VERSION, facts: facts.slice(0, 12) }
+}
+
+export const canonicalNarrativeFacts = (envelope: NarrativeEnvelope) => JSON.stringify(envelope)
+
+export const hashNarrativeFacts = async (factsJson: string) => {
+  const bytes = new TextEncoder().encode(factsJson)
+  const digest = await crypto.subtle.digest('SHA-256', bytes)
+  return [...new Uint8Array(digest)].map((value) => value.toString(16).padStart(2, '0')).join('')
+}
+
+export const validateNarrativeTemplate = (template: string, envelope: NarrativeEnvelope) => {
+  const trimmed = template.trim()
+  const placeholders = trimmed.match(/\{\{[a-z][a-z0-9_]*\}\}/g) ?? []
+  const allowed = new Set(envelope.facts.map((fact) => `{{${fact.id}}}`))
+  if (
+    trimmed.length < 80
+    || trimmed.length > 1_800
+    || /[0-9%]/.test(trimmed)
+    || new Set(placeholders).size < 2
+    || placeholders.some((placeholder) => !allowed.has(placeholder))
+    || trimmed.replace(/\{\{[a-z][a-z0-9_]*\}\}/g, '').includes('{{')
+    || trimmed.replace(/\{\{[a-z][a-z0-9_]*\}\}/g, '').includes('}}')
+  ) throw new Error('Invalid narrative template')
+  return trimmed
+}
+
+export const renderNarrative = (template: string, envelope: NarrativeEnvelope) => {
+  const validated = validateNarrativeTemplate(template, envelope)
+  const facts = new Map(envelope.facts.map((fact) => [`{{${fact.id}}}`, fact.replacement]))
+  return validated.replace(/\{\{[a-z][a-z0-9_]*\}\}/g, (placeholder) => facts.get(placeholder) ?? '')
+}
+
+export const fallbackNarrative = (envelope: NarrativeEnvelope) => {
+  const prioritized = ['wellness_comparison', 'concern_comparison', 'concern_stretch_1', 'event_association_1', 'frequent_concern_1', 'frequent_positive']
+  const facts = prioritized.flatMap((id) => envelope.facts.find((fact) => fact.id === id) ?? []).slice(0, 4)
+  if (!facts.length) return 'There is not enough scored information yet for a plain-language overview. The detailed report below remains available and will become more useful as observations are recorded.'
+  return `${facts.map((fact) => fact.replacement).join(' ')} These observations can help focus a conversation about what changed, what context may matter, and what would be useful to keep recording. Associations may have other explanations.`
+}
