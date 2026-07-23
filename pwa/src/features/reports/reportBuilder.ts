@@ -87,6 +87,9 @@ const formatDay = (key: string) => {
 }
 
 const percentage = (count: number, total: number) => total ? Math.round((count / total) * 100) : 0
+const baselineDelta = (delta: number) => delta === 0
+  ? '0 points unchanged from baseline'
+  : `${Math.abs(delta)} points ${delta > 0 ? 'up' : 'down'} from baseline`
 
 const dateKeysBetween = (start: Date, end: Date) => {
   const keys: string[] = []
@@ -202,7 +205,7 @@ export const buildProviderReport = ({ person, reason, questions, days = 90, pinn
     ...difficultPeriods.filter((period) => period.days >= 2).map((period) => `• Concern-range stretch: ${period.days} consecutive scored days, from ${formatDay(period.start)} through ${formatDay(period.end)}. This sustained period remains significant even when behavioral improvements were recorded in the days before or after it.`),
     ...positivePeriods.filter((period) => period.days >= 2).map((period) => `• Steady-range stretch: ${period.days} consecutive scored days, from ${formatDay(period.start)} through ${formatDay(period.end)}.`),
     `• Baseline: ${concernDays} of ${observations.length} scored days were in the concern range (${fullConcernRate}%); ${observations.length - concernDays - steadyDays} of ${observations.length} were in the watch range (${percentage(observations.length - concernDays - steadyDays, observations.length)}%); and ${steadyDays} of ${observations.length} were steady (${percentage(steadyDays, observations.length)}%).`,
-    ...(recentObservations.length ? [`• Recent: ${recentConcernDays} of ${recentObservations.length} scored days were in the concern range (${recentConcernRate}%, compared with the baseline of ${fullConcernRate}%; ${concernRateDelta === 0 ? 'no change' : `${Math.abs(concernRateDelta)} percentage points ${concernRateDelta > 0 ? 'higher' : 'lower'}`}).`] : []),
+    ...(recentObservations.length ? [`• Recent: ${recentConcernDays} of ${recentObservations.length} recorded observations were in the concern range (${recentConcernRate}%, ${baselineDelta(concernRateDelta)}).`] : []),
   ]
   const eventComparisons: EventComparison[] = lifeEvents.flatMap((event) => {
     const eventDates = new Set(checkIns.filter((checkIn) => parseAnswers(checkIn.answersJson).events.includes(event.id)).map((checkIn) => dateKey(checkIn.occurredAt)))
@@ -236,9 +239,9 @@ export const buildProviderReport = ({ person, reason, questions, days = 90, pinn
         ? `Difficult observations were noted in ${difficultCheckIns} of ${checkIns.length} check-ins (${percentage(difficultCheckIns, checkIns.length)}%).\n\nReview the sustained periods, event associations, and individual observations with the intended professional or support person.`
         : `Difficult observations were noted in ${difficultCheckIns} of ${checkIns.length} check-ins (${percentage(difficultCheckIns, checkIns.length)}%).\n\nContinue recording meaningful changes and bring new concerns to the intended professional or support person.`,
     '',
-    'RECENT CONCERNS NOTICED MOST OFTEN', ...(recentDifficult.length ? recentDifficult.map((item) => `• “${item.name}” was noted in ${item.count} of ${recentCheckIns.length} recent check-ins (${item.recentRate}%, ${item.delta === 0 ? 'unchanged' : `${Math.abs(item.delta)} points ${item.delta > 0 ? 'up' : 'down'}`} from baseline).`) : ['No difficult signals were recorded recently.']),
+    'RECENT CONCERNS NOTICED MOST OFTEN', ...(recentDifficult.length ? recentDifficult.map((item) => `• “${item.name}” was noted in ${item.count} of ${recentCheckIns.length} recent observations (${item.recentRate}%, ${baselineDelta(item.delta)}).`) : ['No difficult signals were recorded recently.']),
     '',
-    'RECENT POSITIVE SIGNS NOTICED MOST OFTEN', ...(recentPositive.length ? recentPositive.map((item) => `• “${item.name}” was noted in ${item.count} of ${recentCheckIns.length} recent check-ins (${item.recentRate}%, ${item.delta === 0 ? 'unchanged' : `${Math.abs(item.delta)} points ${item.delta > 0 ? 'up' : 'down'}`} from baseline).`) : ['No positive signals were recorded recently.']),
+    'RECENT POSITIVE SIGNS NOTICED MOST OFTEN', ...(recentPositive.length ? recentPositive.map((item) => `• “${item.name}” was noted in ${item.count} of ${recentCheckIns.length} recent observations (${item.recentRate}%, ${baselineDelta(item.delta)}).`) : ['No positive signals were recorded recently.']),
     '',
     'DATED NOTES ABOUT EVENTS, MEDICATION, OR INTERVENTIONS', ...(medicationNotes.length ? medicationNotes.slice(0, 8).map((note) => `• ${formatDay(note.date)}: ${note.text}`) : ['None specifically identified. Review the full notes for context.']),
     '',

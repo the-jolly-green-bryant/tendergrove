@@ -20,7 +20,7 @@ describe('provider report', () => {
     expect(report.text).toContain('Missing or incomplete data is excluded')
     expect(report.text).toContain('1% of the baseline window has recorded data')
     expect(report.text).toContain('3% of the recent window has recorded data')
-    expect(report.text).toContain('“Major sleep disruption” was noted in 1 of 1 recent check-ins')
+    expect(report.text).toContain('“Major sleep disruption” was noted in 1 of 1 recent observations')
     expect(report.calendarDays).toHaveLength(90)
     expect(report.calendarDays.filter((day) => day.level === 'missing')).toHaveLength(89)
   })

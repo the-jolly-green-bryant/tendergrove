@@ -24,7 +24,7 @@ const unsafeClinicalLanguage = /\b(diagnos(?:e|is|ed)|psychosis|schizophren|hosp
 const parseEnvelope = (value: string): NarrativeEnvelope => {
   if (value.length > 16_000) throw new Error('Facts payload is too large')
   const parsed = JSON.parse(value) as Partial<NarrativeEnvelope>
-  if (parsed.schemaVersion !== 7 || !Array.isArray(parsed.facts) || parsed.facts.length < 2 || parsed.facts.length > 16) {
+  if (parsed.schemaVersion !== 8 || !Array.isArray(parsed.facts) || parsed.facts.length < 2 || parsed.facts.length > 16) {
     throw new Error('Unsupported facts payload')
   }
   const facts = parsed.facts.map((fact) => {
@@ -40,11 +40,29 @@ const parseEnvelope = (value: string): NarrativeEnvelope => {
     return fact as NarrativeFact
   })
   if (new Set(facts.map((fact) => fact.id)).size !== facts.length) throw new Error('Duplicate narrative fact')
-  return { schemaVersion: 7, facts }
+  return { schemaVersion: 8, facts }
 }
 
 const lockedValuePattern = /\d+(?:\.\d+)?%?/g
 const lockedValues = (text: string) => (text.match(lockedValuePattern) ?? []).sort()
+const recentRatePattern = /\(\d+%, (?:0 points unchanged from baseline|\d+ points (?:up|down) from baseline)\)/
+
+const repairNarrativeTemplate = (text: string, facts: NarrativeFact[]) => {
+  const candidates = new Map(text.split('\n').flatMap((line) => {
+    const marker = line.match(placeholderPattern)?.[0]
+    return marker ? [[marker, line.trim()]] : []
+  }))
+  return facts.map((fact) => {
+    const marker = `{{${fact.id}}}`
+    const line = candidates.get(marker)
+    const paraphrase = line?.replace(/^- \{\{[a-z][a-z0-9_]*\}\}\s*/, '') ?? ''
+    const preservesValues = JSON.stringify(lockedValues(paraphrase)) === JSON.stringify(lockedValues(fact.replacement))
+    const preservesRecentRate = !recentRatePattern.test(fact.replacement) || recentRatePattern.test(paraphrase)
+    return line && preservesValues && preservesRecentRate && !line.includes('—')
+      ? line
+      : `- ${marker} ${fact.replacement}`
+  }).join('\n')
+}
 
 export const validateNarrativeTemplate = (text: string, facts: NarrativeFact[]) => {
   const trimmed = text.trim()
@@ -69,6 +87,9 @@ export const validateNarrativeTemplate = (text: string, facts: NarrativeFact[]) 
     const paraphrase = line.replace(/^- \{\{[a-z][a-z0-9_]*\}\}\s*/, '')
     if (!fact || JSON.stringify(lockedValues(paraphrase)) !== JSON.stringify(lockedValues(fact.replacement))) {
       throw new Error('Narrative changed or omitted a locked value')
+    }
+    if (recentRatePattern.test(fact.replacement) && !recentRatePattern.test(paraphrase)) {
+      throw new Error('Narrative changed the recent-versus-baseline rate format')
     }
   })
   if (new Set(placeholders).size !== facts.length) throw new Error('Narrative omitted an evidence section')
@@ -102,6 +123,7 @@ export const handler: Schema['generateReportNarrative']['functionHandler'] = asy
         'Paraphrase the supplied source wording into shorter, natural caregiver language.',
         'Do not copy a source sentence verbatim. Change and tighten its non-locked wording while preserving its meaning.',
         'Use concise, natural sentences that explain what the numbers suggest. Never use an em dash.',
+        'When source wording contains a parenthetical recent rate such as "(82%, 24 points up from baseline)", copy that entire parenthetical exactly.',
         'Every number, percent, date, and quoted label in a selected source must appear exactly once and unchanged in its paraphrase. Never add a new one.',
         'Never add a diagnosis, cause, treatment recommendation, urgency judgment, or level-of-care conclusion.',
         'Do not mention AI. Do not add a heading.',
@@ -127,5 +149,5 @@ export const handler: Schema['generateReportNarrative']['functionHandler'] = asy
     ?.map((item) => 'text' in item ? item.text : '')
     .join('\n')
   if (!text) throw new Error('The narrative model returned no text')
-  return validateNarrativeTemplate(text, envelope.facts)
+  return validateNarrativeTemplate(repairNarrativeTemplate(text, envelope.facts), envelope.facts)
 }
