@@ -2710,6 +2710,14 @@ a:visited {
 .report-provider-intro li,
 .report-evidence-note { color: #64736b; line-height: 1.52; }
 .report-ai-disclosure { max-width: 760px; margin: 1.5rem auto 0; color: #77847d; font-size: .78rem; line-height: 1.5; text-align: center; }
+.report-person-filter { display: flex; justify-content: center; }
+.report-person-filter ion-select { min-width: min(22rem, calc(100vw - 2rem)); --padding-start: 1rem; --padding-end: 1rem; border: 1px solid rgba(67, 98, 82, .24); border-radius: 999px; background: rgba(255, 255, 255, .82); color: #294f43; font-weight: 750; }
+.report-emphasis { color: #2f4f43; font-weight: 850; }
+.report-emphasis--positive { color: #276848; }
+.report-emphasis--negative { color: #9b3e38; }
+.report-important-stretches { width: 100%; color: #64736b; font-size: .8rem; }
+.report-stretch-list { margin: .35rem 0 0; padding-left: 1.15rem; text-align: left; }
+.report-stretch-list li { margin: .25rem 0; line-height: 1.45; }
 .report-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0 2rem; }
 .settings-page ion-card,
 .settings-page ion-list[inset],
@@ -2735,7 +2743,7 @@ a:visited {
 .report-intro ol { margin: .9rem 0 0; padding-left: 1.25rem; color: #40584e; }
 .report-intro li { margin: .4rem 0; line-height: 1.42; }
 .report-visual { max-width: 760px; margin: 0 auto 1rem; padding: 1rem; border: 1px solid #d8e2da; border-radius: 18px; background: #fff; box-shadow: 0 8px 22px rgba(29, 67, 60, .05); }
-.report-visual__heading { display: flex; gap: .5rem 1rem; align-items: baseline; justify-content: space-between; margin-bottom: .65rem; }
+.report-visual__heading { display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: baseline; justify-content: space-between; margin-bottom: .65rem; }
 .report-visual__heading h3 { margin: 0; color: #294f43; font-size: 1rem; }
 .report-visual__heading span { color: #728078; font-size: .78rem; text-align: right; }
 .report-visual svg { display: block; width: 100%; max-height: 190px; overflow: visible; }

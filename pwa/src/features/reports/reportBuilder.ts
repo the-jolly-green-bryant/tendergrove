@@ -88,7 +88,7 @@ const formatDay = (key: string) => {
 
 const percentage = (count: number, total: number) => total ? Math.round((count / total) * 100) : 0
 const baselineDelta = (delta: number) => delta === 0
-  ? '0 points unchanged from baseline'
+  ? 'unchanged from baseline'
   : `${Math.abs(delta)} points ${delta > 0 ? 'up' : 'down'} from baseline`
 
 const dateKeysBetween = (start: Date, end: Date) => {
@@ -140,7 +140,7 @@ const findPeriods = (days: ReportDay[], kind: ReportPeriod['kind']): ReportPerio
   return periods.sort((a, b) => b.days - a.days || a.start.localeCompare(b.start))
 }
 
-export const buildProviderReport = ({ person, reason, questions, days = 90, pinnedObservations = [], lifeEvents = [] }: ProviderReportInput) => {
+export const buildProviderReport = ({ person, days = 90, pinnedObservations = [], lifeEvents = [] }: ProviderReportInput) => {
   const cutoff = new Date()
   cutoff.setDate(cutoff.getDate() - days + 1)
   cutoff.setHours(0, 0, 0, 0)
@@ -215,16 +215,13 @@ export const buildProviderReport = ({ person, reason, questions, days = 90, pinn
     return [{ label: event.label?.trim() || 'Event', eventDays: onEvent.length, eventAverage, otherAverage, concernDays: onEvent.filter((day) => day.level === 'concern').length, difference: eventAverage - otherAverage }]
   }).sort((a, b) => a.difference - b.difference || b.eventDays - a.eventDays)
   const eventNarrative = eventComparisons.length
-    ? eventComparisons.slice(0, 3).map((event) => `• “${event.label}” was recorded on ${event.eventDays} scored days. Those days averaged ${event.eventAverage} wellness points, compared with ${event.otherAverage} points on other scored days and a baseline of ${baseline ?? 'unavailable'} points. The event-day average was ${baseline === null ? 'not comparable with baseline' : event.eventAverage === baseline ? 'unchanged from baseline' : `${Math.abs(event.eventAverage - baseline)} points ${event.eventAverage > baseline ? 'higher than' : 'lower than'} baseline`}. ${event.concernDays} of ${event.eventDays} event days were in the concern range (${percentage(event.concernDays, event.eventDays)}%). ${event.difference < 0 ? `In this sample, the event coincided with a wellness score ${Math.abs(event.difference)} points lower than other scored days.` : `In this sample, the event did not coincide with a lower average wellness score.`} This is an observed association and may have other explanations.`)
+    ? eventComparisons.slice(0, 3).map((event) => `• “${event.label}” was recorded on ${event.eventDays} scored days. Those days averaged ${event.eventAverage} wellness points, compared with ${event.otherAverage} points on other scored days and a baseline of ${baseline ?? 'unavailable'} points. The event-day average was ${baseline === null ? 'not comparable with baseline' : event.eventAverage === baseline ? 'unchanged from baseline' : `${Math.abs(event.eventAverage - baseline)} points ${event.eventAverage > baseline ? 'higher than' : 'lower than'} baseline`}. ${event.concernDays} of ${event.eventDays} event days were in the concern range (${percentage(event.concernDays, event.eventDays)}%). ${event.difference < 0 ? `In this sample, the event coincided with a wellness score ${Math.abs(event.difference)} points lower than other scored days.` : `In this sample, the event did not coincide with a lower average wellness score.`}`)
     : 'No event has enough recorded days yet for a meaningful comparison with other observations.'
   const lines = [
     `GROVE CARE APPOINTMENT-PREP SUMMARY: ${person.displayName}`,
     'Personal observations only: not a diagnosis, risk assessment, or recommendation for treatment or hospitalization.',
     '',
     'COMPARISON TERMS', 'Recent means the rolling 30-day period. Baseline means the rolling 90-day period. Wellness points are assigned on Grove’s 0–100 scale; they are scores, not population percentiles.',
-    '',
-    'REASON FOR TRACKING', reason.trim() || 'Not entered.',
-    '',
     'DATE RANGE AND COMPLETENESS', `${firstDate} to ${lastDate} · ${checkIns.length} check-ins · ${completeness}% of the baseline window has recorded data · ${recentCompleteness}% of the recent window has recorded data. Missing or incomplete data is excluded from wellness scoring and trend comparisons rather than interpreted as an observation.`,
     '',
     'RECENT COMPARED WITH BASELINE', delta === null ? 'There are not enough scored observations to compare recent data with baseline.' : `Recent wellness averaged ${recent} points (compared with the ${baseline}-point baseline; ${delta === 0 ? 'no change' : `${Math.abs(delta)} points ${delta > 0 ? 'higher' : 'lower'}`}). Grove Care calculates wellness scores using its proprietary weighted scoring algorithm and only the signals recorded for this person.`,
@@ -246,9 +243,6 @@ export const buildProviderReport = ({ person, reason, questions, days = 90, pinn
     'DATED NOTES ABOUT EVENTS, MEDICATION, OR INTERVENTIONS', ...(medicationNotes.length ? medicationNotes.slice(0, 8).map((note) => `• ${formatDay(note.date)}: ${note.text}`) : ['None specifically identified. Review the full notes for context.']),
     '',
     'ITEMS ADDED FOR THIS APPOINTMENT', ...(pinnedObservations.length ? pinnedObservations.map((item) => `• ${item.replaceAll('\n', ': ')}`) : ['None added.']),
-    '',
-    'QUESTIONS FOR THE PROFESSIONAL', questions.trim() || 'What changes should we watch? What would indicate that urgent evaluation is needed? What information would be most useful to keep recording?',
-    '',
     'RECENT RAW SCORED OBSERVATIONS', ...(recentObservations.length
       ? recentObservations.map((day) => `• ${formatDay(day.date)}: ${day.score} wellness points · ${day.concernSignals} concern signals · ${day.positiveSignals} positive signals`)
       : ['No scored observations were recorded recently.']),

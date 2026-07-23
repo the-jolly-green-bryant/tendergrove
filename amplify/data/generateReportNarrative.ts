@@ -45,7 +45,7 @@ const parseEnvelope = (value: string): NarrativeEnvelope => {
 
 const lockedValuePattern = /\d+(?:\.\d+)?%?/g
 const lockedValues = (text: string) => (text.match(lockedValuePattern) ?? []).sort()
-const recentRatePattern = /\(\d+%, (?:0 points unchanged from baseline|\d+ points (?:up|down) from baseline)\)/
+const recentRatePattern = /\(\d+%, (?:unchanged from baseline|\d+ points (?:up|down) from baseline)\)/
 
 const repairNarrativeTemplate = (text: string, facts: NarrativeFact[]) => {
   const candidates = new Map(text.split('\n').flatMap((line) => {

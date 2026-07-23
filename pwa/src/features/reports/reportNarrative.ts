@@ -17,7 +17,7 @@ type ProviderReport = ReturnType<typeof buildProviderReport>
 
 const percentage = (count: number, total: number) => total ? Math.round((count / total) * 100) : 0
 const baselineDelta = (delta: number) => delta === 0
-  ? '0 points unchanged from baseline'
+  ? 'unchanged from baseline'
   : `${Math.abs(delta)} points ${delta > 0 ? 'up' : 'down'} from baseline`
 const formatDay = (key: string) => new Date(`${key}T12:00:00`).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })
 const nextDay = (key: string) => {
@@ -241,7 +241,7 @@ export const validateNarrativeTemplate = (template: string, envelope: NarrativeE
     throw new Error('Narrative must paraphrase every evidence section')
   }
   const lockedValues = (text: string) => (text.match(/\d+(?:\.\d+)?%?/g) ?? []).sort()
-  const recentRatePattern = /\(\d+%, (?:0 points unchanged from baseline|\d+ points (?:up|down) from baseline)\)/
+  const recentRatePattern = /\(\d+%, (?:unchanged from baseline|\d+ points (?:up|down) from baseline)\)/
   takeaways.forEach((line) => {
     const marker = line.match(/\{\{[a-z][a-z0-9_]*\}\}/)?.[0]
     const fact = envelope.facts.find(({ id }) => `{{${id}}}` === marker)

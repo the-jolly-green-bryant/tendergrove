@@ -1,6 +1,6 @@
-import { IonButton, IonItem, IonList, IonSelect, IonSelectOption, IonTextarea } from '@ionic/react'
+import { IonButton, IonItem, IonSelect, IonSelectOption } from '@ionic/react'
 import { useEffect, useMemo, useState } from 'react'
-import { Page } from '../../components/Page'
+import { IllustratedHeaderTitle, Page } from '../../components/Page'
 import { useAppAuth } from '../../auth/AuthContext'
 import { usePeople } from '../people/usePeople'
 import { usePatternsData } from '../patterns/usePatternsData'
@@ -32,21 +32,33 @@ const SignalTrend = ({ observations, kind }: { observations: NonNullable<ReturnT
   </section>
 }
 
-const FormattedReport = ({ text }: { text: string }) => <article className="report-preview" aria-label="Generated appointment report">
-  {text.split('\n\n').filter(Boolean).map((block, blockIndex) => {
-    const lines = block.split('\n').filter(Boolean)
-    const heading = lines[0]
-    const hasHeading = /^[A-Z0-9][A-Z0-9 &,—-]+$/.test(heading)
-    const content = hasHeading ? lines.slice(1) : lines
-    const bullets = content.filter((line) => line.startsWith('• '))
-    const paragraphs = content.filter((line) => !line.startsWith('• '))
-    return <section className="report-preview__section" key={`${heading}-${blockIndex}`}>
-      {hasHeading && (blockIndex === 0 ? <h2>{heading}</h2> : <h3>{heading}</h3>)}
-      {paragraphs.map((line, index) => <p key={`${line}-${index}`}>{line}</p>)}
-      {bullets.length > 0 && <ul>{bullets.map((line) => <li key={line}>{line.slice(2)}</li>)}</ul>}
-    </section>
-  })}
-</article>
+const EmphasizedText = ({ text, signalPolarity }: { text: string; signalPolarity?: 'concern' | 'positive' }) => {
+  const parts = text.split(/([“"][^”"]+[”"]|\b\d+(?:\.\d+)?(?:%|-point)?\b|\b(?:more common|less common|up|down|above|below|improving|declining|increase|decrease|higher|lower)\b)/gi)
+  return <>{parts.map((part, index) => {
+    if (!part) return null
+    const moreCommon = /^more common$/i.test(part)
+    const lessCommon = /^less common$/i.test(part)
+    const direction =
+      /^(up|above|improving|increase|higher)$/i.test(part) ||
+      (signalPolarity === 'concern' && lessCommon) ||
+      (signalPolarity === 'positive' && moreCommon)
+        ? 'positive'
+        : /^(down|below|declining|decrease|lower)$/i.test(part) ||
+            (signalPolarity === 'concern' && moreCommon) ||
+            (signalPolarity === 'positive' && lessCommon)
+          ? 'negative'
+          : ''
+    const emphasized = /^[“"]/.test(part) || /\d/.test(part) || direction
+    return emphasized
+      ? <strong className={direction ? `report-emphasis report-emphasis--${direction}` : 'report-emphasis'} key={`${part}-${index}`}>{part}</strong>
+      : part
+  })}</>
+}
+
+const ImportantStretchList = ({ text }: { text: string }) => {
+  const items = text.split(/(?<=\.)\s+/).filter(Boolean)
+  return <ul className="report-stretch-list">{items.map((item) => <li key={item}><EmphasizedText text={item} /></li>)}</ul>
+}
 
 const ReportVisuals = ({ observations, calendarDays, sections }: Pick<NonNullable<ReturnType<typeof buildProviderReport>>, 'observations' | 'calendarDays'> & { sections: Record<string, string> }) => {
   if (!observations.length) return <p className="report-empty-visual">Complete check-ins to add a trend and observation calendar.</p>
@@ -67,9 +79,9 @@ const ReportVisuals = ({ observations, calendarDays, sections }: Pick<NonNullabl
   const firstWeekday = new Date(`${recentCalendarDays[0].date}T12:00:00`).getDay()
   return <>
     <section className="report-visual" aria-labelledby="report-trend-title">
-      <div className="report-visual__heading"><h3 id="report-trend-title">Recent trend</h3><span>{sections.trend_description}</span></div>
+      <div className="report-visual__heading"><h3 id="report-trend-title">Recent trend</h3><span><EmphasizedText text={sections.trend_description} /></span></div>
       <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Weighted wellness trend across ${recentCalendarDays.length} calendar days`}>
-        <text x="18" y="10" className="report-trend__bound">{upperBound}%</text><text x="18" y={height - 2} className="report-trend__bound">{lowerBound}%</text>
+        <text x="18" y="10" className="report-trend__bound">{upperBound} pts</text><text x="18" y={height - 2} className="report-trend__bound">{lowerBound} pts</text>
         {upperBound >= 80 && lowerBound <= 80 && <line x1="18" x2={width - 18} y1={y(80)} y2={y(80)} className="report-trend__guide report-trend__guide--steady" />}
         {upperBound >= 60 && lowerBound <= 60 && <line x1="18" x2={width - 18} y1={y(60)} y2={y(60)} className="report-trend__guide report-trend__guide--concern" />}
         <polyline points={points} className="report-trend__line" />
@@ -79,8 +91,8 @@ const ReportVisuals = ({ observations, calendarDays, sections }: Pick<NonNullabl
     <section className="report-visual" aria-labelledby="report-calendar-title">
       <div className="report-visual__heading">
         <h3 id="report-calendar-title">Observation calendar</h3>
-        <span>{sections.calendar_context}</span>
-        {sections.important_stretches && <span><strong>Important stretches:</strong> {sections.important_stretches}</span>}
+        <span><EmphasizedText text={sections.calendar_context} /></span>
+        {sections.important_stretches && <div className="report-important-stretches"><strong>Important stretches</strong><ImportantStretchList text={sections.important_stretches} /></div>}
         <span>Grey dates have no scored check-in and are excluded from analysis.</span>
       </div>
       <div className="report-calendar__weekdays">{['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((day) => <span key={day}>{day}</span>)}</div>
@@ -88,7 +100,7 @@ const ReportVisuals = ({ observations, calendarDays, sections }: Pick<NonNullabl
       <div className="report-legend"><span><i className="report-day--steady" />Steady</span><span><i className="report-day--watch" />Watch</span><span><i className="report-day--concern" />Concern</span><span><i className="report-day--missing" />No scored check-in</span></div>
     </section>
     <section className="report-evidence-section">
-      <div className="report-visual__heading"><h3>Recorded signals</h3><span>{sections.frequent_concern_1 ?? sections.frequent_positive ?? 'Daily signal counts provide additional context for the weighted trend.'}</span></div>
+      <div className="report-visual__heading"><h3>Recorded signals</h3><span><EmphasizedText text={sections.frequent_concern_1 ?? sections.frequent_positive ?? 'Daily signal counts provide additional context for the weighted trend.'} signalPolarity={sections.frequent_concern_1 ? 'concern' : 'positive'} /></span></div>
       <div className="report-signal-trends"><SignalTrend observations={recentObservations} kind="concern" /><SignalTrend observations={recentObservations} kind="positive" /></div>
     </section>
   </>
@@ -101,14 +113,12 @@ const ReportsPage = () => {
   const activePeople = (people.data ?? []).filter((person) => !person.archived)
   const [personId, setPersonId] = useState('')
   const selected = activePeople.find((person) => person.id === personId) ?? activePeople[0]
-  const [reason, setReason] = useState('')
-  const [questions, setQuestions] = useState('')
   const [pins, setPins] = useState(() => readReportPins(user?.userId))
   const selectedPins = useMemo(
     () => pins.filter((pin) => pin.personId === null || pin.personId === selected?.id),
     [pins, selected?.id],
   )
-  const report = useMemo(() => selected ? buildProviderReport({ person: selected, reason, questions, pinnedObservations: selectedPins.map((pin) => pin.text), lifeEvents: patterns.data?.lifeEvents }) : null, [patterns.data?.lifeEvents, questions, reason, selected, selectedPins])
+  const report = useMemo(() => selected ? buildProviderReport({ person: selected, reason: '', questions: '', pinnedObservations: selectedPins.map((pin) => pin.text), lifeEvents: patterns.data?.lifeEvents }) : null, [patterns.data?.lifeEvents, selected, selectedPins])
   const narrative = useReportNarrative(selected?.id, report)
   const topTakeaways = useMemo(() => narrativeTakeaways(narrative.text), [narrative.text])
   const reportText = report ? [
@@ -215,35 +225,30 @@ const ReportsPage = () => {
     } catch { setPdfState('error') }
   }
 
-  return <Page title="Appointment prep" backHref="/dashboard" className="reports-page">
+  return <Page
+    title="Appointment prep"
+    headerContent={<IllustratedHeaderTitle title="Appointment prep" />}
+    subHeaderContent={<div className="page-header-person-filter report-person-filter"><IonSelect aria-label="Person" interface="popover" value={selected?.id} onIonChange={(event) => setPersonId(event.detail.value)}>{activePeople.map((person) => <IonSelectOption key={person.id} value={person.id}>{person.displayName}</IonSelectOption>)}</IonSelect></div>}
+    backHref="/dashboard"
+    className="reports-page"
+    illustratedHeader
+  >
     {report && <>
       <section className={`report-narrative report-narrative--${narrative.source}`} aria-live="polite">
         <p className="report-narrative__eyebrow">Grove’s Care Notes</p>
         <h2>Three noteworthy takeaways</h2>
-        <ol>{topTakeaways.map((takeaway, index) => <li key={`${index}-${takeaway}`}>{takeaway}</li>)}</ol>
+        <ol>{topTakeaways.map((takeaway, index) => <li key={`${index}-${takeaway}`}><EmphasizedText text={takeaway} /></li>)}</ol>
       </section>
       <section className="report-flow-section">
         <p className="report-flow-section__eyebrow">1 · Here are the observations</p>
         <h2>See the recorded evidence</h2>
-        <p>{narrative.sections.trend_description}</p>
       </section>
       <ReportVisuals observations={report.observations} calendarDays={report.calendarDays} sections={narrative.sections} />
       <section className="report-evidence-section">
-        <div className="report-visual__heading"><h3>Events and observed associations</h3><span>{narrative.sections.event_summary ?? 'No event has enough recorded days for a meaningful comparison yet.'}</span></div>
-        <p className="report-evidence-note">Associations may have other explanations and do not establish cause.</p>
+        <div className="report-visual__heading"><h3>Events and observed associations</h3><span><EmphasizedText text={narrative.sections.event_summary ?? 'No event has enough recorded days for a meaningful comparison yet.'} /></span></div>
       </section>
     </>}
 
-    <section className="report-flow-section">
-      <p className="report-flow-section__eyebrow">2 · Make it useful for this conversation</p>
-      <h2>Tailor your report</h2>
-      <p>Choose the person, add the reason for this appointment, and include the questions you want the professional to address.</p>
-    </section>
-    <IonList inset className="report-form">
-      <IonItem><IonSelect label="Person" labelPlacement="stacked" value={selected?.id} onIonChange={(event) => setPersonId(event.detail.value)}>{activePeople.map((person) => <IonSelectOption key={person.id} value={person.id}>{person.displayName}</IonSelectOption>)}</IonSelect></IonItem>
-      <IonItem><IonTextarea label="Reason for this appointment" labelPlacement="stacked" placeholder="What changed, what is happening now, and what do you need help deciding?" value={reason} onIonInput={(event) => setReason(event.detail.value ?? '')} /></IonItem>
-      <IonItem><IonTextarea label="Questions for the professional" labelPlacement="stacked" placeholder="What do you want to understand or decide together?" value={questions} onIonInput={(event) => setQuestions(event.detail.value ?? '')} /></IonItem>
-    </IonList>
     {selectedPins.length > 0 && <section className="report-pins">
       <h2>Added for this appointment</h2>
       {selectedPins.map((pin) => <IonItem key={pin.id}><span>{pin.text.split('\n')[0]}</span><IonButton slot="end" fill="clear" color="medium" onClick={() => setPins(removeReportPin(user?.userId, pin.id))}>Remove</IonButton></IonItem>)}
@@ -251,19 +256,10 @@ const ReportsPage = () => {
 
     {report && <>
       <section className="report-flow-section">
-        <p className="report-flow-section__eyebrow">3 · Here is your report</p>
-        <h2>Preview before sharing</h2>
-        <p>The report combines Grove’s calculated observations, the plain-language takeaways, and the appointment context you added.</p>
+        <p className="report-flow-section__eyebrow">Provider report</p>
+        <h2>Share the detailed evidence</h2>
+        <p>The PDF includes the factual calculations, raw recent observations, charts, and the important points shown above.</p>
       </section>
-      <ReportActions />
-      <section className="report-provider-intro">
-        <p className="report-flow-section__eyebrow">For the receiving professional</p>
-        <h2>How to read this report</h2>
-        <p>This report organizes caregiver-recorded observations from the recent 30 days against a rolling 90-day baseline. Wellness points use Grove’s 0–100 scale; they are scores, not population percentiles.</p>
-        <h3>Important points</h3>
-        <ul>{topTakeaways.map((takeaway) => <li key={takeaway}>{takeaway}</li>)}</ul>
-      </section>
-      <FormattedReport text={reportText} />
       <ReportActions />
       {pdfState === 'ready' && preparedPdf && <p className="report-download-status">Your PDF is ready. If it did not download automatically, <a href={preparedPdf.url} download={preparedPdf.name}>download it here</a>.</p>}
       {pdfState === 'error' && <p className="report-download-status report-download-status--error">The PDF could not be prepared. Your report is still here; try again or copy the plain text.</p>}
@@ -274,8 +270,8 @@ const ReportsPage = () => {
 
   function ReportActions() {
     return <div className="report-actions">
-      <IonButton onClick={() => void navigator.clipboard.writeText(reportText)}>Copy report</IonButton>
-      <IonButton fill="outline" disabled={pdfState === 'preparing'} onClick={() => void savePdf()}>{pdfState === 'preparing' ? 'Preparing PDF…' : 'Download PDF'}</IonButton>
+      <IonButton fill="outline" onClick={() => void navigator.clipboard.writeText(reportText)}>Copy report</IonButton>
+      <IonButton disabled={pdfState === 'preparing'} onClick={() => void savePdf()}>{pdfState === 'preparing' ? 'Preparing PDF…' : 'Download PDF'}</IonButton>
     </div>
   }
 }

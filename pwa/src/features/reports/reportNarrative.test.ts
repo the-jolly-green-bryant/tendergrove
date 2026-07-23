@@ -35,7 +35,7 @@ describe('report narrative facts', () => {
     expect(envelope.facts.find((fact) => fact.id === 'sustainability')?.replacement)
       .not.toContain('%')
     expect(envelope.facts.find((fact) => fact.id === 'recent_regressive_days')?.replacement)
-      .toContain('1 of 2 recent recorded observations fell below the 40-point baseline (50%, 0 points unchanged from baseline)')
+      .toContain('1 of 2 recent recorded observations fell below the 40-point baseline (50%, unchanged from baseline)')
     expect(envelope.facts.find((fact) => fact.id === 'wellness_comparison')?.replacement)
       .toContain('Recent wellness averaged 35 points: 5 points below the 40-point baseline')
     expect(envelope.facts.find((fact) => fact.id === 'important_stretches')?.replacement)
