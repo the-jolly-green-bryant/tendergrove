@@ -6,6 +6,7 @@ import { usePeople } from '../people/usePeople'
 import { usePatternsData } from '../patterns/usePatternsData'
 import { buildProviderReport } from './reportBuilder'
 import { readReportPins, removeReportPin } from './reportPins'
+import { emphasisDirection, type SignalPolarity } from './reportEmphasis'
 import { narrativeTakeaways } from './reportNarrative'
 import { useReportNarrative } from './useReportNarrative'
 
@@ -32,22 +33,11 @@ const SignalTrend = ({ observations, kind }: { observations: NonNullable<ReturnT
   </section>
 }
 
-const EmphasizedText = ({ text, signalPolarity }: { text: string; signalPolarity?: 'concern' | 'positive' }) => {
+const EmphasizedText = ({ text, signalPolarity }: { text: string; signalPolarity?: SignalPolarity }) => {
   const parts = text.split(/([“"][^”"]+[”"]|\b\d+(?:\.\d+)?(?:%|-point)?\b|\b(?:more common|less common|up|down|above|below|improving|declining|increase|decrease|higher|lower)\b)/gi)
   return <>{parts.map((part, index) => {
     if (!part) return null
-    const moreCommon = /^more common$/i.test(part)
-    const lessCommon = /^less common$/i.test(part)
-    const direction =
-      /^(up|above|improving|increase|higher)$/i.test(part) ||
-      (signalPolarity === 'concern' && lessCommon) ||
-      (signalPolarity === 'positive' && moreCommon)
-        ? 'positive'
-        : /^(down|below|declining|decrease|lower)$/i.test(part) ||
-            (signalPolarity === 'concern' && moreCommon) ||
-            (signalPolarity === 'positive' && lessCommon)
-          ? 'negative'
-          : ''
+    const direction = emphasisDirection(part, signalPolarity)
     const emphasized = /^[“"]/.test(part) || /\d/.test(part) || direction
     return emphasized
       ? <strong className={direction ? `report-emphasis report-emphasis--${direction}` : 'report-emphasis'} key={`${part}-${index}`}>{part}</strong>
