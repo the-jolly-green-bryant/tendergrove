@@ -17,8 +17,10 @@ describe('provider report', () => {
   it('states limitations and does not turn missing days into wellness data', () => {
     const report = buildProviderReport({ person, reason: 'Sleep changed', questions: 'What should we watch?' })
     expect(report.text).toContain('not a diagnosis')
-    expect(report.text).toContain('Missing days were not treated as good or bad days')
-    expect(report.text).toContain('Major sleep disruption was noted in 1 of 1 check-ins')
+    expect(report.text).toContain('Missing or incomplete data is excluded')
+    expect(report.text).toContain('“Major sleep disruption” was noted in 1 of 1 check-ins')
+    expect(report.calendarDays).toHaveLength(90)
+    expect(report.calendarDays.filter((day) => day.level === 'missing')).toHaveLength(89)
   })
 
   it('exports check-ins and signals as CSV', () => {
@@ -26,7 +28,7 @@ describe('provider report', () => {
     expect(reportCsv(person)).toContain('Medication appointment scheduled')
   })
 
-  it('supports continued-care discussion when Beth has persistent difficult observations', () => {
+  it('lets persistent observations speak without recommending care', () => {
     const beth = {
       ...person,
       id: 'beth',
@@ -41,7 +43,7 @@ describe('provider report', () => {
     const report = buildProviderReport({ person: beth, reason: 'Ongoing changes', questions: '' })
 
     expect(report.text).toContain('Difficult observations were noted in 3 of 3 check-ins')
-    expect(report.text).toContain('supports continued clinical care')
+    expect(report.text).not.toContain('supports continued clinical care')
     expect(report.recent).not.toBeGreaterThan(50)
   })
 
@@ -63,12 +65,12 @@ describe('provider report', () => {
     const report = buildProviderReport({ person: { ...person, indicators, checkIns } as unknown as RawPerson, reason: '', questions: '' })
 
     expect(report.text).toContain('For 5 days in a row')
-    expect(report.text).toContain('should not be obscured by better days')
+    expect(report.text).toContain('behavioral improvements were recorded in the days before or after')
     expect(report.difficultPeriods[0]?.days).toBe(5)
     expect(report.observations).toHaveLength(30)
   })
 
-  it('explains when pass or visit days are harder than usual in plain language', () => {
+  it('compares any sufficiently recorded event without hardcoding passes', () => {
     const indicators = [
       { id: 'hard', name: 'Severe distress', polarity: 'undesired', active: true },
       { id: 'good', name: 'Accepted support', polarity: 'desired', active: true },
@@ -83,8 +85,9 @@ describe('provider report', () => {
       reason: '', questions: '', lifeEvents: [{ id: 'pass', label: 'Pass - Day' }],
     })
 
-    expect(report.text).toContain('days with a day pass, the average score was 0/100')
-    expect(report.text).toContain('harder than usual')
-    expect(report.text).toContain('difficult to sustain without continued clinical care')
+    expect(report.text).toContain('“Pass - Day” was recorded on 3 scored days')
+    expect(report.text).toContain('averaged 0% wellness')
+    expect(report.text).toContain('coincided with a wellness score 100 percentage points lower')
+    expect(report.text).not.toContain('continued clinical care')
   })
 })

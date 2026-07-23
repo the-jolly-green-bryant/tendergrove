@@ -2728,8 +2728,10 @@ a:visited {
 .report-day--steady { background: #dfeedd; fill: #568264; color: #315f4b; }
 .report-day--watch { background: #f7ecc9; fill: #c49a38; color: #75590e; }
 .report-day--concern { background: #f4d9d5; fill: #b64c42; color: #8c332c; }
-.report-calendar { display: grid; grid-template-columns: repeat(auto-fill, minmax(54px, 1fr)); gap: 7px; }
-.report-calendar__day { display: grid; min-height: 60px; padding: 6px; border-radius: 11px; text-align: center; }
+.report-day--missing { background: #ecefed; fill: #aeb7b2; color: #7d8782; }
+.report-calendar__weekdays, .report-calendar { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 7px; }
+.report-calendar__weekdays { margin-bottom: 6px; color: #78857e; font-size: .67rem; font-weight: 800; text-align: center; text-transform: uppercase; }
+.report-calendar__day { display: grid; min-height: 54px; padding: 5px 3px; border-radius: 10px; text-align: center; }
 .report-calendar__day span { font-size: .63rem; font-weight: 800; text-transform: uppercase; }
 .report-calendar__day b { font-size: 1rem; }
 .report-calendar__day small { opacity: .75; font-size: .68rem; }

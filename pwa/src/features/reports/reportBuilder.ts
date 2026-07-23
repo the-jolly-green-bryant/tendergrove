@@ -1,6 +1,7 @@
 import { parseAnswers } from '../people/checkin/checkInUtils'
 import type { RawLifeEvent, RawPerson } from '../patterns/analytics'
 import { computeScore, STATUS_THRESHOLDS } from '../../lib/status'
+import { buildDailyScores, computeTrend, normalizeHousehold } from '../patterns/analytics'
 
 export interface ProviderReportInput {
   person: RawPerson
@@ -24,22 +25,30 @@ const frequencyLines = (person: RawPerson, polarity: 'desired' | 'undesired') =>
     .slice(0, 5)
 }
 
-const averageScore = (person: RawPerson, checkIns: NonNullable<RawPerson['checkIns']>) => {
-  const indicators = (person.indicators ?? []).filter((indicator) => indicator.active !== false)
-  if (!indicators.length || !checkIns.length) return null
-  const scores = checkIns
-    .map((checkIn) => computeScore(indicators, checkIn))
-    .filter((score): score is number => score !== null)
-  if (!scores.length) return null
-  return Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length)
-}
-
 export interface ReportDay {
   date: string
   score: number
   level: 'steady' | 'watch' | 'concern'
   concernSignals: number
   positiveSignals: number
+}
+
+export interface ReportCalendarDay {
+  date: string
+  score: number | null
+  weightedScore: number | null
+  level: ReportDay['level'] | 'missing'
+  concernSignals: number
+  positiveSignals: number
+}
+
+export interface EventComparison {
+  label: string
+  eventDays: number
+  eventAverage: number
+  otherAverage: number
+  concernDays: number
+  difference: number
 }
 
 export interface ReportPeriod {
@@ -63,6 +72,14 @@ const nextDateKey = (key: string) => {
 const formatDay = (key: string) => {
   const [year, month, day] = key.split('-').map(Number)
   return new Date(year, month - 1, day).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+const dateKeysBetween = (start: Date, end: Date) => {
+  const keys: string[] = []
+  const cursor = new Date(start.getFullYear(), start.getMonth(), start.getDate(), 12)
+  const last = new Date(end.getFullYear(), end.getMonth(), end.getDate(), 12)
+  while (cursor <= last) { keys.push(dateKey(cursor.toISOString())); cursor.setDate(cursor.getDate() + 1) }
+  return keys
 }
 
 const dailyScores = (person: RawPerson, checkIns: NonNullable<RawPerson['checkIns']>): ReportDay[] => {
@@ -106,17 +123,14 @@ const findPeriods = (days: ReportDay[], kind: ReportPeriod['kind']): ReportPerio
   return periods.sort((a, b) => b.days - a.days || a.start.localeCompare(b.start))
 }
 
-export const buildProviderReport = ({ person, reason, questions, days = 30, pinnedObservations = [], lifeEvents = [] }: ProviderReportInput) => {
+export const buildProviderReport = ({ person, reason, questions, days = 90, pinnedObservations = [], lifeEvents = [] }: ProviderReportInput) => {
   const cutoff = new Date()
   cutoff.setDate(cutoff.getDate() - days + 1)
   cutoff.setHours(0, 0, 0, 0)
   const checkIns = [...(person.checkIns ?? [])].filter((item) => new Date(item.occurredAt) >= cutoff).sort((a, b) => a.occurredAt.localeCompare(b.occurredAt))
   const difficult = frequencyLines({ ...person, checkIns }, 'undesired')
   const positive = frequencyLines({ ...person, checkIns }, 'desired')
-  const midpoint = Math.ceil(checkIns.length / 2)
-  const baseline = averageScore(person, checkIns.slice(0, midpoint))
-  const recent = averageScore(person, checkIns.slice(midpoint))
-  const delta = baseline !== null && recent !== null ? recent - baseline : null
+  const recentCutoff = new Date(); recentCutoff.setDate(recentCutoff.getDate() - 29); recentCutoff.setHours(0, 0, 0, 0)
   const notes = checkIns.map((item) => item.note?.trim()).filter((note): note is string => Boolean(note))
   const medicationNotes = notes.filter((note) => /medicat|dose|therapy|hospital|doctor|intervention|appointment/i.test(note))
   const difficultIds = new Set((person.indicators ?? []).filter((indicator) => indicator.active !== false && indicator.polarity === 'undesired').map((indicator) => indicator.id))
@@ -125,59 +139,70 @@ export const buildProviderReport = ({ person, reason, questions, days = 30, pinn
   const firstDate = checkIns[0] ? new Date(checkIns[0].occurredAt).toLocaleDateString() : 'No check-ins yet'
   const lastDate = checkIns.at(-1) ? new Date(checkIns.at(-1)!.occurredAt).toLocaleDateString() : 'No check-ins yet'
   const completeness = Math.round((new Set(checkIns.map((item) => new Date(item.occurredAt).toDateString())).size / days) * 100)
-  const observations = dailyScores(person, checkIns)
+  const calendarKeys = dateKeysBetween(cutoff, new Date())
+  const signalObservations = dailyScores(person, checkIns)
+  const signalsByDate = new Map(signalObservations.map((day) => [day.date, day]))
+  const normalized = normalizeHousehold([person], { now: new Date(), windowDays: days, lifeEvents })
+  const analyticsDays = buildDailyScores(normalized.people, calendarKeys).personDailyScores[person.id] ?? []
+  const observations: ReportDay[] = analyticsDays.filter((day): day is typeof day & { score: number } => day.score !== null).map((day) => {
+    const signals = signalsByDate.get(day.date)
+    return { date: day.date, score: day.score, level: day.score >= STATUS_THRESHOLDS.good ? 'steady' : day.score >= STATUS_THRESHOLDS.trouble ? 'watch' : 'concern', concernSignals: signals?.concernSignals ?? 0, positiveSignals: signals?.positiveSignals ?? 0 }
+  })
+  const mean = (values: ReportDay[]) => values.length ? Math.round(values.reduce((sum, day) => sum + day.score, 0) / values.length) : null
+  const recentKey = dateKey(recentCutoff.toISOString())
+  const baseline = mean(observations)
+  const recent = mean(observations.filter((day) => day.date >= recentKey))
+  const delta = baseline !== null && recent !== null ? recent - baseline : null
+  const observationByDate = new Map(observations.map((day) => [day.date, day]))
+  const analyticsByDate = new Map(analyticsDays.map((day) => [day.date, day]))
+  const weightedTrend = computeTrend(analyticsDays.map((day) => ({ date: day.date, score: day.score, eventCount: day.incidentCount })))
+  const calendarDays: ReportCalendarDay[] = calendarKeys.map((date, index) => {
+    const day = observationByDate.get(date)
+    const hasCheckIn = (analyticsByDate.get(date)?.checkInCount ?? 0) > 0
+    return day && hasCheckIn ? { ...day, weightedScore: weightedTrend.points[index].rollingAverage } : { date, score: null, weightedScore: weightedTrend.points[index].rollingAverage, level: 'missing', concernSignals: 0, positiveSignals: 0 }
+  })
   const difficultPeriods = findPeriods(observations, 'difficult')
   const positivePeriods = findPeriods(observations, 'positive')
   const concernDays = observations.filter((day) => day.level === 'concern').length
   const steadyDays = observations.filter((day) => day.level === 'steady').length
   const significantPeriods = [
-    ...(difficultPeriods[0]?.days >= 2 ? [`For ${difficultPeriods[0].days} days in a row—from ${formatDay(difficultPeriods[0].start)} through ${formatDay(difficultPeriods[0].end)}—the recorded observations remained in the concern range. A stretch this long can be difficult to sustain and should not be obscured by better days before or after it.`] : []),
+    ...(difficultPeriods[0]?.days >= 2 ? [`For ${difficultPeriods[0].days} days in a row—from ${formatDay(difficultPeriods[0].start)} through ${formatDay(difficultPeriods[0].end)}—the recorded observations remained in the concern range. This sustained period remains significant even when behavioral improvements were recorded in the days before or after it.`] : []),
     ...(positivePeriods[0]?.days >= 2 ? [`The clearest positive stretch lasted ${positivePeriods[0].days} days, from ${formatDay(positivePeriods[0].start)} through ${formatDay(positivePeriods[0].end)}.`] : []),
     `Across the ${observations.length} scored days, ${concernDays} were in the concern range, ${observations.length - concernDays - steadyDays} were in the watch range, and ${steadyDays} were steady.`,
   ]
-  const eventLabels = new Map(lifeEvents.map((event) => [event.id, event.label?.trim() || 'Event']))
-  const passOrVisitIds = new Set(lifeEvents.filter((event) => /pass|visit/i.test(event.label ?? '')).map((event) => event.id))
-  const eventDays = new Set(checkIns.filter((checkIn) => parseAnswers(checkIn.answersJson).events.some((id) => passOrVisitIds.has(id))).map((checkIn) => dateKey(checkIn.occurredAt)))
-  const onEvent = observations.filter((day) => eventDays.has(day.date))
-  const offEvent = observations.filter((day) => !eventDays.has(day.date))
-  const mean = (values: ReportDay[]) => values.length ? Math.round(values.reduce((sum, day) => sum + day.score, 0) / values.length) : null
-  const eventAverage = mean(onEvent)
-  const usualAverage = mean(offEvent)
-  const eventConcern = onEvent.filter((day) => day.level === 'concern').length
-  const eventNames = [...new Set(checkIns.flatMap((checkIn) => parseAnswers(checkIn.answersJson).events).filter((id) => passOrVisitIds.has(id)).map((id) => eventLabels.get(id) ?? 'Pass or visit'))]
-  const eventPhrase = eventNames.map((name) => {
-    if (/pass.*overnight|overnight.*pass/i.test(name)) return 'an overnight pass'
-    if (/pass.*day|day.*pass/i.test(name)) return 'a day pass'
-    return name.toLowerCase()
-  }).join(' or ')
-  const eventNarrative = onEvent.length >= 2 && offEvent.length >= 2 && eventAverage !== null && usualAverage !== null
-    ? eventAverage < usualAverage
-      ? `On ${onEvent.length} recorded days with ${eventPhrase}, the average score was ${eventAverage}/100, compared with ${usualAverage}/100 on other recorded days. ${eventConcern} of those ${onEvent.length} days were in the concern range. In this record, passes or visits line up with days that were harder than usual; the pattern appears difficult to sustain without continued clinical care and practical support.`
-      : `There were ${onEvent.length} recorded pass or visit days. Their average score was ${eventAverage}/100, compared with ${usualAverage}/100 on other recorded days. This set does not yet show pass or visit days as consistently harder, so the context should continue to be recorded and reviewed.`
-    : 'There are not yet enough scored pass or visit days to compare them reliably with other recorded days.'
+  const eventComparisons: EventComparison[] = lifeEvents.flatMap((event) => {
+    const eventDates = new Set(checkIns.filter((checkIn) => parseAnswers(checkIn.answersJson).events.includes(event.id)).map((checkIn) => dateKey(checkIn.occurredAt)))
+    const onEvent = observations.filter((day) => eventDates.has(day.date)); const offEvent = observations.filter((day) => !eventDates.has(day.date))
+    const eventAverage = mean(onEvent); const otherAverage = mean(offEvent)
+    if (onEvent.length < 2 || offEvent.length < 2 || eventAverage === null || otherAverage === null) return []
+    return [{ label: event.label?.trim() || 'Event', eventDays: onEvent.length, eventAverage, otherAverage, concernDays: onEvent.filter((day) => day.level === 'concern').length, difference: eventAverage - otherAverage }]
+  }).sort((a, b) => a.difference - b.difference || b.eventDays - a.eventDays)
+  const eventNarrative = eventComparisons.length
+    ? eventComparisons.slice(0, 3).map((event) => `“${event.label}” was recorded on ${event.eventDays} scored days. Those days averaged ${event.eventAverage}% wellness, compared with ${event.otherAverage}% on other scored days; ${event.concernDays} of the ${event.eventDays} event days were in the concern range. ${event.difference < 0 ? `In this sample, the event coincided with a wellness score ${Math.abs(event.difference)} percentage points lower than other scored days.` : `In this sample, the event did not coincide with a lower average wellness score.`} This is an observed association and may have other explanations.`)
+    : 'No event has enough recorded days yet for a meaningful comparison with other observations.'
   const lines = [
     `GROVE CARE APPOINTMENT-PREP SUMMARY — ${person.displayName}`,
     'Personal observations only — not a diagnosis, risk assessment, or recommendation for treatment or hospitalization.',
     '',
     'REASON FOR TRACKING', reason.trim() || 'Not entered.',
     '',
-    'DATE RANGE AND COMPLETENESS', `${firstDate} to ${lastDate} · ${checkIns.length} check-ins · ${completeness}% of the selected ${days}-day window had data. Missing days were not treated as good or bad days.`,
+    'DATE RANGE AND COMPLETENESS', `${firstDate} to ${lastDate} · ${checkIns.length} check-ins · ${completeness}% of the selected ${days}-day window had recorded data. Missing or incomplete data is excluded from wellness scoring and trend comparisons rather than interpreted as an observation.`,
     '',
-    'WHAT CHANGED OVER TIME', delta === null ? 'There are not enough check-ins yet to compare the earlier and more recent parts of this period.' : `The earlier part of this period averaged ${baseline}/100. The more recent part averaged ${recent}/100, a ${Math.abs(delta)}-point ${delta >= 0 ? 'increase' : 'decrease'}. These scores summarize only the signals that were selected in Grove.`,
+    'PAST 90 DAYS COMPARED WITH THE PAST 30 DAYS', delta === null ? 'There are not enough scored observations to compare the full 90-day window with the most recent 30 days.' : `The full 90-day window averaged ${baseline}% wellness. The most recent 30 days averaged ${recent}%, representing a ${Math.abs(delta)}-percentage-point ${delta >= 0 ? 'increase' : 'decrease'}. Grove Care calculates wellness scores using its proprietary weighted scoring algorithm and only the signals recorded for this person.`,
     '',
-    'IMPORTANT STRETCHES OF TIME', ...(observations.length ? significantPeriods : ['There are not enough scored days yet to identify a sustained stretch.']),
+    'IMPORTANT STRETCHES OF TIME', ...(observations.length ? significantPeriods : ['There are not enough scored observations yet to identify a sustained stretch.']),
     '',
-    'PASSES, VISITS, AND OTHER CONTEXT', eventNarrative,
+    'EVENTS AND OBSERVED ASSOCIATIONS', ...(Array.isArray(eventNarrative) ? eventNarrative : [eventNarrative]),
     '',
     'OBSERVATION SUMMARY', checkIns.length === 0
       ? 'No observations were recorded in this range.'
       : careDiscussion
-        ? `Difficult observations were noted in ${difficultCheckIns} of ${checkIns.length} check-ins. Taken together with the sustained difficult periods above, this record supports continued clinical care and a discussion of whether current supports are sufficient.`
+        ? `Difficult observations were noted in ${difficultCheckIns} of ${checkIns.length} check-ins. Review the sustained periods, event associations, and individual observations with the intended professional or support person.`
         : `Difficult observations were noted in ${difficultCheckIns} of ${checkIns.length} check-ins. Continue recording meaningful changes and bring new concerns to the treating professional.`,
     '',
-    'CONCERNS NOTICED MOST OFTEN', ...(difficult.length ? difficult.map((item) => `${item.name} was noted in ${item.count} of ${checkIns.length} check-ins.`) : ['No difficult signals were recorded in this period.']),
+    'CONCERNS NOTICED MOST OFTEN', ...(difficult.length ? difficult.map((item) => `“${item.name}” was noted in ${item.count} of ${checkIns.length} check-ins.`) : ['No difficult signals were recorded in this period.']),
     '',
-    'POSITIVE SIGNS NOTICED MOST OFTEN', ...(positive.length ? positive.map((item) => `${item.name} was noted in ${item.count} of ${checkIns.length} check-ins.`) : ['No positive signals were recorded in this period.']),
+    'POSITIVE SIGNS NOTICED MOST OFTEN', ...(positive.length ? positive.map((item) => `“${item.name}” was noted in ${item.count} of ${checkIns.length} check-ins.`) : ['No positive signals were recorded in this period.']),
     '',
     'NOTABLE EVENTS, MEDICATION, OR INTERVENTION NOTES', ...(medicationNotes.length ? medicationNotes.slice(0, 8).map((note) => `• ${note}`) : ['None specifically identified. Review the full notes for context.']),
     '',
@@ -187,7 +212,7 @@ export const buildProviderReport = ({ person, reason, questions, days = 30, pinn
     '',
     'LIMITATIONS', 'Associations in this report may have other explanations. Entries reflect one caregiver’s observations and may be incomplete. Grove does not determine diagnosis, immediate safety, or the appropriate level of care.',
   ]
-  return { text: lines.join('\n'), checkIns, difficult, positive, completeness, baseline, recent, observations, difficultPeriods, positivePeriods, eventNarrative }
+  return { text: lines.join('\n'), checkIns, difficult, positive, completeness, baseline, recent, observations, calendarDays, difficultPeriods, positivePeriods, eventNarrative, eventComparisons }
 }
 
 export const reportCsv = (person: RawPerson) => {

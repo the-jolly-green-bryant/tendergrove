@@ -4,17 +4,8 @@ import { Page } from '../../components/Page'
 import { useAppAuth } from '../../auth/AuthContext'
 import { usePeople } from '../people/usePeople'
 import { usePatternsData } from '../patterns/usePatternsData'
-import { buildProviderReport, reportCsv } from './reportBuilder'
+import { buildProviderReport } from './reportBuilder'
 import { readReportPins, removeReportPin } from './reportPins'
-
-const download = (name: string, content: string, type: string) => {
-  const url = URL.createObjectURL(new Blob([content], { type }))
-  const anchor = document.createElement('a')
-  anchor.href = url
-  anchor.download = name
-  anchor.click()
-  URL.revokeObjectURL(url)
-}
 
 const imageDataUrl = async (url: string) => {
   const blob = await fetch(url).then((response) => response.blob())
@@ -39,27 +30,30 @@ const SignalTrend = ({ observations, kind }: { observations: NonNullable<ReturnT
   </section>
 }
 
-const ReportVisuals = ({ observations }: { observations: NonNullable<ReturnType<typeof buildProviderReport>>['observations'] }) => {
+const ReportVisuals = ({ observations, calendarDays }: Pick<NonNullable<ReturnType<typeof buildProviderReport>>, 'observations' | 'calendarDays'>) => {
   if (!observations.length) return <p className="report-empty-visual">Complete check-ins to add a trend and observation calendar.</p>
   const width = 680
   const height = 170
-  const x = (index: number) => observations.length === 1 ? width / 2 : 18 + index * ((width - 36) / (observations.length - 1))
   const y = (score: number) => 12 + (100 - score) * ((height - 30) / 100)
-  const points = observations.map((day, index) => `${x(index)},${y(day.score)}`).join(' ')
+  const weighted = calendarDays.filter((day): day is typeof day & { weightedScore: number } => day.weightedScore !== null)
+  const weightedX = (index: number) => weighted.length === 1 ? width / 2 : 18 + index * ((width - 36) / (weighted.length - 1))
+  const points = weighted.map((day, index) => `${weightedX(index)},${y(day.weightedScore)}`).join(' ')
+  const firstWeekday = new Date(`${calendarDays[0].date}T12:00:00`).getDay()
   return <>
     <section className="report-visual" aria-labelledby="report-trend-title">
-      <div className="report-visual__heading"><h3 id="report-trend-title">Recorded trend</h3><span>Higher reflects more recorded positive signals and fewer difficult signals.</span></div>
-      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Trend across ${observations.length} recorded days`}>
+      <div className="report-visual__heading"><h3 id="report-trend-title">Weighted wellness trend</h3><span>The same proprietary weighted trend used on the person page. Missing or incomplete data is excluded.</span></div>
+      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Weighted wellness trend across ${calendarDays.length} calendar days`}>
         <line x1="18" x2={width - 18} y1={y(80)} y2={y(80)} className="report-trend__guide report-trend__guide--steady" />
         <line x1="18" x2={width - 18} y1={y(60)} y2={y(60)} className="report-trend__guide report-trend__guide--concern" />
         <polyline points={points} className="report-trend__line" />
-        {observations.map((day, index) => <circle key={day.date} cx={x(index)} cy={y(day.score)} r="5" className={`report-trend__point report-day--${day.level}`}><title>{day.date}: {day.score}/100 ({day.level})</title></circle>)}
+        {weighted.map((day, index) => <circle key={day.date} cx={weightedX(index)} cy={y(day.weightedScore)} r="4" className={`report-trend__point report-day--${day.level}`}><title>{day.date}: {day.weightedScore}% weighted wellness score</title></circle>)}
       </svg>
     </section>
     <section className="report-visual" aria-labelledby="report-calendar-title">
-      <div className="report-visual__heading"><h3 id="report-calendar-title">Observation calendar</h3><span>Blank dates are omitted and never treated as positive or negative.</span></div>
-      <div className="report-calendar">{observations.map((day) => <div key={day.date} className={`report-calendar__day report-day--${day.level}`} title={`${day.date}: ${day.score}/100`}><span>{new Date(`${day.date}T12:00:00`).toLocaleDateString(undefined, { month: 'short' })}</span><b>{Number(day.date.slice(-2))}</b><small>{day.score}</small></div>)}</div>
-      <div className="report-legend"><span><i className="report-day--steady" />Steady</span><span><i className="report-day--watch" />Watch</span><span><i className="report-day--concern" />Concern</span></div>
+      <div className="report-visual__heading"><h3 id="report-calendar-title">Observation calendar</h3><span>Grey dates have no scored check-in and are excluded from analysis.</span></div>
+      <div className="report-calendar__weekdays">{['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((day) => <span key={day}>{day}</span>)}</div>
+      <div className="report-calendar">{Array.from({ length: firstWeekday }, (_, index) => <i key={`blank-${index}`} />)}{calendarDays.map((day) => <div key={day.date} className={`report-calendar__day report-day--${day.level}`} title={day.score === null ? `${day.date}: No scored check-in` : `${day.date}: ${day.score}% wellness score`}><span>{new Date(`${day.date}T12:00:00`).toLocaleDateString(undefined, { month: 'short' })}</span><b>{Number(day.date.slice(-2))}</b><small>{day.score === null ? '—' : `${day.score}%`}</small></div>)}</div>
+      <div className="report-legend"><span><i className="report-day--steady" />Steady</span><span><i className="report-day--watch" />Watch</span><span><i className="report-day--concern" />Concern</span><span><i className="report-day--missing" />No scored check-in</span></div>
     </section>
     <div className="report-signal-trends"><SignalTrend observations={observations} kind="concern" /><SignalTrend observations={observations} kind="positive" /></div>
   </>
@@ -113,30 +107,33 @@ const ReportsPage = () => {
       }
       if (report.observations.length) {
         pdf.addPage(); addHeader()
-        pdf.setTextColor(37, 52, 47); pdf.setFont('helvetica', 'bold'); pdf.setFontSize(14); pdf.text('RECORDED TREND AND OBSERVATION CALENDAR', margin, 76)
-        pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5); pdf.setTextColor(100, 112, 106); pdf.text('Scores reflect only selected signals. Blank dates are not treated as positive or negative.', margin, 92)
+        pdf.setTextColor(37, 52, 47); pdf.setFont('helvetica', 'bold'); pdf.setFontSize(14); pdf.text('WEIGHTED WELLNESS TREND AND OBSERVATION CALENDAR', margin, 76)
+        pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5); pdf.setTextColor(100, 112, 106); pdf.text('The trend uses Grove Care’s proprietary weighting. Missing or incomplete data is excluded from trend analysis.', margin, 92)
         const chart = { left: margin, top: 118, width: pageWidth - margin * 2, height: 180 }
-        const chartX = (index: number) => report.observations.length === 1 ? chart.left + chart.width / 2 : chart.left + index * (chart.width / (report.observations.length - 1))
+        const weightedDays = report.calendarDays.filter((day): day is typeof day & { weightedScore: number } => day.weightedScore !== null)
+        const chartX = (index: number) => weightedDays.length === 1 ? chart.left + chart.width / 2 : chart.left + index * (chart.width / (weightedDays.length - 1))
         const chartY = (score: number) => chart.top + (100 - score) * (chart.height / 100)
         pdf.setDrawColor(210, 222, 214); pdf.setLineDashPattern([4, 4], 0); pdf.line(chart.left, chartY(80), chart.left + chart.width, chartY(80)); pdf.line(chart.left, chartY(60), chart.left + chart.width, chartY(60)); pdf.setLineDashPattern([], 0)
         pdf.setFontSize(7); pdf.setTextColor(100, 112, 106); pdf.text('80 Steady', chart.left, chartY(80) - 4); pdf.text('60 Watch', chart.left, chartY(60) - 4)
         pdf.setDrawColor(73, 111, 92); pdf.setLineWidth(2)
-        report.observations.slice(1).forEach((day, index) => pdf.line(chartX(index), chartY(report.observations[index].score), chartX(index + 1), chartY(day.score)))
-        report.observations.forEach((day, index) => {
+        weightedDays.slice(1).forEach((day, index) => pdf.line(chartX(index), chartY(weightedDays[index].weightedScore), chartX(index + 1), chartY(day.weightedScore)))
+        weightedDays.forEach((day, index) => {
           const color = day.level === 'steady' ? [86, 130, 100] : day.level === 'watch' ? [196, 154, 56] : [182, 76, 66]
-          pdf.setFillColor(color[0], color[1], color[2]); pdf.circle(chartX(index), chartY(day.score), 3.5, 'F')
+          pdf.setFillColor(color[0], color[1], color[2]); pdf.circle(chartX(index), chartY(day.weightedScore), 3.2, 'F')
         })
         pdf.setFont('helvetica', 'bold'); pdf.setFontSize(11); pdf.setTextColor(37, 52, 47); pdf.text('Observation calendar', margin, 332)
-        const cellWidth = 45; const cellHeight = 43; const gap = 6; const columns = 10
-        report.observations.forEach((day, index) => {
-          const row = Math.floor(index / columns); const column = index % columns
-          const left = margin + column * (cellWidth + gap); const top = 348 + row * (cellHeight + gap)
-          const fill = day.level === 'steady' ? [223, 238, 221] : day.level === 'watch' ? [247, 236, 201] : [244, 217, 213]
+        const cellWidth = 69; const cellHeight = 21; const gap = 3; const columns = 7
+        const calendarOffset = new Date(`${report.calendarDays[0].date}T12:00:00`).getDay()
+        pdf.setFont('helvetica', 'bold'); pdf.setFontSize(6.5); pdf.setTextColor(100, 112, 106)
+        ;['SUN','MON','TUE','WED','THU','FRI','SAT'].forEach((weekday, index) => pdf.text(weekday, margin + index * (cellWidth + gap) + 5, 351))
+        report.calendarDays.forEach((day, index) => {
+          const position = index + calendarOffset; const row = Math.floor(position / columns); const column = position % columns
+          const left = margin + column * (cellWidth + gap); const top = 358 + row * (cellHeight + gap)
+          const fill = day.level === 'missing' ? [235, 238, 236] : day.level === 'steady' ? [223, 238, 221] : day.level === 'watch' ? [247, 236, 201] : [244, 217, 213]
           pdf.setFillColor(fill[0], fill[1], fill[2]); pdf.roundedRect(left, top, cellWidth, cellHeight, 5, 5, 'F')
           const date = new Date(`${day.date}T12:00:00`)
-          pdf.setFont('helvetica', 'bold'); pdf.setFontSize(7); pdf.setTextColor(70, 87, 79); pdf.text(date.toLocaleDateString(undefined, { month: 'short' }).toUpperCase(), left + 6, top + 11)
-          pdf.setFontSize(11); pdf.text(String(date.getDate()), left + 6, top + 26)
-          pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7); pdf.text(`${day.score}/100`, left + 6, top + 37)
+          pdf.setFont('helvetica', 'bold'); pdf.setFontSize(6.5); pdf.setTextColor(70, 87, 79); pdf.text(`${date.toLocaleDateString(undefined, { month: 'short' }).toUpperCase()} ${date.getDate()}`, left + 5, top + 10)
+          pdf.setFont('helvetica', 'normal'); pdf.setFontSize(6.5); pdf.text(day.score === null ? 'No scored check-in' : `${day.score}% wellness`, left + 5, top + 19)
         })
         pdf.addPage(); addHeader()
         pdf.setTextColor(37, 52, 47); pdf.setFont('helvetica', 'bold'); pdf.setFontSize(14); pdf.text('CONCERN AND POSITIVE SIGNAL TRENDS', margin, 78)
@@ -153,8 +150,13 @@ const ReportsPage = () => {
         drawSignalChart(125, 'concernSignals', 'Concern signals over time', [182, 76, 66])
         drawSignalChart(415, 'positiveSignals', 'Positive signals over time', [86, 130, 100])
       }
-      pdf.setFontSize(8); pdf.setTextColor(100, 112, 106)
-      for (let page = 1; page <= pdf.getNumberOfPages(); page += 1) { pdf.setPage(page); pdf.text(`Prepared ${new Date().toLocaleDateString()} · Page ${page} of ${pdf.getNumberOfPages()}`, margin, pageHeight - 22) }
+      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(6.8); pdf.setTextColor(100, 112, 106)
+      for (let page = 1; page <= pdf.getNumberOfPages(); page += 1) {
+        pdf.setPage(page)
+        pdf.text('Grove Care provides observational summaries and does not diagnose, assess immediate risk, or replace professional medical care.', pageWidth / 2, pageHeight - 29, { align: 'center' })
+        pdf.text('© 2026 Bryant James. All rights reserved.', margin, pageHeight - 16)
+        pdf.text(`Prepared ${new Date().toLocaleDateString()} · Page ${page} of ${pdf.getNumberOfPages()}`, pageWidth - margin, pageHeight - 16, { align: 'right' })
+      }
       const blob = pdf.output('blob')
       if (preparedPdf) URL.revokeObjectURL(preparedPdf.url)
       const next = { url: URL.createObjectURL(blob), name: `${baseName}.pdf` }
@@ -177,19 +179,23 @@ const ReportsPage = () => {
     </section>}
     {report && <>
       <h2>Evidence at a glance</h2>
-      <ReportVisuals observations={report.observations} />
+      <ReportActions />
+      <ReportVisuals observations={report.observations} calendarDays={report.calendarDays} />
       <h2>Preview before sharing</h2>
       <IonTextarea className="report-preview" autoGrow value={editedText} onIonInput={(event) => setEditedText(event.detail.value ?? '')} />
-      <div className="report-actions">
-        <IonButton onClick={() => void navigator.clipboard.writeText(editedText)}>Copy plain text</IonButton>
-        <IonButton fill="outline" onClick={() => download(`${baseName}.csv`, reportCsv(selected!), 'text/csv')}>Download CSV</IonButton>
-        <IonButton fill="outline" disabled={pdfState === 'preparing'} onClick={() => void savePdf()}>{pdfState === 'preparing' ? 'Preparing PDF…' : 'Download PDF'}</IonButton>
-      </div>
+      <ReportActions />
       {pdfState === 'ready' && preparedPdf && <p className="report-download-status">Your PDF is ready. If it did not download automatically, <a href={preparedPdf.url} download={preparedPdf.name}>download it here</a>.</p>}
       {pdfState === 'error' && <p className="report-download-status report-download-status--error">The PDF could not be prepared. Your report is still here; try again or copy the plain text.</p>}
     </>}
     {!selected && <p>Add the person you are concerned about to create an appointment summary.</p>}
   </Page>
+
+  function ReportActions() {
+    return <div className="report-actions">
+      <IonButton onClick={() => void navigator.clipboard.writeText(editedText)}>Copy report</IonButton>
+      <IonButton fill="outline" disabled={pdfState === 'preparing'} onClick={() => void savePdf()}>{pdfState === 'preparing' ? 'Preparing PDF…' : 'Download PDF'}</IonButton>
+    </div>
+  }
 }
 
 export default ReportsPage
