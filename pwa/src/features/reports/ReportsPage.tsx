@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Page } from '../../components/Page'
 import { useAppAuth } from '../../auth/AuthContext'
 import { usePeople } from '../people/usePeople'
+import { usePatternsData } from '../patterns/usePatternsData'
 import { buildProviderReport, reportCsv } from './reportBuilder'
 import { readReportPins, removeReportPin } from './reportPins'
 
@@ -13,6 +14,29 @@ const download = (name: string, content: string, type: string) => {
   anchor.download = name
   anchor.click()
   URL.revokeObjectURL(url)
+}
+
+const imageDataUrl = async (url: string) => {
+  const blob = await fetch(url).then((response) => response.blob())
+  return await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader(); reader.onload = () => resolve(String(reader.result)); reader.onerror = reject; reader.readAsDataURL(blob)
+  })
+}
+
+const SignalTrend = ({ observations, kind }: { observations: NonNullable<ReturnType<typeof buildProviderReport>>['observations']; kind: 'concern' | 'positive' }) => {
+  const width = 680; const height = 120
+  const values = observations.map((day) => kind === 'concern' ? day.concernSignals : day.positiveSignals)
+  const maximum = Math.max(1, ...values)
+  const x = (index: number) => observations.length === 1 ? width / 2 : 18 + index * ((width - 36) / (observations.length - 1))
+  const y = (value: number) => 10 + (maximum - value) * ((height - 22) / maximum)
+  const title = kind === 'concern' ? 'Concern signals over time' : 'Positive signals over time'
+  return <section className={`report-visual report-visual--${kind}`} aria-label={title}>
+    <div className="report-visual__heading"><h3>{title}</h3><span>Number of selected {kind === 'concern' ? 'difficult' : 'positive'} signals on each recorded day.</span></div>
+    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${title} across ${observations.length} days`}>
+      <polyline points={values.map((value, index) => `${x(index)},${y(value)}`).join(' ')} className={`report-signal-line report-signal-line--${kind}`} />
+      {values.map((value, index) => <circle key={observations[index].date} cx={x(index)} cy={y(value)} r="4"><title>{observations[index].date}: {value} signals</title></circle>)}
+    </svg>
+  </section>
 }
 
 const ReportVisuals = ({ observations }: { observations: NonNullable<ReturnType<typeof buildProviderReport>>['observations'] }) => {
@@ -37,12 +61,14 @@ const ReportVisuals = ({ observations }: { observations: NonNullable<ReturnType<
       <div className="report-calendar">{observations.map((day) => <div key={day.date} className={`report-calendar__day report-day--${day.level}`} title={`${day.date}: ${day.score}/100`}><span>{new Date(`${day.date}T12:00:00`).toLocaleDateString(undefined, { month: 'short' })}</span><b>{Number(day.date.slice(-2))}</b><small>{day.score}</small></div>)}</div>
       <div className="report-legend"><span><i className="report-day--steady" />Steady</span><span><i className="report-day--watch" />Watch</span><span><i className="report-day--concern" />Concern</span></div>
     </section>
+    <div className="report-signal-trends"><SignalTrend observations={observations} kind="concern" /><SignalTrend observations={observations} kind="positive" /></div>
   </>
 }
 
 const ReportsPage = () => {
   const { user } = useAppAuth()
   const people = usePeople()
+  const patterns = usePatternsData()
   const activePeople = (people.data ?? []).filter((person) => !person.archived)
   const [personId, setPersonId] = useState('')
   const selected = activePeople.find((person) => person.id === personId) ?? activePeople[0]
@@ -53,7 +79,7 @@ const ReportsPage = () => {
     () => pins.filter((pin) => pin.personId === null || pin.personId === selected?.id),
     [pins, selected?.id],
   )
-  const report = useMemo(() => selected ? buildProviderReport({ person: selected, reason, questions, pinnedObservations: selectedPins.map((pin) => pin.text) }) : null, [questions, reason, selected, selectedPins])
+  const report = useMemo(() => selected ? buildProviderReport({ person: selected, reason, questions, pinnedObservations: selectedPins.map((pin) => pin.text), lifeEvents: patterns.data?.lifeEvents }) : null, [patterns.data?.lifeEvents, questions, reason, selected, selectedPins])
   const [editedText, setEditedText] = useState('')
   const [pdfState, setPdfState] = useState<'idle' | 'preparing' | 'ready' | 'error'>('idle')
   const [preparedPdf, setPreparedPdf] = useState<{ url: string; name: string } | null>(null)
@@ -65,22 +91,25 @@ const ReportsPage = () => {
     setPdfState('preparing')
     try {
       const { jsPDF } = await import('jspdf')
+      const wordmark = await imageDataUrl('/assets/brand/grove-wordmark.png')
       const pdf = new jsPDF({ unit: 'pt', format: 'letter' })
       const margin = 54
       const pageWidth = pdf.internal.pageSize.getWidth()
       const pageHeight = pdf.internal.pageSize.getHeight()
-      const addHeader = () => {
-        pdf.setTextColor(35, 77, 66); pdf.setFont('times', 'bold'); pdf.setFontSize(18); pdf.text('Grove Care', margin, 40)
-        pdf.setDrawColor(131, 158, 141); pdf.line(margin, 48, pageWidth - margin, 48)
+      const addHeader = (featured = false) => {
+        if (featured) { pdf.setFillColor(239, 245, 235); pdf.rect(0, 0, pageWidth, 78, 'F'); pdf.setFillColor(86, 130, 100); pdf.rect(0, 0, 9, 78, 'F') }
+        pdf.addImage(wordmark, 'PNG', margin, featured ? 15 : 14, featured ? 104 : 76, featured ? 44 : 32, undefined, 'FAST')
+        if (featured) { pdf.setTextColor(75, 101, 87); pdf.setFont('helvetica', 'bold'); pdf.setFontSize(8); pdf.text('OBSERVATIONS FOR A MORE INFORMED CARE CONVERSATION', pageWidth - margin, 34, { align: 'right' }); pdf.setFont('helvetica', 'normal'); pdf.setTextColor(104, 119, 111); pdf.text('Private appointment-prep summary', pageWidth - margin, 49, { align: 'right' }) }
+        pdf.setDrawColor(131, 158, 141); pdf.line(margin, featured ? 78 : 52, pageWidth - margin, featured ? 78 : 52)
       }
-      addHeader()
-      pdf.setTextColor(37, 52, 47); pdf.setFont('helvetica', 'normal'); pdf.setFontSize(9.5)
+      addHeader(true)
+      pdf.setTextColor(37, 52, 47); pdf.setFont('helvetica', 'normal'); pdf.setFontSize(9.2)
       const lines = pdf.splitTextToSize(editedText, pageWidth - margin * 2)
-      let y = 70
+      let y = 102
       for (const line of lines) {
-        if (y > pageHeight - 46) { pdf.addPage(); addHeader(); pdf.setTextColor(37, 52, 47); pdf.setFont('helvetica', 'normal'); pdf.setFontSize(9.5); y = 70 }
+        if (y > pageHeight - 42) { pdf.addPage(); addHeader(); pdf.setTextColor(37, 52, 47); pdf.setFont('helvetica', 'normal'); pdf.setFontSize(9.2); y = 72 }
         pdf.text(line, margin, y)
-        y += 12.5
+        y += 11.5
       }
       if (report.observations.length) {
         pdf.addPage(); addHeader()
@@ -109,6 +138,20 @@ const ReportsPage = () => {
           pdf.setFontSize(11); pdf.text(String(date.getDate()), left + 6, top + 26)
           pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7); pdf.text(`${day.score}/100`, left + 6, top + 37)
         })
+        pdf.addPage(); addHeader()
+        pdf.setTextColor(37, 52, 47); pdf.setFont('helvetica', 'bold'); pdf.setFontSize(14); pdf.text('CONCERN AND POSITIVE SIGNAL TRENDS', margin, 78)
+        pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5); pdf.setTextColor(100, 112, 106); pdf.text('Each point is the number of selected signals recorded that day—not a diagnosis or severity rating.', margin, 94)
+        const drawSignalChart = (top: number, key: 'concernSignals' | 'positiveSignals', title: string, color: [number, number, number]) => {
+          const values = report.observations.map((day) => day[key]); const maximum = Math.max(1, ...values); const left = margin; const width = pageWidth - margin * 2; const height = 170
+          const px = (index: number) => report.observations.length === 1 ? left + width / 2 : left + index * (width / (report.observations.length - 1)); const py = (value: number) => top + 30 + (maximum - value) * (height / maximum)
+          pdf.setFont('helvetica', 'bold'); pdf.setFontSize(11); pdf.setTextColor(37, 52, 47); pdf.text(title, left, top)
+          pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7); pdf.setTextColor(100, 112, 106); pdf.text(`Daily count · highest recorded: ${maximum}`, left, top + 13)
+          pdf.setDrawColor(220, 227, 222); for (let value = 0; value <= maximum; value += 1) { pdf.line(left, py(value), left + width, py(value)); pdf.text(String(value), left - 10, py(value) + 2) }
+          pdf.setDrawColor(...color); pdf.setLineWidth(2); values.slice(1).forEach((value, index) => pdf.line(px(index), py(values[index]), px(index + 1), py(value)))
+          pdf.setFillColor(...color); values.forEach((value, index) => pdf.circle(px(index), py(value), 3.2, 'F'))
+        }
+        drawSignalChart(125, 'concernSignals', 'Concern signals over time', [182, 76, 66])
+        drawSignalChart(415, 'positiveSignals', 'Positive signals over time', [86, 130, 100])
       }
       pdf.setFontSize(8); pdf.setTextColor(100, 112, 106)
       for (let page = 1; page <= pdf.getNumberOfPages(); page += 1) { pdf.setPage(page); pdf.text(`Prepared ${new Date().toLocaleDateString()} · Page ${page} of ${pdf.getNumberOfPages()}`, margin, pageHeight - 22) }

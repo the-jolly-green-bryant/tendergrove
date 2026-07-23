@@ -2718,6 +2718,13 @@ a:visited {
 .report-trend__guide--concern { stroke: #dfb3ad; }
 .report-trend__line { fill: none; stroke: #496f5c; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
 .report-trend__point { stroke: #fff; stroke-width: 2; }
+.report-signal-trends { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 760px; margin: 0 auto 1rem; }
+.report-signal-trends .report-visual { width: 100%; margin: 0; }
+.report-signal-line { fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.report-signal-line--concern { stroke: #b64c42; }
+.report-signal-line--positive { stroke: #568264; }
+.report-visual--concern circle { fill: #b64c42; }
+.report-visual--positive circle { fill: #568264; }
 .report-day--steady { background: #dfeedd; fill: #568264; color: #315f4b; }
 .report-day--watch { background: #f7ecc9; fill: #c49a38; color: #75590e; }
 .report-day--concern { background: #f4d9d5; fill: #b64c42; color: #8c332c; }
@@ -2732,5 +2739,6 @@ a:visited {
 .report-download-status { max-width: 760px; margin: -1rem auto 2rem; padding: .75rem 1rem; border-radius: 12px; background: #e8f2e6; color: #315f4b; }
 .report-download-status--error { background: #fff0ee; color: #8c332c; }
 .report-empty-visual { color: #728078; }
+@media (max-width: 680px) { .report-signal-trends { grid-template-columns: 1fr; } }
 @media (max-width: 560px) { .report-visual__heading { display: block; } .report-visual__heading span { display: block; margin-top: .25rem; text-align: left; } }
 .first-week-payoff li { margin-bottom: .65rem; line-height: 1.45; }

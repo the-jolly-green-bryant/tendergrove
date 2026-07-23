@@ -18,7 +18,7 @@ describe('provider report', () => {
     const report = buildProviderReport({ person, reason: 'Sleep changed', questions: 'What should we watch?' })
     expect(report.text).toContain('not a diagnosis')
     expect(report.text).toContain('Missing days were not treated as good or bad days')
-    expect(report.text).toContain('Major sleep disruption: 1 check-ins')
+    expect(report.text).toContain('Major sleep disruption was noted in 1 of 1 check-ins')
   })
 
   it('exports check-ins and signals as CSV', () => {
@@ -40,8 +40,8 @@ describe('provider report', () => {
 
     const report = buildProviderReport({ person: beth, reason: 'Ongoing changes', questions: '' })
 
-    expect(report.text).toContain('Difficult observations appeared in 3 of 3 check-ins')
-    expect(report.text).toContain('supports discussing continued clinical care')
+    expect(report.text).toContain('Difficult observations were noted in 3 of 3 check-ins')
+    expect(report.text).toContain('supports continued clinical care')
     expect(report.recent).not.toBeGreaterThan(50)
   })
 
@@ -62,9 +62,29 @@ describe('provider report', () => {
     })
     const report = buildProviderReport({ person: { ...person, indicators, checkIns } as unknown as RawPerson, reason: '', questions: '' })
 
-    expect(report.text).toContain('5 consecutive concern-level days')
-    expect(report.text).toContain('remains important even when surrounding days were steadier')
+    expect(report.text).toContain('For 5 days in a row')
+    expect(report.text).toContain('should not be obscured by better days')
     expect(report.difficultPeriods[0]?.days).toBe(5)
     expect(report.observations).toHaveLength(30)
+  })
+
+  it('explains when pass or visit days are harder than usual in plain language', () => {
+    const indicators = [
+      { id: 'hard', name: 'Severe distress', polarity: 'undesired', active: true },
+      { id: 'good', name: 'Accepted support', polarity: 'desired', active: true },
+    ]
+    const checkIns = Array.from({ length: 8 }, (_, index) => {
+      const date = new Date(); date.setHours(12, 0, 0, 0); date.setDate(date.getDate() - (7 - index))
+      const passDay = index < 3
+      return { occurredAt: date.toISOString(), answersJson: JSON.stringify({ checked: passDay ? ['hard'] : ['good'], events: passDay ? ['pass'] : [] }) }
+    })
+    const report = buildProviderReport({
+      person: { ...person, indicators, checkIns } as unknown as RawPerson,
+      reason: '', questions: '', lifeEvents: [{ id: 'pass', label: 'Pass - Day' }],
+    })
+
+    expect(report.text).toContain('days with a day pass, the average score was 0/100')
+    expect(report.text).toContain('harder than usual')
+    expect(report.text).toContain('difficult to sustain without continued clinical care')
   })
 })
