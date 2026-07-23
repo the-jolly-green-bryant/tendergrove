@@ -24,7 +24,7 @@ const unsafeClinicalLanguage = /\b(diagnos(?:e|is|ed)|psychosis|schizophren|hosp
 const parseEnvelope = (value: string): NarrativeEnvelope => {
   if (value.length > 16_000) throw new Error('Facts payload is too large')
   const parsed = JSON.parse(value) as Partial<NarrativeEnvelope>
-  if (parsed.schemaVersion !== 2 || !Array.isArray(parsed.facts) || parsed.facts.length < 2 || parsed.facts.length > 16) {
+  if (parsed.schemaVersion !== 3 || !Array.isArray(parsed.facts) || parsed.facts.length < 2 || parsed.facts.length > 16) {
     throw new Error('Unsupported facts payload')
   }
   const facts = parsed.facts.map((fact) => {
@@ -40,16 +40,16 @@ const parseEnvelope = (value: string): NarrativeEnvelope => {
     return fact as NarrativeFact
   })
   if (new Set(facts.map((fact) => fact.id)).size !== facts.length) throw new Error('Duplicate narrative fact')
-  return { schemaVersion: 2, facts }
+  return { schemaVersion: 3, facts }
 }
 
 export const validateNarrativeTemplate = (text: string, facts: NarrativeFact[]) => {
   const trimmed = text.trim()
-  if (trimmed.length < 80 || trimmed.length > 1_800) throw new Error('Narrative length is invalid')
+  if (trimmed.length < 40 || trimmed.length > 1_800) throw new Error('Narrative length is invalid')
   if (/[0-9%]/.test(trimmed.replace(placeholderPattern, ''))) throw new Error('Narrative contains model-authored numbers')
   if (unsafeClinicalLanguage.test(trimmed)) throw new Error('Narrative contains clinical conclusions')
   const allowed = new Set(facts.map((fact) => `{{${fact.id}}}`))
-  const placeholders = trimmed.match(placeholderPattern) ?? []
+  const placeholders: string[] = trimmed.match(placeholderPattern) ?? []
   if (new Set(placeholders).size < 2 || placeholders.some((placeholder) => !allowed.has(placeholder))) {
     throw new Error('Narrative references invalid facts')
   }
@@ -57,8 +57,15 @@ export const validateNarrativeTemplate = (text: string, facts: NarrativeFact[]) 
     throw new Error('Narrative contains malformed placeholders')
   }
   const takeaways = trimmed.split('\n').map((line) => line.trim()).filter(Boolean)
-  if (takeaways.length !== 3 || takeaways.some((line) => !line.startsWith('- ') || !(line.match(placeholderPattern)?.length))) {
+  if (takeaways.length !== 3 || takeaways.some((line) => !/^- \{\{[a-z][a-z0-9_]*\}\}$/.test(line))) {
     throw new Error('Narrative must contain exactly three evidence-backed takeaways')
+  }
+  if (facts.some((fact) => fact.id === 'sustainability') && !placeholders.includes('{{sustainability}}')) {
+    throw new Error('Narrative must address day-to-day sustainability')
+  }
+  const noteworthyIds = new Set(['noteworthy_low_days', 'concern_stretch_1', 'concern_comparison'])
+  if (facts.some((fact) => noteworthyIds.has(fact.id)) && !placeholders.some((placeholder) => noteworthyIds.has(placeholder.slice(2, -2)))) {
+    throw new Error('Narrative must include noteworthy concern evidence')
   }
   return trimmed
 }
@@ -79,8 +86,10 @@ export const handler: Schema['generateReportNarrative']['functionHandler'] = asy
         'Use the supplied placeholders verbatim wherever evidence belongs.',
         'Never write a number, percent sign, date, diagnosis, cause, treatment recommendation, urgency judgment, or level-of-care conclusion.',
         'Do not mention AI. Do not add a heading.',
-        'Return exactly three single-line takeaways. Begin every line with "- " and include at least one supplied placeholder on every line.',
-        'Together, the three takeaways should explain what deserves attention, what context may matter, and what could be useful to discuss.',
+        'Select and rank exactly three evidence placeholders. Return exactly three lines in the format "- {{placeholder}}" with no other words or punctuation.',
+        'The first takeaway must be {{sustainability}} so the rendered evidence plainly addresses whether the observed day-to-day pattern looks sustainable.',
+        'The second takeaway must use the strongest supplied concern evidence, prioritizing {{noteworthy_low_days}}, a sustained concern stretch, or a high concern-day percentage.',
+        'The third takeaway should explain the most useful event, signal, or improvement context. Use coverage only when none of those facts is available.',
         'Associations are observations and may have other explanations.',
       ].join(' '),
     }],

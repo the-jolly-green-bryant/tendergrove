@@ -1,6 +1,6 @@
 import type { buildProviderReport } from './reportBuilder'
 
-export const REPORT_NARRATIVE_SCHEMA_VERSION = 2
+export const REPORT_NARRATIVE_SCHEMA_VERSION = 3
 
 export interface NarrativeFact {
   id: string
@@ -17,6 +17,28 @@ type ProviderReport = ReturnType<typeof buildProviderReport>
 
 const percentage = (count: number, total: number) => total ? Math.round((count / total) * 100) : 0
 const formatDay = (key: string) => new Date(`${key}T12:00:00`).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })
+const nextDay = (key: string) => {
+  const date = new Date(`${key}T12:00:00`)
+  date.setDate(date.getDate() + 1)
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
+const longestConsecutiveStretch = (dates: string[]) => {
+  const sorted = [...new Set(dates)].sort()
+  let longest = 0
+  let current = 0
+  let previous = ''
+  sorted.forEach((date) => {
+    current = previous && date === nextDay(previous) ? current + 1 : 1
+    longest = Math.max(longest, current)
+    previous = date
+  })
+  return longest
+}
 
 export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelope => {
   const observations = report.observations
@@ -33,13 +55,50 @@ export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelop
   const recentConcernDays = recent.filter((day) => day.level === 'concern').length
   const concernRate = percentage(concernDays, observations.length)
   const recentConcernRate = percentage(recentConcernDays, recent.length)
-  const facts: NarrativeFact[] = [
+  const availableAverages = [report.baseline, report.recent].filter((value): value is number => value !== null)
+  const comparisonBenchmark = availableAverages.length ? Math.max(...availableAverages) : null
+  const belowBenchmark = comparisonBenchmark === null ? [] : observations.filter((day) => day.score < comparisonBenchmark)
+  const belowBenchmarkRate = percentage(belowBenchmark.length, observations.length)
+  const belowBenchmarkStretch = longestConsecutiveStretch(belowBenchmark.map((day) => day.date))
+  const longestConcernStretch = report.difficultPeriods[0]?.days ?? 0
+  const difficultToSustain = concernRate >= 50
+    || longestConcernStretch >= 3
+    || belowBenchmarkRate >= 60
+    || belowBenchmarkStretch >= 4
+  const sustainabilityEvidence = [
+    `${concernDays} of ${observations.length} scored days were in the concern range (${concernRate}%)`,
+    comparisonBenchmark === null ? null : `${belowBenchmark.length} scored days fell below the stricter ${comparisonBenchmark}% comparison benchmark (${belowBenchmarkRate}%)`,
+    longestConcernStretch >= 2 ? `the longest concern-range stretch lasted ${longestConcernStretch} consecutive scored days` : null,
+    belowBenchmarkStretch >= 2 ? `the longest below-benchmark stretch lasted ${belowBenchmarkStretch} consecutive days` : null,
+  ].filter(Boolean).join('; ')
+  const facts: NarrativeFact[] = observations.length ? [
+    {
+      id: 'sustainability',
+      meaning: difficultToSustain
+        ? 'HIGHEST PRIORITY: the recorded pattern does not look sustainable day to day based only on the supplied observation evidence.'
+        : 'HIGHEST PRIORITY: the recorded pattern looks more sustainable in this window, while still acknowledging recorded concerns.',
+      replacement: difficultToSustain
+        ? `The recorded pattern does not look sustainable day to day: ${sustainabilityEvidence}.`
+        : `The recorded pattern looks more sustainable in this window: ${sustainabilityEvidence}. Continue reviewing meaningful changes rather than relying on the average alone.`,
+    },
+  ] : []
+
+  facts.push(
     {
       id: 'coverage',
       meaning: 'How much recorded evidence is available in the longer comparison window.',
       replacement: `${observations.length} scored days were available across the selected window, representing ${report.completeness}% recorded-data coverage.`,
     },
-  ]
+  )
+
+  if (comparisonBenchmark !== null && belowBenchmark.length) {
+    const lowest = [...belowBenchmark].sort((a, b) => a.score - b.score || a.date.localeCompare(b.date)).slice(0, 3)
+    facts.push({
+      id: 'noteworthy_low_days',
+      meaning: `HIGH PRIORITY: days below the stricter of the recent and longer-window averages. The lowest recorded days are especially noteworthy. The longest below-benchmark stretch was ${belowBenchmarkStretch >= 3 ? 'sustained' : 'brief'}.`,
+      replacement: `${belowBenchmark.length} of ${observations.length} scored days were below the stricter ${comparisonBenchmark}% benchmark (${belowBenchmarkRate}%). The lowest were ${lowest.map((day) => `${formatDay(day.date)} at ${day.score}%`).join(', ')}${belowBenchmarkStretch >= 2 ? `; the longest consecutive stretch below that benchmark lasted ${belowBenchmarkStretch} days` : ''}.`,
+    })
+  }
 
   if (report.baseline !== null && report.recent !== null) {
     const delta = report.recent - report.baseline
@@ -111,10 +170,10 @@ export const hashNarrativeFacts = async (factsJson: string) => {
 
 export const validateNarrativeTemplate = (template: string, envelope: NarrativeEnvelope) => {
   const trimmed = template.trim()
-  const placeholders = trimmed.match(/\{\{[a-z][a-z0-9_]*\}\}/g) ?? []
+  const placeholders: string[] = trimmed.match(/\{\{[a-z][a-z0-9_]*\}\}/g) ?? []
   const allowed = new Set(envelope.facts.map((fact) => `{{${fact.id}}}`))
   if (
-    trimmed.length < 80
+    trimmed.length < 40
     || trimmed.length > 1_800
     || /[0-9%]/.test(trimmed.replace(/\{\{[a-z][a-z0-9_]*\}\}/g, ''))
     || new Set(placeholders).size < 2
@@ -123,9 +182,17 @@ export const validateNarrativeTemplate = (template: string, envelope: NarrativeE
     || trimmed.replace(/\{\{[a-z][a-z0-9_]*\}\}/g, '').includes('}}')
   ) throw new Error('Invalid narrative template')
   const takeaways = trimmed.split('\n').map((line) => line.trim()).filter(Boolean)
-  if (takeaways.length !== 3 || takeaways.some((line) => !line.startsWith('- ') || !(line.match(/\{\{[a-z][a-z0-9_]*\}\}/g)?.length))) {
+  if (takeaways.length !== 3 || takeaways.some((line) => !/^- \{\{[a-z][a-z0-9_]*\}\}$/.test(line))) {
     throw new Error('Narrative must contain exactly three evidence-backed takeaways')
   }
+  if (envelope.facts.some((fact) => fact.id === 'sustainability') && !placeholders.includes('{{sustainability}}')) {
+    throw new Error('Narrative must address day-to-day sustainability')
+  }
+  const noteworthyIds = new Set(['noteworthy_low_days', 'concern_stretch_1', 'concern_comparison'])
+  if (
+    envelope.facts.some((fact) => noteworthyIds.has(fact.id))
+    && !placeholders.some((placeholder) => noteworthyIds.has(placeholder.slice(2, -2)))
+  ) throw new Error('Narrative must include noteworthy concern evidence')
   return trimmed
 }
 
@@ -138,7 +205,7 @@ export const renderNarrative = (template: string, envelope: NarrativeEnvelope) =
 }
 
 export const fallbackNarrative = (envelope: NarrativeEnvelope) => {
-  const prioritized = ['wellness_comparison', 'concern_comparison', 'concern_stretch_1', 'event_association_1', 'frequent_concern_1', 'frequent_positive', 'coverage']
+  const prioritized = ['sustainability', 'noteworthy_low_days', 'concern_stretch_1', 'concern_comparison', 'event_association_1', 'frequent_concern_1', 'frequent_positive', 'coverage']
   const facts = prioritized.flatMap((id) => envelope.facts.find((fact) => fact.id === id) ?? []).slice(0, 3)
   const takeaways = facts.map((fact) => fact.replacement)
   if (takeaways.length < 3) takeaways.push('The detailed report shows the observations currently available without treating missing days as wellness information.')

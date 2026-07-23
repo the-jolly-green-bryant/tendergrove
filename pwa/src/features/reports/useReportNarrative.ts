@@ -17,15 +17,20 @@ export const useReportNarrative = (personId: string | undefined, report: Provide
   const envelope = useMemo(() => report ? buildNarrativeEnvelope(report) : null, [report])
   const factsJson = useMemo(() => envelope ? canonicalNarrativeFacts(envelope) : '', [envelope])
   const fallback = useMemo(() => envelope ? fallbackNarrative(envelope) : '', [envelope])
-  const [state, setState] = useState<{ key: string; text: string; pending: boolean }>({ key: '', text: fallback, pending: false })
+  const [state, setState] = useState<{
+    key: string
+    text: string
+    pending: boolean
+    source: 'fallback' | 'cache' | 'nova'
+  }>({ key: '', text: fallback, pending: false, source: 'fallback' })
 
   useEffect(() => {
     if (!personId || !envelope || envelope.facts.length < 2) {
-      setState({ key: factsJson, text: fallback, pending: false })
+      setState({ key: factsJson, text: fallback, pending: false, source: 'fallback' })
       return
     }
     let active = true
-    setState({ key: factsJson, text: fallback, pending: true })
+    setState({ key: factsJson, text: fallback, pending: true, source: 'fallback' })
     const resolve = async () => {
       try {
         const factsHash = await hashNarrativeFacts(factsJson)
@@ -35,7 +40,7 @@ export const useReportNarrative = (personId: string | undefined, report: Provide
         })
         const cachedTemplate = cached.data[0]?.narrative
         if (cachedTemplate) {
-          if (active) setState({ key: factsJson, text: renderNarrative(cachedTemplate, envelope), pending: false })
+          if (active) setState({ key: factsJson, text: renderNarrative(cachedTemplate, envelope), pending: false, source: 'cache' })
           return
         }
         const generated = await client.queries.generateReportNarrative({ factsJson, factsHash })
@@ -47,9 +52,9 @@ export const useReportNarrative = (personId: string | undefined, report: Provide
           narrative: generated.data,
           model: 'us.amazon.nova-micro-v1:0',
         })
-        if (active) setState({ key: factsJson, text: renderNarrative(generated.data, envelope), pending: false })
+        if (active) setState({ key: factsJson, text: renderNarrative(generated.data, envelope), pending: false, source: 'nova' })
       } catch {
-        if (active) setState({ key: factsJson, text: fallback, pending: false })
+        if (active) setState({ key: factsJson, text: fallback, pending: false, source: 'fallback' })
       }
     }
     void resolve()
@@ -59,5 +64,6 @@ export const useReportNarrative = (personId: string | undefined, report: Provide
   return {
     text: state.key === factsJson ? state.text : fallback,
     pending: state.key === factsJson && state.pending,
+    source: state.key === factsJson ? state.source : 'fallback',
   }
 }

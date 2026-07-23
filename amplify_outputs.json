@@ -59,6 +59,101 @@
     "model_introspection": {
       "version": 1,
       "models": {
+        "ReportNarrative": {
+          "name": "ReportNarrative",
+          "fields": {
+            "id": {
+              "name": "id",
+              "isArray": false,
+              "type": "ID",
+              "isRequired": true,
+              "attributes": []
+            },
+            "personId": {
+              "name": "personId",
+              "isArray": false,
+              "type": "ID",
+              "isRequired": true,
+              "attributes": []
+            },
+            "factsHash": {
+              "name": "factsHash",
+              "isArray": false,
+              "type": "String",
+              "isRequired": true,
+              "attributes": []
+            },
+            "schemaVersion": {
+              "name": "schemaVersion",
+              "isArray": false,
+              "type": "Int",
+              "isRequired": true,
+              "attributes": []
+            },
+            "narrative": {
+              "name": "narrative",
+              "isArray": false,
+              "type": "String",
+              "isRequired": true,
+              "attributes": []
+            },
+            "model": {
+              "name": "model",
+              "isArray": false,
+              "type": "String",
+              "isRequired": true,
+              "attributes": []
+            },
+            "createdAt": {
+              "name": "createdAt",
+              "isArray": false,
+              "type": "AWSDateTime",
+              "isRequired": false,
+              "attributes": [],
+              "isReadOnly": true
+            },
+            "updatedAt": {
+              "name": "updatedAt",
+              "isArray": false,
+              "type": "AWSDateTime",
+              "isRequired": false,
+              "attributes": [],
+              "isReadOnly": true
+            }
+          },
+          "syncable": true,
+          "pluralName": "ReportNarratives",
+          "attributes": [
+            {
+              "type": "model",
+              "properties": {}
+            },
+            {
+              "type": "auth",
+              "properties": {
+                "rules": [
+                  {
+                    "provider": "userPools",
+                    "ownerField": "owner",
+                    "allow": "owner",
+                    "identityClaim": "cognito:username",
+                    "operations": [
+                      "create",
+                      "update",
+                      "delete",
+                      "read"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "primaryKeyInfo": {
+            "isCustomPrimaryKey": false,
+            "primaryKeyFieldName": "id",
+            "sortKeyFieldNames": []
+          }
+        },
         "Household": {
           "name": "Household",
           "fields": {
@@ -82,6 +177,14 @@
               "type": "String",
               "isRequired": false,
               "attributes": []
+            },
+            "collaborators": {
+              "name": "collaborators",
+              "isArray": true,
+              "type": "String",
+              "isRequired": false,
+              "attributes": [],
+              "isArrayNullable": true
             },
             "people": {
               "name": "people",
@@ -138,6 +241,15 @@
                       "delete",
                       "read"
                     ]
+                  },
+                  {
+                    "provider": "userPools",
+                    "ownerField": "collaborators",
+                    "allow": "owner",
+                    "operations": [
+                      "read"
+                    ],
+                    "identityClaim": "cognito:username"
                   }
                 ]
               }
@@ -187,6 +299,14 @@
               "type": "String",
               "isRequired": false,
               "attributes": []
+            },
+            "collaborators": {
+              "name": "collaborators",
+              "isArray": true,
+              "type": "String",
+              "isRequired": false,
+              "attributes": [],
+              "isArrayNullable": true
             },
             "displayName": {
               "name": "displayName",
@@ -305,6 +425,15 @@
                       "delete",
                       "read"
                     ]
+                  },
+                  {
+                    "provider": "userPools",
+                    "ownerField": "collaborators",
+                    "allow": "owner",
+                    "operations": [
+                      "read"
+                    ],
+                    "identityClaim": "cognito:username"
                   }
                 ]
               }
@@ -354,6 +483,14 @@
               "type": "String",
               "isRequired": false,
               "attributes": []
+            },
+            "collaborators": {
+              "name": "collaborators",
+              "isArray": true,
+              "type": "String",
+              "isRequired": false,
+              "attributes": [],
+              "isArrayNullable": true
             },
             "name": {
               "name": "name",
@@ -447,6 +584,15 @@
                       "delete",
                       "read"
                     ]
+                  },
+                  {
+                    "provider": "userPools",
+                    "ownerField": "collaborators",
+                    "allow": "owner",
+                    "operations": [
+                      "read"
+                    ],
+                    "identityClaim": "cognito:username"
                   }
                 ]
               }
@@ -592,6 +738,14 @@
               "isRequired": false,
               "attributes": []
             },
+            "collaborators": {
+              "name": "collaborators",
+              "isArray": true,
+              "type": "String",
+              "isRequired": false,
+              "attributes": [],
+              "isArrayNullable": true
+            },
             "occurredAt": {
               "name": "occurredAt",
               "isArray": false,
@@ -652,6 +806,15 @@
                       "delete",
                       "read"
                     ]
+                  },
+                  {
+                    "provider": "userPools",
+                    "ownerField": "collaborators",
+                    "allow": "owner",
+                    "operations": [
+                      "read"
+                    ],
+                    "identityClaim": "cognito:username"
                   }
                 ]
               }
@@ -800,6 +963,14 @@
               "isRequired": false,
               "attributes": []
             },
+            "collaborators": {
+              "name": "collaborators",
+              "isArray": true,
+              "type": "String",
+              "isRequired": false,
+              "attributes": [],
+              "isArrayNullable": true
+            },
             "occurredAt": {
               "name": "occurredAt",
               "isArray": false,
@@ -856,6 +1027,205 @@
           },
           "syncable": true,
           "pluralName": "Events",
+          "attributes": [
+            {
+              "type": "model",
+              "properties": {}
+            },
+            {
+              "type": "auth",
+              "properties": {
+                "rules": [
+                  {
+                    "provider": "userPools",
+                    "ownerField": "owner",
+                    "allow": "owner",
+                    "identityClaim": "cognito:username",
+                    "operations": [
+                      "create",
+                      "update",
+                      "delete",
+                      "read"
+                    ]
+                  },
+                  {
+                    "provider": "userPools",
+                    "ownerField": "collaborators",
+                    "allow": "owner",
+                    "operations": [
+                      "read"
+                    ],
+                    "identityClaim": "cognito:username"
+                  }
+                ]
+              }
+            }
+          ],
+          "primaryKeyInfo": {
+            "isCustomPrimaryKey": false,
+            "primaryKeyFieldName": "id",
+            "sortKeyFieldNames": []
+          }
+        },
+        "CaregiverAccess": {
+          "name": "CaregiverAccess",
+          "fields": {
+            "id": {
+              "name": "id",
+              "isArray": false,
+              "type": "ID",
+              "isRequired": true,
+              "attributes": []
+            },
+            "personId": {
+              "name": "personId",
+              "isArray": false,
+              "type": "ID",
+              "isRequired": true,
+              "attributes": []
+            },
+            "personName": {
+              "name": "personName",
+              "isArray": false,
+              "type": "String",
+              "isRequired": true,
+              "attributes": []
+            },
+            "invitedUserId": {
+              "name": "invitedUserId",
+              "isArray": false,
+              "type": "String",
+              "isRequired": true,
+              "attributes": []
+            },
+            "role": {
+              "name": "role",
+              "isArray": false,
+              "type": {
+                "enum": "CaregiverAccessRole"
+              },
+              "isRequired": false,
+              "attributes": []
+            },
+            "collaborators": {
+              "name": "collaborators",
+              "isArray": true,
+              "type": "String",
+              "isRequired": false,
+              "attributes": [],
+              "isArrayNullable": true
+            },
+            "createdAt": {
+              "name": "createdAt",
+              "isArray": false,
+              "type": "AWSDateTime",
+              "isRequired": false,
+              "attributes": [],
+              "isReadOnly": true
+            },
+            "updatedAt": {
+              "name": "updatedAt",
+              "isArray": false,
+              "type": "AWSDateTime",
+              "isRequired": false,
+              "attributes": [],
+              "isReadOnly": true
+            }
+          },
+          "syncable": true,
+          "pluralName": "CaregiverAccesses",
+          "attributes": [
+            {
+              "type": "model",
+              "properties": {}
+            },
+            {
+              "type": "auth",
+              "properties": {
+                "rules": [
+                  {
+                    "provider": "userPools",
+                    "ownerField": "owner",
+                    "allow": "owner",
+                    "identityClaim": "cognito:username",
+                    "operations": [
+                      "create",
+                      "update",
+                      "delete",
+                      "read"
+                    ]
+                  },
+                  {
+                    "provider": "userPools",
+                    "ownerField": "collaborators",
+                    "allow": "owner",
+                    "operations": [
+                      "read"
+                    ],
+                    "identityClaim": "cognito:username"
+                  }
+                ]
+              }
+            }
+          ],
+          "primaryKeyInfo": {
+            "isCustomPrimaryKey": false,
+            "primaryKeyFieldName": "id",
+            "sortKeyFieldNames": []
+          }
+        },
+        "CollaborationAudit": {
+          "name": "CollaborationAudit",
+          "fields": {
+            "id": {
+              "name": "id",
+              "isArray": false,
+              "type": "ID",
+              "isRequired": true,
+              "attributes": []
+            },
+            "personId": {
+              "name": "personId",
+              "isArray": false,
+              "type": "ID",
+              "isRequired": true,
+              "attributes": []
+            },
+            "action": {
+              "name": "action",
+              "isArray": false,
+              "type": {
+                "enum": "CollaborationAuditAction"
+              },
+              "isRequired": false,
+              "attributes": []
+            },
+            "invitedUserId": {
+              "name": "invitedUserId",
+              "isArray": false,
+              "type": "String",
+              "isRequired": true,
+              "attributes": []
+            },
+            "createdAt": {
+              "name": "createdAt",
+              "isArray": false,
+              "type": "AWSDateTime",
+              "isRequired": false,
+              "attributes": [],
+              "isReadOnly": true
+            },
+            "updatedAt": {
+              "name": "updatedAt",
+              "isArray": false,
+              "type": "AWSDateTime",
+              "isRequired": false,
+              "attributes": [],
+              "isReadOnly": true
+            }
+          },
+          "syncable": true,
+          "pluralName": "CollaborationAudits",
           "attributes": [
             {
               "type": "model",
@@ -942,9 +1312,44 @@
             "interaction",
             "event"
           ]
+        },
+        "CaregiverAccessRole": {
+          "name": "CaregiverAccessRole",
+          "values": [
+            "viewer"
+          ]
+        },
+        "CollaborationAuditAction": {
+          "name": "CollaborationAuditAction",
+          "values": [
+            "granted",
+            "revoked"
+          ]
         }
       },
-      "nonModels": {}
+      "nonModels": {},
+      "queries": {
+        "generateReportNarrative": {
+          "name": "generateReportNarrative",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "arguments": {
+            "factsJson": {
+              "name": "factsJson",
+              "isArray": false,
+              "type": "String",
+              "isRequired": true
+            },
+            "factsHash": {
+              "name": "factsHash",
+              "isArray": false,
+              "type": "String",
+              "isRequired": true
+            }
+          }
+        }
+      }
     }
   },
   "version": "1.4"

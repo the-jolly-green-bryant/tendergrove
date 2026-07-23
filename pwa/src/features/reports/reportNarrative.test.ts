@@ -27,6 +27,10 @@ describe('report narrative facts', () => {
 
   it('keeps every calculated value in deterministic replacements', () => {
     const envelope = buildNarrativeEnvelope(report)
+    expect(envelope.facts.find((fact) => fact.id === 'sustainability')?.replacement)
+      .toContain('does not look sustainable')
+    expect(envelope.facts.find((fact) => fact.id === 'noteworthy_low_days')?.replacement)
+      .toContain('below the stricter 40% benchmark')
     expect(envelope.facts.find((fact) => fact.id === 'wellness_comparison')?.replacement)
       .toContain('35% wellness, compared with the 90-day average of 40% (5 percentage points lower)')
     expect(envelope.facts.find((fact) => fact.id === 'concern_stretch_1')?.replacement)
@@ -36,9 +40,9 @@ describe('report narrative facts', () => {
   it('substitutes approved placeholders without changing their values', () => {
     const envelope = buildNarrativeEnvelope(report)
     const rendered = renderNarrative([
-      '- The recent comparison deserves attention: {{wellness_comparison}}',
-      '- The recorded distribution adds useful context: {{concern_comparison}}',
-      '- A sustained period should remain visible in the discussion: {{concern_stretch_1}}',
+      '- {{sustainability}}',
+      '- {{noteworthy_low_days}}',
+      '- {{concern_stretch_1}}',
     ].join('\n'), envelope)
     expect(rendered).toContain('35%')
     expect(rendered).toContain('40%')
@@ -54,11 +58,11 @@ describe('report narrative facts', () => {
   it('rejects model-authored numbers and unknown placeholders', () => {
     const envelope = buildNarrativeEnvelope(report)
     expect(() => validateNarrativeTemplate(
-      '- The score was 35 percent. {{wellness_comparison}}\n- Context: {{concern_comparison}}\n- Sustained period: {{concern_stretch_1}}',
+      '- The score was 35 percent. {{sustainability}}\n- Context: {{noteworthy_low_days}}\n- Sustained period: {{concern_stretch_1}}',
       envelope,
     )).toThrow()
     expect(() => validateNarrativeTemplate(
-      '- The recent comparison deserves attention. {{wellness_comparison}}\n- The broader context may help: {{invented_fact}}\n- The sustained period matters: {{concern_stretch_1}}',
+      '- The recent comparison deserves attention. {{sustainability}}\n- The broader context may help: {{invented_fact}}\n- The sustained period matters: {{concern_stretch_1}}',
       envelope,
     )).toThrow()
   })
