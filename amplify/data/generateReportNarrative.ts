@@ -24,7 +24,7 @@ const unsafeClinicalLanguage = /\b(diagnos(?:e|is|ed)|psychosis|schizophren|hosp
 const parseEnvelope = (value: string): NarrativeEnvelope => {
   if (value.length > 16_000) throw new Error('Facts payload is too large')
   const parsed = JSON.parse(value) as Partial<NarrativeEnvelope>
-  if (parsed.schemaVersion !== 6 || !Array.isArray(parsed.facts) || parsed.facts.length < 2 || parsed.facts.length > 16) {
+  if (parsed.schemaVersion !== 7 || !Array.isArray(parsed.facts) || parsed.facts.length < 2 || parsed.facts.length > 16) {
     throw new Error('Unsupported facts payload')
   }
   const facts = parsed.facts.map((fact) => {
@@ -40,16 +40,17 @@ const parseEnvelope = (value: string): NarrativeEnvelope => {
     return fact as NarrativeFact
   })
   if (new Set(facts.map((fact) => fact.id)).size !== facts.length) throw new Error('Duplicate narrative fact')
-  return { schemaVersion: 6, facts }
+  return { schemaVersion: 7, facts }
 }
 
-const lockedValuePattern = /\d+(?:\.\d+)?%?|“[^”]+”/g
+const lockedValuePattern = /\d+(?:\.\d+)?%?/g
 const lockedValues = (text: string) => (text.match(lockedValuePattern) ?? []).sort()
 
 export const validateNarrativeTemplate = (text: string, facts: NarrativeFact[]) => {
   const trimmed = text.trim()
   if (trimmed.length < 40 || trimmed.length > 1_800) throw new Error('Narrative length is invalid')
   if (unsafeClinicalLanguage.test(trimmed)) throw new Error('Narrative contains clinical conclusions')
+  if (trimmed.includes('—')) throw new Error('Narrative contains an em dash')
   const allowed = new Set(facts.map((fact) => `{{${fact.id}}}`))
   const placeholders: string[] = trimmed.match(placeholderPattern) ?? []
   if (new Set(placeholders).size < 2 || placeholders.some((placeholder) => !allowed.has(placeholder))) {
@@ -100,6 +101,7 @@ export const handler: Schema['generateReportNarrative']['functionHandler'] = asy
         'The deterministic Grove report is the only source of facts.',
         'Paraphrase the supplied source wording into shorter, natural caregiver language.',
         'Do not copy a source sentence verbatim. Change and tighten its non-locked wording while preserving its meaning.',
+        'Use concise, natural sentences that explain what the numbers suggest. Never use an em dash.',
         'Every number, percent, date, and quoted label in a selected source must appear exactly once and unchanged in its paraphrase. Never add a new one.',
         'Never add a diagnosis, cause, treatment recommendation, urgency judgment, or level-of-care conclusion.',
         'Do not mention AI. Do not add a heading.',

@@ -1,6 +1,6 @@
 import type { buildProviderReport } from './reportBuilder'
 
-export const REPORT_NARRATIVE_SCHEMA_VERSION = 6
+export const REPORT_NARRATIVE_SCHEMA_VERSION = 7
 
 export interface NarrativeFact {
   id: string
@@ -64,7 +64,7 @@ export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelop
   const difficultToSustain = primaryRate >= 50 || primaryStretch >= 3
   const recentPattern = recentTrendImproved
     ? `${recentConcernDays} of ${recent.length} recent scored days (${recentConcernRate}%) remained in the concern range`
-    : `${recentRegressiveDays.length} of ${recent.length} recent scored days (${recentRegressiveRate}%) were regressive versus the 90-day baseline`
+    : `${recentRegressiveDays.length} of ${recent.length} recent scored days (${recentRegressiveRate}%) were regressive versus baseline`
   const facts: NarrativeFact[] = recent.length ? [
     {
       id: 'sustainability',
@@ -92,8 +92,8 @@ export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelop
   if (report.baseline !== null && recentRegressiveDays.length) {
     facts.push({
       id: 'recent_regressive_days',
-      meaning: 'HIGH PRIORITY: recent regressive days scored below the 90-day baseline.',
-      replacement: `${recentRegressiveDays.length} of ${recent.length} recent scored days (${recentRegressiveRate}%) fell below the 90-day baseline of ${report.baseline}%${recentRegressiveStretch >= 2 ? `; longest stretch: ${recentRegressiveStretch} days` : ''}.`,
+      meaning: 'HIGH PRIORITY: explain what the recent regressive-day concentration suggests.',
+      replacement: `${recentRegressiveDays.length} of ${recent.length} recent scored days (${recentRegressiveRate}%) fell below the ${report.baseline}% baseline${recentRegressiveStretch >= 2 ? `; longest stretch: ${recentRegressiveStretch} days` : ''}. This suggests the decrease was repeated, not isolated.`,
     })
   }
 
@@ -104,7 +104,7 @@ export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelop
       meaning: delta === 0
         ? 'Recent weighted wellness is unchanged from the longer-window average.'
         : `Recent weighted wellness is ${delta > 0 ? 'higher' : 'lower'} than the longer-window average.`,
-      replacement: `Recent 30-day wellness averaged ${report.recent}%—${delta === 0 ? 'matching' : `${Math.abs(delta)} points ${delta > 0 ? 'above' : 'below'}`} the 90-day baseline of ${report.baseline}%.`,
+      replacement: `Recent wellness averaged ${report.recent}%: ${delta === 0 ? 'matching' : `${Math.abs(delta)} points ${delta > 0 ? 'above' : 'below'}`} the ${report.baseline}% baseline. This suggests recorded well-being was ${delta === 0 ? 'stable' : delta > 0 ? 'improving' : 'declining'} overall.`,
     })
   }
 
@@ -120,14 +120,14 @@ export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelop
       meaning: 'Provider-facing description of the recent 30-day direction and volatility.',
       replacement: report.baseline === null || report.recent === null
         ? `${recent.length} recent scored days ranged from ${minimum}% to ${maximum}%.`
-        : `Recent 30-day wellness averaged ${report.recent}% versus the 90-day baseline of ${report.baseline}%. Scores ranged from ${minimum}% to ${maximum}%${largestChange ? `; the largest day-to-day change was ${largestChange} points${steepChanges ? `, with ${steepChanges} changes of 15 points or more` : ''}` : ''}.`,
+        : `Recent wellness averaged ${report.recent}% versus the ${report.baseline}% baseline. Scores ranged from ${minimum}% to ${maximum}%${largestChange ? `; the largest day-to-day change was ${largestChange} points${steepChanges ? `, with ${steepChanges} changes of 15 points or more` : ''}` : ''}. This suggests ${steepChanges ? 'meaningful volatility rather than a smooth trend' : 'a comparatively steady pattern'}.`,
     })
     const recentDifficult = report.difficultPeriods.filter((period) => period.start >= recentKey && period.days >= 2)
     const recentPositive = report.positivePeriods.filter((period) => period.start >= recentKey && period.days >= 2)
     facts.push({
       id: 'calendar_context',
       meaning: 'Brief context immediately above the recent observation calendar.',
-      replacement: `${recent.length} recent scored days were recorded. ${report.recent === null || report.baseline === null ? 'A 90-day baseline comparison is not yet available.' : `Recent wellness was ${report.recent}% versus the 90-day baseline of ${report.baseline}%.`}${recentDifficult[0] ? ` Longest recent concern-range stretch: ${recentDifficult[0].days} days.` : ''}${recentPositive[0] ? ` Longest recent steady-range stretch: ${recentPositive[0].days} days.` : ''}`,
+      replacement: `${recent.length} recent scored days were recorded. ${report.recent === null || report.baseline === null ? 'A baseline comparison is not yet available.' : `Recent wellness was ${report.recent}% versus the ${report.baseline}% baseline.`}${recentDifficult[0] ? ` Longest recent concern-range stretch: ${recentDifficult[0].days} days.` : ''}${recentPositive[0] ? ` Longest recent steady-range stretch: ${recentPositive[0].days} days.` : ''}`,
     })
     if (recentDifficult.length || recentPositive.length) {
       facts.push({
@@ -177,21 +177,21 @@ export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelop
     facts.push({
       id: 'event_summary',
       meaning: 'Concise provider-facing summary of the strongest recorded event association without implying causation.',
-      replacement: `“${event.label}” appeared on ${event.eventDays} scored days averaging ${event.eventAverage}% wellness versus ${event.otherAverage}% on other scored days, a ${Math.abs(event.difference)}-point ${event.difference < 0 ? 'decrease' : 'increase'}. This is an association, not a known cause.`,
+      replacement: `“${event.label}” appeared on ${event.eventDays} scored days averaging ${event.eventAverage}% wellness versus ${event.otherAverage}% on other scored days, a ${Math.abs(event.difference)}-point ${event.difference < 0 ? 'decrease' : 'increase'}. This suggests an association worth discussing, not a known cause.`,
     })
   }
-  report.difficult.slice(0, 2).forEach((signal, index) => {
+  report.recentDifficult.slice(0, 2).forEach((signal, index) => {
     facts.push({
       id: `frequent_concern_${index + 1}`,
       meaning: 'A difficult signal recorded frequently enough to provide useful discussion context.',
-      replacement: `“${signal.name}” was noted in ${signal.count} of ${report.checkIns.length} check-ins (${percentage(signal.count, report.checkIns.length)}%).`,
+      replacement: `“${signal.name}” was noted in ${signal.count} of ${report.recentCheckIns.length} recent check-ins (${signal.recentRate}%, ${signal.delta === 0 ? 'unchanged' : `${Math.abs(signal.delta)} points ${signal.delta > 0 ? 'up' : 'down'}`} from baseline). This suggests the signal was ${signal.delta === 0 ? 'occurring at a similar rate' : signal.delta > 0 ? 'more common recently' : 'less common recently'}.`,
     })
   })
-  report.positive.slice(0, 1).forEach((signal) => {
+  report.recentPositive.slice(0, 1).forEach((signal) => {
     facts.push({
       id: 'frequent_positive',
       meaning: 'A frequently recorded positive signal that provides balance and context.',
-      replacement: `“${signal.name}” was noted in ${signal.count} of ${report.checkIns.length} check-ins (${percentage(signal.count, report.checkIns.length)}%).`,
+      replacement: `“${signal.name}” was noted in ${signal.count} of ${report.recentCheckIns.length} recent check-ins (${signal.recentRate}%, ${signal.delta === 0 ? 'unchanged' : `${Math.abs(signal.delta)} points ${signal.delta > 0 ? 'up' : 'down'}`} from baseline). This suggests the positive signal was ${signal.delta === 0 ? 'occurring at a similar rate' : signal.delta > 0 ? 'more common recently' : 'less common recently'}.`,
     })
   })
   const preferred = [
@@ -236,7 +236,7 @@ export const validateNarrativeTemplate = (template: string, envelope: NarrativeE
   if (takeaways.length !== envelope.facts.length || takeaways.some((line) => !/^- \{\{[a-z][a-z0-9_]*\}\} .+/.test(line))) {
     throw new Error('Narrative must paraphrase every evidence section')
   }
-  const lockedValues = (text: string) => (text.match(/\d+(?:\.\d+)?%?|“[^”]+”/g) ?? []).sort()
+  const lockedValues = (text: string) => (text.match(/\d+(?:\.\d+)?%?/g) ?? []).sort()
   takeaways.forEach((line) => {
     const marker = line.match(/\{\{[a-z][a-z0-9_]*\}\}/)?.[0]
     const fact = envelope.facts.find(({ id }) => `{{${id}}}` === marker)
@@ -262,13 +262,14 @@ export const renderNarrative = (template: string, envelope: NarrativeEnvelope) =
   return validated
     .replace(/^- \{\{[a-z][a-z0-9_]*\}\}\s*/gm, '• ')
     .replace(/^- /gm, '• ')
+    .replaceAll('—', ':')
 }
 
 export const renderNarrativeSections = (template: string, envelope: NarrativeEnvelope) => {
   const validated = validateNarrativeTemplate(template, envelope)
   return Object.fromEntries(validated.split('\n').map((line) => {
     const marker = line.match(/\{\{([a-z][a-z0-9_]*)\}\}/)
-    return [marker?.[1] ?? '', line.replace(/^- \{\{[a-z][a-z0-9_]*\}\}\s*/, '')]
+    return [marker?.[1] ?? '', line.replace(/^- \{\{[a-z][a-z0-9_]*\}\}\s*/, '').replaceAll('—', ':')]
   }))
 }
 

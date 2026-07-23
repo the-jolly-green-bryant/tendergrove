@@ -23,6 +23,9 @@ describe('report narrative facts', () => {
     difficult: [{ name: 'Sleep disruption', count: 2 }],
     positive: [],
     checkIns: [{}, {}],
+    recentCheckIns: [{}, {}],
+    recentDifficult: [{ name: 'Sleep disruption', count: 2, recentRate: 100, baselineRate: 100, delta: 0 }],
+    recentPositive: [],
   } as never
 
   it('keeps every calculated value in deterministic replacements', () => {
@@ -30,9 +33,9 @@ describe('report narrative facts', () => {
     expect(envelope.facts.find((fact) => fact.id === 'sustainability')?.replacement)
       .toContain('does not look sustainable')
     expect(envelope.facts.find((fact) => fact.id === 'recent_regressive_days')?.replacement)
-      .toContain('1 of 2 recent scored days (50%) fell below the 90-day baseline of 40%')
+      .toContain('1 of 2 recent scored days (50%) fell below the 40% baseline')
     expect(envelope.facts.find((fact) => fact.id === 'wellness_comparison')?.replacement)
-      .toContain('Recent 30-day wellness averaged 35%—5 points below the 90-day baseline of 40%')
+      .toContain('Recent wellness averaged 35%: 5 points below the 40% baseline')
     expect(envelope.facts.find((fact) => fact.id === 'important_stretches')?.replacement)
       .toContain('Concern range: 2 days')
   })
