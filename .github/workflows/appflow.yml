@@ -190,6 +190,10 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
   build-and-deploy-ios:
+    # Keep Android releases green until the Appflow iOS certificate and
+    # destination have been configured. The job automatically starts running
+    # once both repository variables are present.
+    if: ${{ vars.APPFLOW_IOS_SIGNING_CERT != '' && vars.APPFLOW_IOS_DESTINATION != '' }}
     runs-on: ubuntu-latest
     env:
       IONIC_TOKEN: ${{ secrets.IONIC_TOKEN }}
