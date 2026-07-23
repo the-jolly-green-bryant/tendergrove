@@ -111,11 +111,6 @@ const ReportsPage = () => {
   const report = useMemo(() => selected ? buildProviderReport({ person: selected, reason, questions, pinnedObservations: selectedPins.map((pin) => pin.text), lifeEvents: patterns.data?.lifeEvents }) : null, [patterns.data?.lifeEvents, questions, reason, selected, selectedPins])
   const narrative = useReportNarrative(selected?.id, report)
   const topTakeaways = useMemo(() => narrativeTakeaways(narrative.text), [narrative.text])
-  const narrativeStatus = narrative.pending
-    ? 'AI is reviewing Grove’s calculated facts…'
-    : narrative.source === 'fallback'
-      ? 'Grove’s verified summary is shown because AI is currently unavailable.'
-      : 'AI-generated from Grove’s verified observations.'
   const reportText = report ? [
     report.text.split('\n\n').slice(0, 1).join('\n\n'),
     `PLAIN-LANGUAGE OVERVIEW\n${narrative.text}`,
@@ -226,7 +221,6 @@ const ReportsPage = () => {
         <p className="report-narrative__eyebrow">Grove’s Care Notes</p>
         <h2>Three noteworthy takeaways</h2>
         <ol>{topTakeaways.map((takeaway, index) => <li key={`${index}-${takeaway}`}>{takeaway}</li>)}</ol>
-        <small>{narrativeStatus} It does not diagnose or determine care.</small>
       </section>
       <section className="report-flow-section">
         <p className="report-flow-section__eyebrow">1 · Here are the observations</p>
@@ -265,7 +259,7 @@ const ReportsPage = () => {
       <section className="report-provider-intro">
         <p className="report-flow-section__eyebrow">For the receiving professional</p>
         <h2>How to read this report</h2>
-        <p>This report organizes caregiver-recorded observations from the recent 30 days against a 90-day baseline. AI helps condense the wording; Grove verifies the underlying values. The report is observational and does not diagnose or determine care.</p>
+        <p>This report organizes caregiver-recorded observations from the recent 30 days against a 90-day baseline. It is intended to make the recorded patterns easier to review before a care conversation.</p>
         <h3>Important points</h3>
         <ul>{topTakeaways.map((takeaway) => <li key={takeaway}>{takeaway}</li>)}</ul>
       </section>
@@ -274,6 +268,7 @@ const ReportsPage = () => {
       {pdfState === 'ready' && preparedPdf && <p className="report-download-status">Your PDF is ready. If it did not download automatically, <a href={preparedPdf.url} download={preparedPdf.name}>download it here</a>.</p>}
       {pdfState === 'error' && <p className="report-download-status report-download-status--error">The PDF could not be prepared. Your report is still here; try again or copy the plain text.</p>}
     </>}
+    {report && <p className="report-ai-disclosure">{narrative.pending ? 'AI-generated language is being prepared.' : 'This page and report include AI-generated language. Grove verifies the displayed values; the language does not diagnose or determine care.'}</p>}
     {!selected && <p>Add the person you are concerned about to create an appointment summary.</p>}
   </Page>
 

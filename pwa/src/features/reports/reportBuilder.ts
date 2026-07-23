@@ -251,6 +251,8 @@ export const buildProviderReport = ({ person, reason, questions, days = 90, pinn
       : ['No scored observations were recorded recently.']),
     '',
     'LIMITATIONS', 'Associations in this report may have other explanations. Entries reflect one caregiver’s observations and may be incomplete. Grove does not determine diagnosis, immediate safety, or the appropriate level of care.',
+    '',
+    'AI DISCLOSURE', 'This report includes AI-generated language. Grove verifies the displayed values; the language does not diagnose or determine care.',
   ]
   return { text: lines.join('\n'), checkIns, recentCheckIns, difficult, positive, recentDifficult, recentPositive, completeness, baseline, recent, observations, calendarDays, difficultPeriods, positivePeriods, eventNarrative, eventComparisons }
 }
