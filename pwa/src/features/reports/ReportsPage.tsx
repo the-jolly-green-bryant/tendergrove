@@ -50,9 +50,12 @@ const FormattedReport = ({ text }: { text: string }) => <article className="repo
 
 const ReportVisuals = ({ observations, calendarDays, sections }: Pick<NonNullable<ReturnType<typeof buildProviderReport>>, 'observations' | 'calendarDays'> & { sections: Record<string, string> }) => {
   if (!observations.length) return <p className="report-empty-visual">Complete check-ins to add a trend and observation calendar.</p>
+  const recentCalendarDays = calendarDays.slice(-30)
+  const recentStart = recentCalendarDays[0]?.date ?? ''
+  const recentObservations = observations.filter((day) => day.date >= recentStart)
   const width = 680
   const height = 170
-  const weighted = calendarDays.filter((day): day is typeof day & { weightedScore: number } => day.weightedScore !== null)
+  const weighted = recentCalendarDays.filter((day): day is typeof day & { weightedScore: number } => day.weightedScore !== null)
   const weightedValues = weighted.map((day) => day.weightedScore)
   const rawMin = Math.min(...weightedValues); const rawMax = Math.max(...weightedValues)
   const padding = Math.max(6, Math.round((rawMax - rawMin) * .15))
@@ -61,11 +64,11 @@ const ReportVisuals = ({ observations, calendarDays, sections }: Pick<NonNullabl
   const y = (score: number) => 12 + (upperBound - score) * ((height - 30) / span)
   const weightedX = (index: number) => weighted.length === 1 ? width / 2 : 18 + index * ((width - 36) / (weighted.length - 1))
   const points = weighted.map((day, index) => `${weightedX(index)},${y(day.weightedScore)}`).join(' ')
-  const firstWeekday = new Date(`${calendarDays[0].date}T12:00:00`).getDay()
+  const firstWeekday = new Date(`${recentCalendarDays[0].date}T12:00:00`).getDay()
   return <>
     <section className="report-visual" aria-labelledby="report-trend-title">
-      <div className="report-visual__heading"><h3 id="report-trend-title">Recent 30-day trend</h3><span>{sections.trend_description}</span></div>
-      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Weighted wellness trend across ${calendarDays.length} calendar days`}>
+      <div className="report-visual__heading"><h3 id="report-trend-title">Recent trend</h3><span>{sections.trend_description}</span></div>
+      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Weighted wellness trend across ${recentCalendarDays.length} calendar days`}>
         <text x="18" y="10" className="report-trend__bound">{upperBound}%</text><text x="18" y={height - 2} className="report-trend__bound">{lowerBound}%</text>
         {upperBound >= 80 && lowerBound <= 80 && <line x1="18" x2={width - 18} y1={y(80)} y2={y(80)} className="report-trend__guide report-trend__guide--steady" />}
         {upperBound >= 60 && lowerBound <= 60 && <line x1="18" x2={width - 18} y1={y(60)} y2={y(60)} className="report-trend__guide report-trend__guide--concern" />}
@@ -81,12 +84,12 @@ const ReportVisuals = ({ observations, calendarDays, sections }: Pick<NonNullabl
         <span>Grey dates have no scored check-in and are excluded from analysis.</span>
       </div>
       <div className="report-calendar__weekdays">{['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((day) => <span key={day}>{day}</span>)}</div>
-      <div className="report-calendar">{Array.from({ length: firstWeekday }, (_, index) => <i key={`blank-${index}`} />)}{calendarDays.map((day) => <div key={day.date} className={`report-calendar__day report-day--${day.level}`} title={day.score === null ? `${day.date}: No scored check-in` : `${day.date}: ${day.score}% wellness score`}><span>{new Date(`${day.date}T12:00:00`).toLocaleDateString(undefined, { month: 'short' })}</span><b>{Number(day.date.slice(-2))}</b><small>{day.score === null ? '—' : `${day.score}%`}</small></div>)}</div>
+      <div className="report-calendar">{Array.from({ length: firstWeekday }, (_, index) => <i key={`blank-${index}`} />)}{recentCalendarDays.map((day) => <div key={day.date} className={`report-calendar__day report-day--${day.level}`} title={day.score === null ? `${day.date}: No scored check-in` : `${day.date}: ${day.score}% wellness score`}><span>{new Date(`${day.date}T12:00:00`).toLocaleDateString(undefined, { month: 'short' })}</span><b>{Number(day.date.slice(-2))}</b><small>{day.score === null ? '–' : `${day.score}%`}</small></div>)}</div>
       <div className="report-legend"><span><i className="report-day--steady" />Steady</span><span><i className="report-day--watch" />Watch</span><span><i className="report-day--concern" />Concern</span><span><i className="report-day--missing" />No scored check-in</span></div>
     </section>
     <section className="report-evidence-section">
       <div className="report-visual__heading"><h3>Recorded signals</h3><span>{sections.frequent_concern_1 ?? sections.frequent_positive ?? 'Daily signal counts provide additional context for the weighted trend.'}</span></div>
-      <div className="report-signal-trends"><SignalTrend observations={observations} kind="concern" /><SignalTrend observations={observations} kind="positive" /></div>
+      <div className="report-signal-trends"><SignalTrend observations={recentObservations} kind="concern" /><SignalTrend observations={recentObservations} kind="positive" /></div>
     </section>
   </>
 }
@@ -152,7 +155,10 @@ const ReportsPage = () => {
         pdf.setTextColor(37, 52, 47); pdf.setFont('helvetica', 'bold'); pdf.setFontSize(14); pdf.text('WEIGHTED WELLNESS TREND AND OBSERVATION CALENDAR', margin, 76)
         pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5); pdf.setTextColor(100, 112, 106); pdf.text('The trend uses Grove Care’s proprietary weighting. Missing or incomplete data is excluded from trend analysis.', margin, 92)
         const chart = { left: margin, top: 118, width: pageWidth - margin * 2, height: 180 }
-        const weightedDays = report.calendarDays.filter((day): day is typeof day & { weightedScore: number } => day.weightedScore !== null)
+        const recentCalendarDays = report.calendarDays.slice(-30)
+        const recentStart = recentCalendarDays[0]?.date ?? ''
+        const recentObservations = report.observations.filter((day) => day.date >= recentStart)
+        const weightedDays = recentCalendarDays.filter((day): day is typeof day & { weightedScore: number } => day.weightedScore !== null)
         const weightedValues = weightedDays.map((day) => day.weightedScore)
         const rawMin = Math.min(...weightedValues); const rawMax = Math.max(...weightedValues); const chartPadding = Math.max(6, Math.round((rawMax - rawMin) * .15))
         const lowerBound = Math.max(0, rawMin - chartPadding); const upperBound = Math.min(100, rawMax + chartPadding); const chartSpan = Math.max(1, upperBound - lowerBound)
@@ -171,10 +177,10 @@ const ReportsPage = () => {
         })
         pdf.setFont('helvetica', 'bold'); pdf.setFontSize(11); pdf.setTextColor(37, 52, 47); pdf.text('Observation calendar', margin, 332)
         const cellWidth = 69; const cellHeight = 21; const gap = 3; const columns = 7
-        const calendarOffset = new Date(`${report.calendarDays[0].date}T12:00:00`).getDay()
+        const calendarOffset = new Date(`${recentCalendarDays[0].date}T12:00:00`).getDay()
         pdf.setFont('helvetica', 'bold'); pdf.setFontSize(6.5); pdf.setTextColor(100, 112, 106)
         ;['SUN','MON','TUE','WED','THU','FRI','SAT'].forEach((weekday, index) => pdf.text(weekday, margin + index * (cellWidth + gap) + 5, 351))
-        report.calendarDays.forEach((day, index) => {
+        recentCalendarDays.forEach((day, index) => {
           const position = index + calendarOffset; const row = Math.floor(position / columns); const column = position % columns
           const left = margin + column * (cellWidth + gap); const top = 358 + row * (cellHeight + gap)
           const fill = day.level === 'missing' ? [235, 238, 236] : day.level === 'steady' ? [223, 238, 221] : day.level === 'watch' ? [247, 236, 201] : [244, 217, 213]
@@ -185,10 +191,10 @@ const ReportsPage = () => {
         })
         pdf.addPage(); addHeader()
         pdf.setTextColor(37, 52, 47); pdf.setFont('helvetica', 'bold'); pdf.setFontSize(14); pdf.text('CONCERN AND POSITIVE SIGNAL TRENDS', margin, 78)
-        pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5); pdf.setTextColor(100, 112, 106); pdf.text('Each point is the number of selected signals recorded that day—not a diagnosis or severity rating.', margin, 94)
+        pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5); pdf.setTextColor(100, 112, 106); pdf.text('Each point is the number of selected signals recorded that day; it is not a diagnosis or severity rating.', margin, 94)
         const drawSignalChart = (top: number, key: 'concernSignals' | 'positiveSignals', title: string, color: [number, number, number]) => {
-          const values = report.observations.map((day) => day[key]); const maximum = Math.max(1, ...values); const left = margin; const width = pageWidth - margin * 2; const height = 170
-          const px = (index: number) => report.observations.length === 1 ? left + width / 2 : left + index * (width / (report.observations.length - 1)); const py = (value: number) => top + 30 + (maximum - value) * (height / maximum)
+          const values = recentObservations.map((day) => day[key]); const maximum = Math.max(1, ...values); const left = margin; const width = pageWidth - margin * 2; const height = 170
+          const px = (index: number) => recentObservations.length === 1 ? left + width / 2 : left + index * (width / (recentObservations.length - 1)); const py = (value: number) => top + 30 + (maximum - value) * (height / maximum)
           pdf.setFont('helvetica', 'bold'); pdf.setFontSize(11); pdf.setTextColor(37, 52, 47); pdf.text(title, left, top)
           pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7); pdf.setTextColor(100, 112, 106); pdf.text(`Daily count · highest recorded: ${maximum}`, left, top + 13)
           pdf.setDrawColor(220, 227, 222); for (let value = 0; value <= maximum; value += 1) { pdf.line(left, py(value), left + width, py(value)); pdf.text(String(value), left - 10, py(value) + 2) }
