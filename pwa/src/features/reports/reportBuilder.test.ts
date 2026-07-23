@@ -44,4 +44,27 @@ describe('provider report', () => {
     expect(report.text).toContain('supports discussing continued clinical care')
     expect(report.recent).not.toBeGreaterThan(50)
   })
+
+  it('does not let a short sustained difficult period disappear inside many steadier days', () => {
+    const indicators = [
+      { id: 'difficult', name: 'Severe distress', polarity: 'undesired', active: true },
+      { id: 'p1', name: 'Connected', polarity: 'desired', active: true },
+      { id: 'p2', name: 'Daily care', polarity: 'desired', active: true },
+    ]
+    const checkIns = Array.from({ length: 30 }, (_, index) => {
+      const date = new Date()
+      date.setHours(12, 0, 0, 0)
+      date.setDate(date.getDate() - (29 - index))
+      return {
+        occurredAt: date.toISOString(),
+        answersJson: JSON.stringify({ checked: index < 5 ? ['difficult'] : ['p1', 'p2'] }),
+      }
+    })
+    const report = buildProviderReport({ person: { ...person, indicators, checkIns } as unknown as RawPerson, reason: '', questions: '' })
+
+    expect(report.text).toContain('5 consecutive concern-level days')
+    expect(report.text).toContain('remains important even when surrounding days were steadier')
+    expect(report.difficultPeriods[0]?.days).toBe(5)
+    expect(report.observations).toHaveLength(30)
+  })
 })

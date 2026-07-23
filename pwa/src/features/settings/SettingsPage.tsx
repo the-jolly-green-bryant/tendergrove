@@ -93,8 +93,8 @@ const SettingsPage = () => {
   })
 
   return (
-    <Page title="Settings" backHref="/dashboard">
-      <IonList inset>
+    <Page title="Settings" backHref="/dashboard" className="settings-page">
+      <IonList inset className="settings-nav">
         <IonItem button routerLink="/help-now"><IonLabel><h2>Safety plan and crisis resources</h2><p>Country, trusted contact, and immediate help</p></IonLabel></IonItem>
         <IonItem button routerLink="/privacy"><IonLabel>Privacy</IonLabel></IonItem>
         <IonItem button routerLink="/terms"><IonLabel>Terms of Use &amp; Medical Disclaimer</IonLabel></IonItem>

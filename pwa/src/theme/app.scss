@@ -2685,4 +2685,52 @@ a:visited {
 .setup-checkin-group ion-item { --padding-start: 0; --inner-padding-end: 0; }
 .report-preview { min-height: 30rem; padding: 1rem; border: 1px solid var(--ion-color-light-shade); border-radius: 14px; font-family: ui-monospace, monospace; }
 .report-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0 2rem; }
+.settings-page ion-card,
+.settings-page ion-list[inset],
+.settings-page ion-list.list-inset,
+.reports-page ion-list[inset] { width: 100%; max-width: 760px; margin-inline: auto; }
+.settings-nav { width: 100%; max-width: 760px !important; margin: 16px auto !important; overflow: hidden; border: 1px solid #d4dfd7; border-radius: 18px; box-shadow: 0 8px 24px rgba(29, 67, 60, .06); }
+.settings-page ion-list[inset]:not(.settings-nav),
+.settings-page ion-list.list-inset:not(.settings-nav),
+.report-form { padding: 8px; border: 1px solid #d4dfd7; border-radius: 18px; background: #f7faf7; }
+.settings-page ion-list[inset]:not(.settings-nav) ion-item,
+.settings-page ion-list.list-inset:not(.settings-nav) ion-item,
+.report-form ion-item { --background: #fff; --border-color: transparent; --border-radius: 12px; --padding-start: 14px; --inner-padding-end: 14px; margin: 7px 0; border: 1px solid #c7d5cc; border-radius: 12px; box-shadow: 0 1px 2px rgba(29, 67, 60, .04); }
+.settings-page ion-input,
+.settings-page ion-select,
+.report-form ion-select,
+.report-form ion-textarea { --highlight-color-focused: #34766c; min-height: 58px; }
+.settings-page ion-item:focus-within,
+.report-form ion-item:focus-within { border-color: #568264; box-shadow: 0 0 0 3px rgba(86, 130, 100, .14); }
+.report-intro { max-width: 760px; margin: 0 auto 1.2rem; padding: 1.15rem 1.25rem; border: 1px solid rgba(49,95,75,.14); border-radius: 20px; background: linear-gradient(145deg, #f5f9f2, #fffdf8); }
+.report-intro__eyebrow { margin: 0 0 .25rem; color: #568264; font-size: .75rem; font-weight: 850; letter-spacing: .09em; text-transform: uppercase; }
+.report-intro h2 { margin: 0 0 .45rem; color: #234d42; font-family: Georgia, 'Times New Roman', serif; }
+.report-intro > p:not(.report-intro__eyebrow) { color: #5e6e67; line-height: 1.55; }
+.report-intro ol { margin: .9rem 0 0; padding-left: 1.25rem; color: #40584e; }
+.report-intro li { margin: .4rem 0; line-height: 1.42; }
+.report-visual { max-width: 760px; margin: 0 auto 1rem; padding: 1rem; border: 1px solid #d8e2da; border-radius: 18px; background: #fff; box-shadow: 0 8px 22px rgba(29, 67, 60, .05); }
+.report-visual__heading { display: flex; gap: .5rem 1rem; align-items: baseline; justify-content: space-between; margin-bottom: .65rem; }
+.report-visual__heading h3 { margin: 0; color: #294f43; font-size: 1rem; }
+.report-visual__heading span { color: #728078; font-size: .78rem; text-align: right; }
+.report-visual svg { display: block; width: 100%; max-height: 190px; overflow: visible; }
+.report-trend__guide { stroke-width: 1; stroke-dasharray: 5 6; }
+.report-trend__guide--steady { stroke: #b6cfb8; }
+.report-trend__guide--concern { stroke: #dfb3ad; }
+.report-trend__line { fill: none; stroke: #496f5c; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.report-trend__point { stroke: #fff; stroke-width: 2; }
+.report-day--steady { background: #dfeedd; fill: #568264; color: #315f4b; }
+.report-day--watch { background: #f7ecc9; fill: #c49a38; color: #75590e; }
+.report-day--concern { background: #f4d9d5; fill: #b64c42; color: #8c332c; }
+.report-calendar { display: grid; grid-template-columns: repeat(auto-fill, minmax(54px, 1fr)); gap: 7px; }
+.report-calendar__day { display: grid; min-height: 60px; padding: 6px; border-radius: 11px; text-align: center; }
+.report-calendar__day span { font-size: .63rem; font-weight: 800; text-transform: uppercase; }
+.report-calendar__day b { font-size: 1rem; }
+.report-calendar__day small { opacity: .75; font-size: .68rem; }
+.report-legend { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: .75rem; color: #69766f; font-size: .75rem; }
+.report-legend span { display: flex; gap: .35rem; align-items: center; }
+.report-legend i { width: 10px; height: 10px; border-radius: 50%; }
+.report-download-status { max-width: 760px; margin: -1rem auto 2rem; padding: .75rem 1rem; border-radius: 12px; background: #e8f2e6; color: #315f4b; }
+.report-download-status--error { background: #fff0ee; color: #8c332c; }
+.report-empty-visual { color: #728078; }
+@media (max-width: 560px) { .report-visual__heading { display: block; } .report-visual__heading span { display: block; margin-top: .25rem; text-align: left; } }
 .first-week-payoff li { margin-bottom: .65rem; line-height: 1.45; }
