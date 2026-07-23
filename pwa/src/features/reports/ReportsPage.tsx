@@ -73,7 +73,7 @@ const ReportVisuals = ({ observations, calendarDays, sections }: Pick<NonNullabl
         {upperBound >= 80 && lowerBound <= 80 && <line x1="18" x2={width - 18} y1={y(80)} y2={y(80)} className="report-trend__guide report-trend__guide--steady" />}
         {upperBound >= 60 && lowerBound <= 60 && <line x1="18" x2={width - 18} y1={y(60)} y2={y(60)} className="report-trend__guide report-trend__guide--concern" />}
         <polyline points={points} className="report-trend__line" />
-        {weighted.map((day, index) => <circle key={day.date} cx={weightedX(index)} cy={y(day.weightedScore)} r="4" className={`report-trend__point report-day--${day.level}`}><title>{day.date}: {day.weightedScore}% weighted wellness score</title></circle>)}
+        {weighted.map((day, index) => <circle key={day.date} cx={weightedX(index)} cy={y(day.weightedScore)} r="4" className={`report-trend__point report-day--${day.level}`}><title>{day.date}: {day.weightedScore} weighted wellness points</title></circle>)}
       </svg>
     </section>
     <section className="report-visual" aria-labelledby="report-calendar-title">
@@ -84,7 +84,7 @@ const ReportVisuals = ({ observations, calendarDays, sections }: Pick<NonNullabl
         <span>Grey dates have no scored check-in and are excluded from analysis.</span>
       </div>
       <div className="report-calendar__weekdays">{['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((day) => <span key={day}>{day}</span>)}</div>
-      <div className="report-calendar">{Array.from({ length: firstWeekday }, (_, index) => <i key={`blank-${index}`} />)}{recentCalendarDays.map((day) => <div key={day.date} className={`report-calendar__day report-day--${day.level}`} title={day.score === null ? `${day.date}: No scored check-in` : `${day.date}: ${day.score}% wellness score`}><span>{new Date(`${day.date}T12:00:00`).toLocaleDateString(undefined, { month: 'short' })}</span><b>{Number(day.date.slice(-2))}</b><small>{day.score === null ? '–' : `${day.score}%`}</small></div>)}</div>
+      <div className="report-calendar">{Array.from({ length: firstWeekday }, (_, index) => <i key={`blank-${index}`} />)}{recentCalendarDays.map((day) => <div key={day.date} className={`report-calendar__day report-day--${day.level}`} title={day.score === null ? `${day.date}: No scored check-in` : `${day.date}: ${day.score} wellness points`}><span>{new Date(`${day.date}T12:00:00`).toLocaleDateString(undefined, { month: 'short' })}</span><b>{Number(day.date.slice(-2))}</b><small>{day.score === null ? '–' : `${day.score} pts`}</small></div>)}</div>
       <div className="report-legend"><span><i className="report-day--steady" />Steady</span><span><i className="report-day--watch" />Watch</span><span><i className="report-day--concern" />Concern</span><span><i className="report-day--missing" />No scored check-in</span></div>
     </section>
     <section className="report-evidence-section">
@@ -163,7 +163,7 @@ const ReportsPage = () => {
         if (upperBound >= 80 && lowerBound <= 80) pdf.line(chart.left, chartY(80), chart.left + chart.width, chartY(80))
         if (upperBound >= 60 && lowerBound <= 60) pdf.line(chart.left, chartY(60), chart.left + chart.width, chartY(60))
         pdf.setLineDashPattern([], 0)
-        pdf.setFontSize(7); pdf.setTextColor(100, 112, 106); pdf.text(`${upperBound}% upper bound`, chart.left, chart.top - 5); pdf.text(`${lowerBound}% lower bound`, chart.left, chart.top + chart.height + 11)
+        pdf.setFontSize(7); pdf.setTextColor(100, 112, 106); pdf.text(`${upperBound} point upper bound`, chart.left, chart.top - 5); pdf.text(`${lowerBound} point lower bound`, chart.left, chart.top + chart.height + 11)
         pdf.setDrawColor(73, 111, 92); pdf.setLineWidth(2)
         weightedDays.slice(1).forEach((day, index) => pdf.line(chartX(index), chartY(weightedDays[index].weightedScore), chartX(index + 1), chartY(day.weightedScore)))
         weightedDays.forEach((day, index) => {
@@ -182,7 +182,7 @@ const ReportsPage = () => {
           pdf.setFillColor(fill[0], fill[1], fill[2]); pdf.roundedRect(left, top, cellWidth, cellHeight, 5, 5, 'F')
           const date = new Date(`${day.date}T12:00:00`)
           pdf.setFont('helvetica', 'bold'); pdf.setFontSize(6.5); pdf.setTextColor(70, 87, 79); pdf.text(`${date.toLocaleDateString(undefined, { month: 'short' }).toUpperCase()} ${date.getDate()}`, left + 5, top + 10)
-          pdf.setFont('helvetica', 'normal'); pdf.setFontSize(6.5); pdf.text(day.score === null ? 'No scored check-in' : `${day.score}% wellness`, left + 5, top + 19)
+          pdf.setFont('helvetica', 'normal'); pdf.setFontSize(6.5); pdf.text(day.score === null ? 'No scored check-in' : `${day.score} wellness points`, left + 5, top + 19)
         })
         pdf.addPage(); addHeader()
         pdf.setTextColor(37, 52, 47); pdf.setFont('helvetica', 'bold'); pdf.setFontSize(14); pdf.text('CONCERN AND POSITIVE SIGNAL TRENDS', margin, 78)
@@ -259,7 +259,7 @@ const ReportsPage = () => {
       <section className="report-provider-intro">
         <p className="report-flow-section__eyebrow">For the receiving professional</p>
         <h2>How to read this report</h2>
-        <p>This report organizes caregiver-recorded observations from the recent 30 days against a 90-day baseline. It is intended to make the recorded patterns easier to review before a care conversation.</p>
+        <p>This report organizes caregiver-recorded observations from the recent 30 days against a rolling 90-day baseline. Wellness points use Grove’s 0–100 scale; they are scores, not population percentiles.</p>
         <h3>Important points</h3>
         <ul>{topTakeaways.map((takeaway) => <li key={takeaway}>{takeaway}</li>)}</ul>
       </section>

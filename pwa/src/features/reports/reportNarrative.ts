@@ -1,6 +1,6 @@
 import type { buildProviderReport } from './reportBuilder'
 
-export const REPORT_NARRATIVE_SCHEMA_VERSION = 8
+export const REPORT_NARRATIVE_SCHEMA_VERSION = 9
 
 export interface NarrativeFact {
   id: string
@@ -97,7 +97,7 @@ export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelop
     facts.push({
       id: 'recent_regressive_days',
       meaning: 'HIGH PRIORITY: explain what the recent regressive-day concentration suggests.',
-      replacement: `${recentRegressiveDays.length} of ${recent.length} recent recorded observations fell below the ${report.baseline}% baseline (${recentRegressiveRate}%, ${baselineDelta(regressiveRateDelta)})${recentRegressiveStretch >= 2 ? `; longest stretch: ${recentRegressiveStretch} days` : ''}. This suggests the decrease was repeated, not isolated.`,
+      replacement: `${recentRegressiveDays.length} of ${recent.length} recent recorded observations fell below the ${report.baseline}-point baseline (${recentRegressiveRate}%, ${baselineDelta(regressiveRateDelta)})${recentRegressiveStretch >= 2 ? `; longest stretch: ${recentRegressiveStretch} days` : ''}. This suggests the decrease was repeated, not isolated.`,
     })
   }
 
@@ -108,7 +108,7 @@ export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelop
       meaning: delta === 0
         ? 'Recent weighted wellness is unchanged from the longer-window average.'
         : `Recent weighted wellness is ${delta > 0 ? 'higher' : 'lower'} than the longer-window average.`,
-      replacement: `Recent wellness averaged ${report.recent}%: ${delta === 0 ? 'matching' : `${Math.abs(delta)} points ${delta > 0 ? 'above' : 'below'}`} the ${report.baseline}% baseline. This suggests recorded well-being was ${delta === 0 ? 'stable' : delta > 0 ? 'improving' : 'declining'} overall.`,
+      replacement: `Recent wellness averaged ${report.recent} points: ${delta === 0 ? 'matching' : `${Math.abs(delta)} points ${delta > 0 ? 'above' : 'below'}`} the ${report.baseline}-point baseline. This suggests recorded well-being was ${delta === 0 ? 'stable' : delta > 0 ? 'improving' : 'declining'} overall.`,
     })
   }
 
@@ -123,15 +123,15 @@ export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelop
       id: 'trend_description',
       meaning: 'Provider-facing description of the recent 30-day direction and volatility.',
       replacement: report.baseline === null || report.recent === null
-        ? `${recent.length} recent recorded observations ranged from ${minimum}% to ${maximum}%.`
-        : `Recent wellness averaged ${report.recent}% versus the ${report.baseline}% baseline. Scores ranged from ${minimum}% to ${maximum}%${largestChange ? `; the largest day-to-day change was ${largestChange} points${steepChanges ? `, with ${steepChanges} changes of 15 points or more` : ''}` : ''}. This suggests ${steepChanges ? 'meaningful volatility rather than a smooth trend' : 'a comparatively steady pattern'}.`,
+        ? `${recent.length} recent recorded observations ranged from ${minimum} to ${maximum} points.`
+        : `Recent wellness averaged ${report.recent} points versus the ${report.baseline}-point baseline. Scores ranged from ${minimum} to ${maximum} points${largestChange ? `; the largest day-to-day change was ${largestChange} points${steepChanges ? `, with ${steepChanges} changes of 15 points or more` : ''}` : ''}. This suggests ${steepChanges ? 'meaningful volatility rather than a smooth trend' : 'a comparatively steady pattern'}.`,
     })
     const recentDifficult = report.difficultPeriods.filter((period) => period.start >= recentKey && period.days >= 2)
     const recentPositive = report.positivePeriods.filter((period) => period.start >= recentKey && period.days >= 2)
     facts.push({
       id: 'calendar_context',
       meaning: 'Brief context immediately above the recent observation calendar.',
-      replacement: `${recent.length} recent recorded observations were available. ${report.recent === null || report.baseline === null ? 'A baseline comparison is not yet available.' : `Recent wellness was ${report.recent}% versus the ${report.baseline}% baseline.`}${recentDifficult[0] ? ` Longest recent concern-range stretch: ${recentDifficult[0].days} days.` : ''}${recentPositive[0] ? ` Longest recent steady-range stretch: ${recentPositive[0].days} days.` : ''}`,
+      replacement: `${recent.length} recent recorded observations were available. ${report.recent === null || report.baseline === null ? 'A baseline comparison is not yet available.' : `Recent wellness was ${report.recent} points versus the ${report.baseline}-point baseline.`}${recentDifficult[0] ? ` Longest recent concern-range stretch: ${recentDifficult[0].days} days.` : ''}${recentPositive[0] ? ` Longest recent steady-range stretch: ${recentPositive[0].days} days.` : ''}`,
     })
     if (recentDifficult.length || recentPositive.length) {
       facts.push({
@@ -173,7 +173,7 @@ export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelop
     facts.push({
       id: `event_association_${index + 1}`,
       meaning: `An observed event association whose event-day wellness was ${event.difference < 0 ? 'lower' : 'not lower'} than other scored days; it is not proof of causation.`,
-      replacement: `“${event.label}” was recorded on ${event.eventDays} scored days. Those days averaged ${event.eventAverage}% wellness, compared with ${event.otherAverage}% on other scored days. This is an observed association and may have other explanations.`,
+      replacement: `“${event.label}” was recorded on ${event.eventDays} scored days. Those days averaged ${event.eventAverage} wellness points, compared with ${event.otherAverage} points on other scored days. This is an observed association and may have other explanations.`,
     })
   })
   if (report.eventComparisons.length) {
@@ -181,7 +181,7 @@ export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelop
     facts.push({
       id: 'event_summary',
       meaning: 'Concise provider-facing summary of the strongest recorded event association without implying causation.',
-      replacement: `“${event.label}” appeared on ${event.eventDays} scored days averaging ${event.eventAverage}% wellness versus ${event.otherAverage}% on other scored days, a ${Math.abs(event.difference)}-point ${event.difference < 0 ? 'decrease' : 'increase'}. This suggests an association worth discussing, not a known cause.`,
+      replacement: `“${event.label}” appeared on ${event.eventDays} scored days averaging ${event.eventAverage} wellness points versus ${event.otherAverage} points on other scored days, a ${Math.abs(event.difference)}-point ${event.difference < 0 ? 'decrease' : 'increase'}. This suggests an association worth discussing, not a known cause.`,
     })
   }
   report.recentDifficult.slice(0, 2).forEach((signal, index) => {

@@ -88,9 +88,9 @@ describe('provider report', () => {
     })
 
     expect(report.text).toContain('“Pass - Day” was recorded on 3 scored days')
-    expect(report.text).toContain('averaged 0% wellness')
+    expect(report.text).toContain('averaged 0 wellness points')
     expect(report.text).toContain('and a baseline of')
-    expect(report.text).toContain('coincided with a wellness score 100 percentage points lower')
+    expect(report.text).toContain('coincided with a wellness score 100 points lower')
     expect(report.text).not.toContain('continued clinical care')
   })
 })

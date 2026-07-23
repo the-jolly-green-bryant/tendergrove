@@ -24,7 +24,7 @@ const unsafeClinicalLanguage = /\b(diagnos(?:e|is|ed)|psychosis|schizophren|hosp
 const parseEnvelope = (value: string): NarrativeEnvelope => {
   if (value.length > 16_000) throw new Error('Facts payload is too large')
   const parsed = JSON.parse(value) as Partial<NarrativeEnvelope>
-  if (parsed.schemaVersion !== 8 || !Array.isArray(parsed.facts) || parsed.facts.length < 2 || parsed.facts.length > 16) {
+  if (parsed.schemaVersion !== 9 || !Array.isArray(parsed.facts) || parsed.facts.length < 2 || parsed.facts.length > 16) {
     throw new Error('Unsupported facts payload')
   }
   const facts = parsed.facts.map((fact) => {
@@ -40,7 +40,7 @@ const parseEnvelope = (value: string): NarrativeEnvelope => {
     return fact as NarrativeFact
   })
   if (new Set(facts.map((fact) => fact.id)).size !== facts.length) throw new Error('Duplicate narrative fact')
-  return { schemaVersion: 8, facts }
+  return { schemaVersion: 9, facts }
 }
 
 const lockedValuePattern = /\d+(?:\.\d+)?%?/g
