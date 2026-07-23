@@ -29,10 +29,18 @@ export const useCheckInMutations = (personId: string | undefined) => {
       if (!personId) {
         throw new Error('Cannot create a check-in without a person')
       }
-      const person = await client.models.Person.get({ id: personId }, { selectionSet: ['collaborators'] })
-      const collaborators = person.errors?.length
-        ? undefined
-        : person.data?.collaborators?.filter((item): item is string => Boolean(item))
+      // Older deployed schemas do not know about the collaboration field and
+      // throw while building the request (before a result exists). Keep basic
+      // check-ins working while that schema rollout is in progress.
+      let collaborators: string[] | undefined
+      try {
+        const person = await client.models.Person.get({ id: personId }, { selectionSet: ['collaborators'] })
+        collaborators = person.errors?.length
+          ? undefined
+          : person.data?.collaborators?.filter((item): item is string => Boolean(item))
+      } catch {
+        collaborators = undefined
+      }
 
       const result = await client.models.CheckIn.create({
         personId,
