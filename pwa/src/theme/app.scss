@@ -2710,8 +2710,6 @@ a:visited {
 .report-provider-intro li,
 .report-evidence-note { color: #64736b; line-height: 1.52; }
 .report-ai-disclosure { max-width: 760px; margin: 1.5rem auto 0; color: #77847d; font-size: .78rem; line-height: 1.5; text-align: center; }
-.report-person-filter { display: flex; justify-content: center; }
-.report-person-filter ion-select { min-width: min(22rem, calc(100vw - 2rem)); --padding-start: 1rem; --padding-end: 1rem; border: 1px solid rgba(67, 98, 82, .24); border-radius: 999px; background: rgba(255, 255, 255, .82); color: #294f43; font-weight: 750; }
 .report-emphasis { color: #2f4f43; font-weight: 850; }
 .report-emphasis--positive { color: #276848; }
 .report-emphasis--negative { color: #9b3e38; }

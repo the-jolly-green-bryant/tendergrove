@@ -1,6 +1,7 @@
-import { IonButton, IonItem, IonSelect, IonSelectOption } from '@ionic/react'
+import { IonButton, IonItem } from '@ionic/react'
 import { useEffect, useMemo, useState } from 'react'
 import { IllustratedHeaderTitle, Page } from '../../components/Page'
+import { PersonFilterChips } from '../../components/PersonFilterChips'
 import { useAppAuth } from '../../auth/AuthContext'
 import { usePeople } from '../people/usePeople'
 import { usePatternsData } from '../patterns/usePatternsData'
@@ -218,7 +219,7 @@ const ReportsPage = () => {
   return <Page
     title="Appointment prep"
     headerContent={<IllustratedHeaderTitle title="Appointment prep" />}
-    subHeaderContent={<div className="page-header-person-filter report-person-filter"><IonSelect aria-label="Person" interface="popover" value={selected?.id} onIonChange={(event) => setPersonId(event.detail.value)}>{activePeople.map((person) => <IonSelectOption key={person.id} value={person.id}>{person.displayName}</IonSelectOption>)}</IonSelect></div>}
+    subHeaderContent={<div className="page-header-person-filter"><PersonFilterChips people={activePeople} selectedPeople={selected ? new Set([selected.id]) : new Set()} onSelectPerson={setPersonId} onClear={() => undefined} showEveryone={false} /></div>}
     backHref="/dashboard"
     className="reports-page"
     illustratedHeader

@@ -35,6 +35,7 @@ interface PersonFilterChipsProps {
   readonly selectedPeople: Set<string>
   readonly onSelectPerson: (personId: string) => void
   readonly onClear: () => void
+  readonly showEveryone?: boolean
   readonly className?: string
 }
 
@@ -83,6 +84,7 @@ export const PersonFilterChips = ({
   selectedPeople,
   onSelectPerson,
   onClear,
+  showEveryone = true,
   className,
 }: PersonFilterChipsProps) => {
   const showAll = selectedPeople.size === 0
@@ -90,15 +92,17 @@ export const PersonFilterChips = ({
 
   return (
     <div className={rootClassName}>
-      <button
-        type="button"
-        className={`person-filter-chip ${showAll ? 'person-filter-chip--active' : ''}`}
-        onClick={onClear}
-        aria-pressed={showAll}
-      >
-        <IonIcon icon={homeOutline} />
-        <span className="visually-hidden">Everyone</span>
-      </button>
+      {showEveryone && (
+        <button
+          type="button"
+          className={`person-filter-chip ${showAll ? 'person-filter-chip--active' : ''}`}
+          onClick={onClear}
+          aria-pressed={showAll}
+        >
+          <IonIcon icon={homeOutline} />
+          <span className="visually-hidden">Everyone</span>
+        </button>
+      )}
 
       {people.map((person) => {
         const isSelected = selectedPeople.has(person.id)
