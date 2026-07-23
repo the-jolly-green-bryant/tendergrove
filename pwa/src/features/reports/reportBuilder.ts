@@ -74,6 +74,8 @@ const formatDay = (key: string) => {
   return new Date(year, month - 1, day).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
+const percentage = (count: number, total: number) => total ? Math.round((count / total) * 100) : 0
+
 const dateKeysBetween = (start: Date, end: Date) => {
   const keys: string[] = []
   const cursor = new Date(start.getFullYear(), start.getMonth(), start.getDate(), 12)
@@ -131,8 +133,8 @@ export const buildProviderReport = ({ person, reason, questions, days = 90, pinn
   const difficult = frequencyLines({ ...person, checkIns }, 'undesired')
   const positive = frequencyLines({ ...person, checkIns }, 'desired')
   const recentCutoff = new Date(); recentCutoff.setDate(recentCutoff.getDate() - 29); recentCutoff.setHours(0, 0, 0, 0)
-  const notes = checkIns.map((item) => item.note?.trim()).filter((note): note is string => Boolean(note))
-  const medicationNotes = notes.filter((note) => /medicat|dose|therapy|hospital|doctor|intervention|appointment/i.test(note))
+  const notes = checkIns.flatMap((item) => item.note?.trim() ? [{ date: dateKey(item.occurredAt), text: item.note.trim() }] : [])
+  const medicationNotes = notes.filter((item) => /medicat|dose|therapy|hospital|doctor|intervention|appointment/i.test(item.text))
   const difficultIds = new Set((person.indicators ?? []).filter((indicator) => indicator.active !== false && indicator.polarity === 'undesired').map((indicator) => indicator.id))
   const difficultCheckIns = checkIns.filter((checkIn) => parseAnswers(checkIn.answersJson).checked.some((id) => difficultIds.has(id))).length
   const careDiscussion = difficultCheckIns >= 2 || medicationNotes.length > 0
@@ -165,10 +167,16 @@ export const buildProviderReport = ({ person, reason, questions, days = 90, pinn
   const positivePeriods = findPeriods(observations, 'positive')
   const concernDays = observations.filter((day) => day.level === 'concern').length
   const steadyDays = observations.filter((day) => day.level === 'steady').length
+  const recentObservations = observations.filter((day) => day.date >= recentKey)
+  const recentConcernDays = recentObservations.filter((day) => day.level === 'concern').length
+  const fullConcernRate = percentage(concernDays, observations.length)
+  const recentConcernRate = percentage(recentConcernDays, recentObservations.length)
+  const concernRateDelta = recentConcernRate - fullConcernRate
   const significantPeriods = [
-    ...(difficultPeriods[0]?.days >= 2 ? [`For ${difficultPeriods[0].days} days in a row—from ${formatDay(difficultPeriods[0].start)} through ${formatDay(difficultPeriods[0].end)}—the recorded observations remained in the concern range. This sustained period remains significant even when behavioral improvements were recorded in the days before or after it.`] : []),
-    ...(positivePeriods[0]?.days >= 2 ? [`The clearest positive stretch lasted ${positivePeriods[0].days} days, from ${formatDay(positivePeriods[0].start)} through ${formatDay(positivePeriods[0].end)}.`] : []),
-    `Across the ${observations.length} scored days, ${concernDays} were in the concern range, ${observations.length - concernDays - steadyDays} were in the watch range, and ${steadyDays} were steady.`,
+    ...difficultPeriods.filter((period) => period.days >= 2).map((period) => `• Concern-range stretch: ${period.days} consecutive scored days, from ${formatDay(period.start)} through ${formatDay(period.end)}. This sustained period remains significant even when behavioral improvements were recorded in the days before or after it.`),
+    ...positivePeriods.filter((period) => period.days >= 2).map((period) => `• Steady-range stretch: ${period.days} consecutive scored days, from ${formatDay(period.start)} through ${formatDay(period.end)}.`),
+    `• Full 90-day window: ${concernDays} of ${observations.length} scored days were in the concern range (${fullConcernRate}%); ${observations.length - concernDays - steadyDays} of ${observations.length} were in the watch range (${percentage(observations.length - concernDays - steadyDays, observations.length)}%); and ${steadyDays} of ${observations.length} were steady (${percentage(steadyDays, observations.length)}%).`,
+    ...(recentObservations.length ? [`• Most recent 30 days: ${recentConcernDays} of ${recentObservations.length} scored days were in the concern range (${recentConcernRate}%), ${concernRateDelta === 0 ? 'unchanged from' : `${Math.abs(concernRateDelta)} percentage points ${concernRateDelta > 0 ? 'higher than' : 'lower than'}`} the full 90-day concern rate.`] : []),
   ]
   const eventComparisons: EventComparison[] = lifeEvents.flatMap((event) => {
     const eventDates = new Set(checkIns.filter((checkIn) => parseAnswers(checkIn.answersJson).events.includes(event.id)).map((checkIn) => dateKey(checkIn.occurredAt)))
@@ -178,7 +186,7 @@ export const buildProviderReport = ({ person, reason, questions, days = 90, pinn
     return [{ label: event.label?.trim() || 'Event', eventDays: onEvent.length, eventAverage, otherAverage, concernDays: onEvent.filter((day) => day.level === 'concern').length, difference: eventAverage - otherAverage }]
   }).sort((a, b) => a.difference - b.difference || b.eventDays - a.eventDays)
   const eventNarrative = eventComparisons.length
-    ? eventComparisons.slice(0, 3).map((event) => `“${event.label}” was recorded on ${event.eventDays} scored days. Those days averaged ${event.eventAverage}% wellness, compared with ${event.otherAverage}% on other scored days; ${event.concernDays} of the ${event.eventDays} event days were in the concern range. ${event.difference < 0 ? `In this sample, the event coincided with a wellness score ${Math.abs(event.difference)} percentage points lower than other scored days.` : `In this sample, the event did not coincide with a lower average wellness score.`} This is an observed association and may have other explanations.`)
+    ? eventComparisons.slice(0, 3).map((event) => `• “${event.label}” was recorded on ${event.eventDays} scored days. Those days averaged ${event.eventAverage}% wellness, compared with ${event.otherAverage}% on other scored days. ${event.concernDays} of ${event.eventDays} event days were in the concern range (${percentage(event.concernDays, event.eventDays)}%). ${event.difference < 0 ? `In this sample, the event coincided with a wellness score ${Math.abs(event.difference)} percentage points lower than other scored days.` : `In this sample, the event did not coincide with a lower average wellness score.`} This is an observed association and may have other explanations.`)
     : 'No event has enough recorded days yet for a meaningful comparison with other observations.'
   const lines = [
     `GROVE CARE APPOINTMENT-PREP SUMMARY — ${person.displayName}`,
@@ -188,7 +196,7 @@ export const buildProviderReport = ({ person, reason, questions, days = 90, pinn
     '',
     'DATE RANGE AND COMPLETENESS', `${firstDate} to ${lastDate} · ${checkIns.length} check-ins · ${completeness}% of the selected ${days}-day window had recorded data. Missing or incomplete data is excluded from wellness scoring and trend comparisons rather than interpreted as an observation.`,
     '',
-    'PAST 90 DAYS COMPARED WITH THE PAST 30 DAYS', delta === null ? 'There are not enough scored observations to compare the full 90-day window with the most recent 30 days.' : `The full 90-day window averaged ${baseline}% wellness. The most recent 30 days averaged ${recent}%, representing a ${Math.abs(delta)}-percentage-point ${delta >= 0 ? 'increase' : 'decrease'}. Grove Care calculates wellness scores using its proprietary weighted scoring algorithm and only the signals recorded for this person.`,
+    'PAST 90 DAYS COMPARED WITH THE PAST 30 DAYS', delta === null ? 'There are not enough scored observations to compare the full 90-day window with the most recent 30 days.' : `The full 90-day window averaged ${baseline}% wellness. The most recent 30 days averaged ${recent}%, ${delta === 0 ? 'representing no change' : `a ${Math.abs(delta)}-percentage-point ${delta > 0 ? 'increase' : 'decrease'}`}. Grove Care calculates wellness scores using its proprietary weighted scoring algorithm and only the signals recorded for this person.`,
     '',
     'IMPORTANT STRETCHES OF TIME', ...(observations.length ? significantPeriods : ['There are not enough scored observations yet to identify a sustained stretch.']),
     '',
@@ -197,14 +205,14 @@ export const buildProviderReport = ({ person, reason, questions, days = 90, pinn
     'OBSERVATION SUMMARY', checkIns.length === 0
       ? 'No observations were recorded in this range.'
       : careDiscussion
-        ? `Difficult observations were noted in ${difficultCheckIns} of ${checkIns.length} check-ins. Review the sustained periods, event associations, and individual observations with the intended professional or support person.`
-        : `Difficult observations were noted in ${difficultCheckIns} of ${checkIns.length} check-ins. Continue recording meaningful changes and bring new concerns to the treating professional.`,
+        ? `Difficult observations were noted in ${difficultCheckIns} of ${checkIns.length} check-ins (${percentage(difficultCheckIns, checkIns.length)}%).\n\nReview the sustained periods, event associations, and individual observations with the intended professional or support person.`
+        : `Difficult observations were noted in ${difficultCheckIns} of ${checkIns.length} check-ins (${percentage(difficultCheckIns, checkIns.length)}%).\n\nContinue recording meaningful changes and bring new concerns to the intended professional or support person.`,
     '',
-    'CONCERNS NOTICED MOST OFTEN', ...(difficult.length ? difficult.map((item) => `“${item.name}” was noted in ${item.count} of ${checkIns.length} check-ins.`) : ['No difficult signals were recorded in this period.']),
+    'CONCERNS NOTICED MOST OFTEN', ...(difficult.length ? difficult.map((item) => `• “${item.name}” was noted in ${item.count} of ${checkIns.length} check-ins (${percentage(item.count, checkIns.length)}%).`) : ['No difficult signals were recorded in this period.']),
     '',
-    'POSITIVE SIGNS NOTICED MOST OFTEN', ...(positive.length ? positive.map((item) => `“${item.name}” was noted in ${item.count} of ${checkIns.length} check-ins.`) : ['No positive signals were recorded in this period.']),
+    'POSITIVE SIGNS NOTICED MOST OFTEN', ...(positive.length ? positive.map((item) => `• “${item.name}” was noted in ${item.count} of ${checkIns.length} check-ins (${percentage(item.count, checkIns.length)}%).`) : ['No positive signals were recorded in this period.']),
     '',
-    'NOTABLE EVENTS, MEDICATION, OR INTERVENTION NOTES', ...(medicationNotes.length ? medicationNotes.slice(0, 8).map((note) => `• ${note}`) : ['None specifically identified. Review the full notes for context.']),
+    'DATED NOTES ABOUT EVENTS, MEDICATION, OR INTERVENTIONS', ...(medicationNotes.length ? medicationNotes.slice(0, 8).map((note) => `• ${formatDay(note.date)} — ${note.text}`) : ['None specifically identified. Review the full notes for context.']),
     '',
     'ITEMS ADDED FOR THIS APPOINTMENT', ...(pinnedObservations.length ? pinnedObservations.map((item) => `• ${item.replaceAll('\n', ' — ')}`) : ['None added.']),
     '',

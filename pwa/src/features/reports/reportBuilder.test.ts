@@ -64,7 +64,7 @@ describe('provider report', () => {
     })
     const report = buildProviderReport({ person: { ...person, indicators, checkIns } as unknown as RawPerson, reason: '', questions: '' })
 
-    expect(report.text).toContain('For 5 days in a row')
+    expect(report.text).toContain('Concern-range stretch: 5 consecutive scored days')
     expect(report.text).toContain('behavioral improvements were recorded in the days before or after')
     expect(report.difficultPeriods[0]?.days).toBe(5)
     expect(report.observations).toHaveLength(30)
