@@ -1,6 +1,6 @@
 import type { buildProviderReport } from './reportBuilder'
 
-export const REPORT_NARRATIVE_SCHEMA_VERSION = 1
+export const REPORT_NARRATIVE_SCHEMA_VERSION = 2
 
 export interface NarrativeFact {
   id: string
@@ -116,24 +116,38 @@ export const validateNarrativeTemplate = (template: string, envelope: NarrativeE
   if (
     trimmed.length < 80
     || trimmed.length > 1_800
-    || /[0-9%]/.test(trimmed)
+    || /[0-9%]/.test(trimmed.replace(/\{\{[a-z][a-z0-9_]*\}\}/g, ''))
     || new Set(placeholders).size < 2
     || placeholders.some((placeholder) => !allowed.has(placeholder))
     || trimmed.replace(/\{\{[a-z][a-z0-9_]*\}\}/g, '').includes('{{')
     || trimmed.replace(/\{\{[a-z][a-z0-9_]*\}\}/g, '').includes('}}')
   ) throw new Error('Invalid narrative template')
+  const takeaways = trimmed.split('\n').map((line) => line.trim()).filter(Boolean)
+  if (takeaways.length !== 3 || takeaways.some((line) => !line.startsWith('- ') || !(line.match(/\{\{[a-z][a-z0-9_]*\}\}/g)?.length))) {
+    throw new Error('Narrative must contain exactly three evidence-backed takeaways')
+  }
   return trimmed
 }
 
 export const renderNarrative = (template: string, envelope: NarrativeEnvelope) => {
   const validated = validateNarrativeTemplate(template, envelope)
   const facts = new Map(envelope.facts.map((fact) => [`{{${fact.id}}}`, fact.replacement]))
-  return validated.replace(/\{\{[a-z][a-z0-9_]*\}\}/g, (placeholder) => facts.get(placeholder) ?? '')
+  return validated
+    .replace(/\{\{[a-z][a-z0-9_]*\}\}/g, (placeholder) => facts.get(placeholder) ?? '')
+    .replace(/^- /gm, '• ')
 }
 
 export const fallbackNarrative = (envelope: NarrativeEnvelope) => {
-  const prioritized = ['wellness_comparison', 'concern_comparison', 'concern_stretch_1', 'event_association_1', 'frequent_concern_1', 'frequent_positive']
-  const facts = prioritized.flatMap((id) => envelope.facts.find((fact) => fact.id === id) ?? []).slice(0, 4)
-  if (!facts.length) return 'There is not enough scored information yet for a plain-language overview. The detailed report below remains available and will become more useful as observations are recorded.'
-  return `${facts.map((fact) => fact.replacement).join(' ')} These observations can help focus a conversation about what changed, what context may matter, and what would be useful to keep recording. Associations may have other explanations.`
+  const prioritized = ['wellness_comparison', 'concern_comparison', 'concern_stretch_1', 'event_association_1', 'frequent_concern_1', 'frequent_positive', 'coverage']
+  const facts = prioritized.flatMap((id) => envelope.facts.find((fact) => fact.id === id) ?? []).slice(0, 3)
+  const takeaways = facts.map((fact) => fact.replacement)
+  if (takeaways.length < 3) takeaways.push('The detailed report shows the observations currently available without treating missing days as wellness information.')
+  if (takeaways.length < 3) takeaways.push('Continue recording meaningful changes so future comparisons have more context.')
+  return takeaways.slice(0, 3).map((takeaway) => `• ${takeaway}`).join('\n')
 }
+
+export const narrativeTakeaways = (text: string) => text
+  .split('\n')
+  .map((line) => line.trim().replace(/^[•-]\s+/, ''))
+  .filter(Boolean)
+  .slice(0, 3)

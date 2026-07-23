@@ -24,7 +24,7 @@ const unsafeClinicalLanguage = /\b(diagnos(?:e|is|ed)|psychosis|schizophren|hosp
 const parseEnvelope = (value: string): NarrativeEnvelope => {
   if (value.length > 16_000) throw new Error('Facts payload is too large')
   const parsed = JSON.parse(value) as Partial<NarrativeEnvelope>
-  if (parsed.schemaVersion !== 1 || !Array.isArray(parsed.facts) || parsed.facts.length < 2 || parsed.facts.length > 16) {
+  if (parsed.schemaVersion !== 2 || !Array.isArray(parsed.facts) || parsed.facts.length < 2 || parsed.facts.length > 16) {
     throw new Error('Unsupported facts payload')
   }
   const facts = parsed.facts.map((fact) => {
@@ -40,13 +40,13 @@ const parseEnvelope = (value: string): NarrativeEnvelope => {
     return fact as NarrativeFact
   })
   if (new Set(facts.map((fact) => fact.id)).size !== facts.length) throw new Error('Duplicate narrative fact')
-  return { schemaVersion: 1, facts }
+  return { schemaVersion: 2, facts }
 }
 
 export const validateNarrativeTemplate = (text: string, facts: NarrativeFact[]) => {
   const trimmed = text.trim()
   if (trimmed.length < 80 || trimmed.length > 1_800) throw new Error('Narrative length is invalid')
-  if (/[0-9%]/.test(trimmed)) throw new Error('Narrative contains model-authored numbers')
+  if (/[0-9%]/.test(trimmed.replace(placeholderPattern, ''))) throw new Error('Narrative contains model-authored numbers')
   if (unsafeClinicalLanguage.test(trimmed)) throw new Error('Narrative contains clinical conclusions')
   const allowed = new Set(facts.map((fact) => `{{${fact.id}}}`))
   const placeholders = trimmed.match(placeholderPattern) ?? []
@@ -55,6 +55,10 @@ export const validateNarrativeTemplate = (text: string, facts: NarrativeFact[]) 
   }
   if (trimmed.replace(placeholderPattern, '').includes('{{') || trimmed.replace(placeholderPattern, '').includes('}}')) {
     throw new Error('Narrative contains malformed placeholders')
+  }
+  const takeaways = trimmed.split('\n').map((line) => line.trim()).filter(Boolean)
+  if (takeaways.length !== 3 || takeaways.some((line) => !line.startsWith('- ') || !(line.match(placeholderPattern)?.length))) {
+    throw new Error('Narrative must contain exactly three evidence-backed takeaways')
   }
   return trimmed
 }
@@ -74,8 +78,9 @@ export const handler: Schema['generateReportNarrative']['functionHandler'] = asy
         'The deterministic Grove report is the only source of facts.',
         'Use the supplied placeholders verbatim wherever evidence belongs.',
         'Never write a number, percent sign, date, diagnosis, cause, treatment recommendation, urgency judgment, or level-of-care conclusion.',
-        'Do not mention AI. Do not add headings. Return only two or three short paragraphs.',
-        'Explain what deserves attention, what context may matter, and what could be useful to discuss.',
+        'Do not mention AI. Do not add a heading.',
+        'Return exactly three single-line takeaways. Begin every line with "- " and include at least one supplied placeholder on every line.',
+        'Together, the three takeaways should explain what deserves attention, what context may matter, and what could be useful to discuss.',
         'Associations are observations and may have other explanations.',
       ].join(' '),
     }],

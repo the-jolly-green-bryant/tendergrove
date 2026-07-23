@@ -6,6 +6,7 @@ import { usePeople } from '../people/usePeople'
 import { usePatternsData } from '../patterns/usePatternsData'
 import { buildProviderReport } from './reportBuilder'
 import { readReportPins, removeReportPin } from './reportPins'
+import { narrativeTakeaways } from './reportNarrative'
 import { useReportNarrative } from './useReportNarrative'
 
 const imageDataUrl = async (url: string) => {
@@ -98,6 +99,7 @@ const ReportsPage = () => {
   )
   const report = useMemo(() => selected ? buildProviderReport({ person: selected, reason, questions, pinnedObservations: selectedPins.map((pin) => pin.text), lifeEvents: patterns.data?.lifeEvents }) : null, [patterns.data?.lifeEvents, questions, reason, selected, selectedPins])
   const narrative = useReportNarrative(selected?.id, report)
+  const topTakeaways = useMemo(() => narrativeTakeaways(narrative.text), [narrative.text])
   const reportText = report ? [
     report.text.split('\n\n').slice(0, 1).join('\n\n'),
     `PLAIN-LANGUAGE OVERVIEW\n${narrative.text}`,
@@ -214,11 +216,11 @@ const ReportsPage = () => {
       <h2>Evidence at a glance</h2>
       <ReportActions />
       <ReportVisuals observations={report.observations} calendarDays={report.calendarDays} />
-      <h2>Plain-language overview</h2>
+      <h2>Everything you need to know</h2>
       <section className="report-narrative" aria-live="polite">
         <p className="report-narrative__eyebrow">Grove Narrative Engine</p>
-        <h2>What the recorded information may be showing</h2>
-        <p>{narrative.text}</p>
+        <h2>Top three takeaways</h2>
+        <ol>{topTakeaways.map((takeaway, index) => <li key={`${index}-${takeaway}`}>{takeaway}</li>)}</ol>
         <small>{narrative.pending ? 'Preparing a clearer explanation…' : 'Numbers and dates come directly from Grove’s calculated report. The explanation does not diagnose or determine care.'}</small>
       </section>
       <h2>Detailed appointment report</h2>

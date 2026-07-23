@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildNarrativeEnvelope,
   fallbackNarrative,
+  narrativeTakeaways,
   renderNarrative,
   validateNarrativeTemplate,
 } from './reportNarrative'
@@ -34,7 +35,11 @@ describe('report narrative facts', () => {
 
   it('substitutes approved placeholders without changing their values', () => {
     const envelope = buildNarrativeEnvelope(report)
-    const rendered = renderNarrative('The recent comparison matters: {{wellness_comparison}} Taken with the recorded distribution, {{concern_comparison}} This context may be useful when discussing what changed.', envelope)
+    const rendered = renderNarrative([
+      '- The recent comparison deserves attention: {{wellness_comparison}}',
+      '- The recorded distribution adds useful context: {{concern_comparison}}',
+      '- A sustained period should remain visible in the discussion: {{concern_stretch_1}}',
+    ].join('\n'), envelope)
     expect(rendered).toContain('35%')
     expect(rendered).toContain('40%')
     expect(rendered).not.toContain('{{')
@@ -43,17 +48,17 @@ describe('report narrative facts', () => {
   it('provides a deterministic explanation when the model is unavailable', () => {
     const fallback = fallbackNarrative(buildNarrativeEnvelope(report))
     expect(fallback).toContain('35%')
-    expect(fallback).toContain('Associations may have other explanations')
+    expect(narrativeTakeaways(fallback)).toHaveLength(3)
   })
 
   it('rejects model-authored numbers and unknown placeholders', () => {
     const envelope = buildNarrativeEnvelope(report)
     expect(() => validateNarrativeTemplate(
-      'The score was 35 percent. {{wellness_comparison}} This context may be useful alongside {{concern_comparison}} when discussing the recorded changes.',
+      '- The score was 35 percent. {{wellness_comparison}}\n- Context: {{concern_comparison}}\n- Sustained period: {{concern_stretch_1}}',
       envelope,
     )).toThrow()
     expect(() => validateNarrativeTemplate(
-      'The recent comparison deserves attention. {{wellness_comparison}} The broader context can help frame a discussion, but {{invented_fact}} may have other explanations.',
+      '- The recent comparison deserves attention. {{wellness_comparison}}\n- The broader context may help: {{invented_fact}}\n- The sustained period matters: {{concern_stretch_1}}',
       envelope,
     )).toThrow()
   })
