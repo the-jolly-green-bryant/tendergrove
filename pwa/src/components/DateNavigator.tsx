@@ -422,7 +422,8 @@ const useDayNavigation = (
   const goToToday = useCallback(() => {
     onChange(today)
     showTodayMonth()
-  }, [onChange, showTodayMonth, today])
+    closeCalendar()
+  }, [closeCalendar, onChange, showTodayMonth, today])
 
   const handleDayClick = useCallback(
     (day: Date) => {
