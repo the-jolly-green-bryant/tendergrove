@@ -29,6 +29,24 @@ describe('shared observation status', () => {
     expect(statusFromScore(score).label).toBe('Concern')
   })
 
+  it('normalizes unbalanced positive and difficult indicator lists', () => {
+    const unbalanced = [
+      { id: 'positive', name: 'Connected', polarity: 'desired', active: true },
+      ...Array.from({ length: 8 }, (_, index) => ({
+        id: `difficult-${index}`,
+        name: `Difficult ${index}`,
+        polarity: 'undesired' as const,
+        active: true,
+      })),
+    ] as RawIndicator[]
+    expect(
+      computeScore(unbalanced, {
+        occurredAt: new Date().toISOString(),
+        answersJson: JSON.stringify({ checked: ['difficult-0'] }),
+      }),
+    ).toBe(44)
+  })
+
   it('uses observation language rather than clinical risk classifications', () => {
     expect(statusFromScore(90).label).toBe('Steady')
     expect(statusFromScore(70).label).toBe('Watch')

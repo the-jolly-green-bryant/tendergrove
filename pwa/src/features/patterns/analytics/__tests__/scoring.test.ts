@@ -71,6 +71,37 @@ describe('scorePersonDay — indicator scoring (higher = better)', () => {
     expect(scorePersonDay(p, DAY).score).toBe(50)
   })
 
+  it('does not let a long difficult-signal list overpower a short positive list', () => {
+    const positive = indicator('desired', 'connected')
+    const difficult = Array.from({ length: 8 }, (_, index) =>
+      indicator('undesired', `challenge-${index}`),
+    )
+    const p = person('p1', {
+      indicators: [positive, ...difficult],
+      checkIns: [checkIn(AT, [difficult[0].id])],
+    })
+
+    expect(scorePersonDay(p, DAY).score).toBe(44)
+  })
+
+  it('does not let a long positive-signal list dilute a checked difficult signal', () => {
+    const positives = Array.from({ length: 8 }, (_, index) =>
+      indicator('desired', `positive-${index}`),
+    )
+    const difficult = indicator('undesired', 'severe challenge')
+    const p = person('p1', {
+      indicators: [...positives, difficult],
+      checkIns: [
+        checkIn(AT, [
+          ...positives.slice(0, 4).map(({ id }) => id),
+          difficult.id,
+        ]),
+      ],
+    })
+
+    expect(scorePersonDay(p, DAY).score).toBe(25)
+  })
+
   it('takes the union of checked indicators across multiple check-ins in a day', () => {
     const a = indicator('undesired', 'a')
     const b = indicator('undesired', 'b')

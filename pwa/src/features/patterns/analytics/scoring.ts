@@ -10,8 +10,8 @@
  * wellness score in `lib/status.ts`):
  *   - desired indicators that occurred push the score UP
  *   - undesired indicators that occurred pull the score DOWN
- *   - unchecked undesired indicators are neutral (they may be historical or
- *     only relevant as-needed)
+ *   - positive fulfillment and challenge absence are normalized separately,
+ *     so an unbalanced indicator list does not manufacture a high or low score
  *   - incidents pull the score DOWN (weighted a little heavier — they matter)
  *   - a day with no check-in and no incident has NO score (null), never 0.
  *     Missing data is absence, not a bad day.
@@ -23,6 +23,7 @@
  */
 
 import { clamp, isoToDateKey, safeRound } from './dateUtils'
+import { balancedIndicatorWellness } from '../../../lib/indicatorScoring'
 import type {
   AnalyticsIndicator,
   AnalyticsPerson,
@@ -84,22 +85,8 @@ const indicatorDistress = (
   const active = scoreableIndicators(indicators, date, checkedIds)
   if (active.length === 0) return null
 
-  const desired = active.filter((indicator) => indicator.polarity === 'desired')
-  const checkedUndesired = active.filter(
-    (indicator) =>
-      indicator.polarity === 'undesired' && checkedIds.has(indicator.id),
-  )
-
-  // Desired indicators are daily expectations: checked is good, unchecked is
-  // bad. Undesired indicators only contribute when explicitly checked; their
-  // absence is neutral and must never inflate a score.
-  const opportunities = desired.length + checkedUndesired.length
-  if (opportunities === 0) return null
-
-  const checkedDesired = desired.filter((indicator) =>
-    checkedIds.has(indicator.id),
-  ).length
-  const wellness = (checkedDesired / opportunities) * 100
+  const wellness = balancedIndicatorWellness(active, checkedIds)
+  if (wellness === null) return null
   return 100 - wellness
 }
 

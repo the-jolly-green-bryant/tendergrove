@@ -91,6 +91,8 @@ interface Episode {
 }
 
 const clamp = (value: number) => Math.max(0, Math.min(100, Math.round(value)))
+const formatPoints = (value: number) =>
+  `${value} ${value === 1 ? 'point' : 'points'}`
 const average = (values: number[]) =>
   values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0
 const dateValue = (date: string) => new Date(`${date}T12:00:00`).getTime()
@@ -321,7 +323,8 @@ export const determinePatternStrainBand = (
     return 'intensive'
   if (
     (persistence >= 60 && (burden >= 55 || recoveryDifficulty >= 55)) ||
-    (burden >= 70 && recoveryDifficulty >= 55)
+    (burden >= 70 && recoveryDifficulty >= 55) ||
+    (burden >= 70 && persistence >= 45)
   )
     return 'sustained'
   const enduringDimensions = [burden, persistence, recoveryDifficulty].filter(
@@ -416,7 +419,7 @@ export const buildPatternDynamicsObservations = (values: {
       title: dimensionDetails[dimension].title,
       detail:
         dimension === 'instability' && values.largestDecline >= 15
-          ? `${dimensionDetails[dimension].high} The largest recent decline was ${values.largestDecline} points.`
+          ? `${dimensionDetails[dimension].high} The largest recent decline was ${formatPoints(values.largestDecline)}.`
           : value >= 45
             ? dimensionDetails[dimension].high
             : dimensionDetails[dimension].low,
@@ -443,7 +446,7 @@ const summaryForBand = (band: PatternStrainBand, sufficient: boolean) => {
     elevated:
       'elevated pattern strain. Challenges are appearing more often, and difficult periods are less predictable, more persistent, or slower to resolve.',
     sustained:
-      'sustained pattern strain. Challenges remain frequent or concentrated, and returns toward the established range are less frequent or less complete.',
+      'Challenges remain frequent or concentrated, and returns toward the established range are less frequent or less complete.',
     intensive:
       'a concentrated and persistent pattern of difficulty, with limited recovery between episodes. This may indicate a need for more intensive or coordinated support and professional review.',
   }

@@ -1,5 +1,6 @@
 import { parseAnswers } from '../features/people/checkin/checkInUtils'
 import { RawIndicator } from '../features/patterns/analytics'
+import { balancedIndicatorWellness } from './indicatorScoring'
 import {
   calculatePatternDynamics,
   DEFAULT_ANALYSIS_DAYS,
@@ -60,15 +61,7 @@ export const computeScore = (
 
   const checked = new Set(parseAnswers(checkIn.answersJson).checked)
 
-  const desired = active.filter((indicator) => indicator.polarity === 'desired')
-  const checkedDifficult = active.filter(
-    (indicator) => indicator.polarity === 'undesired' && checked.has(indicator.id),
-  )
-  const opportunities = desired.length + checkedDifficult.length
-  if (opportunities === 0) return null
-
-  const checkedDesired = desired.filter((indicator) => checked.has(indicator.id)).length
-  return Math.round((checkedDesired / opportunities) * 100)
+  return balancedIndicatorWellness(active, checked)
 }
 
 /* ------------------------------------------------------------------ */

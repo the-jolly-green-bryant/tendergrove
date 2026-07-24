@@ -187,6 +187,19 @@ describe('pattern strain classification and narrative', () => {
     ).toBe('sustained')
   })
 
+  it('recognizes sustained high burden with persistent difficulty on normalized scores', () => {
+    expect(
+      determinePatternStrainBand({
+        ...dimensions,
+        burden: 78,
+        instability: 32,
+        persistence: 48,
+        recoveryDifficulty: 38,
+        intensity: 51,
+      }),
+    ).toBe('sustained')
+  })
+
   it('keeps burden plus volatility emerging without persistence or recovery difficulty', () => {
     expect(
       determinePatternStrainBand({
