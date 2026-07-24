@@ -1,5 +1,5 @@
 // src/App.tsx
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { IonApp } from '@ionic/react'
 import { Authenticator } from '@aws-amplify/ui-react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -10,6 +10,7 @@ import { signInWithGoogleNative } from '../auth/nativeGoogleSignIn'
 import { SelectedDateProvider } from '../context/SelectedDateContext'
 import AppShell from './AppShell'
 import { clearOfflineCache } from '../lib/resilientCache'
+import { fetchUserAttributes, type AuthUser } from 'aws-amplify/auth'
 
 const isNative = Capacitor.isNativePlatform()
 
@@ -187,6 +188,62 @@ const queryClient = new QueryClient({
 
 queryClient.getMutationCache().config.onError = handleGlobalError
 
+const AuthenticatedApp = ({
+  user,
+  signOut,
+}: {
+  readonly user: AuthUser
+  readonly signOut?: () => Promise<void>
+}) => {
+  const [email, setEmail] = useState<string>()
+  const [emailResolved, setEmailResolved] = useState(false)
+
+  useEffect(() => {
+    let active = true
+    setEmailResolved(false)
+    void fetchUserAttributes()
+      .then((attributes) => {
+        if (active) {
+          setEmail(attributes.email)
+          setEmailResolved(true)
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setEmail(undefined)
+          setEmailResolved(true)
+        }
+      })
+    return () => {
+      active = false
+    }
+  }, [user.userId])
+
+  const signOutToWelcome = async () => {
+    await signOut?.()
+    queryClient.clear()
+    clearOfflineCache()
+    localStorage.removeItem('tendergrove:welcome-seen')
+  }
+
+  return (
+    <AuthProvider
+      user={user}
+      email={email}
+      emailResolved={emailResolved}
+      signOut={() => void signOutToWelcome()}
+    >
+      <QueryClientProvider client={queryClient}>
+        <SelectedDateProvider>
+          <IonApp>
+            <AppShell />
+          </IonApp>
+        </SelectedDateProvider>
+      </QueryClientProvider>
+    </AuthProvider>
+  )
+}
+
 const App = () => {
   const [authIntent, setAuthIntent] = useState<AuthIntent | null>(() =>
     localStorage.getItem('tendergrove:welcome-seen') ? 'signIn' : null,
@@ -202,27 +259,11 @@ const App = () => {
     components={authComponents}
   >
     {({ signOut, user }) => {
-      const signOutToWelcome = async () => {
+      if (!user) return <></>
+      return <AuthenticatedApp user={user} signOut={async () => {
         await signOut?.()
-        queryClient.clear()
-        clearOfflineCache()
-        localStorage.removeItem('tendergrove:welcome-seen')
         setAuthIntent(null)
-      }
-      return (
-        <AuthProvider
-          user={user}
-          signOut={() => void signOutToWelcome()}
-        >
-          <QueryClientProvider client={queryClient}>
-            <SelectedDateProvider>
-              <IonApp>
-                <AppShell />
-              </IonApp>
-            </SelectedDateProvider>
-          </QueryClientProvider>
-        </AuthProvider>
-      )
+      }} />
     }}
   </Authenticator>
 }

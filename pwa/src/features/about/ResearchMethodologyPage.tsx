@@ -5,7 +5,9 @@ import {
 } from '../patterns/analytics/patternDynamics'
 import { ResearchConceptCard } from './components/ResearchConceptCard'
 import { ResearchReferences } from './components/ResearchReferences'
-import { useHistory } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
+import { isGroveScoreOwner, useAppAuth } from '../../auth/AuthContext'
+import { GROVE_SCORE_METHODOLOGY_PATH } from './GroveScoreMethodologyPage'
 
 const strainDescriptions: Record<PatternStrainBand, string> = {
   low: 'Recent observations remain reasonably close to the person’s established pattern, with generally brief difficult periods and consistent recovery.',
@@ -19,7 +21,11 @@ const strainDescriptions: Record<PatternStrainBand, string> = {
     'The recorded period contains concentrated and persistent difficulty with limited recovery between episodes.',
 }
 
-export const ResearchMethodologyContent = () => (
+export const ResearchMethodologyContent = ({
+  showGroveScoreLink = false,
+}: {
+  readonly showGroveScoreLink?: boolean
+}) => (
   <article className="research-methodology">
     <header className="research-methodology__intro">
       <p className="research-methodology__eyebrow">Research-informed methodology</p>
@@ -205,10 +211,22 @@ export const ResearchMethodologyContent = () => (
       </p>
       <ResearchReferences />
     </section>
+    {showGroveScoreLink && (
+      <section className="research-methodology__owner-link">
+        <p className="research-methodology__eyebrow">Owner reference</p>
+        <h2>Understand the proprietary score</h2>
+        <p>
+          See a plain-language breakdown of the Grove Score, including its live
+          weights, adjustment rules, and the evidence that changes its direction.
+        </p>
+        <Link to={GROVE_SCORE_METHODOLOGY_PATH}>Grove Score &amp; You</Link>
+      </section>
+    )}
   </article>
 )
 
 const ResearchMethodologyPage = () => {
+  const { user, email } = useAppAuth()
   const history = useHistory()
   const goBack = () => {
     if (history.length > 1) {
@@ -227,7 +245,9 @@ const ResearchMethodologyPage = () => {
       illustratedHeader
       className="research-methodology-page"
     >
-      <ResearchMethodologyContent />
+      <ResearchMethodologyContent
+        showGroveScoreLink={isGroveScoreOwner(user, email)}
+      />
     </Page>
   )
 }

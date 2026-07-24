@@ -1,7 +1,9 @@
 // src/AppShell.tsx
 import { IonModal, IonRouterOutlet } from '@ionic/react'
 import { IonReactRouter } from '@ionic/react-router'
-import { ComponentType } from 'react'
+import { Capacitor } from '@capacitor/core'
+import { LocalNotifications } from '@capacitor/local-notifications'
+import { ComponentType, useEffect } from 'react'
 import { matchPath, Redirect, Route, useHistory, useLocation } from 'react-router-dom'
 
 import HouseholdPage from '../features/household/HouseholdPage'
@@ -38,6 +40,16 @@ import TermsPage from '../features/legal/TermsPage'
 import OnboardingPage from '../features/onboarding/OnboardingPage'
 import ReportsPage from '../features/reports/ReportsPage'
 import ResearchMethodologyPage from '../features/about/ResearchMethodologyPage'
+import GroveScoreMethodologyPage, {
+  GROVE_SCORE_METHODOLOGY_PATH,
+} from '../features/about/GroveScoreMethodologyPage'
+import {
+  CHECK_IN_REMINDER_VERSION,
+  readReminder,
+  reminderRouteFromExtra,
+  scheduleReminder,
+} from '../features/settings/reminderNotifications'
+import { useAppAuth } from '../auth/AuthContext'
 
 export const appRoutes = [
   { path: '/dashboard', component: HouseholdPage },
@@ -87,6 +99,7 @@ export const appRoutes = [
   { path: '/privacy', component: PrivacyPage },
   { path: '/terms', component: TermsPage },
   { path: '/about/research', component: ResearchMethodologyPage },
+  { path: GROVE_SCORE_METHODOLOGY_PATH, component: GroveScoreMethodologyPage },
 ]
 
 const modalRoutes = [
@@ -303,8 +316,45 @@ const renderDrawerRoutes = () =>
     ))
 
 const AppShellRoutes = () => {
+  const { user } = useAppAuth()
+  const history = useHistory()
   const location = useLocation()
   const backgroundLocation = getBackgroundLocation(location)
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return
+    let disposed = false
+    let listener: Awaited<
+      ReturnType<typeof LocalNotifications.addListener>
+    > | null = null
+    void LocalNotifications.addListener(
+      'localNotificationActionPerformed',
+      ({ notification }) => {
+        const route = reminderRouteFromExtra(
+          notification.extra as Record<string, unknown> | undefined,
+        )
+        if (route) history.push(route)
+      },
+    ).then((handle) => {
+      if (disposed) void handle.remove()
+      else listener = handle
+    })
+    return () => {
+      disposed = true
+      if (listener) void listener.remove()
+    }
+  }, [history])
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return
+    const reminder = readReminder(user?.userId)
+    if (
+      reminder.enabled &&
+      reminder.scheduleVersion !== CHECK_IN_REMINDER_VERSION
+    ) {
+      void scheduleReminder(user?.userId, reminder)
+    }
+  }, [user?.userId])
 
   return (
     <>

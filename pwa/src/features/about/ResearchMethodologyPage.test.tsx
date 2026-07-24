@@ -1,10 +1,19 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
+import { MemoryRouter } from 'react-router-dom'
 import { appRoutes } from '../../app/AppShell'
 import { calculatePatternDynamics } from '../patterns/analytics/patternDynamics'
 import { PatternStrainReportSection } from '../reports/components/PatternStrainReportSection'
 import { ResearchMethodologyContent } from './ResearchMethodologyPage'
+import {
+  GroveScoreMethodologyContent,
+  GROVE_SCORE_METHODOLOGY_PATH,
+} from './GroveScoreMethodologyPage'
 import { researchReferences, RESEARCH_METHODOLOGY_PATH } from './researchReferences'
+import {
+  GROVE_SCORE_RECOVERY_RATES,
+  GROVE_SCORE_WEIGHTS,
+} from '../../lib/groveScore'
 
 const markup = renderToStaticMarkup(<ResearchMethodologyContent />)
 
@@ -69,5 +78,29 @@ describe('Research & Methodology page', () => {
     )
     expect(reportMarkup).toContain(`href="${RESEARCH_METHODOLOGY_PATH}"`)
     expect(reportMarkup).toContain('Learn about the research and methodology')
+  })
+
+  it('shows the owner Grove Score link only when requested', () => {
+    const publicMarkup = renderToStaticMarkup(<ResearchMethodologyContent />)
+    const ownerMarkup = renderToStaticMarkup(
+      <MemoryRouter>
+        <ResearchMethodologyContent showGroveScoreLink />
+      </MemoryRouter>,
+    )
+
+    expect(publicMarkup).not.toContain(GROVE_SCORE_METHODOLOGY_PATH)
+    expect(ownerMarkup).toContain(`href="${GROVE_SCORE_METHODOLOGY_PATH}"`)
+  })
+
+  it('renders Grove Score copy from the live scoring constants', () => {
+    const scoreMarkup = renderToStaticMarkup(<GroveScoreMethodologyContent />)
+
+    expect(scoreMarkup).toContain(
+      `${Math.round(GROVE_SCORE_WEIGHTS.wellness * 100)}%`,
+    )
+    expect(scoreMarkup).toContain(
+      `${Math.round(GROVE_SCORE_RECOVERY_RATES.sustained * 100)}%`,
+    )
+    expect(scoreMarkup).toContain('Days without a check-in or incident remain unknown')
   })
 })
