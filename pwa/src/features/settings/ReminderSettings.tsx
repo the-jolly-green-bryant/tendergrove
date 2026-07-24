@@ -1,43 +1,28 @@
 import { IonButton, IonInput, IonItem, IonLabel, IonList, IonToggle } from '@ionic/react'
 import { Capacitor } from '@capacitor/core'
-import { LocalNotifications } from '@capacitor/local-notifications'
 import { useEffect, useState } from 'react'
 import { useAppAuth } from '../../auth/AuthContext'
-import { accountStorageKey } from '../../lib/accountStorage'
-
-interface ReminderValue { enabled: boolean; time: string; skippedDate?: string }
-const read = (accountId?: string): ReminderValue => { try { return { enabled: false, time: '20:00', ...JSON.parse(localStorage.getItem(accountStorageKey(accountId, 'gentle-reminder')) ?? '{}') } } catch { return { enabled: false, time: '20:00' } } }
-
-const schedule = async (accountId: string | undefined, value: ReminderValue) => {
-  localStorage.setItem(accountStorageKey(accountId, 'gentle-reminder'), JSON.stringify(value))
-  if (!Capacitor.isNativePlatform()) return
-  await LocalNotifications.cancel({ notifications: Array.from({ length: 7 }, (_, index) => ({ id: 4200 + index })) })
-  if (!value.enabled) return
-  const permission = await LocalNotifications.requestPermissions()
-  if (permission.display !== 'granted') return
-  const [hour, minute] = value.time.split(':').map(Number)
-  await LocalNotifications.schedule({ notifications: Array.from({ length: 7 }, (_, index) => ({
-    id: 4200 + index,
-    title: 'A quiet moment to remember',
-    body: 'If today is not the day, you can skip without losing anything.',
-    schedule: { on: { weekday: index + 1, hour, minute }, repeats: true },
-  })) })
-}
+import {
+  readReminder,
+  scheduleReminder,
+  type ReminderValue,
+} from './reminderNotifications'
 
 export const ReminderSettings = () => {
   const { user } = useAppAuth()
   const accountId = user?.userId
-  const [value, setValue] = useState(() => read(accountId))
+  const [value, setValue] = useState(() => readReminder(accountId))
   const [saved, setSaved] = useState(false)
   const [deliveryMessage, setDeliveryMessage] = useState('')
   useEffect(() => {
-    setValue(read(accountId))
+    setValue(readReminder(accountId))
     setSaved(false)
   }, [accountId])
   const save = async (next = value) => {
     setValue(next)
     try {
-      await schedule(accountId, next)
+      const scheduled = await scheduleReminder(accountId, next)
+      setValue(scheduled)
       setSaved(true)
       setDeliveryMessage(Capacitor.isNativePlatform()
         ? next.enabled ? `A device notification is scheduled for ${next.time}.` : 'Device notifications are turned off.'
