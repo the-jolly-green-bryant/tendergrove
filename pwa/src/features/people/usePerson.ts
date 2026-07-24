@@ -16,12 +16,18 @@ const personSelectionSet = [
   'indicators.polarity',
   'indicators.inputType',
   'indicators.active',
+  'indicators.createdAt',
+  'indicators.updatedAt',
   'checkIns.id',
   'checkIns.createdAt',
   'checkIns.updatedAt',
   'checkIns.occurredAt',
   'checkIns.answersJson',
   'checkIns.note',
+  'events.occurredAt',
+  'events.type',
+  'events.title',
+  'events.description',
 ] as const
 
 export const usePerson = (

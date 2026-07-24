@@ -187,7 +187,7 @@ const TreeSlice = ({
         clipPath={`url(#tree-slice-${index})`}
       >
         <title>
-          {person.displayName}: {score}% wellbeing, tree stage {stage}
+          {person.displayName}: Grove Score {score} points, tree stage {stage}
         </title>
       </image>
     </g>

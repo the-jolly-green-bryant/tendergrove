@@ -33,7 +33,6 @@ import { useScopedPatterns } from './useScopedPatterns'
 import { CalendarContent } from './CalendarHeatmapPage'
 import { TurningPointsContent } from './TurningPointsPage'
 import {
-  calculatePatternDynamicsForView,
   patternDaysForView,
   PatternStrainBreakdown,
 } from './components/PatternStrainBreakdown'
@@ -106,7 +105,6 @@ const TrendView = ({
   result: AnalyticsResult
   showDelta: boolean
 }) => {
-  const patternDynamics = calculatePatternDynamicsForView(result, view)
   const rangeDays = usePatternsFilterStore((state) => state.rangeDays)
   const setRangeDays = usePatternsFilterStore((state) => state.setRangeDays)
   const toggleDelta = usePatternsFilterStore((state) => state.toggleDelta)
@@ -142,7 +140,6 @@ const TrendView = ({
         rangeDays={rangeDays}
         showDelta={showDelta}
         comparisons={comparisons}
-        patternDynamics={patternDynamics}
         showStrain={showStrain}
         patternStrainDays={patternDaysForView(result, view)}
         patternStrainEndDate={result.window.endDate}

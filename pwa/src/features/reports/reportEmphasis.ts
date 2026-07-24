@@ -6,8 +6,16 @@ export const emphasisDirection = (
   signalPolarity?: SignalPolarity,
 ): EmphasisDirection => {
   if (/concern range/i.test(phrase)) return 'negative'
-  const increase = /(?:^|\s)(more common|up|above|improving|increase|higher)$/i.test(phrase)
-  const decrease = /(?:^|\s)(less common|down|below|declining|decrease|lower)$/i.test(phrase)
+  const increase =
+    /(?:^|\s)(more common|up|above|improving|increase|higher)$/i.test(phrase) ||
+    /\babove (?:(?:historical|recent|relevant) baseline|baseline)$/i.test(
+      phrase,
+    )
+  const decrease =
+    /(?:^|\s)(less common|down|below|declining|decrease|lower)$/i.test(phrase) ||
+    /\bbelow (?:(?:historical|recent|relevant) baseline|baseline)$/i.test(
+      phrase,
+    )
 
   if (signalPolarity === 'concern') {
     if (decrease) return 'positive'

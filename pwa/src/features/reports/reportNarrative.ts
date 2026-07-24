@@ -1,11 +1,14 @@
-import type { buildProviderReport } from './reportBuilder'
+import {
+  preferredComparisonFromReferences,
+  type buildProviderReport,
+} from './reportBuilder'
 import {
   PATTERN_STRAIN_LABELS,
   patternDimensionLevel,
   type PatternStrainBand,
 } from '../patterns/analytics/patternDynamics'
 
-export const REPORT_NARRATIVE_SCHEMA_VERSION = 16
+export const REPORT_NARRATIVE_SCHEMA_VERSION = 21
 
 export interface NarrativeFact {
   id: string
@@ -140,20 +143,44 @@ export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelop
   const recent = observations.filter((day) => day.date >= recentKey)
   const recentConcernDays = recent.filter((day) => day.level === 'concern').length
   const recentConcernRate = percentage(recentConcernDays, recent.length)
-  const baseline = report.baseline
+  const baseline =
+    report.wellnessComparison?.reference ?? report.baseline
+  const baselineLabel = 'baseline'
   const recentRegressiveDays =
     baseline === null ? [] : recent.filter((day) => day.score < baseline)
   const recentRegressiveRate = percentage(recentRegressiveDays.length, recent.length)
-  const baselineRegressiveRate =
-    baseline === null
-      ? 0
-      : percentage(
-          observations.filter((day) => day.score < baseline).length,
-          observations.length,
-        )
-  const baselineConcernRate = percentage(
-    observations.filter((day) => day.level === 'concern').length,
-    observations.length,
+  const regressiveRateReferences = baseline === null
+    ? []
+    : [
+        {
+          label: 'historical baseline',
+          days: report.allTimeObservations ?? observations,
+        },
+        { label: 'baseline', days: observations },
+        {
+          label: 'relevant baseline',
+          days: observations.filter(
+            (day) =>
+              day.date >=
+              new Date(Date.now() - 59 * 86_400_000)
+                .toISOString()
+                .slice(0, 10),
+          ),
+        },
+        { label: 'recent baseline', days: recent },
+      ].map(({ label, days }) => ({
+        label,
+        value: days.length
+          ? percentage(
+              days.filter((day) => day.score < baseline).length,
+              days.length,
+            )
+          : null,
+      }))
+  const regressiveRateComparison = preferredComparisonFromReferences(
+    recentRegressiveRate,
+    regressiveRateReferences,
+    'higher',
   )
   const recentRegressiveStretch = longestConsecutiveStretch(
     recentRegressiveDays.map((day) => day.date),
@@ -179,9 +206,9 @@ export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelop
     recent.filter((day) => day.level === 'concern').map((day) => day.date),
   )
   const recentTrendImproved =
-    report.baseline !== null &&
+    baseline !== null &&
     report.recent !== null &&
-    report.recent > report.baseline
+    report.recent > baseline
   const primaryRate = recentTrendImproved ? recentConcernRate : recentRegressiveRate
   const primaryStretch = recentTrendImproved
     ? recentConcernStretch
@@ -217,27 +244,29 @@ export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelop
     replacement: `${observations.length} scored days were available across the selected window, representing ${report.completeness}% recorded-data coverage.`,
   })
 
-  if (report.baseline !== null && recentRegressiveDays.length && !lowStrain) {
+  if (baseline !== null && recentRegressiveDays.length && !lowStrain) {
     facts.push({
       id: 'recent_regressive_days',
       meaning:
         'HIGH PRIORITY: explain both the frequency and measured intensity of recent regression.',
-      replacement: `${recentRegressiveRate}% of recent observations fell below the ${report.baseline}-point baseline (${relativeRateToBaseline(recentRegressiveRate, baselineRegressiveRate)})${recentRegressiveStretch >= 2 ? `; longest stretch: ${recentRegressiveStretch} days` : ''}. The recorded regression was ${regressionIntensity!.level}: affected observations averaged ${formatPoints(regressionIntensity!.averageScore)}, ${formatPoints(regressionIntensity!.averageDepth)} below baseline, with a deepest shortfall of ${formatPoints(regressionIntensity!.deepestDepth)}${largestAdjacentDecline ? ` and a largest adjacent decline of ${formatPoints(largestAdjacentDecline)}` : ''}.`,
+      replacement: `${recentRegressiveRate}% of recent observations fell below the ${baseline}-point ${baselineLabel} (${regressiveRateComparison?.phrase ?? 'unchanged from baseline'})${recentRegressiveStretch >= 2 ? `; longest stretch: ${recentRegressiveStretch} days` : ''}. The recorded regression was ${regressionIntensity!.level}: affected observations averaged ${formatPoints(regressionIntensity!.averageScore)}, ${formatPoints(regressionIntensity!.averageDepth)} below ${baselineLabel}, with a deepest shortfall of ${formatPoints(regressionIntensity!.deepestDepth)}${largestAdjacentDecline ? ` and a largest adjacent decline of ${formatPoints(largestAdjacentDecline)}` : ''}.`,
     })
   }
 
-  if (report.baseline !== null && recentRegressiveDays.length && lowStrain) {
+  if (baseline !== null && recentRegressiveDays.length && lowStrain) {
     facts.push({
       id: 'normal_variation',
       meaning:
         'LOW STRAIN CONTEXT: explain below-baseline observations without presenting ordinary variation as sustained regression.',
-      replacement: `${recentRegressiveRate}% of recent observations fell below the ${report.baseline}-point baseline (${relativeRateToBaseline(recentRegressiveRate, baselineRegressiveRate)}). Within the broader low-strain pattern, these observations suggest ordinary variation rather than a sustained regression.`,
+      replacement: `${recentRegressiveRate}% of recent observations fell below the ${baseline}-point ${baselineLabel} (${regressiveRateComparison?.phrase ?? 'unchanged from baseline'}). Within the broader low-strain pattern, these observations suggest ordinary variation rather than a sustained regression.`,
     })
   }
 
-  if (report.baseline !== null && report.recent !== null) {
-    const delta = report.recent - report.baseline
-    const relative = relativeToBaseline(report.recent, report.baseline)
+  if (baseline !== null && report.recent !== null) {
+    const delta = report.recent - baseline
+    const relative =
+      report.wellnessComparison ??
+      relativeToBaseline(report.recent, baseline)
     const essentiallyUnchanged =
       delta === 0 || (relative.percent !== null && relative.percent <= 3)
     facts.push({
@@ -264,9 +293,9 @@ export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelop
       meaning:
         'Provider-facing description of the recent 30-day direction and volatility.',
       replacement:
-        report.baseline === null || report.recent === null
+        baseline === null || report.recent === null
           ? `Recent observations ranged from ${formatPoints(minimum)} to ${formatPoints(maximum)}.`
-          : `Recent wellness averaged ${formatPoints(report.recent)}, ${relativeToBaseline(report.recent, report.baseline).phrase}. Scores ranged from ${formatPoints(minimum)} to ${formatPoints(maximum)}${largestChange ? `; the largest day-to-day change was ${formatPoints(largestChange)}${steepChanges ? `, with ${steepChanges} changes of 15 points or more` : ''}` : ''}. This suggests ${steepChanges ? 'meaningful volatility rather than a smooth trend' : 'a comparatively steady pattern'}.`,
+          : `Recent wellness averaged ${formatPoints(report.recent)}, ${report.wellnessComparison?.phrase ?? 'unchanged from baseline'}. Scores ranged from ${formatPoints(minimum)} to ${formatPoints(maximum)}${largestChange ? `; the largest day-to-day change was ${formatPoints(largestChange)}${steepChanges ? `, with ${steepChanges} changes of 15 points or more` : ''}` : ''}. This suggests ${steepChanges ? 'meaningful volatility rather than a smooth trend' : 'a comparatively steady pattern'}.`,
     })
     const recentDifficult = report.difficultPeriods.filter(
       (period) => period.start >= recentKey && period.days >= 2,
@@ -307,7 +336,7 @@ export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelop
       meaning: recentTrendImproved
         ? 'HIGH PRIORITY: raw recent concern days remain noteworthy even though the recent average improved.'
         : 'Raw concern-range days in the recent window.',
-      replacement: `${recentConcernRate}% of recent observations were in the concern range (${relativeRateToBaseline(recentConcernRate, baselineConcernRate)}).`,
+      replacement: `${recentConcernRate}% of recent observations were in the concern range${report.concernRateComparison ? ` (${report.concernRateComparison.phrase})` : ''}.`,
     })
   }
 
@@ -333,20 +362,37 @@ export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelop
       })
     })
   report.eventComparisons
+    .map((event) => ({
+      event,
+      comparison: preferredComparisonFromReferences(
+        event.eventAverage,
+        report.comparisonReferences,
+        'lower',
+      ),
+    }))
     .filter(
-      (event) =>
-        report.baseline === null || event.eventAverage !== report.baseline,
+      (
+        item,
+      ): item is {
+        event: ProviderReport['eventComparisons'][number]
+        comparison: NonNullable<
+          ReturnType<typeof preferredComparisonFromReferences>
+        >
+      } => item.comparison !== null,
+    )
+    .sort(
+      (a, b) =>
+        Number(!a.comparison.adverse) - Number(!b.comparison.adverse) ||
+        b.comparison.magnitude - a.comparison.magnitude ||
+        b.event.eventDays - a.event.eventDays,
     )
     .slice(0, 3)
-    .forEach((event, index) => {
-    const baselineComparison =
-      report.baseline === null
-        ? 'A baseline comparison is not yet available.'
-        : `That is ${relativeToBaseline(event.eventAverage, report.baseline).phrase}.`
+    .forEach(({ event, comparison }, index) => {
     facts.push({
       id: `event_association_${index + 1}`,
-      meaning: 'An observed event association that differs from the established baseline; it is not proof of causation.',
-      replacement: `“${event.label}” was recorded on ${event.eventDays} scored days. Wellness averaged ${formatPoints(event.eventAverage)} on those days. ${baselineComparison}`,
+      meaning:
+        'An observed event association using the most adverse available comparison with baseline or the recent average; it is not proof of causation.',
+      replacement: `“${event.label}” was recorded on ${event.eventDays} scored days. Wellness averaged ${formatPoints(event.eventAverage)} on those days, ${comparison.phrase}.`,
     })
   })
   if (report.householdCorrelation) {
@@ -395,14 +441,51 @@ export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelop
       replacement: `${PATTERN_STRAIN_LABELS[strain.band]} is driven most by ${strongest.map(([label, value]) => `${patternDimensionLevel(value).toLowerCase()} ${label}`).join(' and ')}.${strain.largestDecline >= 15 ? ` The largest recent decline was ${formatPoints(strain.largestDecline)}.` : ''}`,
     })
   }
-  const changedDifficult = report.recentDifficult.filter((signal) => signal.delta !== 0)
-  const changedPositive = report.recentPositive.filter((signal) => signal.delta !== 0)
+  const relativeSignalChange = (recentRate: number, baselineRate: number) =>
+    baselineRate === 0
+      ? recentRate
+      : Math.abs((recentRate - baselineRate) / baselineRate)
+  const signalComparisonPhrase = (
+    signal: ProviderReport['recentDifficult'][number],
+  ) =>
+    signal.comparison?.phrase ??
+    relativeRateToBaseline(signal.recentRate, signal.baselineRate)
+  const changedDifficult = report.recentDifficult
+    .filter((signal) => signal.delta !== 0)
+    .sort(
+      (a, b) =>
+        Number(a.delta < 0) - Number(b.delta < 0) ||
+        relativeSignalChange(b.recentRate, b.baselineRate) -
+          relativeSignalChange(a.recentRate, a.baselineRate),
+    )
+  const changedPositive = report.recentPositive
+    .filter((signal) => signal.delta !== 0)
+    .sort(
+      (a, b) =>
+        Number(a.delta > 0) - Number(b.delta > 0) ||
+        relativeSignalChange(b.recentRate, b.baselineRate) -
+          relativeSignalChange(a.recentRate, a.baselineRate),
+    )
   const primaryDifficultSignals = changedDifficult.slice(0, 2)
   const remainingDifficult = changedDifficult[2]
   const leadingPositive = changedPositive[0]
+  const remainingDifficultIsAdverse = (remainingDifficult?.delta ?? 0) > 0
+  const leadingPositiveIsAdverse = (leadingPositive?.delta ?? 0) < 0
   const thirdSignal =
     remainingDifficult &&
-    (!leadingPositive || remainingDifficult.count >= leadingPositive.count)
+    (!leadingPositive ||
+      (remainingDifficultIsAdverse !== leadingPositiveIsAdverse
+        ? remainingDifficultIsAdverse
+        : remainingDifficult.delta > 0
+        ? relativeSignalChange(
+            remainingDifficult.recentRate,
+            remainingDifficult.baselineRate,
+          ) >=
+          relativeSignalChange(
+            leadingPositive.recentRate,
+            leadingPositive.baselineRate,
+          )
+        : remainingDifficult.count >= leadingPositive.count))
       ? { ...remainingDifficult, kind: 'concern' as const }
       : leadingPositive
         ? { ...leadingPositive, kind: 'positive' as const }
@@ -412,7 +495,7 @@ export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelop
       id: `frequent_concern_${index + 1}`,
       meaning:
         'A difficult signal recorded frequently enough to provide useful discussion context.',
-      replacement: `“${signal.name}” was noted in ${signal.recentRate}% of recent observations (${relativeRateToBaseline(signal.recentRate, signal.baselineRate)}). This suggests the signal was ${signal.delta > 0 ? 'more common recently' : 'less common recently'}.`,
+      replacement: `“${signal.name}” was noted in ${signal.recentRate}% of recent observations (${signalComparisonPhrase(signal)}). This suggests the signal was ${signal.delta > 0 ? 'more common recently' : 'less common recently'}.`,
     })
   })
   if (thirdSignal?.kind === 'concern') {
@@ -420,7 +503,7 @@ export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelop
       id: 'frequent_concern_3',
       meaning:
         'The most frequent remaining signal after the two leading difficult signals.',
-      replacement: `“${thirdSignal.name}” was noted in ${thirdSignal.recentRate}% of recent observations (${relativeRateToBaseline(thirdSignal.recentRate, thirdSignal.baselineRate)}). This suggests the signal was ${thirdSignal.delta > 0 ? 'more common recently' : 'less common recently'}.`,
+      replacement: `“${thirdSignal.name}” was noted in ${thirdSignal.recentRate}% of recent observations (${signalComparisonPhrase(thirdSignal)}). This suggests the signal was ${thirdSignal.delta > 0 ? 'more common recently' : 'less common recently'}.`,
     })
   }
   if (thirdSignal?.kind === 'positive') {
@@ -428,7 +511,7 @@ export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelop
       id: 'frequent_positive',
       meaning:
         'A frequently recorded positive signal that provides balance and context.',
-      replacement: `“${thirdSignal.name}” was noted in ${thirdSignal.recentRate}% of recent observations (${relativeRateToBaseline(thirdSignal.recentRate, thirdSignal.baselineRate)}). This suggests the positive signal was ${thirdSignal.delta > 0 ? 'more common recently' : 'less common recently'}.`,
+      replacement: `“${thirdSignal.name}” was noted in ${thirdSignal.recentRate}% of recent observations (${signalComparisonPhrase(thirdSignal)}). This suggests the positive signal was ${thirdSignal.delta > 0 ? 'more common recently' : 'less common recently'}.`,
     })
   }
   const preferred = [
@@ -497,7 +580,7 @@ export const validateNarrativeTemplate = (
   }
   const lockedValues = (text: string) => (text.match(/\d+(?:\.\d+)?%?/g) ?? []).sort()
   const recentRatePattern =
-    /\d+% of recent observations \((?:unchanged from baseline|\d+% (?:above|below) baseline)\)/
+    /\d+% of recent observations \((?:unchanged from baseline|\d+% (?:above|below) (?:(?:historical|recent|relevant) baseline|baseline))\)/
   takeaways.forEach((line) => {
     const marker = line.match(/\{\{[a-z][a-z0-9_]*\}\}/)?.[0]
     const fact = envelope.facts.find(({ id }) => `{{${id}}}` === marker)

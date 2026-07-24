@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest'
 
-import type { RawIndicator } from '../features/patterns/analytics'
-import { computeScore, derivePersonStatus, statusFromScore } from './status'
+import type { RawIndicator, RawPerson } from '../features/patterns/analytics'
+import {
+  computeScore,
+  derivePersonPatternDynamics,
+  derivePersonStatus,
+  derivePersonStatusFromPerson,
+  statusFromScore,
+} from './status'
+import { PATTERN_STRAIN_LABELS } from '../features/patterns/analytics/patternDynamics'
 
 const indicators = [
   { id: 'sleep', name: 'Severe sleep disruption', polarity: 'undesired', active: true },
@@ -71,5 +78,31 @@ describe('shared observation status', () => {
       occurredAt: new Date().toISOString(),
       answersJson: JSON.stringify({ checked: ['sleep'] }),
     }]).label).toBe('Pattern forming')
+  })
+
+  it('uses the authoritative normalized strain label for complete person records', () => {
+    const now = new Date(2026, 3, 30, 12)
+    const checkIns = Array.from({ length: 24 }, (_, index) => {
+      const occurredAt = new Date(now)
+      occurredAt.setDate(occurredAt.getDate() - index * 3)
+      return {
+        occurredAt: occurredAt.toISOString(),
+        answersJson: JSON.stringify({
+          checked: index < 9 ? ['sleep', 'voices'] : ['support'],
+        }),
+      }
+    })
+    const person = {
+      id: 'person-1',
+      displayName: 'Person',
+      indicators,
+      checkIns,
+      events: [],
+    } as unknown as RawPerson
+    const dynamics = derivePersonPatternDynamics(person, now)
+
+    expect(derivePersonStatusFromPerson(person, now).label).toBe(
+      PATTERN_STRAIN_LABELS[dynamics.band],
+    )
   })
 })

@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
 import type { TrendPoint } from '../../analytics'
-import { buildTrendChart, toDelta } from '../trendSeries'
+import {
+  buildTrendChart,
+  contextualizeVolatility,
+  currentTrendColor,
+  summarizeVolatility,
+  toDelta,
+} from '../trendSeries'
 
 describe('toDelta', () => {
   it('turns values into day-to-day change, leaving the first blank', () => {
@@ -38,5 +44,62 @@ describe('buildTrendChart', () => {
     expect(config.series[1].values).toEqual([null, 5])
     expect(config.clampTo).toBeNull()
     expect(config.baseline).toBeUndefined()
+  })
+})
+
+describe('currentTrendColor', () => {
+  const pointsAt = (current: number): TrendPoint[] => [
+    { date: '2025-05-01', score: 10, rollingAverage: 10, eventCount: 0 },
+    { date: '2025-05-02', score: current, rollingAverage: current, eventCount: 0 },
+  ]
+
+  it('keeps a low wellness trend concerning even when it is improving', () => {
+    expect(currentTrendColor(pointsAt(19))).toBe('var(--ion-color-danger)')
+  })
+
+  it('uses the current wellness level for warning and positive colors', () => {
+    expect(currentTrendColor(pointsAt(70))).toBe(
+      'var(--ion-color-warning-shade)',
+    )
+    expect(currentTrendColor(pointsAt(85))).toBe(
+      'var(--ion-color-success-shade)',
+    )
+  })
+})
+
+describe('summarizeVolatility', () => {
+  const points = (scores: number[]): TrendPoint[] =>
+    scores.map((score, index) => ({
+      date: `2025-05-${String(index + 1).padStart(2, '0')}`,
+      score,
+      rollingAverage: score,
+      eventCount: 0,
+    }))
+
+  it('marks repeated large changes as high volatility', () => {
+    expect(summarizeVolatility(points([30, 50, 28, 48]))).toEqual({
+      level: 'high',
+      largestChange: 22,
+    })
+  })
+
+  it('keeps ordinary movement visually quiet', () => {
+    expect(summarizeVolatility(points([72, 76, 70, 78]))).toEqual({
+      level: 'low',
+      largestChange: 8,
+    })
+  })
+})
+
+describe('contextualizeVolatility', () => {
+  const high = { level: 'high' as const, largestChange: 40 }
+
+  it('keeps low-strain variation quiet and emerging variation moderate', () => {
+    expect(contextualizeVolatility(high, 'low').level).toBe('low')
+    expect(contextualizeVolatility(high, 'emerging').level).toBe('moderate')
+  })
+
+  it('emphasizes repeated movement inside sustained strain', () => {
+    expect(contextualizeVolatility(high, 'sustained').level).toBe('high')
   })
 })

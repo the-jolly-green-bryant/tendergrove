@@ -1,6 +1,15 @@
 import { parseAnswers } from '../features/people/checkin/checkInUtils'
-import { RawIndicator } from '../features/patterns/analytics'
+import {
+  buildDailyScores,
+  normalizeHousehold,
+  type RawIndicator,
+  type RawPerson,
+} from '../features/patterns/analytics'
 import { balancedIndicatorWellness } from './indicatorScoring'
+import {
+  currentPersonGroveAnalysis,
+  GROVE_SCORE_STRAIN_DAYS,
+} from './groveScore'
 import {
   calculatePatternDynamics,
   DEFAULT_ANALYSIS_DAYS,
@@ -205,38 +214,89 @@ export const derivePersonStatus = (
   return { ...scoreStatus, label: PATTERN_STRAIN_LABELS[dynamics.band], color: colorByBand[dynamics.band] }
 }
 
+/**
+ * Authoritative person status for UI surfaces that have the complete person
+ * record. This keeps labels aligned with reports and Pattern Strain cards,
+ * which include normalized check-ins, incidents, and historical signal timing.
+ */
+export const derivePersonStatusFromPerson = (
+  person: RawPerson,
+  now: Date = new Date(),
+): Status => {
+  const analysis = currentPersonGroveAnalysis(person, now)
+  const dynamics = analysis.dynamics
+  const scoreStatus = statusFromScore(
+    analysis.score?.score ?? null,
+  )
+  if (!dynamics.dataQuality.isSufficient) {
+    return {
+      ...scoreStatus,
+      label: scoreStatus.score === null ? 'No data' : 'Pattern forming',
+      color: 'medium',
+    }
+  }
+  const colorByBand: Record<PatternStrainBand, Status['color']> = {
+    low: 'success',
+    emerging: 'medium',
+    elevated: 'warning',
+    sustained: 'danger',
+    intensive: 'danger',
+  }
+  return {
+    ...scoreStatus,
+    label: PATTERN_STRAIN_LABELS[dynamics.band],
+    color: colorByBand[dynamics.band],
+  }
+}
+
 export const derivePatternDynamics = (
   indicators: RawIndicator[],
   checkIns: CheckInLike[],
   now: Date = new Date(),
 ): PatternDynamics => {
-  const active = indicators.filter((indicator) => indicator.active !== false)
   const currentStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - DEFAULT_ANALYSIS_DAYS + 1)
-  const difficultIds = new Set(active.filter((indicator) => indicator.polarity === 'undesired').map((indicator) => indicator.id))
-  const positiveIds = new Set(active.filter((indicator) => indicator.polarity === 'desired').map((indicator) => indicator.id))
-  const grouped = new Map<string, { scores: number[]; challenges: Set<string>; positives: Set<string> }>()
+  const difficultIds = new Set(indicators.filter((indicator) => indicator.polarity === 'undesired').map((indicator) => indicator.id))
+  const positiveIds = new Set(indicators.filter((indicator) => indicator.polarity === 'desired').map((indicator) => indicator.id))
+  const grouped = new Map<string, { checked: Set<string>; challenges: Set<string>; positives: Set<string> }>()
   checkIns.forEach((checkIn) => {
     const occurredAt = new Date(checkIn.occurredAt)
     if (occurredAt > now) return
-    const score = computeScore(active, checkIn)
-    if (score === null) return
     const key = `${occurredAt.getFullYear()}-${String(occurredAt.getMonth() + 1).padStart(2, '0')}-${String(occurredAt.getDate()).padStart(2, '0')}`
-    const values = grouped.get(key) ?? { scores: [], challenges: new Set<string>(), positives: new Set<string>() }
-    values.scores.push(score)
+    const values = grouped.get(key) ?? { checked: new Set<string>(), challenges: new Set<string>(), positives: new Set<string>() }
     parseAnswers(checkIn.answersJson).checked.forEach((id) => {
+      values.checked.add(id)
       if (difficultIds.has(id)) values.challenges.add(id)
       if (positiveIds.has(id)) values.positives.add(id)
     })
     grouped.set(key, values)
   })
-  const days: PatternDynamicsDay[] = [...grouped].map(([date, values]) => ({
-    date,
-    score: Math.round(average(values.scores)),
-    challengeCount: values.challenges.size,
-    positiveCount: values.positives.size,
-    hasChallenges: values.challenges.size > 0,
-    hasPositiveSigns: values.positives.size > 0,
-  }))
+  const indicatorDateKey = (value: string) => {
+    const date = new Date(value)
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+  }
+  const days: PatternDynamicsDay[] = [...grouped].flatMap(([date, values]) => {
+    const scoreable = indicators.filter((indicator) => {
+      if (values.checked.has(indicator.id)) return true
+      if (indicator.createdAt && date < indicatorDateKey(indicator.createdAt))
+        return false
+      if (
+        indicator.active === false &&
+        (!indicator.updatedAt || date > indicatorDateKey(indicator.updatedAt))
+      )
+        return false
+      return true
+    })
+    const score = balancedIndicatorWellness(scoreable, values.checked)
+    if (score === null) return []
+    return [{
+      date,
+      score,
+      challengeCount: values.challenges.size,
+      positiveCount: values.positives.size,
+      hasChallenges: values.challenges.size > 0,
+      hasPositiveSigns: values.positives.size > 0,
+    }]
+  })
   const currentKey = `${currentStart.getFullYear()}-${String(currentStart.getMonth() + 1).padStart(2, '0')}-${String(currentStart.getDate()).padStart(2, '0')}`
   return calculatePatternDynamics(
     days.filter((day) => day.date >= currentKey),
@@ -244,9 +304,50 @@ export const derivePatternDynamics = (
   )
 }
 
-const average = (values: number[]) => values.length
-  ? values.reduce((sum, value) => sum + value, 0) / values.length
-  : 0
+export const derivePersonPatternDynamics = (
+  person: RawPerson,
+  now: Date = new Date(),
+  windowDays = GROVE_SCORE_STRAIN_DAYS,
+): PatternDynamics => {
+  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12)
+  const start = new Date(end)
+  start.setDate(start.getDate() - windowDays + 1)
+  const dateKeys: string[] = []
+  const cursor = new Date(start)
+  while (cursor <= end) {
+    dateKeys.push(
+      `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}-${String(cursor.getDate()).padStart(2, '0')}`,
+    )
+    cursor.setDate(cursor.getDate() + 1)
+  }
+  const normalized = normalizeHousehold([person], { now, windowDays })
+  const scored =
+    buildDailyScores(normalized.people, dateKeys).personDailyScores[person.id] ?? []
+  const dynamicsDays: PatternDynamicsDay[] = scored.flatMap((day) =>
+    day.score === null
+      ? []
+      : [
+          {
+            date: day.date,
+            score: day.score,
+            challengeCount: day.negativeCount,
+            positiveCount: day.positiveCount,
+            hasChallenges: day.negativeCount > 0,
+            hasPositiveSigns: day.positiveCount > 0,
+          },
+        ],
+  )
+  const currentStart = new Date(
+    end.getFullYear(),
+    end.getMonth(),
+    end.getDate() - DEFAULT_ANALYSIS_DAYS + 1,
+  )
+  const currentKey = `${currentStart.getFullYear()}-${String(currentStart.getMonth() + 1).padStart(2, '0')}-${String(currentStart.getDate()).padStart(2, '0')}`
+  return calculatePatternDynamics(
+    dynamicsDays.filter((day) => day.date >= currentKey),
+    dynamicsDays.filter((day) => day.date < currentKey),
+  )
+}
 
 export const explainPersonStatus = (
   indicators: RawIndicator[],

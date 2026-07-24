@@ -219,7 +219,7 @@ const attentionForPerson = (
     return {
       attentionPriority,
       needsAttention,
-      attentionReason: `${person.displayName}'s wellness dropped ${drop} points from their recent baseline.`,
+      attentionReason: `${person.displayName}'s wellness dropped ${drop} points from their baseline.`,
     }
   }
   if (currentScore < STATUS_THRESHOLDS.good && needsCareStreak >= 2) {

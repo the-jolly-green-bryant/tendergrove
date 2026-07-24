@@ -949,9 +949,30 @@
 }
 
 .pattern-chart__readout-value {
-  font-size: 1.3rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
+}
+
+.pattern-chart__readout-kicker {
+  display: block;
+  margin-bottom: 0.1rem;
+  color: var(--app-muted-text);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.pattern-chart__readout-number {
+  font-size: 2.35rem;
+  line-height: 1;
+  letter-spacing: -0.045em;
+}
+
+.pattern-chart__readout-unit {
+  font-size: 0.78rem;
+  font-weight: 750;
+  letter-spacing: 0.01em;
 }
 
 .pattern-chart__readout-value--low {

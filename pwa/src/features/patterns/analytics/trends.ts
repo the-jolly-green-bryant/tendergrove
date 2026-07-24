@@ -69,7 +69,7 @@ const calculateTrend = (
   trend: TrendResult,
   {
     negativeAlpha = 0.45,
-    positiveAlpha = 0.06,
+    positiveAlpha = 0.03,
   }: {
     negativeAlpha?: number
     positiveAlpha?: number

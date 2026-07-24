@@ -170,7 +170,7 @@ describe('report narrative facts', () => {
     ).toContain('consistent with ordinary ups and downs')
   })
 
-  it('lists two difficult signals and uses the most frequent remaining signal third', () => {
+  it('prefers an adverse difficult-signal change over a favorable positive change', () => {
     const base = report as unknown as Record<string, unknown>
     const envelope = buildNarrativeEnvelope({
       ...base,
@@ -185,12 +185,8 @@ describe('report narrative facts', () => {
     } as never)
     expect(envelope.facts.some((fact) => fact.id === 'frequent_concern_1')).toBe(true)
     expect(envelope.facts.some((fact) => fact.id === 'frequent_concern_2')).toBe(true)
-    expect(
-      envelope.facts.find((fact) => fact.id === 'frequent_positive')?.replacement,
-    ).toContain('“Positive A”')
-    expect(envelope.facts.some((fact) => fact.id === 'frequent_concern_3')).toBe(
-      false,
-    )
+    expect(envelope.facts.some((fact) => fact.id === 'frequent_concern_3')).toBe(true)
+    expect(envelope.facts.some((fact) => fact.id === 'frequent_positive')).toBe(false)
   })
 
   it('substitutes approved placeholders without changing their values', () => {

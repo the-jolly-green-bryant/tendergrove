@@ -26,6 +26,8 @@ const peopleSelectionSet = [
   'indicators.polarity',
   'indicators.active',
   'indicators.name',
+  'indicators.createdAt',
+  'indicators.updatedAt',
 ] as const
 
 export const usePeople = (): UseQueryResult<RawPerson[]> => {
@@ -34,7 +36,7 @@ export const usePeople = (): UseQueryResult<RawPerson[]> => {
   return useQuery({
     queryKey: ['people', accountKey],
     enabled: Boolean(user),
-    refetchOnMount: 'always',
+    refetchOnMount: false,
     initialData: () => readCachedValue<RawPerson[]>(`${accountKey}:people`)?.value,
     queryFn: async () => {
       const result = await client.models.Person.list({

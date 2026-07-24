@@ -13,8 +13,8 @@ import { useAppAuth } from '../../auth/AuthContext'
 import { useSelectedDate } from '../../context/SelectedDateContext'
 import { usePeople } from '../people/usePeople'
 import {
-  derivePatternDynamics,
-  derivePersonStatus,
+  derivePersonPatternDynamics,
+  derivePersonStatusFromPerson,
   todayEmoji,
 } from '../../lib/status'
 import { createHouseholdRecap, type HouseholdRecap } from '../../lib/householdRecap'
@@ -98,16 +98,8 @@ const renderTree = (
       onPersonClick={onPersonClick}
       onRecapClick={onRecapClick}
       people={people.map((person) => {
-        const status = derivePersonStatus(
-          person.indicators ?? [],
-          person.checkIns ?? [],
-          selectedDate,
-        )
-        const dynamics = derivePatternDynamics(
-          person.indicators ?? [],
-          person.checkIns ?? [],
-          selectedDate,
-        )
+        const status = derivePersonStatusFromPerson(person, selectedDate)
+        const dynamics = derivePersonPatternDynamics(person, selectedDate)
         return {
           id: person.id,
           displayName: person.displayName,
@@ -147,11 +139,7 @@ const RawPersonButton = ({
   readonly selectedDate: Date
   readonly onClick: () => void
 }) => {
-  const status = derivePersonStatus(
-    person.indicators ?? [],
-    person.checkIns ?? [],
-    selectedDate,
-  )
+  const status = derivePersonStatusFromPerson(person, selectedDate)
   const score = status.score
   const emoji = todayEmoji(
     person.indicators ?? [],
@@ -195,7 +183,7 @@ const RawPersonButton = ({
         <span
           className={`household-person-btn__score-ribbon household-person-btn__score-ribbon--${status.color}`}
         >
-          {score}%
+          {score} pts
         </span>
       )}
     </button>

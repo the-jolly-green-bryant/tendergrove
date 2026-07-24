@@ -94,7 +94,7 @@ const EmphasizedText = ({
   restrained?: boolean
 }) => {
   const parts = text.split(
-    /([“"][^”"]+[”"]|\bconcerning household context\b|\b\d+(?:\.\d+)?\s+of\s+\d+(?:\.\d+)?\s+(?:recent\s+)?(?:recorded\s+)?observations?\s+(?:were|was)\s+in\s+the\s+concern\s+range\b|\b\d+(?:\.\d+)?-point\s+(?:increase|decrease)\b|\b\d+(?:\.\d+)?\s+(?:of\s+\d+(?:\.\d+)?|points?(?:\s+(?:up|down|above|below|higher|lower))?)\b|\b\d+(?:\.\d+)?(?:%|-point)?\b|\b(?:more common|less common|up|down|above|below|improving|declining|increase|decrease|higher|lower)\b)/gi,
+    /([“"][^”"]+[”"]|\bconcerning household context\b|\b\d+(?:\.\d+)?%\s+(?:above|below)\s+(?:(?:historical|recent|relevant)\s+baseline|baseline)\b|\b\d+(?:\.\d+)?\s+of\s+\d+(?:\.\d+)?\s+(?:recent\s+)?(?:recorded\s+)?observations?\s+(?:were|was)\s+in\s+the\s+concern\s+range\b|\b\d+(?:\.\d+)?-point\s+(?:increase|decrease)\b|\b\d+(?:\.\d+)?\s+(?:of\s+\d+(?:\.\d+)?|points?(?:\s+(?:up|down|above|below|higher|lower))?)\b|\b\d+(?:\.\d+)?(?:%|-point)?\b|\b(?:more common|less common|up|down|above|below|improving|declining|increase|decrease|higher|lower)\b)/gi,
   )
   return (
     <>
@@ -541,6 +541,9 @@ const ReportsPage = () => {
       )
       const narrativeSections = [
         `NOTEWORTHY TAKEAWAYS\n${topTakeaways.map((item) => `- ${item}`).join('\n')}`,
+        report.groveScore
+          ? `GROVE SCORE\n${report.groveScore.score} points. Grove Score v1 combines recorded wellness with burden, persistence, recovery difficulty, and instability; longitudinal factors are weighted by data confidence.`
+          : '',
         narrative.sections.trend_description
           ? `RECENT TREND\n${narrative.sections.trend_description}`
           : '',
@@ -607,12 +610,12 @@ const ReportsPage = () => {
         pdf.setTextColor(37, 52, 47)
         pdf.setFont('helvetica', 'bold')
         pdf.setFontSize(14)
-        pdf.text('WEIGHTED WELLNESS TREND AND OBSERVATION CALENDAR', margin, 76)
+        pdf.text('RAW WELLNESS TREND AND OBSERVATION CALENDAR', margin, 76)
         pdf.setFont('helvetica', 'normal')
         pdf.setFontSize(8.5)
         pdf.setTextColor(100, 112, 106)
         pdf.text(
-          'The trend uses Grove Care’s proprietary weighting. Missing or incomplete data is excluded from trend analysis.',
+          'This chart preserves the observation-based wellness component for auditability. Missing or incomplete data is excluded from trend analysis.',
           margin,
           92,
         )
@@ -1003,6 +1006,22 @@ const ReportsPage = () => {
               ))}
             </ol>
           </section>
+          {report.groveScore && (
+            <section className="report-grove-score" aria-label="Grove Score">
+              <div>
+                <p>Grove Score</p>
+                <strong>
+                  {report.groveScore.score}
+                  <span> points</span>
+                </strong>
+              </div>
+              <p>
+                Combines recorded wellness with burden, persistence, recovery,
+                and instability. Longitudinal factors are weighted by available
+                data confidence.
+              </p>
+            </section>
+          )}
           <PatternStrainReportSection
             dynamics={report.patternDynamics}
             calendarDays={report.calendarDays}

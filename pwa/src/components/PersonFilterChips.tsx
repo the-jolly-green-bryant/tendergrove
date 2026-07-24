@@ -2,7 +2,7 @@ import { IonIcon } from '@ionic/react'
 import { homeOutline } from 'ionicons/icons'
 import { useEffect, useState } from 'react'
 
-import { derivePersonStatus, type Status } from '../lib/status'
+import { derivePersonStatusFromPerson, type Status } from '../lib/status'
 import './PersonFilterChips.css'
 import { RawPerson } from '../features/patterns/analytics'
 
@@ -40,7 +40,7 @@ interface PersonFilterChipsProps {
 }
 
 const getPersonStatusColor = (person: RawPerson): Status['color'] =>
-  derivePersonStatus(person.indicators ?? [], person.checkIns ?? []).color
+  derivePersonStatusFromPerson(person).color
 
 const colorForName = (name: string): string => {
   let hash = 0

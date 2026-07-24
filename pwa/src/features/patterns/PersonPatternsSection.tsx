@@ -123,7 +123,6 @@ const PatternsBody = ({
         points={eligiblePoints}
         rangeDays={rangeDays}
         showDelta={showDelta}
-        patternDynamics={patternDynamics}
         showStrain={showStrain}
         patternStrainDays={patternStrainDays}
         patternStrainEndDate={chartEndDate}

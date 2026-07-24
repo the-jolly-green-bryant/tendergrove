@@ -85,7 +85,7 @@ describe('computeTrend', () => {
     const smoothed = trend.points.map((point) => point.rollingAverage)
 
     expect(smoothed[1]).toBe(55)
-    expect(smoothed[2]).toBe(58)
-    expect(smoothed[3]).toBe(60)
+    expect(smoothed[2]).toBe(56)
+    expect(smoothed[3]).toBe(58)
   })
 })

@@ -3,6 +3,9 @@ import {
   buildProviderReport,
   isHouseholdConcernOverlapNoteworthy,
   isHouseholdCorrelationNoteworthy,
+  preferredComparisonFromReferences,
+  preferredContextualComparison,
+  preferredWellnessComparison,
   reportCsv,
 } from './reportBuilder'
 import type { RawPerson } from '../patterns/analytics'
@@ -19,6 +22,69 @@ const person = {
 } as unknown as RawPerson
 
 describe('provider report', () => {
+  it('prefers an adverse recent comparison over a favorable baseline comparison', () => {
+    expect(preferredWellnessComparison(60, 50, 75)?.phrase).toBe(
+      '20% below baseline',
+    )
+    expect(preferredWellnessComparison(60, 50, 55)?.phrase).toBe(
+      '20% above baseline',
+    )
+    expect(preferredWellnessComparison(60, 60, 60)).toBeNull()
+  })
+
+  it('uses the metric context to choose the most adverse reference period', () => {
+    expect(preferredContextualComparison(80, 70, 60, 'higher')?.phrase).toBe(
+      '33% above baseline',
+    )
+    expect(preferredContextualComparison(40, 60, 50, 'lower')?.phrase).toBe(
+      '33% below baseline',
+    )
+  })
+
+  it('excludes zero references because percentage change from zero is undefined', () => {
+    expect(
+      preferredComparisonFromReferences(
+        76,
+        [
+          { label: 'historical baseline', value: 0 },
+          { label: 'baseline', value: 50 },
+        ],
+        'higher',
+      )?.phrase,
+    ).toBe('52% above baseline')
+    expect(
+      preferredComparisonFromReferences(
+        76,
+        [{ label: 'historical baseline', value: 0 }],
+        'higher',
+      ),
+    ).toBeNull()
+  })
+
+  it('limits the historical baseline to the rolling 365-day window', () => {
+    const oldDate = new Date()
+    oldDate.setDate(oldDate.getDate() - 400)
+    const report = buildProviderReport({
+      person: {
+        ...person,
+        checkIns: [
+          {
+            occurredAt: oldDate.toISOString(),
+            answersJson: JSON.stringify({ checked: ['support'] }),
+          },
+          {
+            occurredAt: new Date().toISOString(),
+            answersJson: JSON.stringify({ checked: ['sleep'] }),
+          },
+        ],
+      } as unknown as RawPerson,
+      reason: '',
+      questions: '',
+    })
+
+    expect(report.allTimeObservations).toHaveLength(1)
+  })
+
   it('states limitations and does not turn missing days into wellness data', () => {
     const report = buildProviderReport({ person, reason: 'Sleep changed', questions: 'What should we watch?' })
     expect(report.text).toContain('not a diagnosis')
@@ -27,6 +93,8 @@ describe('provider report', () => {
     expect(report.text).toContain('3% of the recent window has recorded data')
     expect(report.text).toContain('No difficult signals changed meaningfully from baseline')
     expect(report.text).toContain('PATTERN STRAIN')
+    expect(report.text).toContain('GROVE SCORE V1')
+    expect(report.groveScore?.score).toBeTypeOf('number')
     expect(report.patternDynamics.dataQuality.observedDays).toBe(1)
     expect(report.text).toContain('Research & Methodology in Grove: /about/research')
     expect(report.text).toContain('Emotion dynamics in children and adolescents')
@@ -98,7 +166,9 @@ describe('provider report', () => {
     })
 
     expect(report.text).toContain('“Pass - Day” was recorded on 3 scored days')
-    expect(report.text).toContain('Wellness averaged 0 points on those days, 100% below baseline')
+    expect(report.text).toContain(
+      'Wellness averaged 0 points on those days, 100% below baseline',
+    )
     expect(report.text).not.toContain('other scored days')
     expect(report.text).not.toContain('continued clinical care')
   })
@@ -141,10 +211,55 @@ describe('provider report', () => {
 
   it('does not infer a household relationship from concurrent concern days alone', () => {
     expect(isHouseholdCorrelationNoteworthy(30, 0.33)).toBe(false)
+    expect(isHouseholdCorrelationNoteworthy(21, 0.47)).toBe(true)
     expect(isHouseholdCorrelationNoteworthy(21, 0.66)).toBe(true)
     expect(isHouseholdCorrelationNoteworthy(6, 0.9)).toBe(false)
     expect(isHouseholdConcernOverlapNoteworthy(1)).toBe(false)
     expect(isHouseholdConcernOverlapNoteworthy(2)).toBe(false)
     expect(isHouseholdConcernOverlapNoteworthy(3)).toBe(true)
+  })
+
+  it('does not label little-or-no household correlation as concerning context', () => {
+    const dates = Array.from({ length: 8 }, (_, index) => {
+      const date = new Date()
+      date.setHours(12, 0, 0, 0)
+      date.setDate(date.getDate() - index)
+      return date.toISOString()
+    })
+    const selected = {
+      ...person,
+      checkIns: dates.map((occurredAt, index) => ({
+        occurredAt,
+        answersJson: JSON.stringify({
+          checked: index % 2 ? ['sleep'] : ['support'],
+        }),
+      })),
+    } as unknown as RawPerson
+    const other = {
+      ...person,
+      id: 'caregiver-2',
+      displayName: 'Taylor',
+      checkIns: dates.map((occurredAt, index) => ({
+        occurredAt,
+        answersJson: JSON.stringify({
+          checked: Math.floor(index / 2) % 2 ? ['sleep'] : ['support'],
+        }),
+      })),
+    } as unknown as RawPerson
+
+    const report = buildProviderReport({
+      person: selected,
+      householdPeople: [selected, other],
+      reason: '',
+      questions: '',
+    })
+
+    expect(report.householdCorrelation?.strength).toBe('little or no')
+    expect(report.householdCorrelationNarrative).toContain(
+      'do not show a consistent household wellness relationship',
+    )
+    expect(report.householdCorrelationNarrative).not.toContain(
+      'concerning household context',
+    )
   })
 })

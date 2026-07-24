@@ -1,9 +1,7 @@
 import React, { useMemo, useState } from 'react'
 
-import { statusFromScore } from '../../../lib/status'
 import { formatDayLabel } from '../analytics/dateUtils'
 import type { DateKey } from '../analytics'
-import type { PatternStrainBand } from '../analytics/patternDynamics'
 import { IonItem, IonLabel, IonNote } from '@ionic/react'
 
 /**
@@ -29,6 +27,8 @@ export interface ChartSeries {
   dashed?: boolean
   /** De-emphasize a comparison while keeping it available to the scrubber. */
   secondary?: boolean
+  /** Make a volatile observation line easier to see without making it primary. */
+  emphasis?: 'strong'
 }
 
 interface TrendChartProps {
@@ -46,12 +46,6 @@ interface TrendChartProps {
   readonly baseline?: number
   readonly eventCounts?: number[]
   readonly action?: React.ReactNode
-  readonly statusValues?: (number | null)[]
-  readonly strain?: {
-    label: string
-    band: PatternStrainBand
-    forming: boolean
-  }
 }
 
 const VIEW_W = 320
@@ -144,15 +138,30 @@ const SeriesLine = ({
   const path = buildPath(series.values, domain)
   const [mX, mY] = path.split(' ')
   const missingData = ['M0', mY, mX.replace('M', 'L'), mY].join(' ')
-  const strokeDasharray = series.dashed ? '5 5' : series.secondary ? '8 5' : undefined
-  const opacity = series.dashed ? 0.5 : series.secondary ? 0.68 : 1
+  const strokeDasharray =
+    series.emphasis === 'strong'
+      ? undefined
+      : series.dashed
+        ? '5 5'
+        : series.secondary
+          ? '8 5'
+          : undefined
+  const opacity =
+    series.emphasis === 'strong'
+      ? 0.88
+      : series.dashed
+        ? 0.5
+        : series.secondary
+          ? 0.68
+          : 1
+  const strokeWidth = series.emphasis === 'strong' ? 2.15 : 2.5
   return (
     <>
       <path
         d={missingData}
         fill="none"
         stroke={'#D3D3D3'}
-        strokeWidth={2.5}
+        strokeWidth={strokeWidth}
         strokeLinejoin="round"
         strokeLinecap="round"
         strokeDasharray={'5 5'}
@@ -163,19 +172,36 @@ const SeriesLine = ({
         d={path}
         fill="none"
         stroke={series.color}
-        strokeWidth={2.5}
+        strokeWidth={strokeWidth}
         strokeLinejoin="round"
         strokeLinecap="round"
         strokeDasharray={strokeDasharray}
         opacity={opacity}
       />
+      {series.emphasis === 'strong' &&
+        series.values.map(
+          (value, index) =>
+            value !== null && (
+              <circle
+                key={`${series.label}-${index}`}
+                cx={xFor(index, series.values.length)}
+                cy={yFor(value, domain)}
+                r={1.9}
+                fill={series.color}
+                opacity={0.92}
+              />
+            ),
+        )}
     </>
   )
 }
 
 const hasData = (series: ChartSeries[]): boolean => {
   const primaryValues =
-    series.find((item) => !item.dashed)?.values ?? series[0]?.values ?? []
+    series.find((item) => !item.dashed && !item.secondary)?.values ??
+    series.find((item) => !item.dashed)?.values ??
+    series[0]?.values ??
+    []
 
   return primaryValues.some((value) => value !== null)
 }
@@ -198,7 +224,10 @@ const lastValueIndex = (values: (number | null)[]): number => {
 }
 
 const currentIndex = (series: ChartSeries[]): number => {
-  const primary = series.find((s) => !s.dashed) ?? series[0]
+  const primary =
+    series.find((item) => !item.dashed && !item.secondary) ??
+    series.find((item) => !item.dashed) ??
+    series[0]
   const index = primary ? lastValueIndex(primary.values) : -1
   return index < 0 ? 0 : index
 }
@@ -293,54 +322,41 @@ const Crosshair = ({
   )
 }
 
-const _numberToStatus = (value: number | null): [string, string, string] => {
-  const status = statusFromScore(value)
-  if (status.level === 'unknown') return [status.label, 'gray', '']
-  if (status.level === 'at-risk') return [status.label, '#D64F4F', '⛈️']
-  if (status.level === 'trouble') return [status.label, '#D7B13A', '☁️']
-  return [status.label, '#3FAE72', '☀️']
-}
-
 const Readout = ({
   dates,
   series,
   index,
   action,
-  statusValues,
-  strain,
 }: {
   readonly dates: DateKey[]
   readonly series: ChartSeries[]
   readonly index: number
   readonly action?: React.ReactNode
-  readonly statusValues?: (number | null)[]
-  readonly strain?: {
-    label: string
-    band: PatternStrainBand
-    forming: boolean
-  }
 }): React.JSX.Element | null =>
   hasData(series)
     ? (() => {
-        const solid = series.filter((s) => !s.dashed)
-        const [dailyStatus, _, emoji] = _numberToStatus(
-          statusValues?.[index] ?? solid[0].values[index],
-        )
-        const status = strain?.forming
-          ? 'Pattern forming'
-          : (strain?.label ?? dailyStatus)
+        const primary =
+          series.find((item) => !item.dashed && !item.secondary) ??
+          series.find((item) => !item.dashed)
+        const value = primary?.values[index]
+        if (value === null || value === undefined) return null
+        const rounded = Math.round(value)
         return (
           <IonItem
+            className="pattern-chart__readout"
             color={'transparent'}
             lines={'none'}
           >
             <IonLabel>
+              <span className="pattern-chart__readout-kicker">Grove Score</span>
               <h1>
                 <span
-                  className={`pattern-chart__readout-value${strain ? ` pattern-chart__readout-value--${strain.band}` : ''}`}
-                  style={strain ? undefined : { color: solid[0].color }}
+                  className="pattern-chart__readout-value"
+                  style={{ color: primary?.color }}
+                  aria-label={`${rounded} points`}
                 >
-                  {status} {!strain && emoji}
+                  <span className="pattern-chart__readout-number">{rounded}</span>{' '}
+                  <span className="pattern-chart__readout-unit">points</span>
                 </span>
               </h1>
               <p>
@@ -507,8 +523,6 @@ export const TrendChart = ({
   clampTo = [0, 100],
   baseline,
   action,
-  statusValues,
-  strain,
 }: TrendChartProps): React.JSX.Element => {
   const count = dates.length
   const domains = useMemo(
@@ -518,7 +532,10 @@ export const TrendChart = ({
 
   const has = hasData(series)
   const { activeIndex, update, clear } = useScrub(
-    series.find((item) => !item.dashed)?.values ?? series[0]?.values ?? [],
+    series.find((item) => !item.dashed && !item.secondary)?.values ??
+      series.find((item) => !item.dashed)?.values ??
+      series[0]?.values ??
+      [],
   )
   const readoutIndex = activeIndex ?? currentIndex(series)
 
@@ -540,8 +557,6 @@ export const TrendChart = ({
           series={series}
           index={readoutIndex}
           action={action}
-          statusValues={statusValues}
-          strain={strain}
         />
       )}
 

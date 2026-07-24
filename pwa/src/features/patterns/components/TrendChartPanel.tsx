@@ -1,14 +1,17 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 
 import type { TrendPoint } from '../analytics'
 import {
   buildPatternStrainTrend,
-  PATTERN_STRAIN_LABELS,
-  type PatternDynamics,
   type PatternDynamicsDay,
 } from '../analytics/patternDynamics'
 import { TrendChart } from './TrendChart'
-import { buildTrendChart, currentTrendColor, toDelta } from './trendSeries'
+import {
+  buildTrendChart,
+  currentTrendColor,
+  toDelta,
+} from './trendSeries'
+import { buildGroveScoreTrend } from '../../../lib/groveScore'
 
 export const TrendChartPanel = ({
   points,
@@ -18,7 +21,6 @@ export const TrendChartPanel = ({
   action,
   className = '',
   comparisons = [],
-  patternDynamics,
   showStrain = false,
   patternStrainDays = [],
   patternStrainEndDate,
@@ -35,17 +37,44 @@ export const TrendChartPanel = ({
     color: string
     points: readonly TrendPoint[]
   }>
-  readonly patternDynamics?: PatternDynamics
   readonly showStrain?: boolean
   readonly patternStrainDays?: PatternDynamicsDay[]
   readonly patternStrainEndDate?: string
 }): React.JSX.Element => {
-  const visiblePoints = points.slice(-rangeDays)
-  const chart = buildTrendChart(
-    [...visiblePoints],
-    showDelta,
-    currentTrendColor(points),
+  const visiblePoints = useMemo(
+    () => points.slice(-rangeDays),
+    [points, rangeDays],
   )
+  const fullGrovePoints = useMemo(
+    () =>
+      patternStrainDays.length
+        ? buildGroveScoreTrend(points, patternStrainDays)
+        : [...points],
+    [points, patternStrainDays],
+  )
+  const grovePoints = useMemo(
+    () => fullGrovePoints.slice(-rangeDays),
+    [fullGrovePoints, rangeDays],
+  )
+  const chart = buildTrendChart(
+    grovePoints,
+    showDelta,
+    currentTrendColor(grovePoints),
+  )
+  if (chart.series[0]) {
+    chart.series[0].label = showDelta
+      ? 'Raw wellness change'
+      : 'Raw wellness'
+    chart.series[0].values = showDelta
+      ? toDelta(visiblePoints.map((point) => point.score))
+      : visiblePoints.map((point) => point.score)
+  }
+  chart.series.forEach((series) => {
+    if (series.label === 'Daily well-being') series.label = 'Daily Grove Score'
+    if (series.label === '7-day average') series.label = 'Grove Score trend'
+    if (series.label === 'Daily change') series.label = 'Daily Grove Score change'
+    if (series.label === 'Trend change') series.label = 'Grove Score trend change'
+  })
   const comparisonSeries = comparisons.map((comparison) => {
     const valuesByDate = new Map(
       comparison.points.map((point) => [point.date, point.rollingAverage]),
@@ -91,16 +120,6 @@ export const TrendChartPanel = ({
         clampTo={chart.clampTo}
         baseline={chart.baseline}
         eventCounts={visiblePoints.map((point) => point.eventCount)}
-        statusValues={visiblePoints.map((point) => point.score)}
-        strain={
-          patternDynamics
-            ? {
-                label: PATTERN_STRAIN_LABELS[patternDynamics.band],
-                band: patternDynamics.band,
-                forming: !patternDynamics.dataQuality.isSufficient,
-              }
-            : undefined
-        }
         action={action}
       />
       {controls}

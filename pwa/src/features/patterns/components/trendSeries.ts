@@ -1,5 +1,6 @@
 import type { TrendDirection, TrendPoint } from '../analytics'
 import type { ChartSeries } from './TrendChart'
+import type { PatternStrainBand } from '../analytics/patternDynamics'
 
 /** Everything a page needs to hand a well-being trend to `<TrendChart>`. */
 export interface TrendChartConfig {
@@ -27,9 +28,52 @@ export const currentTrendColor = (points: readonly TrendPoint[]): string => {
   if (rollingScores.length < 2) return DOWN
 
   const current = rollingScores.at(-1)!
-  const history = rollingScores.slice(0, -1)
-  const historicalMean = history.reduce((sum, score) => sum + score, 0) / history.length
-  return current >= historicalMean ? UP : DOWN
+  if (current >= 80) return UP
+  if (current >= 60) return 'var(--ion-color-warning-shade)'
+  return DOWN
+}
+
+export const summarizeVolatility = (
+  points: readonly TrendPoint[],
+): {
+  level: 'low' | 'moderate' | 'high'
+  largestChange: number
+} => {
+  const scores = points.flatMap((point) =>
+    point.score === null ? [] : [point.score],
+  )
+  const changes = scores
+    .slice(1)
+    .map((score, index) => Math.abs(score - scores[index]))
+  const largestChange = Math.round(Math.max(0, ...changes))
+  const largeChanges = changes.filter((change) => change >= 15).length
+  return {
+    level:
+      largestChange >= 30 || largeChanges >= 2
+        ? 'high'
+        : largestChange >= 15
+          ? 'moderate'
+          : 'low',
+    largestChange,
+  }
+}
+
+export const contextualizeVolatility = (
+  volatility: ReturnType<typeof summarizeVolatility>,
+  strainBand?: PatternStrainBand,
+): ReturnType<typeof summarizeVolatility> => {
+  if (!strainBand) return volatility
+  if (strainBand === 'low') return { ...volatility, level: 'low' }
+  if (strainBand === 'emerging' && volatility.level === 'high') {
+    return { ...volatility, level: 'moderate' }
+  }
+  if (
+    (strainBand === 'sustained' || strainBand === 'intensive') &&
+    volatility.level !== 'low'
+  ) {
+    return { ...volatility, level: 'high' }
+  }
+  return volatility
 }
 
 export const toDelta = (values: (number | null)[]): (number | null)[] => {

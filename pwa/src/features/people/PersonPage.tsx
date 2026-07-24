@@ -37,14 +37,17 @@ import { PersonAvatar } from '../../components/PersonAvatar'
 import { PersonRole } from '../../lib/domain'
 import {
   derivePatternDynamics,
+  derivePersonPatternDynamics,
   derivePersonStatus,
+  derivePersonStatusFromPerson,
+  type Status,
   todayEmoji,
 } from '../../lib/status'
 import { PersonPatternsSection } from '../patterns/PersonPatternsSection'
-import { RawCheckIn, RawIndicator } from '../patterns/analytics'
+import { RawCheckIn, RawIndicator, RawPerson } from '../patterns/analytics'
 
 type Person = NonNullable<ReturnType<typeof usePerson>['data']>
-type PersonStatus = ReturnType<typeof derivePersonStatus>
+type PersonStatus = Status
 type PersonPageDateView = {
   readonly viewDate: Date
   readonly isTimelineView: boolean
@@ -111,8 +114,12 @@ const usePersonPageSummary = (
   const activeIndicators = indicators.filter((indicator) => indicator.active !== false)
 
   const selectedCheckIn = checkIns.find((ci) => isSameDay(ci.occurredAt, viewDate))
-  const status = derivePersonStatus(activeIndicators, checkIns)
-  const patternDynamics = derivePatternDynamics(activeIndicators, checkIns)
+  const status = person
+    ? derivePersonStatusFromPerson(person as RawPerson)
+    : derivePersonStatus(activeIndicators, checkIns)
+  const patternDynamics = person
+    ? derivePersonPatternDynamics(person as RawPerson)
+    : derivePatternDynamics(indicators, checkIns)
   const emoji = todayEmoji(activeIndicators, checkIns, new Date(), personId)
   const selectedDateCheckIn = checkIns.find((ci) => isSameDay(ci.occurredAt, viewDate))
   const selectedDateNote = selectedDateCheckIn?.note || null

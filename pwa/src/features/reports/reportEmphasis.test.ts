@@ -17,6 +17,16 @@ describe('report emphasis direction', () => {
   it('uses the inverse meaning for positive signals', () => {
     expect(emphasisDirection('up', 'positive')).toBe('positive')
     expect(emphasisDirection('down', 'positive')).toBe('negative')
+    expect(emphasisDirection('18% below baseline', 'positive')).toBe('negative')
+    expect(emphasisDirection('12% above baseline', 'positive')).toBe('positive')
+  })
+
+  it('colors complete relative comparisons by their clinical direction', () => {
+    expect(emphasisDirection('18% below baseline')).toBe('negative')
+    expect(emphasisDirection('9% below recent baseline')).toBe('negative')
+    expect(emphasisDirection('12% above baseline')).toBe('positive')
+    expect(emphasisDirection('12% above baseline', 'concern')).toBe('negative')
+    expect(emphasisDirection('12% below baseline', 'concern')).toBe('positive')
   })
 
   it('keeps compound changes and concern counts semantically colored', () => {
