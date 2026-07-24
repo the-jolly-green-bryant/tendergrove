@@ -6,6 +6,8 @@ import { PersonFilterChips } from '../../components/PersonFilterChips'
 import { useAppAuth } from '../../auth/AuthContext'
 import { usePeople } from '../people/usePeople'
 import { usePatternsData } from '../patterns/usePatternsData'
+import { parseAnswers } from '../people/checkin/checkInUtils'
+import { toLocalDateKey } from '../../lib/dateKeys'
 import { buildProviderReport } from './reportBuilder'
 import { readReportPins, removeReportPin } from './reportPins'
 import { emphasisDirection, type SignalPolarity } from './reportEmphasis'
@@ -136,6 +138,23 @@ const ImportantStretchList = ({ text }: { text: string }) => {
   )
 }
 
+const ReportEvidenceList = ({
+  items,
+}: {
+  items: Array<{ text: string; polarity?: SignalPolarity }>
+}) => (
+  <ul className="report-evidence-list">
+    {items.map(({ text, polarity }) => (
+      <li key={text}>
+        <EmphasizedText
+          text={text}
+          signalPolarity={polarity}
+        />
+      </li>
+    ))}
+  </ul>
+)
+
 const ReportVisuals = ({
   observations,
   calendarDays,
@@ -153,6 +172,34 @@ const ReportVisuals = ({
   const recentCalendarDays = calendarDays.slice(-30)
   const recentStart = recentCalendarDays[0]?.date ?? ''
   const recentObservations = observations.filter((day) => day.date >= recentStart)
+  const signalEvidence = [
+    sections.frequent_concern_1 && {
+      text: sections.frequent_concern_1,
+      polarity: 'concern' as const,
+    },
+    sections.frequent_concern_2 && {
+      text: sections.frequent_concern_2,
+      polarity: 'concern' as const,
+    },
+    sections.frequent_concern_3
+      ? {
+          text: sections.frequent_concern_3,
+          polarity: 'concern' as const,
+        }
+      : sections.frequent_positive
+        ? {
+            text: sections.frequent_positive,
+            polarity: 'positive' as const,
+          }
+        : null,
+  ].filter(
+    (
+      item,
+    ): item is {
+      text: string
+      polarity: SignalPolarity
+    } => Boolean(item),
+  )
   const width = 680
   const height = 170
   const weighted = recentCalendarDays.filter(
@@ -312,17 +359,14 @@ const ReportVisuals = ({
       <section className="report-evidence-section">
         <div className="report-visual__heading">
           <h3>Recorded signals</h3>
-          <span>
-            <EmphasizedText
-              text={
-                sections.frequent_concern_1 ??
-                sections.frequent_positive ??
-                'Daily signal counts provide additional context for the weighted trend.'
-              }
-              signalPolarity={sections.frequent_concern_1 ? 'concern' : 'positive'}
-            />
-          </span>
         </div>
+        {signalEvidence.length ? (
+          <ReportEvidenceList items={signalEvidence} />
+        ) : (
+          <p className="report-evidence-note">
+            Daily signal counts provide additional context for the weighted trend.
+          </p>
+        )}
         <div className="report-signal-trends">
           <SignalTrend
             observations={recentObservations}
@@ -394,7 +438,7 @@ const ReportsPage = () => {
   )
   const baseName = `grove-care-${selected?.displayName.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-') || 'report'}`
   const savePdf = async () => {
-    if (!report) return
+    if (!report || !selected) return
     setPdfState('preparing')
     try {
       const { jsPDF } = await import('jspdf')
@@ -404,9 +448,10 @@ const ReportsPage = () => {
       const pageWidth = pdf.internal.pageSize.getWidth()
       const pageHeight = pdf.internal.pageSize.getHeight()
       const addHeader = (featured = false) => {
+        const currentPageWidth = pdf.internal.pageSize.getWidth()
         if (featured) {
           pdf.setFillColor(239, 245, 235)
-          pdf.rect(0, 0, pageWidth, 78, 'F')
+          pdf.rect(0, 0, currentPageWidth, 78, 'F')
           pdf.setFillColor(86, 130, 100)
           pdf.rect(0, 0, 9, 78, 'F')
         }
@@ -426,37 +471,136 @@ const ReportsPage = () => {
           pdf.setFontSize(8)
           pdf.text(
             'OBSERVATIONS FOR A MORE INFORMED CARE CONVERSATION',
-            pageWidth - margin,
+            currentPageWidth - margin,
             34,
             { align: 'right' },
           )
           pdf.setFont('helvetica', 'normal')
           pdf.setTextColor(104, 119, 111)
-          pdf.text('Private appointment-prep summary', pageWidth - margin, 49, {
+          pdf.text('Private appointment-prep summary', currentPageWidth - margin, 49, {
             align: 'right',
           })
         }
         pdf.setDrawColor(131, 158, 141)
-        pdf.line(margin, featured ? 78 : 52, pageWidth - margin, featured ? 78 : 52)
+        pdf.line(
+          margin,
+          featured ? 78 : 52,
+          currentPageWidth - margin,
+          featured ? 78 : 52,
+        )
+      }
+      const pdfSafe = (text: string) =>
+        text
+          .replaceAll('—', '-')
+          .replaceAll('–', '-')
+          .replaceAll('•', '-')
+      const writeWrappedText = (
+        text: string,
+        startY: number,
+        options: { fontSize?: number; lineHeight?: number } = {},
+      ) => {
+        const fontSize = options.fontSize ?? 9.2
+        const lineHeight = options.lineHeight ?? 11.5
+        const lines = pdf.splitTextToSize(
+          pdfSafe(text),
+          pdf.internal.pageSize.getWidth() - margin * 2,
+        )
+        let y = startY
+        pdf.setFont('helvetica', 'normal')
+        pdf.setFontSize(fontSize)
+        pdf.setTextColor(37, 52, 47)
+        for (const line of lines) {
+          if (y > pdf.internal.pageSize.getHeight() - 45) {
+            pdf.addPage()
+            addHeader()
+            y = 72
+            pdf.setFont('helvetica', 'normal')
+            pdf.setFontSize(fontSize)
+            pdf.setTextColor(37, 52, 47)
+          }
+          pdf.text(line, margin, y)
+          y += lineHeight
+        }
+        return y
+      }
+      const sectionHeading = (title: string, y: number, size = 14) => {
+        pdf.setFont('helvetica', 'bold')
+        pdf.setFontSize(size)
+        pdf.setTextColor(37, 52, 47)
+        pdf.text(title, margin, y)
       }
       addHeader(true)
-      pdf.setTextColor(37, 52, 47)
+      sectionHeading('DATA-DRIVEN NARRATIVE', 108, 16)
       pdf.setFont('helvetica', 'normal')
-      pdf.setFontSize(9.2)
-      const lines = pdf.splitTextToSize(reportText, pageWidth - margin * 2)
-      let y = 102
-      for (const line of lines) {
-        if (y > pageHeight - 42) {
-          pdf.addPage()
-          addHeader()
-          pdf.setTextColor(37, 52, 47)
-          pdf.setFont('helvetica', 'normal')
-          pdf.setFontSize(9.2)
-          y = 72
-        }
-        pdf.text(line, margin, y)
-        y += 11.5
-      }
+      pdf.setFontSize(8.5)
+      pdf.setTextColor(100, 112, 106)
+      pdf.text(
+        `A concise interpretation of ${selected.displayName}'s recorded observations.`,
+        margin,
+        124,
+      )
+      const narrativeSections = [
+        `NOTEWORTHY TAKEAWAYS\n${topTakeaways.map((item) => `- ${item}`).join('\n')}`,
+        narrative.sections.trend_description
+          ? `RECENT TREND\n${narrative.sections.trend_description}`
+          : '',
+        narrative.sections.important_stretches
+          ? `IMPORTANT STRETCHES\n${narrative.sections.important_stretches}`
+          : '',
+        [
+          narrative.sections.frequent_concern_1,
+          narrative.sections.frequent_concern_2,
+          narrative.sections.frequent_concern_3 ??
+            narrative.sections.frequent_positive,
+        ].filter(Boolean).length
+          ? `RECORDED SIGNALS\n${[
+              narrative.sections.frequent_concern_1,
+              narrative.sections.frequent_concern_2,
+              narrative.sections.frequent_concern_3 ??
+                narrative.sections.frequent_positive,
+            ]
+              .filter(Boolean)
+              .map((item) => `- ${item}`)
+              .join('\n')}`
+          : '',
+        [
+          narrative.sections.event_association_1,
+          narrative.sections.event_association_2,
+          narrative.sections.event_association_3,
+        ].filter(Boolean).length
+          ? `EVENTS AND OBSERVED ASSOCIATIONS\n${[
+              narrative.sections.event_association_1,
+              narrative.sections.event_association_2,
+              narrative.sections.event_association_3,
+            ]
+              .filter(Boolean)
+              .map((item) => `- ${item}`)
+              .join('\n')}`
+          : '',
+        narrative.sections.household_correlation
+          ? `HOUSEHOLD WELLNESS RELATIONSHIP\n${narrative.sections.household_correlation}`
+          : '',
+      ]
+        .filter(Boolean)
+        .join('\n\n')
+      writeWrappedText(narrativeSections, 148)
+
+      pdf.addPage()
+      addHeader()
+      sectionHeading('STATISTICAL BREAKDOWN', 78, 16)
+      pdf.setFont('helvetica', 'normal')
+      pdf.setFontSize(8.5)
+      pdf.setTextColor(100, 112, 106)
+      pdf.text(
+        'Detailed calculations, methodology, and provider-facing evidence.',
+        margin,
+        94,
+      )
+      const statisticalText = report.text.replace(
+        /\n+RECENT RAW SCORED OBSERVATIONS[\s\S]*?\n+HOW PATTERN STRAIN IS INTERPRETED/,
+        '\n\nHOW PATTERN STRAIN IS INTERPRETED',
+      )
+      writeWrappedText(statisticalText, 116, { fontSize: 8.8, lineHeight: 11 })
       if (report.observations.length) {
         pdf.addPage()
         addHeader()
@@ -654,22 +798,154 @@ const ReportsPage = () => {
           [86, 130, 100],
         )
       }
+      pdf.addPage('letter', 'landscape')
+      addHeader()
+      const rawMargin = 36
+      const rawPageWidth = pdf.internal.pageSize.getWidth()
+      const rawColumns = [
+        { key: 'date', label: 'DATE', width: 66 },
+        { key: 'score', label: 'SCORE', width: 48 },
+        { key: 'range', label: 'RANGE', width: 52 },
+        { key: 'concern', label: 'CONCERN', width: 42 },
+        { key: 'positive', label: 'POSITIVE', width: 42 },
+        { key: 'signals', label: 'RECORDED SIGNALS', width: 215 },
+        {
+          key: 'context',
+          label: 'NOTES, EVENTS, MEDICATION, OR INTERVENTIONS',
+          width: rawPageWidth - rawMargin * 2 - 465,
+        },
+      ] as const
+      const indicatorNames = new Map(
+        (selected.indicators ?? []).map((indicator) => [indicator.id, indicator.name]),
+      )
+      const eventNames = new Map(
+        (patterns.data?.lifeEvents ?? []).map((event) => [event.id, event.label]),
+      )
+      const checkInsByDate = new Map<
+        string,
+        NonNullable<typeof selected.checkIns>
+      >()
+      ;(selected.checkIns ?? []).forEach((checkIn) => {
+        const key = toLocalDateKey(new Date(checkIn.occurredAt))
+        checkInsByDate.set(key, [...(checkInsByDate.get(key) ?? []), checkIn])
+      })
+      const rawRows = report.observations.map((day) => {
+        const checkIns = checkInsByDate.get(day.date) ?? []
+        const checked = new Set(
+          checkIns.flatMap((checkIn) => parseAnswers(checkIn.answersJson).checked),
+        )
+        const events = new Set(
+          checkIns.flatMap((checkIn) => parseAnswers(checkIn.answersJson).events),
+        )
+        const notes = checkIns
+          .map((checkIn) => checkIn.note?.trim())
+          .filter((note): note is string => Boolean(note))
+        const context = [
+          ...notes,
+          ...[...events].map((id) => `Event: ${eventNames.get(id) ?? id}`),
+        ]
+        return {
+          date: new Date(`${day.date}T12:00:00`).toLocaleDateString(),
+          score: String(day.score),
+          range:
+            day.level === 'concern'
+              ? 'Concern'
+              : day.level === 'watch'
+                ? 'Watch'
+                : 'Steady',
+          concern: String(day.concernSignals),
+          positive: String(day.positiveSignals),
+          signals:
+            [...checked]
+              .map((id) => indicatorNames.get(id) ?? id)
+              .sort()
+              .join('; ') || 'None selected',
+          context: context.join(' | ') || 'None recorded',
+        }
+      })
+      const drawRawTitle = () => {
+        pdf.setFont('helvetica', 'bold')
+        pdf.setFontSize(16)
+        pdf.setTextColor(37, 52, 47)
+        pdf.text('RAW DATA', rawMargin, 78)
+        pdf.setFont('helvetica', 'normal')
+        pdf.setFontSize(8.5)
+        pdf.setTextColor(100, 112, 106)
+        pdf.text(
+          'One row per recorded day. Missing days are excluded rather than represented as wellness observations.',
+          rawMargin,
+          94,
+        )
+      }
+      const drawRawHeader = (top: number) => {
+        pdf.setFillColor(75, 101, 87)
+        pdf.rect(rawMargin, top, rawPageWidth - rawMargin * 2, 22, 'F')
+        pdf.setFont('helvetica', 'bold')
+        pdf.setFontSize(6.5)
+        pdf.setTextColor(255, 255, 255)
+        let left = rawMargin
+        rawColumns.forEach((column) => {
+          pdf.text(column.label, left + 4, top + 14)
+          left += column.width
+        })
+        return top + 22
+      }
+      drawRawTitle()
+      let rawY = drawRawHeader(108)
+      rawRows.forEach((row, rowIndex) => {
+        const wrapped = rawColumns.map((column) =>
+          pdf.splitTextToSize(
+            pdfSafe(row[column.key]),
+            Math.max(10, column.width - 8),
+          ),
+        )
+        const rowHeight = Math.max(
+          20,
+          Math.max(...wrapped.map((lines) => lines.length)) * 8 + 8,
+        )
+        if (rawY + rowHeight > pdf.internal.pageSize.getHeight() - 42) {
+          pdf.addPage('letter', 'landscape')
+          addHeader()
+          drawRawTitle()
+          rawY = drawRawHeader(108)
+        }
+        pdf.setFillColor(
+          rowIndex % 2 === 0 ? 248 : 239,
+          rowIndex % 2 === 0 ? 250 : 245,
+          rowIndex % 2 === 0 ? 247 : 240,
+        )
+        pdf.rect(rawMargin, rawY, rawPageWidth - rawMargin * 2, rowHeight, 'F')
+        pdf.setDrawColor(215, 224, 217)
+        let left = rawMargin
+        pdf.setFont('helvetica', 'normal')
+        pdf.setFontSize(6.7)
+        pdf.setTextColor(47, 62, 55)
+        rawColumns.forEach((column, columnIndex) => {
+          if (columnIndex > 0) pdf.line(left, rawY, left, rawY + rowHeight)
+          pdf.text(wrapped[columnIndex], left + 4, rawY + 11)
+          left += column.width
+        })
+        pdf.line(rawMargin, rawY + rowHeight, rawPageWidth - rawMargin, rawY + rowHeight)
+        rawY += rowHeight
+      })
       pdf.setFont('helvetica', 'normal')
       pdf.setFontSize(6.8)
       pdf.setTextColor(100, 112, 106)
       for (let page = 1; page <= pdf.getNumberOfPages(); page += 1) {
         pdf.setPage(page)
+        const footerWidth = pdf.internal.pageSize.getWidth()
+        const footerHeight = pdf.internal.pageSize.getHeight()
         pdf.text(
           'Grove Care provides observational summaries and does not diagnose, assess immediate risk, or replace professional medical care.',
-          pageWidth / 2,
-          pageHeight - 29,
+          footerWidth / 2,
+          footerHeight - 29,
           { align: 'center' },
         )
-        pdf.text('© 2026 Bryant James. All rights reserved.', margin, pageHeight - 16)
+        pdf.text('© 2026 Bryant James. All rights reserved.', margin, footerHeight - 16)
         pdf.text(
           `Prepared ${new Date().toLocaleDateString()} · Page ${page} of ${pdf.getNumberOfPages()}`,
-          pageWidth - margin,
-          pageHeight - 16,
+          footerWidth - margin,
+          footerHeight - 16,
           { align: 'right' },
         )
       }
@@ -743,15 +1019,26 @@ const ReportsPage = () => {
           <section className="report-evidence-section">
             <div className="report-visual__heading">
               <h3>Events and observed associations</h3>
-              <span>
-                <EmphasizedText
-                  text={
-                    narrative.sections.event_summary ??
-                    'No event has enough recorded days for a meaningful comparison yet.'
-                  }
-                />
-              </span>
             </div>
+            {[
+              narrative.sections.event_association_1,
+              narrative.sections.event_association_2,
+              narrative.sections.event_association_3,
+            ].filter((item): item is string => Boolean(item)).length ? (
+              <ReportEvidenceList
+                items={[
+                  narrative.sections.event_association_1,
+                  narrative.sections.event_association_2,
+                  narrative.sections.event_association_3,
+                ]
+                  .filter((item): item is string => Boolean(item))
+                  .map((text) => ({ text }))}
+              />
+            ) : (
+              <p className="report-evidence-note">
+                No event has enough recorded days for a meaningful comparison yet.
+              </p>
+            )}
           </section>
           <section className="report-evidence-section">
             <div className="report-visual__heading">
@@ -795,8 +1082,8 @@ const ReportsPage = () => {
             <p className="report-flow-section__eyebrow">Provider report</p>
             <h2>Share the detailed evidence</h2>
             <p>
-              The PDF includes the factual calculations, raw recent observations,
-              charts, and the important points shown above.
+              The PDF includes a data-driven narrative, a statistical breakdown with
+              charts, and a researcher-friendly raw-data table.
             </p>
           </section>
           <ReportActions />

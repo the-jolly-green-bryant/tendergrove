@@ -96,6 +96,7 @@ export const PatternStrainReportSection = ({
       <PatternStrainSparkline
         days={trendDays}
         endDate={calendarDays.at(-1)!.date}
+        showAxisLabels={false}
       />
     )}
     <div

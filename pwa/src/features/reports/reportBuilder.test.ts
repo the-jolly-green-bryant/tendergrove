@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { buildProviderReport, reportCsv } from './reportBuilder'
+import {
+  buildProviderReport,
+  isHouseholdConcernOverlapNoteworthy,
+  isHouseholdCorrelationNoteworthy,
+  reportCsv,
+} from './reportBuilder'
 import type { RawPerson } from '../patterns/analytics'
 
 const person = {
@@ -20,7 +25,7 @@ describe('provider report', () => {
     expect(report.text).toContain('Missing or incomplete data is excluded')
     expect(report.text).toContain('1% of the baseline window has recorded data')
     expect(report.text).toContain('3% of the recent window has recorded data')
-    expect(report.text).toContain('“Major sleep disruption” was noted in 1 of 1 recent observations')
+    expect(report.text).toContain('No difficult signals changed meaningfully from baseline')
     expect(report.text).toContain('PATTERN STRAIN')
     expect(report.patternDynamics.dataQuality.observedDays).toBe(1)
     expect(report.text).toContain('Research & Methodology in Grove: /about/research')
@@ -93,9 +98,8 @@ describe('provider report', () => {
     })
 
     expect(report.text).toContain('“Pass - Day” was recorded on 3 scored days')
-    expect(report.text).toContain('averaged 0 wellness points')
-    expect(report.text).toContain('and a baseline of')
-    expect(report.text).toContain('coincided with a wellness score 100 points lower')
+    expect(report.text).toContain('Wellness averaged 0 points on those days, 100% below baseline')
+    expect(report.text).not.toContain('other scored days')
     expect(report.text).not.toContain('continued clinical care')
   })
 
@@ -133,5 +137,14 @@ describe('provider report', () => {
       noteworthy: true,
     })
     expect(report.text).toContain('average wellness of other household members')
+  })
+
+  it('does not infer a household relationship from concurrent concern days alone', () => {
+    expect(isHouseholdCorrelationNoteworthy(30, 0.33)).toBe(false)
+    expect(isHouseholdCorrelationNoteworthy(21, 0.66)).toBe(true)
+    expect(isHouseholdCorrelationNoteworthy(6, 0.9)).toBe(false)
+    expect(isHouseholdConcernOverlapNoteworthy(1)).toBe(false)
+    expect(isHouseholdConcernOverlapNoteworthy(2)).toBe(false)
+    expect(isHouseholdConcernOverlapNoteworthy(3)).toBe(true)
   })
 })

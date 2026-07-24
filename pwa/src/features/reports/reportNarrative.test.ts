@@ -4,6 +4,7 @@ import {
   buildNarrativeEnvelope,
   fallbackNarrative,
   narrativeTakeaways,
+  qualifyRegressionIntensity,
   renderNarrative,
   validateNarrativeTemplate,
 } from './reportNarrative'
@@ -69,12 +70,17 @@ describe('report narrative facts', () => {
     expect(
       envelope.facts.find((fact) => fact.id === 'recent_regressive_days')?.replacement,
     ).toContain(
-      '1 of 2 recent recorded observations fell below the 40-point baseline (50%, unchanged from baseline)',
+      '50% of recent observations fell below the 40-point baseline (unchanged from baseline)',
+    )
+    expect(
+      envelope.facts.find((fact) => fact.id === 'recent_regressive_days')?.replacement,
+    ).toContain(
+      'recorded regression was moderate: affected observations averaged 35 points, 5 points below baseline',
     )
     expect(
       envelope.facts.find((fact) => fact.id === 'wellness_comparison')?.replacement,
     ).toContain(
-      'Recent wellness averaged 35 points: 5 points below the 40-point baseline',
+      'Recent wellness averaged 35 points, 13% below baseline',
     )
     expect(
       envelope.facts.find((fact) => fact.id === 'important_stretches')?.replacement,
@@ -82,6 +88,109 @@ describe('report narrative facts', () => {
     expect(
       envelope.facts.find((fact) => fact.id === 'pattern_strain_takeaway')?.replacement,
     ).toContain('largest recent decline was 30 points')
+  })
+
+  it('distinguishes mild regression from pronounced lower-score regression', () => {
+    expect(
+      qualifyRegressionIntensity({
+        baseline: 65,
+        scores: [62, 60, 64, 68],
+        largestAdjacentDecline: 8,
+        recentAverage: 64,
+        strainBand: 'low',
+      })?.level,
+    ).toBe('mild')
+    expect(
+      qualifyRegressionIntensity({
+        baseline: 40,
+        scores: [8, 12, 5, 35],
+        largestAdjacentDecline: 30,
+        recentAverage: 15,
+        strainBand: 'sustained',
+      }),
+    ).toMatchObject({
+      level: 'pronounced',
+      averageScore: 15,
+      averageDepth: 25,
+      deepestDepth: 35,
+    })
+  })
+
+  it('does not let one large drop overstate an improving emerging pattern', () => {
+    expect(
+      qualifyRegressionIntensity({
+        baseline: 32,
+        scores: [0, 28, 30, 55, 62],
+        largestAdjacentDecline: 42,
+        recentAverage: 40,
+        strainBand: 'emerging',
+      })?.level,
+    ).toBe('mild')
+  })
+
+  it('uses relative baseline percentages and treats tiny changes as unchanged', () => {
+    const base = report as unknown as Record<string, unknown>
+    const envelope = buildNarrativeEnvelope({
+      ...base,
+      baseline: 47,
+      recent: 48,
+    } as never)
+    expect(
+      envelope.facts.find((fact) => fact.id === 'wellness_comparison')?.replacement,
+    ).toBe(
+      'Recent wellness averaged 48 points, 2% above baseline. This suggests recorded well-being was essentially unchanged overall.',
+    )
+  })
+
+  it('frames below-baseline days as ordinary variation when strain is low', () => {
+    const base = report as unknown as Record<string, unknown> & {
+      patternDynamics: Record<string, unknown>
+    }
+    const envelope = buildNarrativeEnvelope({
+      ...base,
+      recent: 40,
+      patternDynamics: {
+        ...base.patternDynamics,
+        burden: 20,
+        instability: 25,
+        persistence: 15,
+        recoveryDifficulty: 20,
+        largestDecline: 10,
+        band: 'low',
+      },
+    } as never)
+    expect(envelope.facts.some((fact) => fact.id === 'recent_regressive_days')).toBe(
+      false,
+    )
+    expect(
+      envelope.facts.find((fact) => fact.id === 'normal_variation')?.replacement,
+    ).toContain('ordinary variation rather than a sustained regression')
+    expect(
+      envelope.facts.find((fact) => fact.id === 'sustainability')?.replacement,
+    ).toContain('consistent with ordinary ups and downs')
+  })
+
+  it('lists two difficult signals and uses the most frequent remaining signal third', () => {
+    const base = report as unknown as Record<string, unknown>
+    const envelope = buildNarrativeEnvelope({
+      ...base,
+      recentDifficult: [
+        { name: 'Difficult A', count: 8, recentRate: 80, baselineRate: 60, delta: 20 },
+        { name: 'Difficult B', count: 7, recentRate: 70, baselineRate: 50, delta: 20 },
+        { name: 'Difficult C', count: 3, recentRate: 30, baselineRate: 20, delta: 10 },
+      ],
+      recentPositive: [
+        { name: 'Positive A', count: 5, recentRate: 50, baselineRate: 40, delta: 10 },
+      ],
+    } as never)
+    expect(envelope.facts.some((fact) => fact.id === 'frequent_concern_1')).toBe(true)
+    expect(envelope.facts.some((fact) => fact.id === 'frequent_concern_2')).toBe(true)
+    expect(
+      envelope.facts.find((fact) => fact.id === 'frequent_positive')?.replacement,
+    ).toContain('“Positive A”')
+    expect(envelope.facts.some((fact) => fact.id === 'frequent_concern_3')).toBe(
+      false,
+    )
   })
 
   it('substitutes approved placeholders without changing their values', () => {

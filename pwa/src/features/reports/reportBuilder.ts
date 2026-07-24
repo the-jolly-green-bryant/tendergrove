@@ -100,6 +100,15 @@ export interface HouseholdCorrelation {
   direction: 'positive' | 'negative'
 }
 
+export const isHouseholdCorrelationNoteworthy = (
+  pairedDays: number,
+  coefficient: number,
+) => pairedDays >= 7 && Math.abs(coefficient) >= 0.5
+
+export const isHouseholdConcernOverlapNoteworthy = (
+  concurrentConcernDays: number,
+) => concurrentConcernDays >= 3
+
 const dateKey = (value: string) => {
   const date = new Date(value)
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
@@ -122,11 +131,17 @@ const formatDay = (key: string) => {
 
 const percentage = (count: number, total: number) =>
   total ? Math.round((count / total) * 100) : 0
-const baselineDelta = (delta: number) =>
-  delta === 0
-    ? 'unchanged from baseline'
-    : `${Math.abs(delta)} points ${delta > 0 ? 'up' : 'down'} from baseline`
-
+const formatPoints = (value: number) =>
+  `${value} ${value === 1 ? 'point' : 'points'}`
+const relativeRateToBaseline = (value: number, baseline: number) => {
+  if (value === baseline) return 'unchanged from baseline'
+  if (baseline === 0) return value > 0 ? 'above baseline' : 'below baseline'
+  const percent = Math.max(
+    1,
+    Math.round((Math.abs(value - baseline) / Math.abs(baseline)) * 100),
+  )
+  return `${percent}% ${value > baseline ? 'above' : 'below'} baseline`
+}
 const dateKeysBetween = (start: Date, end: Date) => {
   const keys: string[] = []
   const cursor = new Date(start.getFullYear(), start.getMonth(), start.getDate(), 12)
@@ -265,8 +280,11 @@ const householdCorrelation = (
       selectedScore < STATUS_THRESHOLDS.trouble &&
       householdScore < STATUS_THRESHOLDS.trouble,
   ).length
-  const noteworthy =
-    pairs.length >= 7 && (magnitude >= 0.5 || concurrentConcernDays >= 3)
+  // Concurrent concern-range days provide useful context, but do not by
+  // themselves show that this person's scores move with the household.
+  // Reserve the higher-level takeaway for a moderate relationship supported
+  // by at least a week of shared observations.
+  const noteworthy = isHouseholdCorrelationNoteworthy(pairs.length, coefficient)
   return {
     coefficient,
     pairedDays: pairs.length,
@@ -472,7 +490,6 @@ export const buildProviderReport = ({
   ).length
   const fullConcernRate = percentage(concernDays, observations.length)
   const recentConcernRate = percentage(recentConcernDays, recentObservations.length)
-  const concernRateDelta = recentConcernRate - fullConcernRate
   const significantPeriods = [
     ...difficultPeriods
       .filter((period) => period.days >= 2)
@@ -489,7 +506,7 @@ export const buildProviderReport = ({
     `• Baseline: ${concernDays} of ${observations.length} scored days were in the concern range (${fullConcernRate}%); ${observations.length - concernDays - steadyDays} of ${observations.length} were in the watch range (${percentage(observations.length - concernDays - steadyDays, observations.length)}%); and ${steadyDays} of ${observations.length} were steady (${percentage(steadyDays, observations.length)}%).`,
     ...(recentObservations.length
       ? [
-          `• Recent: ${recentConcernDays} of ${recentObservations.length} recorded observations were in the concern range (${recentConcernRate}%, ${baselineDelta(concernRateDelta)}).`,
+          `• Recent: ${recentConcernRate}% of observations were in the concern range (${relativeRateToBaseline(recentConcernRate, fullConcernRate)}).`,
         ]
       : []),
   ]
@@ -525,29 +542,40 @@ export const buildProviderReport = ({
       ]
     })
     .sort((a, b) => a.difference - b.difference || b.eventDays - a.eventDays)
-  const eventNarrative = eventComparisons.length
-    ? eventComparisons
+  const noteworthyEventComparisons = eventComparisons.filter(
+    (event) => baseline === null || event.eventAverage !== baseline,
+  )
+  const eventNarrative = noteworthyEventComparisons.length
+    ? noteworthyEventComparisons
         .slice(0, 3)
         .map(
           (event) =>
-            `• “${event.label}” was recorded on ${event.eventDays} scored days. Those days averaged ${event.eventAverage} wellness points, compared with ${event.otherAverage} points on other scored days and a baseline of ${baseline ?? 'unavailable'} points. The event-day average was ${baseline === null ? 'not comparable with baseline' : event.eventAverage === baseline ? 'unchanged from baseline' : `${Math.abs(event.eventAverage - baseline)} points ${event.eventAverage > baseline ? 'higher than' : 'lower than'} baseline`}. ${event.concernDays} of ${event.eventDays} event days were in the concern range (${percentage(event.concernDays, event.eventDays)}%). ${event.difference < 0 ? `In this sample, the event coincided with a wellness score ${Math.abs(event.difference)} points lower than other scored days.` : `In this sample, the event did not coincide with a lower average wellness score.`}`,
+            `• “${event.label}” was recorded on ${event.eventDays} scored days. Wellness averaged ${formatPoints(event.eventAverage)} on those days${baseline === null ? '.' : `, ${relativeRateToBaseline(event.eventAverage, baseline)}.`} ${event.concernDays} of ${event.eventDays} event days were in the concern range (${percentage(event.concernDays, event.eventDays)}%).`,
         )
-    : 'No event has enough recorded days yet for a meaningful comparison with other observations.'
+    : 'No recorded event showed a noteworthy difference from baseline.'
   const correlation = householdCorrelation(person, householdPeople, cutoff)
   const correlationNarrative = correlation
     ? [
-        `Across ${correlation.pairedDays} same-day observations, ${person.displayName}’s wellness had a ${correlation.strength} ${correlation.direction} correlation with the average wellness of other household members (r = ${correlation.coefficient}).`,
+        `Across ${correlation.pairedDays} observations, ${person.displayName}’s wellness had a ${correlation.strength} ${correlation.direction} correlation with the average wellness of other household members (r = ${correlation.coefficient}).`,
         correlation.direction === 'positive'
-          ? `A positive correlation means their scores tended to rise and fall together.${correlation.concurrentConcernDays ? ` On ${correlation.concurrentConcernDays} paired days, both ${person.displayName} and the rest of the household averaged in the concern range, which is concerning household context worth discussing.` : ''}`
+          ? `A positive correlation means their scores tended to rise and fall together.${
+              correlation.concurrentConcernDays
+                ? isHouseholdConcernOverlapNoteworthy(
+                    correlation.concurrentConcernDays,
+                  )
+                  ? ` On ${correlation.concurrentConcernDays} days, both ${person.displayName} and the rest of the household averaged in the concern range, which is concerning household context worth discussing.`
+                  : ` On ${correlation.concurrentConcernDays} ${correlation.concurrentConcernDays === 1 ? 'day' : 'days'}, both ${person.displayName} and the rest of the household averaged in the concern range; this isolated overlap is descriptive context rather than a repeated pattern.`
+                : ''
+            }`
           : 'A negative correlation means their scores tended to move in opposite directions.',
         correlation.noteworthy
           ? 'The amount and consistency of overlap make this pattern noteworthy for a care discussion.'
           : '',
-        `This may reflect shared circumstances or interactions, but it does not show that ${person.displayName} caused changes in anyone else.`,
+        'This may reflect shared circumstances or interactions.',
       ]
         .filter(Boolean)
         .join(' ')
-    : 'At least 3 same-day observations with changing scores for this person and another household member are needed to estimate household correlation.'
+    : 'At least 3 observations with changing scores for this person and another household member are needed to estimate household correlation.'
   const lines = [
     `GROVE CARE APPOINTMENT-PREP SUMMARY: ${person.displayName}`,
     'Personal observations only: not a diagnosis, risk assessment, or recommendation for treatment or hospitalization.',
@@ -565,7 +593,7 @@ export const buildProviderReport = ({
     `• Recovery difficulty: ${patternDimensionLevel(patternDynamics.recoveryDifficulty)}.`,
     ...(patternDynamics.largestDecline >= 15
       ? [
-          `• Largest recent decline: ${patternDynamics.largestDecline} points across adjacent observed days.`,
+            `• Largest recent decline: ${formatPoints(patternDynamics.largestDecline)} across adjacent observed days.`,
         ]
       : []),
     `Based on ${patternDynamics.dataQuality.observedDays} recent observed days with ${patternDynamics.dataQuality.coverage}% coverage and ${patternDynamics.dataQuality.baselineDays} earlier baseline days. Confidence: ${patternDynamics.confidence}%.`,
@@ -573,7 +601,7 @@ export const buildProviderReport = ({
     'RECENT COMPARED WITH BASELINE',
     delta === null
       ? 'There are not enough scored observations to compare recent data with baseline.'
-      : `Recent wellness averaged ${recent} points (compared with the ${baseline}-point baseline; ${delta === 0 ? 'no change' : `${Math.abs(delta)} points ${delta > 0 ? 'higher' : 'lower'}`}). Grove Care calculates wellness scores using its proprietary weighted scoring algorithm and only the signals recorded for this person.`,
+      : `Recent wellness averaged ${formatPoints(recent!)} (compared with the ${baseline}-point baseline; ${delta === 0 ? 'no change' : `${formatPoints(Math.abs(delta))} ${delta > 0 ? 'higher' : 'lower'}`}). Grove Care calculates wellness scores using its proprietary weighted scoring algorithm and only the signals recorded for this person.`,
     '',
     'IMPORTANT STRETCHES OF TIME',
     ...(observations.length
@@ -596,20 +624,20 @@ export const buildProviderReport = ({
         : `Difficult observations were noted in ${difficultCheckIns} of ${checkIns.length} check-ins (${percentage(difficultCheckIns, checkIns.length)}%).\n\nContinue recording meaningful changes and bring new concerns to the intended professional or support person.`,
     '',
     'RECENT CONCERNS NOTICED MOST OFTEN',
-    ...(recentDifficult.length
-      ? recentDifficult.map(
+    ...(recentDifficult.some((item) => item.delta !== 0)
+      ? recentDifficult.filter((item) => item.delta !== 0).map(
           (item) =>
-            `• “${item.name}” was noted in ${item.count} of ${recentCheckIns.length} recent observations (${item.recentRate}%, ${baselineDelta(item.delta)}).`,
+            `• “${item.name}” was noted in ${item.recentRate}% of recent observations (${relativeRateToBaseline(item.recentRate, item.baselineRate)}).`,
         )
-      : ['No difficult signals were recorded recently.']),
+      : ['No difficult signals changed meaningfully from baseline.']),
     '',
     'RECENT POSITIVE SIGNS NOTICED MOST OFTEN',
-    ...(recentPositive.length
-      ? recentPositive.map(
+    ...(recentPositive.some((item) => item.delta !== 0)
+      ? recentPositive.filter((item) => item.delta !== 0).map(
           (item) =>
-            `• “${item.name}” was noted in ${item.count} of ${recentCheckIns.length} recent observations (${item.recentRate}%, ${baselineDelta(item.delta)}).`,
+            `• “${item.name}” was noted in ${item.recentRate}% of recent observations (${relativeRateToBaseline(item.recentRate, item.baselineRate)}).`,
         )
-      : ['No positive signals were recorded recently.']),
+      : ['No positive signals changed meaningfully from baseline.']),
     '',
     'DATED NOTES ABOUT EVENTS, MEDICATION, OR INTERVENTIONS',
     ...(medicationNotes.length
@@ -626,7 +654,7 @@ export const buildProviderReport = ({
     ...(recentObservations.length
       ? recentObservations.map(
           (day) =>
-            `• ${formatDay(day.date)}: ${day.score} wellness points · ${day.concernSignals} concern signals · ${day.positiveSignals} positive signals`,
+            `• ${formatDay(day.date)}: ${day.score} wellness ${day.score === 1 ? 'point' : 'points'} · ${day.concernSignals} concern ${day.concernSignals === 1 ? 'signal' : 'signals'} · ${day.positiveSignals} positive ${day.positiveSignals === 1 ? 'signal' : 'signals'}`,
         )
       : ['No scored observations were recorded recently.']),
     '',
