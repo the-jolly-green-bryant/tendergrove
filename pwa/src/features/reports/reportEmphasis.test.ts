@@ -18,4 +18,10 @@ describe('report emphasis direction', () => {
     expect(emphasisDirection('up', 'positive')).toBe('positive')
     expect(emphasisDirection('down', 'positive')).toBe('negative')
   })
+
+  it('keeps compound changes and concern counts semantically colored', () => {
+    expect(emphasisDirection('3-point decrease')).toBe('negative')
+    expect(emphasisDirection('3-point decrease', 'concern')).toBe('positive')
+    expect(emphasisDirection('8 of 10 recent recorded observations were in the concern range')).toBe('negative')
+  })
 })

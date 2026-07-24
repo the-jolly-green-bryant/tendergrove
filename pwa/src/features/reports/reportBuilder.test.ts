@@ -21,6 +21,11 @@ describe('provider report', () => {
     expect(report.text).toContain('1% of the baseline window has recorded data')
     expect(report.text).toContain('3% of the recent window has recorded data')
     expect(report.text).toContain('“Major sleep disruption” was noted in 1 of 1 recent observations')
+    expect(report.text).toContain('PATTERN STRAIN')
+    expect(report.patternDynamics.dataQuality.observedDays).toBe(1)
+    expect(report.text).toContain('Research & Methodology in Grove: /about/research')
+    expect(report.text).toContain('Emotion dynamics in children and adolescents')
+    expect(report.text).toContain('not a diagnosis, validated risk assessment, or level-of-care recommendation')
     expect(report.calendarDays).toHaveLength(90)
     expect(report.calendarDays.filter((day) => day.level === 'missing')).toHaveLength(89)
   })
@@ -95,7 +100,7 @@ describe('provider report', () => {
   })
 
   it('compares a person with other household members on overlapping recorded days', () => {
-    const dates = Array.from({ length: 4 }, (_, index) => {
+    const dates = Array.from({ length: 8 }, (_, index) => {
       const date = new Date()
       date.setHours(12, 0, 0, 0)
       date.setDate(date.getDate() - index)
@@ -122,9 +127,10 @@ describe('provider report', () => {
 
     expect(report.householdCorrelation).toMatchObject({
       coefficient: 1,
-      pairedDays: 4,
+      pairedDays: 8,
       strength: 'strong',
       direction: 'positive',
+      noteworthy: true,
     })
     expect(report.text).toContain('average wellness of other household members')
   })
