@@ -15,9 +15,11 @@ const formatDate = (date: string) =>
 export const PatternStrainSparkline = ({
   days,
   endDate,
+  showAxisLabels = true,
 }: {
   days: PatternDynamicsDay[]
   endDate: string
+  showAxisLabels?: boolean
 }) => {
   const trend = buildPatternStrainTrend(days, endDate)
   const values = trend.flatMap((point) =>
@@ -27,7 +29,7 @@ export const PatternStrainSparkline = ({
 
   const width = 320
   const height = 82
-  const padX = 30
+  const padX = showAxisLabels ? 30 : 8
   const padY = 8
   const rawMin = Math.min(...values)
   const rawMax = Math.max(...values)
@@ -51,30 +53,36 @@ export const PatternStrainSparkline = ({
   )
 
   return (
-    <figure className="pattern-strain-sparkline">
+    <figure
+      className={`pattern-strain-sparkline${showAxisLabels ? '' : ' pattern-strain-sparkline--compact'}`}
+    >
       <figcaption>
-        <strong>Pattern Strain over time</strong>
-        <span>Past 3 months · Higher = more strain</span>
+        <strong>Recent Strain</strong>
+        <span>Higher = more strain</span>
       </figcaption>
       <svg
         viewBox={`0 0 ${width} ${height}`}
         role="img"
-        aria-label="Rolling Pattern Strain intensity over the past three months"
+        aria-label="Recent rolling Pattern Strain intensity"
       >
-        <text
-          className="pattern-strain-sparkline__bound"
-          x="2"
-          y={padY + 4}
-        >
-          {upperBound}
-        </text>
-        <text
-          className="pattern-strain-sparkline__bound"
-          x="2"
-          y={height - padY}
-        >
-          {lowerBound}
-        </text>
+        {showAxisLabels && (
+          <>
+            <text
+              className="pattern-strain-sparkline__bound"
+              x="2"
+              y={padY + 4}
+            >
+              {upperBound}
+            </text>
+            <text
+              className="pattern-strain-sparkline__bound"
+              x="2"
+              y={height - padY}
+            >
+              {lowerBound}
+            </text>
+          </>
+        )}
         {lowerBound < 55 && upperBound > 55 && (
           <line
             x1={padX}
@@ -109,10 +117,12 @@ export const PatternStrainSparkline = ({
             ),
         )}
       </svg>
-      <div className="pattern-strain-sparkline__dates">
-        <span>{formatDate(trend[0].date)}</span>
-        <span>{formatDate(trend.at(-1)!.date)}</span>
-      </div>
+      {showAxisLabels && (
+        <div className="pattern-strain-sparkline__dates">
+          <span>{formatDate(trend[0].date)}</span>
+          <span>{formatDate(trend.at(-1)!.date)}</span>
+        </div>
+      )}
     </figure>
   )
 }

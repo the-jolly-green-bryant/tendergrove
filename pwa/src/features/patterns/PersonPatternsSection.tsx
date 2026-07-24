@@ -3,7 +3,6 @@ import {
   chevronForwardOutline,
   homeOutline,
   settingsOutline,
-  triangleOutline,
 } from 'ionicons/icons'
 import React, { useRef, useState } from 'react'
 import { useHistory } from 'react-router-dom'
@@ -29,6 +28,7 @@ import {
   type TrendResult,
   type AnalyticsPersonRef,
   type PatternDynamics,
+  type PatternDynamicsDay,
 } from './analytics'
 
 type Scope = 'person' | 'household'
@@ -57,6 +57,7 @@ const PatternsBody = ({
   personTrends,
   onExplore,
   patternDynamics,
+  patternStrainDays,
 }: {
   readonly data: ScopedData
   readonly rangeDays: number
@@ -73,8 +74,10 @@ const PatternsBody = ({
   readonly personTrends: Record<string, TrendResult>
   readonly onExplore: (tab: 'trend' | 'calendar' | 'household') => void
   readonly patternDynamics: PatternDynamics
+  readonly patternStrainDays: PatternDynamicsDay[]
 }): React.JSX.Element => {
   const [comparisonIds, setComparisonIds] = useState<string[]>([])
+  const [showStrain, setShowStrain] = useState(false)
   const comparisonMenuRef = useRef<HTMLIonMenuElement>(null)
   const comparisons = comparisonIds.flatMap((personId) => {
     const person = comparisonPeople.find((item) => item.id === personId)
@@ -121,24 +124,15 @@ const PatternsBody = ({
         rangeDays={rangeDays}
         showDelta={showDelta}
         patternDynamics={patternDynamics}
+        showStrain={showStrain}
+        patternStrainDays={patternStrainDays}
+        patternStrainEndDate={chartEndDate}
         comparisons={comparisons}
         action={
           <div className="pattern-chart__actions">
             <button
               type="button"
-              className={`pattern-delta-toggle${showDelta ? ' pattern-delta-toggle--active' : ''}`}
-              aria-pressed={showDelta}
-              onClick={onToggleDelta}
-            >
-              <IonIcon
-                icon={triangleOutline}
-                aria-hidden="true"
-              />
-              Delta
-            </button>
-            <button
-              type="button"
-              className={`pattern-chart__settings${comparisonIds.length > 0 ? ' pattern-chart__settings--active' : ''}`}
+              className={`pattern-chart__settings${comparisonIds.length > 0 || showDelta || showStrain ? ' pattern-chart__settings--active' : ''}`}
               aria-label="Trend settings"
               onClick={() => void comparisonMenuRef.current?.open()}
             >
@@ -194,6 +188,10 @@ const PatternsBody = ({
         people={comparisonPeople}
         selectedIds={comparisonIds}
         onToggle={toggleComparison}
+        showDelta={showDelta}
+        onToggleDelta={onToggleDelta}
+        showStrain={showStrain}
+        onToggleStrain={() => setShowStrain((current) => !current)}
       />
 
       {data.subjectName && data.anomalyPatterns && (
@@ -266,6 +264,17 @@ export const PersonPatternsSection = ({
     anomalyPatterns: personView.anomalyPatterns,
     subjectName: personName,
   }
+  const strainSource = scoped
+    ? (result.personDailyScores[personId] ?? [])
+    : result.householdDailyScores
+  const patternStrainDays: PatternDynamicsDay[] = strainSource.map((day) => ({
+    date: day.date,
+    score: day.score,
+    challengeCount: day.negativeCount,
+    positiveCount: day.positiveCount,
+    hasChallenges: day.negativeCount > 0,
+    hasPositiveSigns: day.positiveCount > 0,
+  }))
 
   return (
     <section className="patterns-section person-patterns">
@@ -283,6 +292,7 @@ export const PersonPatternsSection = ({
         comparisonPeople={result.people.filter((person) => person.id !== personId)}
         personTrends={result.personTrends}
         patternDynamics={patternDynamics}
+        patternStrainDays={patternStrainDays}
         onExplore={(tab) => {
           setPerson(personId)
           history.push(`/patterns?tab=${tab}`)

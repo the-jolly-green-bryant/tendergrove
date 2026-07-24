@@ -5,7 +5,6 @@ import {
   pulseOutline,
   speedometerOutline,
   settingsOutline,
-  triangleOutline,
   trailSignOutline,
 } from 'ionicons/icons'
 import React from 'react'
@@ -35,6 +34,7 @@ import { CalendarContent } from './CalendarHeatmapPage'
 import { TurningPointsContent } from './TurningPointsPage'
 import {
   calculatePatternDynamicsForView,
+  patternDaysForView,
   PatternStrainBreakdown,
 } from './components/PatternStrainBreakdown'
 
@@ -110,6 +110,7 @@ const TrendView = ({
   const rangeDays = usePatternsFilterStore((state) => state.rangeDays)
   const setRangeDays = usePatternsFilterStore((state) => state.setRangeDays)
   const toggleDelta = usePatternsFilterStore((state) => state.toggleDelta)
+  const [showStrain, setShowStrain] = React.useState(false)
   const [comparisonIds, setComparisonIds] = React.useState<string[]>([])
   const comparisonMenuRef = React.useRef<HTMLIonMenuElement>(null)
   const comparisonPeople = result.people.filter((person) => person.id !== view.personId)
@@ -142,24 +143,15 @@ const TrendView = ({
         showDelta={showDelta}
         comparisons={comparisons}
         patternDynamics={patternDynamics}
+        showStrain={showStrain}
+        patternStrainDays={patternDaysForView(result, view)}
+        patternStrainEndDate={result.window.endDate}
         className="pattern-overview-chart"
         action={
           <div className="pattern-chart__actions">
             <button
               type="button"
-              className={`pattern-delta-toggle${showDelta ? ' pattern-delta-toggle--active' : ''}`}
-              onClick={toggleDelta}
-              aria-pressed={showDelta}
-            >
-              <IonIcon
-                icon={triangleOutline}
-                aria-hidden="true"
-              />
-              Delta
-            </button>
-            <button
-              type="button"
-              className={`pattern-chart__settings${comparisonIds.length > 0 ? ' pattern-chart__settings--active' : ''}`}
+              className={`pattern-chart__settings${comparisonIds.length > 0 || showDelta || showStrain ? ' pattern-chart__settings--active' : ''}`}
               aria-label="Trend settings"
               onClick={() => void comparisonMenuRef.current?.open()}
             >
@@ -184,6 +176,10 @@ const TrendView = ({
         people={comparisonPeople}
         selectedIds={comparisonIds}
         onToggle={toggleComparison}
+        showDelta={showDelta}
+        onToggleDelta={toggleDelta}
+        showStrain={showStrain}
+        onToggleStrain={() => setShowStrain((current) => !current)}
       />
     </>
   )

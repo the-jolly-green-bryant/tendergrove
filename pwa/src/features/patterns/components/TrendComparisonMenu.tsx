@@ -41,11 +41,19 @@ export const TrendComparisonMenu = ({
   people,
   selectedIds,
   onToggle,
+  showDelta,
+  onToggleDelta,
+  showStrain,
+  onToggleStrain,
 }: {
   readonly menuRef: RefObject<HTMLIonMenuElement | null>
   readonly people: AnalyticsPersonRef[]
   readonly selectedIds: string[]
   readonly onToggle: (personId: string) => void
+  readonly showDelta: boolean
+  readonly onToggleDelta: () => void
+  readonly showStrain: boolean
+  readonly onToggleStrain: () => void
 }) => (
   <RightDrawer
     menuRef={menuRef}
@@ -65,6 +73,47 @@ export const TrendComparisonMenu = ({
       }
     />
     <IonContent className="app-right-drawer__content">
+      <section className="trend-comparison-menu__section">
+        <p className="trend-comparison-menu__eyebrow">Display</p>
+        <IonList lines="none">
+          <IonItem
+            button
+            detail={false}
+            onClick={onToggleDelta}
+          >
+            <IonLabel>Delta</IonLabel>
+            <IonCheckbox
+              slot="end"
+              checked={showDelta}
+              aria-label="Show delta"
+              onClick={(event) => event.stopPropagation()}
+              onIonChange={onToggleDelta}
+            />
+          </IonItem>
+          <IonItem
+            button
+            detail={false}
+            onClick={onToggleStrain}
+          >
+            <IonLabel>
+              <h2>Show strain</h2>
+              <p>Overlay Pattern Strain in purple.</p>
+            </IonLabel>
+            <span
+              className="trend-comparison-menu__swatch"
+              style={{ backgroundColor: '#7c3aed' }}
+              aria-hidden="true"
+            />
+            <IonCheckbox
+              slot="end"
+              checked={showStrain}
+              aria-label="Show strain"
+              onClick={(event) => event.stopPropagation()}
+              onIonChange={onToggleStrain}
+            />
+          </IonItem>
+        </IonList>
+      </section>
       <section className="trend-comparison-menu__section">
         <p className="trend-comparison-menu__eyebrow">Compare</p>
         <p className="trend-comparison-menu__help">

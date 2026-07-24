@@ -1,5 +1,6 @@
 import {
   IonBackButton,
+  IonButton,
   IonButtons,
   IonContent,
   IonHeader,
@@ -330,6 +331,7 @@ export const Page = ({
   forceOverscroll,
   illustratedHeader,
   backHref,
+  onBackClick,
 }: PageProps): React.JSX.Element => {
   const { contentRef, isAtTop, updateHeaderPosition } = useHeaderScrollState(
     transparentHeaderUntilScroll,
@@ -361,12 +363,25 @@ export const Page = ({
         >
           <IonButtons slot="start">
             {backHref ? (
-              <IonBackButton
-                defaultHref={backHref}
-                icon={chevronBackOutline}
-                text=""
-                aria-label="Back"
-              />
+              onBackClick ? (
+                <IonButton
+                  fill="clear"
+                  onClick={onBackClick}
+                  aria-label="Back"
+                >
+                  <IonIcon
+                    icon={chevronBackOutline}
+                    aria-hidden="true"
+                  />
+                </IonButton>
+              ) : (
+                <IonBackButton
+                  defaultHref={backHref}
+                  icon={chevronBackOutline}
+                  text=""
+                  aria-label="Back"
+                />
+              )
             ) : (
               <IonMenuButton
                 menu="main-navigation"

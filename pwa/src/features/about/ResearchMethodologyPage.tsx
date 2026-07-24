@@ -5,6 +5,7 @@ import {
 } from '../patterns/analytics/patternDynamics'
 import { ResearchConceptCard } from './components/ResearchConceptCard'
 import { ResearchReferences } from './components/ResearchReferences'
+import { useHistory } from 'react-router-dom'
 
 const strainDescriptions: Record<PatternStrainBand, string> = {
   low: 'Recent observations remain reasonably close to the person’s established pattern, with generally brief difficult periods and consistent recovery.',
@@ -207,16 +208,28 @@ export const ResearchMethodologyContent = () => (
   </article>
 )
 
-const ResearchMethodologyPage = () => (
-  <Page
-    title="Research & Methodology"
-    headerContent={<IllustratedHeaderTitle title="Research & Methodology" />}
-    backHref="/dashboard"
-    illustratedHeader
-    className="research-methodology-page"
-  >
-    <ResearchMethodologyContent />
-  </Page>
-)
+const ResearchMethodologyPage = () => {
+  const history = useHistory()
+  const goBack = () => {
+    if (history.length > 1) {
+      history.goBack()
+      return
+    }
+    history.replace('/dashboard')
+  }
+
+  return (
+    <Page
+      title="Research & Methodology"
+      headerContent={<IllustratedHeaderTitle title="Research & Methodology" />}
+      backHref="/dashboard"
+      onBackClick={goBack}
+      illustratedHeader
+      className="research-methodology-page"
+    >
+      <ResearchMethodologyContent />
+    </Page>
+  )
+}
 
 export default ResearchMethodologyPage

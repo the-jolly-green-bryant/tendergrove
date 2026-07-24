@@ -19,7 +19,7 @@ const shiftDate = (date: string, days: number) => {
 
 const levelClass = (value: number) => patternDimensionLevel(value).toLowerCase()
 
-const patternDaysForView = (
+export const patternDaysForView = (
   result: AnalyticsResult,
   view: ScopedPatternsView,
 ): PatternDynamicsDay[] => {
