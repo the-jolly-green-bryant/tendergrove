@@ -49,6 +49,13 @@ export const GROVE_SCORE_SETBACK_DECAY = {
   elevatedOrHigher: 0.94,
 } as const
 
+/**
+ * Controls the soft lower bound applied after longitudinal pressures.
+ * A smaller value stays closer to a hard zero; this value preserves visible
+ * distinctions among very low scores without materially lifting them.
+ */
+export const GROVE_SCORE_SOFT_FLOOR_SCALE = 5
+
 export interface GroveScoreBreakdown {
   version: typeof GROVE_SCORE_VERSION
   score: number
@@ -81,6 +88,21 @@ const personAnalysisCache = new WeakMap<
 
 const clamp = (value: number) => Math.max(0, Math.min(100, value))
 const round = (value: number) => Math.round(clamp(value))
+const roundTrend = (value: number) => Math.round(clamp(value) * 10) / 10
+
+/**
+ * A softplus floor keeps severely pressured values ordered instead of
+ * collapsing every latent value below zero to the same displayed zero.
+ */
+export const applyGroveScoreSoftFloor = (value: number): number => {
+  const scaled = value / GROVE_SCORE_SOFT_FLOOR_SCALE
+  if (scaled > 20) return Math.min(100, value)
+  if (scaled < -20) return 0
+  return Math.min(
+    100,
+    GROVE_SCORE_SOFT_FLOOR_SCALE * Math.log1p(Math.exp(scaled)),
+  )
+}
 
 /**
  * Grove Score v1 combines the current observation-based wellness score with
@@ -271,7 +293,7 @@ export const buildGroveScoreTrend = (
       return {
         ...point,
         rollingAverage:
-          weightedScore === null ? null : Math.round(weightedScore),
+          weightedScore === null ? null : roundTrend(weightedScore),
       }
     }
     const currentStart = shiftDate(point.date, -(DEFAULT_ANALYSIS_DAYS - 1))
@@ -310,8 +332,7 @@ export const buildGroveScoreTrend = (
       )
       const trajectoryPressure = negativeTrajectoryPressure(days, point.date)
       const eventPressure = worseningEventPressure(points, index)
-      const adjustedDailyScore = Math.max(
-        0,
+      const adjustedDailyScore = applyGroveScoreSoftFloor(
         dailyScore - trajectoryPressure - eventPressure - setbackMemory,
       )
       if (weightedScore === null) {
@@ -336,7 +357,7 @@ export const buildGroveScoreTrend = (
       ...point,
       score: dailyScore,
       rollingAverage:
-        weightedScore === null ? null : Math.round(weightedScore),
+        weightedScore === null ? null : roundTrend(weightedScore),
     }
   })
 }
@@ -424,8 +445,10 @@ export const currentPersonGroveAnalysis = (
     ? {
         ...base,
         score:
-          buildGroveScoreTrend(rawTrend.points, patternDays).at(-1)
-            ?.rollingAverage ?? base.score,
+          round(
+            buildGroveScoreTrend(rawTrend.points, patternDays).at(-1)
+              ?.rollingAverage ?? base.score,
+          ),
       }
     : null
   const analysis = { score, dynamics }

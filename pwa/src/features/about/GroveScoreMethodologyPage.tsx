@@ -7,6 +7,7 @@ import {
   GROVE_SCORE_RECOVERY_RATES,
   GROVE_SCORE_REGRESSION_RATES,
   GROVE_SCORE_SETBACK_DECAY,
+  GROVE_SCORE_SOFT_FLOOR_SCALE,
   GROVE_SCORE_WEIGHTS,
 } from '../../lib/groveScore'
 
@@ -90,6 +91,13 @@ export const GroveScoreMethodologyContent = () => (
         A disproportionately difficult observation also leaves temporary setback
         pressure, which fades only as later recorded observations provide evidence of
         recovery.
+      </p>
+      <p>
+        After these pressures are applied, Grove uses a soft lower bound with a
+        scale of <strong>{GROVE_SCORE_SOFT_FLOOR_SCALE} points</strong>. This keeps
+        very difficult observations low while preserving meaningful differences
+        between them instead of collapsing every value below zero into the same
+        zero-point result.
       </p>
     </section>
 

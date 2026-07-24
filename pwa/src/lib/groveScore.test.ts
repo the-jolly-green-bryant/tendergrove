@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  applyGroveScoreSoftFloor,
   buildGroveScoreTrend,
   calculateGroveScore,
   GROVE_SCORE_WEIGHTS,
@@ -168,5 +169,38 @@ describe('Grove Score v1', () => {
     expect(groveScoreRegressionAlpha({ band: 'low' })).toBe(0.22)
     expect(groveScoreRegressionAlpha({ band: 'emerging' })).toBe(0.38)
     expect(groveScoreRegressionAlpha({ band: 'sustained' })).toBe(0.52)
+  })
+
+  it('preserves distinctions among severely pressured low scores', () => {
+    const deeplyPressured = applyGroveScoreSoftFloor(-20)
+    const pressured = applyGroveScoreSoftFloor(-10)
+    const atZero = applyGroveScoreSoftFloor(0)
+
+    expect(deeplyPressured).toBeGreaterThan(0)
+    expect(pressured).toBeGreaterThan(deeplyPressured)
+    expect(atZero).toBeGreaterThan(pressured)
+    expect(applyGroveScoreSoftFloor(30)).toBeCloseTo(30, 1)
+  })
+
+  it('retains decimal fidelity in the plotted trend', () => {
+    const points = [0, 100].map((score, index) => ({
+      date: `2026-07-${String(index + 1).padStart(2, '0')}`,
+      score,
+      rollingAverage: score,
+      eventCount: 0,
+    }))
+    const days: PatternDynamicsDay[] = points.map((point) => ({
+      date: point.date,
+      score: point.score,
+      challengeCount: point.score === 0 ? 3 : 0,
+      positiveCount: point.score === 100 ? 2 : 0,
+      hasChallenges: point.score === 0,
+      hasPositiveSigns: point.score === 100,
+    }))
+
+    const plotted = buildGroveScoreTrend(points, days).at(-1)?.rollingAverage
+
+    expect(plotted).not.toBeNull()
+    expect(Number.isInteger(plotted)).toBe(false)
   })
 })
