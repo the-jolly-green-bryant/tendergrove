@@ -3,6 +3,7 @@ import {
   calendarNumberOutline,
   gitNetworkOutline,
   pulseOutline,
+  speedometerOutline,
   settingsOutline,
   triangleOutline,
   trailSignOutline,
@@ -32,14 +33,19 @@ import { usePatternsFilterStore } from './patternsFilterStore'
 import { useScopedPatterns } from './useScopedPatterns'
 import { CalendarContent } from './CalendarHeatmapPage'
 import { TurningPointsContent } from './TurningPointsPage'
+import {
+  calculatePatternDynamicsForView,
+  PatternStrainBreakdown,
+} from './components/PatternStrainBreakdown'
 
 import './patterns.scss'
 
-type PatternsTab = 'trend' | 'calendar' | 'household' | 'turning-points'
+type PatternsTab = 'trend' | 'calendar' | 'strain' | 'household' | 'turning-points'
 
 const TABS: Array<{ id: PatternsTab; label: string; icon: string }> = [
   { id: 'trend', label: 'Trend', icon: pulseOutline },
   { id: 'calendar', label: 'Calendar', icon: calendarNumberOutline },
+  { id: 'strain', label: 'Strain', icon: speedometerOutline },
   { id: 'household', label: 'Household', icon: gitNetworkOutline },
   { id: 'turning-points', label: 'Shifts', icon: trailSignOutline },
 ]
@@ -100,6 +106,7 @@ const TrendView = ({
   result: AnalyticsResult
   showDelta: boolean
 }) => {
+  const patternDynamics = calculatePatternDynamicsForView(result, view)
   const rangeDays = usePatternsFilterStore((state) => state.rangeDays)
   const setRangeDays = usePatternsFilterStore((state) => state.setRangeDays)
   const toggleDelta = usePatternsFilterStore((state) => state.toggleDelta)
@@ -134,6 +141,7 @@ const TrendView = ({
         rangeDays={rangeDays}
         showDelta={showDelta}
         comparisons={comparisons}
+        patternDynamics={patternDynamics}
         className="pattern-overview-chart"
         action={
           <div className="pattern-chart__actions">
@@ -615,12 +623,15 @@ const PatternsOverviewPage = (): React.JSX.Element => {
       {hasError && <p>We couldn’t load your patterns just now. Please try again.</p>}
       {!isLoading && !hasError && view && result && (
         <>
-          <aside className="patterns-disclaimer" role="note">
+          <aside
+            className="patterns-disclaimer"
+            role="note"
+          >
             <strong>Observations, not conclusions.</strong>
             <span>
-              Patterns reflect only what was recorded. They may have other
-              explanations and do not diagnose a condition, predict an emergency,
-              or determine whether hospital care is needed.
+              Patterns reflect only what was recorded. They may have other explanations
+              and do not diagnose a condition, predict an emergency, or determine
+              whether hospital care is needed.
             </span>
           </aside>
           <PatternsTabs
@@ -640,6 +651,11 @@ const PatternsOverviewPage = (): React.JSX.Element => {
               <CalendarContent
                 calendar={view.calendar}
                 onAddCheckIn={addCheckIn}
+              />
+            ) : tab === 'strain' ? (
+              <PatternStrainBreakdown
+                result={result}
+                view={view}
               />
             ) : tab === 'household' ? (
               <HouseholdView view={view} />

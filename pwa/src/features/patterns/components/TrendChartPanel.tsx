@@ -1,6 +1,10 @@
 import React from 'react'
 
 import type { TrendPoint } from '../analytics'
+import {
+  PATTERN_STRAIN_LABELS,
+  type PatternDynamics,
+} from '../analytics/patternDynamics'
 import { TrendChart } from './TrendChart'
 import { buildTrendChart, currentTrendColor, toDelta } from './trendSeries'
 
@@ -12,6 +16,7 @@ export const TrendChartPanel = ({
   action,
   className = '',
   comparisons = [],
+  patternDynamics,
 }: {
   readonly points: readonly TrendPoint[]
   readonly rangeDays: number
@@ -25,6 +30,7 @@ export const TrendChartPanel = ({
     color: string
     points: readonly TrendPoint[]
   }>
+  readonly patternDynamics?: PatternDynamics
 }): React.JSX.Element => {
   const visiblePoints = points.slice(-rangeDays)
   const chart = buildTrendChart(
@@ -54,6 +60,15 @@ export const TrendChartPanel = ({
         baseline={chart.baseline}
         eventCounts={visiblePoints.map((point) => point.eventCount)}
         statusValues={visiblePoints.map((point) => point.score)}
+        strain={
+          patternDynamics
+            ? {
+                label: PATTERN_STRAIN_LABELS[patternDynamics.band],
+                band: patternDynamics.band,
+                forming: !patternDynamics.dataQuality.isSufficient,
+              }
+            : undefined
+        }
         action={action}
       />
       {controls}

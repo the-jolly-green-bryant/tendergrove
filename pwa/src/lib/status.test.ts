@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import type { RawIndicator } from '../features/patterns/analytics'
-import { computeScore, statusFromScore } from './status'
+import { computeScore, derivePersonStatus, statusFromScore } from './status'
 
 const indicators = [
   { id: 'sleep', name: 'Severe sleep disruption', polarity: 'undesired', active: true },
@@ -33,5 +33,25 @@ describe('shared observation status', () => {
     expect(statusFromScore(90).label).toBe('Steady')
     expect(statusFromScore(70).label).toBe('Watch')
     expect(statusFromScore(null).label).toBe('No data')
+  })
+
+  it('uses Pattern Strain labels for a sufficiently observed current pattern', () => {
+    const now = new Date(2026, 3, 30, 12)
+    const checkIns = Array.from({ length: 24 }, (_, index) => {
+      const occurredAt = new Date(now)
+      occurredAt.setDate(occurredAt.getDate() - index * 3)
+      return {
+        occurredAt: occurredAt.toISOString(),
+        answersJson: JSON.stringify({ checked: index < 9 ? ['sleep', 'voices'] : ['support'] }),
+      }
+    })
+    expect(derivePersonStatus(indicators, checkIns, now).label).toMatch(/strain$/)
+  })
+
+  it('uses a forming state instead of a score-derived strain label when data is sparse', () => {
+    expect(derivePersonStatus(indicators, [{
+      occurredAt: new Date().toISOString(),
+      answersJson: JSON.stringify({ checked: ['sleep'] }),
+    }]).label).toBe('Pattern forming')
   })
 })

@@ -23,6 +23,7 @@ import {
   chevronForwardOutline,
   documentTextOutline,
   homeOutline,
+  libraryOutline,
   logOutOutline,
   menuOutline,
   statsChartOutline,
@@ -117,6 +118,12 @@ export const menuItems = [
     icon: settingsOutline,
     label: 'Settings',
   },
+  {
+    href: '/about/research',
+    direction: 'forward',
+    icon: libraryOutline,
+    label: 'Research & Methodology',
+  },
 ] as const
 
 const MenuLink = ({
@@ -175,7 +182,11 @@ export const AppMenu = () => {
               className="menu-logo-mark"
             />
             <div>
-              <img className="menu-wordmark" src="/assets/brand/grove-wordmark.png" alt="Grove" />
+              <img
+                className="menu-wordmark"
+                src="/assets/brand/grove-wordmark.png"
+                alt="Grove"
+              />
               <p className="menu-logo-tagline">
                 Helping families notice the little things.
               </p>
@@ -357,8 +368,14 @@ export const Page = ({
                 aria-label="Back"
               />
             ) : (
-              <IonMenuButton menu="main-navigation" aria-label="Open menu">
-                <IonIcon icon={menuOutline} aria-hidden="true" />
+              <IonMenuButton
+                menu="main-navigation"
+                aria-label="Open menu"
+              >
+                <IonIcon
+                  icon={menuOutline}
+                  aria-hidden="true"
+                />
               </IonMenuButton>
             )}
           </IonButtons>

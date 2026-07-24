@@ -12,7 +12,11 @@ import { HouseholdRecapTeaser, HouseholdTree } from '../../components/HouseholdT
 import { useAppAuth } from '../../auth/AuthContext'
 import { useSelectedDate } from '../../context/SelectedDateContext'
 import { usePeople } from '../people/usePeople'
-import { derivePersonStatus, todayEmoji } from '../../lib/status'
+import {
+  derivePatternDynamics,
+  derivePersonStatus,
+  todayEmoji,
+} from '../../lib/status'
 import { createHouseholdRecap, type HouseholdRecap } from '../../lib/householdRecap'
 import { isSameLocalDay, toLocalDateKey } from '../../lib/dateKeys'
 import './HouseholdPage.scss'
@@ -93,18 +97,26 @@ const renderTree = (
       selectedDateHasData={selectedDateHasData}
       onPersonClick={onPersonClick}
       onRecapClick={onRecapClick}
-      people={people.map((person) => ({
-        id: person.id,
-        displayName: person.displayName,
-        avatarUrl: person.avatarUrl,
-        energy:
-          derivePersonStatus(
-            person.indicators ?? [],
-            person.checkIns ?? [],
-            selectedDate,
-          ).score ?? 100,
-        isSelf: person.role === 'self',
-      }))}
+      people={people.map((person) => {
+        const status = derivePersonStatus(
+          person.indicators ?? [],
+          person.checkIns ?? [],
+          selectedDate,
+        )
+        const dynamics = derivePatternDynamics(
+          person.indicators ?? [],
+          person.checkIns ?? [],
+          selectedDate,
+        )
+        return {
+          id: person.id,
+          displayName: person.displayName,
+          avatarUrl: person.avatarUrl,
+          energy: status.score ?? 100,
+          strainBand: dynamics.dataQuality.isSufficient ? dynamics.band : null,
+          isSelf: person.role === 'self',
+        }
+      })}
     />
   )
 

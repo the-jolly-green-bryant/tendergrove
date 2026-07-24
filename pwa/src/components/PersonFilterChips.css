@@ -45,6 +45,14 @@
   box-shadow: 0 3px 10px rgba(var(--ion-color-primary-rgb), 0.28);
 }
 
+.person-filter-chip--everyone {
+  width: 40px;
+}
+
+.person-filter-chip--everyone ion-icon {
+  font-size: 1.2rem;
+}
+
 .person-filter-chip--avatar {
   background: transparent;
   border: 0;
@@ -65,6 +73,22 @@
 .person-filter-chip--danger,
 .person-filter-chip--medium {
   border-color: transparent;
+}
+
+.person-filter-chip--success .person-filter-chip__avatar {
+  box-shadow: 0 0 0 2px #3f865d;
+}
+
+.person-filter-chip--medium .person-filter-chip__avatar {
+  box-shadow: 0 0 0 2px #87928d;
+}
+
+.person-filter-chip--warning .person-filter-chip__avatar {
+  box-shadow: 0 0 0 2px #c49a38;
+}
+
+.person-filter-chip--danger .person-filter-chip__avatar {
+  box-shadow: 0 0 0 2px #a84b42;
 }
 
 .person-filter-chip__avatar {

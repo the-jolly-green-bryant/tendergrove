@@ -95,12 +95,13 @@ export const PersonFilterChips = ({
       {showEveryone && (
         <button
           type="button"
-          className={`person-filter-chip ${showAll ? 'person-filter-chip--active' : ''}`}
+          className={`person-filter-chip person-filter-chip--everyone ${showAll ? 'person-filter-chip--active' : ''}`}
           onClick={onClear}
+          aria-label="Everyone"
           aria-pressed={showAll}
+          title="Everyone"
         >
           <IonIcon icon={homeOutline} />
-          <span className="visually-hidden">Everyone</span>
         </button>
       )}
 

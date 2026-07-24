@@ -37,6 +37,7 @@ import PrivacyPage from '../features/legal/PrivacyPage'
 import TermsPage from '../features/legal/TermsPage'
 import OnboardingPage from '../features/onboarding/OnboardingPage'
 import ReportsPage from '../features/reports/ReportsPage'
+import ResearchMethodologyPage from '../features/about/ResearchMethodologyPage'
 
 export const appRoutes = [
   { path: '/dashboard', component: HouseholdPage },
@@ -85,6 +86,7 @@ export const appRoutes = [
   { path: '/settings', component: SettingsPage },
   { path: '/privacy', component: PrivacyPage },
   { path: '/terms', component: TermsPage },
+  { path: '/about/research', component: ResearchMethodologyPage },
 ]
 
 const modalRoutes = [

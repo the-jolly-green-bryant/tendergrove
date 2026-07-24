@@ -1,5 +1,14 @@
 import { parseAnswers } from '../features/people/checkin/checkInUtils'
 import { RawIndicator } from '../features/patterns/analytics'
+import {
+  calculatePatternDynamics,
+  DEFAULT_ANALYSIS_DAYS,
+  MIN_ANALYSIS_OBSERVATIONS,
+  PATTERN_STRAIN_LABELS,
+  type PatternDynamics,
+  type PatternDynamicsDay,
+  type PatternStrainBand,
+} from '../features/patterns/analytics/patternDynamics'
 
 /* ------------------------------------------------------------------ */
 /*  Configuration                                                      */
@@ -187,7 +196,64 @@ export const derivePersonStatus = (
   indicators: RawIndicator[],
   checkIns: CheckInLike[],
   now?: Date,
-): Status => statusFromScore(computeWeightedScore(indicators, checkIns, now))
+): Status => {
+  const scoreStatus = statusFromScore(computeWeightedScore(indicators, checkIns, now))
+  const dynamics = derivePatternDynamics(indicators, checkIns, now)
+  if (dynamics.dataQuality.observedDays < MIN_ANALYSIS_OBSERVATIONS) {
+    return { ...scoreStatus, label: scoreStatus.score === null ? 'No data' : 'Pattern forming', color: 'medium' }
+  }
+  const colorByBand: Record<PatternStrainBand, Status['color']> = {
+    low: 'success',
+    emerging: 'medium',
+    elevated: 'warning',
+    sustained: 'danger',
+    intensive: 'danger',
+  }
+  return { ...scoreStatus, label: PATTERN_STRAIN_LABELS[dynamics.band], color: colorByBand[dynamics.band] }
+}
+
+export const derivePatternDynamics = (
+  indicators: RawIndicator[],
+  checkIns: CheckInLike[],
+  now: Date = new Date(),
+): PatternDynamics => {
+  const active = indicators.filter((indicator) => indicator.active !== false)
+  const currentStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - DEFAULT_ANALYSIS_DAYS + 1)
+  const difficultIds = new Set(active.filter((indicator) => indicator.polarity === 'undesired').map((indicator) => indicator.id))
+  const positiveIds = new Set(active.filter((indicator) => indicator.polarity === 'desired').map((indicator) => indicator.id))
+  const grouped = new Map<string, { scores: number[]; challenges: Set<string>; positives: Set<string> }>()
+  checkIns.forEach((checkIn) => {
+    const occurredAt = new Date(checkIn.occurredAt)
+    if (occurredAt > now) return
+    const score = computeScore(active, checkIn)
+    if (score === null) return
+    const key = `${occurredAt.getFullYear()}-${String(occurredAt.getMonth() + 1).padStart(2, '0')}-${String(occurredAt.getDate()).padStart(2, '0')}`
+    const values = grouped.get(key) ?? { scores: [], challenges: new Set<string>(), positives: new Set<string>() }
+    values.scores.push(score)
+    parseAnswers(checkIn.answersJson).checked.forEach((id) => {
+      if (difficultIds.has(id)) values.challenges.add(id)
+      if (positiveIds.has(id)) values.positives.add(id)
+    })
+    grouped.set(key, values)
+  })
+  const days: PatternDynamicsDay[] = [...grouped].map(([date, values]) => ({
+    date,
+    score: Math.round(average(values.scores)),
+    challengeCount: values.challenges.size,
+    positiveCount: values.positives.size,
+    hasChallenges: values.challenges.size > 0,
+    hasPositiveSigns: values.positives.size > 0,
+  }))
+  const currentKey = `${currentStart.getFullYear()}-${String(currentStart.getMonth() + 1).padStart(2, '0')}-${String(currentStart.getDate()).padStart(2, '0')}`
+  return calculatePatternDynamics(
+    days.filter((day) => day.date >= currentKey),
+    days.filter((day) => day.date < currentKey),
+  )
+}
+
+const average = (values: number[]) => values.length
+  ? values.reduce((sum, value) => sum + value, 0) / values.length
+  : 0
 
 export const explainPersonStatus = (
   indicators: RawIndicator[],
@@ -195,6 +261,7 @@ export const explainPersonStatus = (
   now: Date = new Date(),
 ): string => {
   const active = indicators.filter((indicator) => indicator.active !== false)
+  const dynamics = derivePatternDynamics(indicators, checkIns, now)
   const recent = [...checkIns]
     .filter((checkIn) => {
       const days = (now.getTime() - new Date(checkIn.occurredAt).getTime()) / 86_400_000
@@ -207,7 +274,9 @@ export const explainPersonStatus = (
     return `${new Date(checkIn.occurredAt).toLocaleDateString()}: ${score ?? 'not scored'}/100 · ${daysAgo === 0 ? 'full recent weight' : `weight decreases with age (${daysAgo} days ago)`}`
   })
   return [
-    `This status uses ${active.length} active signals and ${recent.length} check-ins from the last ${STATUS_LOOKBACK_DAYS} days.`,
+    `Pattern Strain is ${PATTERN_STRAIN_LABELS[dynamics.band]}. It uses ${dynamics.dataQuality.observedDays} observed days from the recent ${DEFAULT_ANALYSIS_DAYS}-day window and ${dynamics.dataQuality.baselineDays} earlier baseline days.`,
+    `Burden: ${dynamics.burden}/100. Instability: ${dynamics.instability}/100. Persistence: ${dynamics.persistence}/100. Recovery difficulty: ${dynamics.recoveryDifficulty}/100. These are descriptive pattern dimensions, not clinical scores.`,
+    `This view also retains the existing wellness calculation using ${active.length} active signals and ${recent.length} check-ins from the last ${STATUS_LOOKBACK_DAYS} days.`,
     'Desired signals count positively when checked. Difficult signals lower the daily score only when they are explicitly recorded; leaving one unchecked is neutral. Recent check-ins receive more weight. Missing days are ignored—not scored as good or bad.',
     lines.length ? `Recent contributions:\n${lines.join('\n')}` : 'There are no scoreable recent check-ins.',
     'This score reflects only what was recorded. It is not a diagnosis or a measure of immediate safety.',

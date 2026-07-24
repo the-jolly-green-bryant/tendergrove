@@ -44,7 +44,7 @@ interface PatternsFilterState {
 
 const DEFAULTS = {
   personIds: [] as string[],
-  rangeDays: 30,
+  rangeDays: 90,
   customRange: null as CustomRange | null,
   type: 'all' as AnalyticsType,
   indicatorMode: 'all' as 'all' | 'custom',

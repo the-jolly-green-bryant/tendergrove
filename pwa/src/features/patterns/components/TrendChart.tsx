@@ -3,6 +3,7 @@ import React, { useMemo, useState } from 'react'
 import { statusFromScore } from '../../../lib/status'
 import { formatDayLabel } from '../analytics/dateUtils'
 import type { DateKey } from '../analytics'
+import type { PatternStrainBand } from '../analytics/patternDynamics'
 import { IonItem, IonLabel, IonNote } from '@ionic/react'
 
 /**
@@ -46,6 +47,11 @@ interface TrendChartProps {
   readonly eventCounts?: number[]
   readonly action?: React.ReactNode
   readonly statusValues?: (number | null)[]
+  readonly strain?: {
+    label: string
+    band: PatternStrainBand
+    forming: boolean
+  }
 }
 
 const VIEW_W = 320
@@ -301,19 +307,28 @@ const Readout = ({
   index,
   action,
   statusValues,
+  strain,
 }: {
   readonly dates: DateKey[]
   readonly series: ChartSeries[]
   readonly index: number
   readonly action?: React.ReactNode
   readonly statusValues?: (number | null)[]
+  readonly strain?: {
+    label: string
+    band: PatternStrainBand
+    forming: boolean
+  }
 }): React.JSX.Element | null =>
   hasData(series)
     ? (() => {
         const solid = series.filter((s) => !s.dashed)
-        const [status, _, emoji] = _numberToStatus(
+        const [dailyStatus, _, emoji] = _numberToStatus(
           statusValues?.[index] ?? solid[0].values[index],
         )
+        const status = strain?.forming
+          ? 'Pattern forming'
+          : (strain?.label ?? dailyStatus)
         return (
           <IonItem
             color={'transparent'}
@@ -322,13 +337,15 @@ const Readout = ({
             <IonLabel>
               <h1>
                 <span
-                  className="pattern-chart__readout-value"
-                  style={{ color: solid[0].color }}
+                  className={`pattern-chart__readout-value${strain ? ` pattern-chart__readout-value--${strain.band}` : ''}`}
+                  style={strain ? undefined : { color: solid[0].color }}
                 >
-                  {status} {emoji}
+                  {status} {!strain && emoji}
                 </span>
               </h1>
-              <p>as of {dates[index] ? formatDayLabel(dates[index]) : ''}</p>
+              <p>
+                as of {dates[index] ? formatDayLabel(dates[index]) : ''}
+              </p>
             </IonLabel>
 
             {action && <IonNote slot="end">{action}</IonNote>}
@@ -491,6 +508,7 @@ export const TrendChart = ({
   baseline,
   action,
   statusValues,
+  strain,
 }: TrendChartProps): React.JSX.Element => {
   const count = dates.length
   const domains = useMemo(
@@ -523,6 +541,7 @@ export const TrendChart = ({
           index={readoutIndex}
           action={action}
           statusValues={statusValues}
+          strain={strain}
         />
       )}
 

@@ -3,12 +3,14 @@ import './HouseholdTree.css'
 
 import { PersonAvatar } from './PersonAvatar'
 import type { HouseholdRecap } from '../lib/householdRecap'
+import type { PatternStrainBand } from '../features/patterns/analytics'
 
 interface Person {
   id: string
   displayName: string
   avatarUrl?: string | null
   energy: number // 0-100
+  strainBand: PatternStrainBand | null
   isSelf?: boolean
 }
 
@@ -44,10 +46,11 @@ const getTreeStage = (score: number): number => {
   return 5
 }
 
-const getStatusColor = (score: number): string => {
-  if (score >= 80) return '#2FAE60'
-  if (score >= 60) return '#F5A623'
-  return '#E8453C'
+const getStrainColor = (band: PatternStrainBand | null): string => {
+  if (band === 'low') return '#2FAE60'
+  if (band === 'emerging' || band === 'elevated') return '#D79B22'
+  if (band === 'sustained' || band === 'intensive') return '#C94D43'
+  return '#87928D'
 }
 
 const clampScore = (score: number): number =>
@@ -337,6 +340,7 @@ const AvatarMarker = ({
   readonly onPersonClick?: (personId: string) => void
 }) => {
   const score = clampScore(person.energy)
+  const strainColor = getStrainColor(person.strainBand)
   const position = polarPoint(
     getSliceAngles(index, sliceSize).mid,
     isSinglePerson ? 0 : 45,
@@ -362,7 +366,7 @@ const AvatarMarker = ({
     >
       <div
         className="avatar-ring"
-        style={{ borderColor: getStatusColor(score) }}
+        style={{ borderColor: strainColor }}
       >
         <PersonAvatar
           name={person.displayName}
@@ -371,8 +375,12 @@ const AvatarMarker = ({
         />
         <div
           className="avatar-score-badge"
-          style={{ backgroundColor: getStatusColor(score) }}
-          aria-label={`${person.displayName} wellbeing ${score}%`}
+          style={{ backgroundColor: strainColor }}
+          aria-label={
+            person.strainBand
+              ? `${person.displayName} ${person.strainBand} strain`
+              : `${person.displayName} pattern forming`
+          }
         />
       </div>
     </div>

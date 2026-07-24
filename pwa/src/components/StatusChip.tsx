@@ -11,6 +11,12 @@ export const StatusChip = ({ label }: PageProps) => {
     Concern: 'danger',
     Watch: 'warning',
     Steady: 'success',
+    'Low strain': 'success',
+    'Emerging strain': 'medium',
+    'Elevated strain': 'warning',
+    'Sustained strain': 'danger',
+    'Intensive strain': 'danger',
+    'Pattern forming': 'medium',
     'No data': 'medium',
   }[label]
 

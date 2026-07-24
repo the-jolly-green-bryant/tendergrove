@@ -8,7 +8,7 @@ import { toLocalDateKey } from '../../lib/dateKeys'
  * Keep enough history for baselines and rolling calculations while avoiding an
  * ever-growing client-side analytics pass. Charts can render a smaller slice.
  */
-export const ANALYTICS_LOOKBACK_DAYS = 730
+export const ANALYTICS_LOOKBACK_DAYS = 1095
 
 /** The computed analytics plus the query's loading/error state. */
 export interface PatternsAnalytics {

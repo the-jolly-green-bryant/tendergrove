@@ -20,6 +20,7 @@ import { usePatternsFilterStore } from './patternsFilterStore'
 
 import './patterns.scss'
 import { AnomalyPatternsSection } from './components/AnomalyPatternsSection'
+import { PatternStrainSummaryCard } from './components/PatternStrainSummaryCard'
 
 import {
   buildPersonView,
@@ -27,6 +28,7 @@ import {
   type CorrelationInsight,
   type TrendResult,
   type AnalyticsPersonRef,
+  type PatternDynamics,
 } from './analytics'
 
 type Scope = 'person' | 'household'
@@ -54,6 +56,7 @@ const PatternsBody = ({
   comparisonPeople,
   personTrends,
   onExplore,
+  patternDynamics,
 }: {
   readonly data: ScopedData
   readonly rangeDays: number
@@ -69,6 +72,7 @@ const PatternsBody = ({
   readonly comparisonPeople: AnalyticsPersonRef[]
   readonly personTrends: Record<string, TrendResult>
   readonly onExplore: (tab: 'trend' | 'calendar' | 'household') => void
+  readonly patternDynamics: PatternDynamics
 }): React.JSX.Element => {
   const [comparisonIds, setComparisonIds] = useState<string[]>([])
   const comparisonMenuRef = useRef<HTMLIonMenuElement>(null)
@@ -116,6 +120,7 @@ const PatternsBody = ({
         points={eligiblePoints}
         rangeDays={rangeDays}
         showDelta={showDelta}
+        patternDynamics={patternDynamics}
         comparisons={comparisons}
         action={
           <div className="pattern-chart__actions">
@@ -164,7 +169,9 @@ const PatternsBody = ({
                 value="person"
                 aria-label={`${personName} scope`}
               >
-                <span className="person-patterns__scope-avatar-wrap">
+                <span
+                  className={`person-patterns__scope-avatar-wrap person-patterns__scope-avatar-wrap--${patternDynamics.band}`}
+                >
                   <PersonAvatar
                     className="person-patterns__scope-avatar"
                     name={personName}
@@ -197,6 +204,8 @@ const PatternsBody = ({
         />
       )}
 
+      <PatternStrainSummaryCard dynamics={patternDynamics} />
+
       <IonButton
         className="person-patterns__view-all"
         expand="block"
@@ -218,14 +227,16 @@ export const PersonPatternsSection = ({
   personName,
   personAvatarUrl,
   viewDate,
+  patternDynamics,
 }: {
   readonly personId: string
   readonly personName: string
   readonly personAvatarUrl?: string | null
   readonly viewDate: Date
+  readonly patternDynamics: PatternDynamics
 }): React.JSX.Element | null => {
   const [scope, setScope] = useState<Scope>('person')
-  const [rangeDays, setRangeDays] = useState(30)
+  const [rangeDays, setRangeDays] = useState(90)
   const [showDelta, setShowDelta] = useState(false)
   const { result, isLoading, hasError } = usePatternsAnalytics(viewDate)
   const history = useHistory()
@@ -271,6 +282,7 @@ export const PersonPatternsSection = ({
         viewDate={viewDate}
         comparisonPeople={result.people.filter((person) => person.id !== personId)}
         personTrends={result.personTrends}
+        patternDynamics={patternDynamics}
         onExplore={(tab) => {
           setPerson(personId)
           history.push(`/patterns?tab=${tab}`)

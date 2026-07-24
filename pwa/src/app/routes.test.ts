@@ -20,4 +20,8 @@ describe('application navigation', () => {
     expect(paths).toContain('/privacy')
     expect(paths).toContain('/terms')
   })
+
+  it('keeps research and methodology in the main menu', () => {
+    expect(menuItems.some((item) => item.href === '/about/research')).toBe(true)
+  })
 })

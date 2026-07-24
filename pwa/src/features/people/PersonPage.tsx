@@ -18,6 +18,7 @@ import {
   calendarOutline,
   chevronForwardOutline,
   createOutline,
+  documentTextOutline,
   listOutline,
 } from 'ionicons/icons'
 import React, { useMemo } from 'react'
@@ -34,7 +35,11 @@ import { parseAnswers } from './checkin/checkInUtils'
 import { useDateNavigator } from '../../components/DateNavigator'
 import { PersonAvatar } from '../../components/PersonAvatar'
 import { PersonRole } from '../../lib/domain'
-import { derivePersonStatus, explainPersonStatus, todayEmoji } from '../../lib/status'
+import {
+  derivePatternDynamics,
+  derivePersonStatus,
+  todayEmoji,
+} from '../../lib/status'
 import { PersonPatternsSection } from '../patterns/PersonPatternsSection'
 import { RawCheckIn, RawIndicator } from '../patterns/analytics'
 
@@ -49,6 +54,7 @@ type PersonPageSummary = {
   readonly activeIndicators: RawIndicator[]
   readonly selectedCheckIn?: RawCheckIn
   readonly status: PersonStatus
+  readonly patternDynamics: ReturnType<typeof derivePatternDynamics>
   readonly emoji?: string | null
   readonly selectedDateNote: string | null
   readonly lastNoteCheckIn: RawCheckIn | null
@@ -106,6 +112,7 @@ const usePersonPageSummary = (
 
   const selectedCheckIn = checkIns.find((ci) => isSameDay(ci.occurredAt, viewDate))
   const status = derivePersonStatus(activeIndicators, checkIns)
+  const patternDynamics = derivePatternDynamics(activeIndicators, checkIns)
   const emoji = todayEmoji(activeIndicators, checkIns, new Date(), personId)
   const selectedDateCheckIn = checkIns.find((ci) => isSameDay(ci.occurredAt, viewDate))
   const selectedDateNote = selectedDateCheckIn?.note || null
@@ -123,6 +130,7 @@ const usePersonPageSummary = (
     activeIndicators,
     selectedCheckIn,
     status,
+    patternDynamics,
     emoji,
     selectedDateNote,
     lastNoteCheckIn,
@@ -146,6 +154,9 @@ const usePersonPageActions = (
     router.push(`/person/${personId}/indicators`, 'forward')
 
   const manageEvents = () => router.push(`/person/${personId}/events`, 'forward')
+
+  const prepareForAppointment = () =>
+    router.push(`/reports?personId=${encodeURIComponent(personId ?? '')}`, 'forward')
 
   const doArchive = (archive: boolean) =>
     person &&
@@ -202,7 +213,13 @@ const usePersonPageActions = (
     router.push(`/person/${personId}/check-in?returnTo=${returnTo}`, 'forward')
   }
 
-  return { startCheckIn, showMoreOptions, manageIndicators, manageEvents }
+  return {
+    startCheckIn,
+    showMoreOptions,
+    manageIndicators,
+    manageEvents,
+    prepareForAppointment,
+  }
 }
 
 const formatCheckInTitle = (date: Date): string => {
@@ -286,7 +303,11 @@ const PersonPageHeader = ({
   <IonHeader>
     <IonToolbar>
       <IonButtons slot="start">
-        <IonBackButton defaultHref={'/dashboard'} />
+        <IonBackButton
+          defaultHref="/dashboard"
+          text=""
+          aria-label="Back"
+        />
       </IonButtons>
 
       {!isTimelineView ? headerElement : <IonTitle>{displayName}</IonTitle>}
@@ -301,14 +322,12 @@ const PersonCheckInPanel = ({
   emoji,
   viewDate,
   onStartCheckIn,
-  onExplainStatus,
 }: {
   readonly person: Person
   readonly status: PersonStatus
   readonly emoji?: string | null
   readonly viewDate: Date
   readonly onStartCheckIn: () => void
-  readonly onExplainStatus: () => void
 }) => (
   <section className="person-checkin-panel">
     <PersonCheckInButton
@@ -318,7 +337,12 @@ const PersonCheckInPanel = ({
       title={formatCheckInTitle(viewDate)}
       onClick={onStartCheckIn}
     />
-    <IonButton size="small" fill="clear" onClick={onExplainStatus}>Why this status?</IonButton>
+    <a
+      className="person-pattern-research-link"
+      href="/about/research"
+    >
+      Research behind Pattern Strain
+    </a>
   </section>
 )
 
@@ -354,13 +378,21 @@ const SetupNavCard = ({
 )
 
 const TrackingSetupCards = ({
+  onPrepareForAppointment,
   onManageIndicators,
   onManageEvents,
 }: {
+  readonly onPrepareForAppointment: () => void
   readonly onManageIndicators: () => void
   readonly onManageEvents: () => void
 }) => (
   <div className="person-setup">
+    <SetupNavCard
+      icon={documentTextOutline}
+      title="Appointment prep"
+      subtitle="Create a provider-ready summary from these observations."
+      onClick={onPrepareForAppointment}
+    />
     <SetupNavCard
       icon={listOutline}
       title="Signals"
@@ -413,9 +445,9 @@ const PersonPageLoadedContent = ({
   summary,
   onStartCheckIn,
   onShowMoreOptions,
+  onPrepareForAppointment,
   onManageIndicators,
   onManageEvents,
-  onExplainStatus,
 }: {
   readonly person: Person
   readonly viewDate: Date
@@ -425,9 +457,9 @@ const PersonPageLoadedContent = ({
   readonly summary: PersonPageSummary
   readonly onStartCheckIn: () => void
   readonly onShowMoreOptions: () => void
+  readonly onPrepareForAppointment: () => void
   readonly onManageIndicators: () => void
   readonly onManageEvents: () => void
-  readonly onExplainStatus: () => void
 }) => (
   <>
     <div className="ion-padding">
@@ -443,7 +475,6 @@ const PersonPageLoadedContent = ({
         emoji={summary.emoji}
         viewDate={viewDate}
         onStartCheckIn={onStartCheckIn}
-        onExplainStatus={onExplainStatus}
       />
 
       <PersonPatternsSection
@@ -451,9 +482,11 @@ const PersonPageLoadedContent = ({
         personName={person.displayName}
         personAvatarUrl={person.avatarUrl}
         viewDate={viewDate}
+        patternDynamics={summary.patternDynamics}
       />
 
       <TrackingSetupCards
+        onPrepareForAppointment={onPrepareForAppointment}
         onManageIndicators={onManageIndicators}
         onManageEvents={onManageEvents}
       />
@@ -486,9 +519,13 @@ const PersonPage = (): React.JSX.Element | null => {
   const { selectedDate, setSelectedDate } = useSelectedDate()
   const location = useLocation()
   const history = useHistory()
-  const { startCheckIn, showMoreOptions, manageIndicators, manageEvents } =
-    usePersonPageActions(person, personId)
-  const [presentStatusExplanation] = useIonAlert()
+  const {
+    startCheckIn,
+    showMoreOptions,
+    manageIndicators,
+    manageEvents,
+    prepareForAppointment,
+  } = usePersonPageActions(person, personId)
 
   const { viewDate, isTimelineView } = useMemo(
     () => getPersonPageDateView(location.search, selectedDate),
@@ -504,16 +541,6 @@ const PersonPage = (): React.JSX.Element | null => {
     setSelectedDate(new Date())
     if (isTimelineView) history.replace(`/person/${personId}`)
   }
-  const explainStatus = () => person && void presentStatusExplanation({
-    header: `How ${summary.status.label.toLowerCase()} was calculated`,
-    message: explainPersonStatus((person.indicators ?? []) as RawIndicator[], (person.checkIns ?? []) as RawCheckIn[]),
-    cssClass: 'status-explanation-alert',
-    buttons: [
-      { text: 'Review signals', handler: manageIndicators },
-      { text: 'Close', role: 'cancel' },
-    ],
-  })
-
   const { headerElement, calendarElement } = useDateNavigator({
     date: viewDate,
     onChange: setSelectedDate,
@@ -563,9 +590,9 @@ const PersonPage = (): React.JSX.Element | null => {
             summary={summary}
             onStartCheckIn={startCheckInForViewDate}
             onShowMoreOptions={showMoreOptions}
+            onPrepareForAppointment={prepareForAppointment}
             onManageIndicators={manageIndicators}
             onManageEvents={manageEvents}
-            onExplainStatus={explainStatus}
           />
         )}
       </IonContent>

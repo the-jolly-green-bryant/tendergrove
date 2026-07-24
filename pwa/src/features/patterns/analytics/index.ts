@@ -103,6 +103,26 @@ export { buildTiming, buildDayOfWeek, buildTimeOfDay } from './timing'
 export { buildGeneratedInsights } from './generatedInsights'
 export { buildAnomalyPatterns } from './anomalyPatterns'
 export {
+  calculatePatternDynamics,
+  calculateBurden,
+  calculateInstability,
+  calculatePersistence,
+  calculateRecoveryDifficulty,
+  buildPatternStrainTrend,
+  determinePatternStrainBand,
+  rootMeanSquareSuccessiveDifference,
+  PATTERN_STRAIN_LABELS,
+  patternDimensionLevel,
+} from './patternDynamics'
+export type {
+  PatternDynamics,
+  PatternDynamicsDay,
+  PatternDynamicsObservation,
+  PatternDynamicsDataQuality,
+  PatternStrainBand,
+  PatternStrainTrendPoint,
+} from './patternDynamics'
+export {
   buildPersonView,
   buildScopedView,
   type PersonAnalyticsView,

@@ -54,7 +54,7 @@ const deriveWindow = (
     // Analytics always receives enough preceding history for rolling averages,
     // colors, calendars, and turning points. Individual views trim only what
     // they render; changing 1M/3M must not rewrite the underlying analysis.
-    windowDays: Math.max(730, rangeDays),
+    windowDays: Math.max(1095, rangeDays),
   }
 }
 

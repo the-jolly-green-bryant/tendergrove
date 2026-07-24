@@ -7,11 +7,12 @@ export const PERIOD_OPTIONS = [
   { label: '6M', days: 180 },
   { label: '1Y', days: 365 },
   { label: '2Y', days: 730 },
+  { label: '3Y', days: 1095 },
 ] as const
 
 /**
- * A compact 1M / 3M / 6M / 1Y / 2Y range selector (stock-chart style). Drives the
- * visible chart window; analytics retain a longer lookback for context.
+ * A compact 1M / 3M / 6M / 1Y / 2Y / 3Y range selector (stock-chart style).
+ * Drives the visible chart window; analytics retain a longer lookback for context.
  */
 export const PeriodSelector = ({
   value,
