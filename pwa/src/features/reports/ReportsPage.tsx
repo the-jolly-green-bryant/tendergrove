@@ -15,6 +15,7 @@ import { narrativeTakeaways } from './reportNarrative'
 import { useReportNarrative } from './useReportNarrative'
 import { PatternStrainReportSection } from './components/PatternStrainReportSection'
 import { RESEARCH_METHODOLOGY_PATH } from '../about/researchReferences'
+import { trackProductEvent, wellnessBand } from '../../lib/productAnalytics'
 
 const imageDataUrl = async (url: string) => {
   const blob = await fetch(url).then((response) => response.blob())
@@ -963,6 +964,11 @@ const ReportsPage = () => {
       anchor.click()
       anchor.remove()
       setPdfState('ready')
+      void trackProductEvent('report_downloaded', {
+        format: 'pdf',
+        strain: report.patternDynamics.band ?? 'insufficient',
+        wellnessBand: wellnessBand(report.groveScore?.score),
+      })
     } catch {
       setPdfState('error')
     }

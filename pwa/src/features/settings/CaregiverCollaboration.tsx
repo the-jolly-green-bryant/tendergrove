@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useAppAuth } from '../../auth/AuthContext'
 import { client } from '../../lib/api'
 import { usePeople } from '../people/usePeople'
+import { trackProductEvent } from '../../lib/productAnalytics'
 
 type Access = {
   id: string
@@ -57,6 +58,7 @@ export const CaregiverCollaboration = () => {
       await Promise.all((result.data.events ?? []).map((item) => client.models.Event.update({ id: item.id, collaborators: addUser(item.collaborators, invitedUserId) })))
       await client.models.CaregiverAccess.create({ personId: selected.id, personName: selected.displayName, invitedUserId, role: 'viewer', collaborators: [invitedUserId] })
       await client.models.CollaborationAudit.create({ personId: selected.id, action: 'granted', invitedUserId })
+      void trackProductEvent('collaboration_granted', { access: 'read_only' })
       setCollaboratorId('')
       setMessage(`Read-only access to ${selected.displayName} is active.`)
       await load()

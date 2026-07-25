@@ -4,6 +4,7 @@ import { client } from '../../../lib/api'
 import type { CheckInAnswers } from './checkInUtils'
 import { parseAnswers } from './checkInUtils'
 import { isSameLocalDay } from '../../../lib/dateKeys'
+import { countBand, trackProductEvent } from '../../../lib/productAnalytics'
 
 /**
  *
@@ -55,6 +56,12 @@ export const useCheckInMutations = (personId: string | undefined) => {
       }
 
       await invalidate()
+      void trackProductEvent('check_in_saved', {
+        mode: 'created',
+        selectedSignalCountBand: countBand(input.answers.checked?.length ?? 0),
+        selectedEventCountBand: countBand(input.answers.events?.length ?? 0),
+        hasNote: Boolean(input.note?.trim()),
+      })
       return result.data
     },
 
@@ -71,6 +78,12 @@ export const useCheckInMutations = (personId: string | undefined) => {
       }
 
       await invalidate()
+      void trackProductEvent('check_in_saved', {
+        mode: 'updated',
+        selectedSignalCountBand: countBand(input.answers.checked?.length ?? 0),
+        selectedEventCountBand: countBand(input.answers.events?.length ?? 0),
+        hasNote: Boolean(input.note?.trim()),
+      })
       return result.data
     },
 

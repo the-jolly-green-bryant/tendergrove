@@ -20,6 +20,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useAppAuth } from '../../auth/AuthContext'
 import { client } from '../../lib/api'
 import { writeCachedValue } from '../../lib/resilientCache'
+import { trackProductEvent } from '../../lib/productAnalytics'
 import type { RawPerson } from '../patterns/analytics'
 import { createAvatarDataUrl } from '../people/PersonFormPage'
 
@@ -273,6 +274,10 @@ const OnboardingPage = () => {
       writeCachedValue(`${user.userId}:people`, dashboardPeople)
       queryClient.setQueryData(['people', user.userId], dashboardPeople)
       await queryClient.invalidateQueries({ queryKey: ['patterns-data', user.userId] })
+      void trackProductEvent('onboarding_completed', {
+        peopleCount: dashboardPeople.length,
+        selfTracked: dashboardPeople.some((person) => person.role === 'self'),
+      })
       router.push('/dashboard', 'root', 'replace')
     } catch (caught) {
       setSaveError(caught instanceof Error ? caught.message : 'We could not finish setup. Your answers are still here—try again.')
