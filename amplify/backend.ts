@@ -4,6 +4,7 @@ import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
 import { auth } from './auth/resource.ts'
 import {
   data,
+  getAnalyticsDashboardFunction,
   generateReportNarrativeFunction,
   NARRATIVE_BASE_MODEL_ID,
   NARRATIVE_MODEL_ID,
@@ -13,7 +14,17 @@ const backend = defineBackend({
   auth,
   data,
   generateReportNarrativeFunction,
+  getAnalyticsDashboardFunction,
 })
+
+const analyticsTable = backend.data.resources.tables.AnalyticsEvent
+backend.getAnalyticsDashboardFunction.addEnvironment(
+  'ANALYTICS_TABLE_NAME',
+  analyticsTable.tableName,
+)
+analyticsTable.grantReadData(
+  backend.getAnalyticsDashboardFunction.resources.lambda,
+)
 
 backend.generateReportNarrativeFunction.resources.lambda.addToRolePolicy(
   new PolicyStatement({

@@ -11,6 +11,12 @@ importers:
       '@aws-sdk/client-bedrock-runtime':
         specifier: ^3.1092.0
         version: 3.1092.0
+      '@aws-sdk/client-dynamodb':
+        specifier: ^3.1094.0
+        version: 3.1094.0
+      '@aws-sdk/lib-dynamodb':
+        specifier: ^3.1094.0
+        version: 3.1094.0(@aws-sdk/client-dynamodb@3.1094.0)
       aws-amplify:
         specifier: ^6.18.0
         version: 6.18.0
@@ -92,10 +98,10 @@ importers:
         version: 8.0.3(@capacitor/core@8.4.2)
       '@ionic/react':
         specifier: latest
-        version: 8.8.14(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        version: 8.8.15(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@ionic/react-router':
         specifier: latest
-        version: 8.8.14(react-dom@19.2.8(react@19.2.8))(react-router-dom@5.3.4(react@19.2.8))(react-router@5.3.4(react@19.2.8))(react@19.2.8)
+        version: 8.8.15(react-dom@19.2.8(react@19.2.8))(react-router-dom@5.3.4(react@19.2.8))(react-router@5.3.4(react@19.2.8))(react@19.2.8)
       '@mlc-ai/web-llm':
         specifier: ^0.2.84
         version: 0.2.84
@@ -909,6 +915,10 @@ packages:
     resolution: {integrity: sha512-DIzsM+S/jLcTu+gRHy/luPGkqjiXIQFQTe8zCADE1SX4QXw05bUJNoF2yI0z3HUEMC4wIJsVhDpgKt6jeUr/eA==}
     engines: {node: '>=20.0.0'}
 
+  '@aws-sdk/client-dynamodb@3.1094.0':
+    resolution: {integrity: sha512-1tziKiymJs/MOOTcIIoNRO2o3EuwhXstc8K05QHf7DtdSlJz8gedxWgyXGINqcp8bWaNjGnoYZIA35yf66I0EA==}
+    engines: {node: '>=20.0.0'}
+
   '@aws-sdk/client-ec2@3.1071.0':
     resolution: {integrity: sha512-AEHUuRAxguKhBq7M6C3qPnQN2yJAeB4XxXxZ1c2PZr3OOMr7pnG91IoAN9aqzVhZYlXZsk3KuX8056FD64k5ow==}
     engines: {node: '>=20.0.0'}
@@ -1049,19 +1059,37 @@ packages:
     resolution: {integrity: sha512-CyujYtNK0EoKgxwkqlz3UGADDgXVhOsGudqau/tlxzLAt25cYi5o9wImIVwbO5NwGy3CqjYC/2bQp1z2lW0XfQ==}
     engines: {node: '>=20.0.0'}
 
+  '@aws-sdk/dynamodb-codec@3.973.34':
+    resolution: {integrity: sha512-/7kfOufSN9t/g7OR6gNpCsSj/4nR7WdRnd54qSlnRuzQN7JmOz6ulJSwrUpqkDk/mkFgQqUIFBfnAZ0OTw2pxw==}
+    engines: {node: '>=20.0.0'}
+
   '@aws-sdk/ec2-metadata-service@3.1071.0':
     resolution: {integrity: sha512-vWYHietb2OfvNxliRHnm3CXBumXbw+h9+MW6V1S+rnR20Lur6fHZyRDbjX7G2FQIattpj8YdNU6U9BvguHtT4g==}
+    engines: {node: '>=20.0.0'}
+
+  '@aws-sdk/endpoint-cache@3.972.9':
+    resolution: {integrity: sha512-LFvdgq8SriaskUcjpBMDE7J2c9RmuT5v3gU36/znV71EU5DKUis4FmGFjCMelKCCViFeVrQADBAlIiOYRhEx6Q==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/eventstream-handler-node@3.972.29':
     resolution: {integrity: sha512-t3tKQRTVXsI2QNPE3CaNjHl0wRO9Xi3acZkAyti2RQsiFmZ9Gi0kArX2ighlRJ1BtDVuul413gThAgzyTfgmWA==}
     engines: {node: '>=20.0.0'}
 
+  '@aws-sdk/lib-dynamodb@3.1094.0':
+    resolution: {integrity: sha512-9/qH4PLnzE/83h7mM3DXwfktB6PxcWdrciqkBCABA8QMQUz2AC/lOCuehakDCFciDQz2RehC6hZT5DK8SSDqmA==}
+    engines: {node: '>=20.0.0'}
+    peerDependencies:
+      '@aws-sdk/client-dynamodb': ^3.1094.0
+
   '@aws-sdk/lib-storage@3.1071.0':
     resolution: {integrity: sha512-ctfq1H75M95RJ9ZPbbzSX3BMkqfoFBWvHmO5thwVT/img+HlJJnyLkOWbZ8P3hh/Huzm5hdGKPYh62c4KqgpOw==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
       '@aws-sdk/client-s3': ^3.1071.0
+
+  '@aws-sdk/middleware-endpoint-discovery@3.972.25':
+    resolution: {integrity: sha512-5G2aVPmbWC5dFI76D0vsNg2L0fgWP4uybcetf+06dzeZuRtpihnow88fOl5zm3+ABdIw27FKgyFzV4yB5Bm29Q==}
+    engines: {node: '>=20.0.0'}
 
   '@aws-sdk/middleware-eventstream@3.972.24':
     resolution: {integrity: sha512-oykin4mDWxNOuYQ7SF1cHzgYeuFEkF4cdRwgvjFFbIklkx09qIFBiOgsORafG9sXZFO3TayMmQuAQYgADXhI8w==}
@@ -1130,6 +1158,12 @@ packages:
   '@aws-sdk/util-arn-parser@3.972.17':
     resolution: {integrity: sha512-8KkC06IfGwrRkvCQIbxKVu7J6hgjvqhsdVsmr3dsGmqu/Czw/qizKJtTa/HLKRm4E+/nCyiLYZ6gAuje4vT4cg==}
     engines: {node: '>=20.0.0'}
+
+  '@aws-sdk/util-dynamodb@3.996.7':
+    resolution: {integrity: sha512-v+WJASG9yaW8qNM7pNSgH1PBYz5mVTf7gzKPi0NqGjLlaCtPdk6EjM1lmv03egA07iXUw6OToGYfW2w8D3kBrg==}
+    engines: {node: '>=20.0.0'}
+    peerDependencies:
+      '@aws-sdk/client-dynamodb': ^3.1088.0
 
   '@aws-sdk/util-locate-window@3.965.8':
     resolution: {integrity: sha512-uUbMs1cBZPafD0ohUj6EwNf0fPZ534NvBxHox4hjX+0Rxq5paSYUem7+hi833pYrzrcnBATKIYpR02MDXT5M9g==}
@@ -2138,20 +2172,20 @@ packages:
     resolution: {integrity: sha512-TshtaFQsovB4NWRBydbNFawql6yul7d5bMiW1WYYf17hd99V6xdDdk3vtF51bw6sLkxON3bDQpWsnUc9/hVo3g==}
     engines: {node: '>=16.0.0'}
 
-  '@ionic/core@8.8.14':
-    resolution: {integrity: sha512-xI1y1OqPFsEjVE6nvLdUpb77Xt4uy5cQrNbDT/sRM6RN3vMs2zOFWubeRaQkBf0WslFetiJ/5uAALS/mW4d4TA==}
+  '@ionic/core@8.8.15':
+    resolution: {integrity: sha512-iEREpxWYEakK3ZVGdFVi6Vm+MIpVhNlfy5qds5IjVnZqUPKaD8ynN/2LPfgQiLO/e8eEo40KJj+QuW97uMW53Q==}
     engines: {node: '>= 16'}
 
-  '@ionic/react-router@8.8.14':
-    resolution: {integrity: sha512-TKPbSgOBdF9jBIrYDqSOI+Esba37kHXmvrEz+R3qDJuISnXDPCEEI8Y8s5KwAbySSSeujOjGAryU+5yazBIBow==}
+  '@ionic/react-router@8.8.15':
+    resolution: {integrity: sha512-YduX4wPSSB1NcmsIfkHbzfSIfmkJDxm3q1+qWjsxtZBOe1Gg7GSTXW4zMhSOO8/hmTbQWYwoar2jK5w0pE218g==}
     peerDependencies:
       react: '>=16.8.6'
       react-dom: '>=16.8.6'
       react-router: ^5.0.1
       react-router-dom: ^5.0.1
 
-  '@ionic/react@8.8.14':
-    resolution: {integrity: sha512-oEj1nIznqFQpnWGU3qsqY6jpPl1fQoX/cPtL0sgXMBOFPtbuQx1R+NOwKh9ozHsRXTpmmfCjLZPioboieyEyyw==}
+  '@ionic/react@8.8.15':
+    resolution: {integrity: sha512-8bjys95dICAfJMwA0iuKIYfg5pbz2lY56eQpIG6In+796PvMNVXE9eFLhIZ15jjpRE1O/HZHxO2OFV/pL3NVdA==}
     peerDependencies:
       react: '>=16.8.6'
       react-dom: '>=16.8.6'
@@ -5330,6 +5364,9 @@ packages:
     resolution: {integrity: sha512-KZxYo1BUkWD2TVFLr0MQoM8vUUigWD3LlD83a/75BqC+4qE0Hb1Vo5v1FgcfaNXvfXzr+5EhQ6ing/CaBijTlw==}
     engines: {node: '>= 18'}
 
+  mnemonist@0.38.3:
+    resolution: {integrity: sha512-2K9QYubXx/NAjv4VLq1d1Ly8pWNC5L3BrixtdkyTegXWJIqY+zLNDhhX/A+ZwWt70tB1S8H4BE8FLYEFyNoOBw==}
+
   ms@2.1.2:
     resolution: {integrity: sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==}
 
@@ -5454,6 +5491,9 @@ packages:
   object.values@1.2.1:
     resolution: {integrity: sha512-gXah6aZrcUxjWg2zR2MwouP2eHlCBzdV4pygudehaKXSGW4v2AsRQUK+lwwXhii6KFZcunEnmSUoYp5CXibxtA==}
     engines: {node: '>= 0.4'}
+
+  obliterator@1.6.1:
+    resolution: {integrity: sha512-9WXswnqINnnhOG/5SLimUlzuU1hFJUc8zkwyD59Sd+dPOMf05PmnYG/d6Q7HZ+KmgkZJa1PxRso6QdM3sTNHig==}
 
   obug@2.1.3:
     resolution: {integrity: sha512-9miFgM2OFba7hB+pRgvtV84pYTBaoTHohvmIgiRt6dRIzbwEOIaNaP+dIlGs2fNFoB0SeISs0Jz5WFVRid6Xyg==}
@@ -8376,6 +8416,19 @@ snapshots:
       '@smithy/types': 4.16.1
       tslib: 2.8.1
 
+  '@aws-sdk/client-dynamodb@3.1094.0':
+    dependencies:
+      '@aws-sdk/core': 3.976.0
+      '@aws-sdk/credential-provider-node': 3.972.71
+      '@aws-sdk/dynamodb-codec': 3.973.34
+      '@aws-sdk/middleware-endpoint-discovery': 3.972.25
+      '@aws-sdk/types': 3.974.2
+      '@smithy/core': 3.29.7
+      '@smithy/fetch-http-handler': 5.6.9
+      '@smithy/node-http-handler': 4.9.9
+      '@smithy/types': 4.16.1
+      tslib: 2.8.1
+
   '@aws-sdk/client-ec2@3.1071.0':
     dependencies:
       '@aws-crypto/sha256-browser': 5.2.0
@@ -8798,6 +8851,13 @@ snapshots:
       '@smithy/types': 4.16.1
       tslib: 2.8.1
 
+  '@aws-sdk/dynamodb-codec@3.973.34':
+    dependencies:
+      '@aws-sdk/core': 3.976.0
+      '@smithy/core': 3.29.7
+      '@smithy/types': 4.16.1
+      tslib: 2.8.1
+
   '@aws-sdk/ec2-metadata-service@3.1071.0':
     dependencies:
       '@aws-sdk/types': 3.974.2
@@ -8806,9 +8866,23 @@ snapshots:
       '@smithy/types': 4.16.1
       tslib: 2.8.1
 
+  '@aws-sdk/endpoint-cache@3.972.9':
+    dependencies:
+      mnemonist: 0.38.3
+      tslib: 2.8.1
+
   '@aws-sdk/eventstream-handler-node@3.972.29':
     dependencies:
       '@aws-sdk/types': 3.974.2
+      '@smithy/core': 3.29.7
+      '@smithy/types': 4.16.1
+      tslib: 2.8.1
+
+  '@aws-sdk/lib-dynamodb@3.1094.0(@aws-sdk/client-dynamodb@3.1094.0)':
+    dependencies:
+      '@aws-sdk/client-dynamodb': 3.1094.0
+      '@aws-sdk/core': 3.976.0
+      '@aws-sdk/util-dynamodb': 3.996.7(@aws-sdk/client-dynamodb@3.1094.0)
       '@smithy/core': 3.29.7
       '@smithy/types': 4.16.1
       tslib: 2.8.1
@@ -8821,6 +8895,14 @@ snapshots:
       buffer: 5.6.0
       events: 3.3.0
       stream-browserify: 3.0.0
+      tslib: 2.8.1
+
+  '@aws-sdk/middleware-endpoint-discovery@3.972.25':
+    dependencies:
+      '@aws-sdk/endpoint-cache': 3.972.9
+      '@aws-sdk/types': 3.974.2
+      '@smithy/core': 3.29.7
+      '@smithy/types': 4.16.1
       tslib: 2.8.1
 
   '@aws-sdk/middleware-eventstream@3.972.24':
@@ -8952,6 +9034,11 @@ snapshots:
   '@aws-sdk/util-arn-parser@3.972.17':
     dependencies:
       '@aws-sdk/core': 3.976.0
+      tslib: 2.8.1
+
+  '@aws-sdk/util-dynamodb@3.996.7(@aws-sdk/client-dynamodb@3.1094.0)':
+    dependencies:
+      '@aws-sdk/client-dynamodb': 3.1094.0
       tslib: 2.8.1
 
   '@aws-sdk/util-locate-window@3.965.8':
@@ -9952,24 +10039,24 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@ionic/core@8.8.14':
+  '@ionic/core@8.8.15':
     dependencies:
       '@stencil/core': 4.43.5
       ionicons: 8.0.13
       tslib: 2.8.1
 
-  '@ionic/react-router@8.8.14(react-dom@19.2.8(react@19.2.8))(react-router-dom@5.3.4(react@19.2.8))(react-router@5.3.4(react@19.2.8))(react@19.2.8)':
+  '@ionic/react-router@8.8.15(react-dom@19.2.8(react@19.2.8))(react-router-dom@5.3.4(react@19.2.8))(react-router@5.3.4(react@19.2.8))(react@19.2.8)':
     dependencies:
-      '@ionic/react': 8.8.14(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@ionic/react': 8.8.15(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
       react-router: 5.3.4(react@19.2.8)
       react-router-dom: 5.3.4(react@19.2.8)
       tslib: 2.8.1
 
-  '@ionic/react@8.8.14(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
+  '@ionic/react@8.8.15(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
     dependencies:
-      '@ionic/core': 8.8.14
+      '@ionic/core': 8.8.15
       ionicons: 8.0.13
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
@@ -13335,6 +13422,10 @@ snapshots:
     dependencies:
       minipass: 7.1.3
 
+  mnemonist@0.38.3:
+    dependencies:
+      obliterator: 1.6.1
+
   ms@2.1.2: {}
 
   ms@2.1.3: {}
@@ -13466,6 +13557,8 @@ snapshots:
       call-bound: 1.0.4
       define-properties: 1.2.1
       es-object-atoms: 1.1.2
+
+  obliterator@1.6.1: {}
 
   obug@2.1.3: {}
 

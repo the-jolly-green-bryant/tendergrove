@@ -13,7 +13,42 @@ export const generateReportNarrativeFunction = defineFunction({
   },
 })
 
+export const getAnalyticsDashboardFunction = defineFunction({
+  entry: './getAnalyticsDashboard.ts',
+  name: 'grove-analytics-dashboard',
+  timeoutSeconds: 20,
+  memoryMB: 256,
+})
+
 const schema = a.schema({
+  AnalyticsEvent: a
+    .model({
+      eventName: a.enum([
+        'screen_viewed',
+        'household_profile',
+        'check_in_saved',
+        'onboarding_completed',
+        'report_downloaded',
+        'collaboration_granted',
+      ]),
+      schemaVersion: a.integer().required(),
+      occurredAt: a.datetime().required(),
+      propertiesJson: a.json().required(),
+    })
+    .secondaryIndexes((index) => [
+      index('eventName').sortKeys(['occurredAt']).queryField('analyticsByEvent'),
+    ])
+    .authorization((allow) => [
+      allow.owner().to(['create', 'read', 'delete']),
+      allow.groups(['Admin']).to(['read', 'delete']),
+    ]),
+
+  getAnalyticsDashboard: a
+    .query()
+    .returns(a.string())
+    .authorization((allow) => [allow.authenticated()])
+    .handler(a.handler.function(getAnalyticsDashboardFunction)),
+
   ReportNarrative: a
     .model({
       personId: a.id().required(),
