@@ -10,7 +10,7 @@
 .insights-empty {
   text-align: center;
   padding: 3rem 1rem;
-  color: var(--ion-color-medium);
+  color: var(--app-color-text-muted);
 }
 
 .insights-empty__hint {
@@ -33,10 +33,10 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--ion-color-medium-shade);
+  color: var(--app-color-text-soft);
   padding: 16px 0 8px;
   margin: 0;
-  border-bottom: 1px solid var(--ion-color-light-shade);
+  border-bottom: 1px solid var(--app-color-divider);
 }
 
 /* ------------------------------------------------------------------ */
@@ -67,18 +67,18 @@
   height: 24px;
   border-radius: 6px;
   overflow: hidden;
-  background: var(--ion-color-light);
+  background: var(--app-color-surface-secondary);
 }
 
 .insights-day__bar--good {
-  background: var(--ion-color-success);
+  background: var(--app-color-positive);
   height: 100%;
   transition: width 0.3s ease;
   min-width: 0;
 }
 
 .insights-day__bar--bad {
-  background: var(--ion-color-danger);
+  background: var(--app-color-challenge);
   height: 100%;
   transition: width 0.3s ease;
   min-width: 0;
@@ -88,6 +88,6 @@
   width: 48px;
   flex-shrink: 0;
   font-size: 0.8125rem;
-  color: var(--ion-color-medium);
+  color: var(--app-color-text-muted);
   white-space: nowrap;
 }

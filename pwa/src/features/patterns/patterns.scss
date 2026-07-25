@@ -9,15 +9,15 @@
 
 .patterns-page {
   /* Well-being bands: higher = better = greener. */
-  --wb-thriving: #4e9d5e;
-  --wb-good: #8cbf6a;
-  --wb-mixed: #efae45;
-  --wb-struggling: #e2594b;
-  --wb-none: #d9d2c6;
+  --wb-thriving: var(--app-color-positive);
+  --wb-good: #78a668;
+  --wb-mixed: var(--app-color-caution);
+  --wb-struggling: var(--app-color-challenge);
+  --wb-none: var(--app-color-disabled);
 }
 
 .patterns-section {
-  margin: 0 0 22px;
+  margin: 0 0 var(--app-section-gap);
 }
 
 .patterns-tabs {
@@ -26,13 +26,13 @@
   top: 0;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 4px;
-  margin: 0 0 18px;
-  padding: 4px;
-  border: 1px solid rgba(var(--ion-color-primary-rgb), 0.12);
-  border-radius: 18px;
-  background: rgba(239, 249, 246, 0.96);
-  box-shadow: 0 8px 24px rgba(36, 63, 66, 0.08);
+  gap: var(--app-space-1);
+  margin: 0 0 var(--app-space-5);
+  padding: var(--app-space-1);
+  border: 1px solid var(--app-color-border);
+  border-radius: var(--app-radius-lg);
+  background: color-mix(in srgb, var(--app-color-surface-secondary) 94%, transparent);
+  box-shadow: var(--app-shadow-card);
   backdrop-filter: blur(12px);
 }
 
@@ -46,7 +46,7 @@
   gap: 3px;
   padding: 6px 3px;
   border: 0;
-  border-radius: 14px;
+  border-radius: var(--app-radius-md);
   background: transparent;
   color: var(--app-muted-text);
   font-size: 0.68rem;
@@ -58,9 +58,9 @@
 }
 
 .patterns-tabs__item--active {
-  background: #fff;
-  color: var(--ion-color-primary-shade);
-  box-shadow: 0 4px 14px rgba(36, 63, 66, 0.11);
+  background: var(--app-color-surface-raised);
+  color: var(--app-color-primary-strong);
+  box-shadow: var(--app-shadow-card);
 }
 
 .patterns-tab-panel {
@@ -68,22 +68,22 @@
 }
 
 .pattern-strain-breakdown {
-  padding: 18px;
-  border: 1px solid rgba(var(--ion-color-primary-rgb), 0.15);
-  border-left: 5px solid #809f86;
+  padding: var(--app-card-padding);
+  border: 1px solid var(--app-color-border);
+  border-left: 5px solid var(--app-color-secondary);
   border-radius: var(--app-radius-lg);
-  background: #fff;
+  background: var(--app-color-surface-raised);
   box-shadow: var(--app-shadow-card);
 }
 
 .pattern-strain-breakdown--elevated {
-  border-left-color: #c49a38;
+  border-left-color: var(--app-color-caution);
 }
 .pattern-strain-breakdown--sustained {
-  border-left-color: #c76f61;
+  border-left-color: #bd685b;
 }
 .pattern-strain-breakdown--intensive {
-  border-left-color: #9f463e;
+  border-left-color: var(--app-color-challenge);
 }
 .pattern-strain-breakdown > header p {
   margin: 0 0 4px;
@@ -94,7 +94,7 @@
 }
 .pattern-strain-breakdown > header h2 {
   margin: 0;
-  color: var(--ion-color-primary-shade);
+  color: var(--app-color-primary-strong);
 }
 .pattern-strain-breakdown > header span {
   display: block;
@@ -110,17 +110,25 @@
 }
 .pattern-dimension {
   padding: 12px;
-  border: 1px solid #d9e4dc;
-  border-radius: 14px;
-  background: #f7faf7;
+  border: 1px solid var(--app-color-border);
+  border-radius: var(--app-radius-md);
+  background: var(--app-color-surface-secondary);
 }
 .pattern-dimension--moderate {
-  border-color: #e2c77d;
-  background: #fff9e9;
+  border-color: color-mix(
+    in srgb,
+    var(--app-color-caution) 36%,
+    var(--app-color-border)
+  );
+  background: var(--app-color-caution-soft);
 }
 .pattern-dimension--high {
-  border-color: #d69a91;
-  background: #fff1ef;
+  border-color: color-mix(
+    in srgb,
+    var(--app-color-challenge) 36%,
+    var(--app-color-border)
+  );
+  background: var(--app-color-challenge-soft);
 }
 .pattern-dimension > div {
   display: flex;
@@ -132,18 +140,18 @@
   margin: 0;
 }
 .pattern-dimension h3 {
-  color: #315f4b;
+  color: var(--app-color-primary-strong);
   font-size: 0.9rem;
 }
 .pattern-dimension strong {
-  color: #52675d;
+  color: var(--app-color-text-soft);
   font-size: 0.8rem;
 }
 .pattern-dimension--moderate strong {
-  color: #806018;
+  color: var(--app-color-caution);
 }
 .pattern-dimension--high strong {
-  color: #963d35;
+  color: var(--app-color-challenge);
 }
 .pattern-dimension p {
   margin-top: 5px;
@@ -156,16 +164,16 @@
   font-size: 0.84rem;
 }
 .pattern-strain-breakdown > a {
-  color: var(--ion-color-primary-shade);
+  color: var(--app-color-primary-strong);
   font-weight: 800;
 }
 
 .pattern-strain-sparkline {
   margin: 16px 0;
   padding: 12px 14px 10px;
-  border: 1px solid #dbe5dd;
-  border-radius: 14px;
-  background: #f8faf7;
+  border: 1px solid var(--app-color-border);
+  border-radius: var(--app-radius-md);
+  background: var(--app-color-surface-secondary);
 }
 
 .pattern-strain-sparkline figcaption,
@@ -177,7 +185,7 @@
 }
 
 .pattern-strain-sparkline figcaption strong {
-  color: #315f4b;
+  color: var(--app-color-primary-strong);
   font-size: 0.9rem;
 }
 
@@ -196,7 +204,7 @@
 }
 
 .pattern-strain-sparkline svg > line {
-  stroke: #d7dfd9;
+  stroke: var(--app-color-border);
   stroke-width: 1;
   stroke-dasharray: 4 4;
 }
@@ -209,7 +217,7 @@
 
 .pattern-strain-sparkline polyline {
   fill: none;
-  stroke: #5f7c6a;
+  stroke: var(--app-color-secondary);
   stroke-width: 2.5;
   stroke-linecap: round;
   stroke-linejoin: round;

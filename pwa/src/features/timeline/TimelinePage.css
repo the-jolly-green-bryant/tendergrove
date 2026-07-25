@@ -1,5 +1,5 @@
 .timeline-page {
-  --background: #f8f3fa;
+  --background: var(--app-color-background);
 }
 
 .timeline-loading,
@@ -11,7 +11,7 @@
 
 .timeline-empty {
   padding: 3rem 1rem;
-  color: var(--app-muted-text);
+  color: var(--app-color-text-muted);
   text-align: center;
 }
 
@@ -37,7 +37,7 @@
   bottom: 30px;
   left: 84px;
   width: 1px;
-  background: rgba(45, 88, 83, 0.17);
+  background: var(--app-color-border);
   content: '';
 }
 
@@ -58,9 +58,9 @@
   justify-content: center;
   min-height: 58px;
   margin-top: 10px;
-  border-radius: 12px;
-  background: linear-gradient(145deg, #1b625b, #124942);
-  box-shadow: 0 6px 14px rgba(22, 77, 71, 0.17);
+  border-radius: var(--app-radius-sm);
+  background: var(--app-color-primary-strong);
+  box-shadow: var(--app-shadow-card);
   color: #fff;
   text-align: center;
   text-transform: uppercase;
@@ -81,7 +81,7 @@
 .timeline-day__events {
   min-width: 0;
   padding: 2px 0 12px;
-  border-bottom: 1px solid rgba(45, 88, 83, 0.12);
+  border-bottom: 1px solid var(--app-color-divider);
 }
 
 .timeline-day:last-child .timeline-day__events {
@@ -99,7 +99,7 @@
   padding: 8px 0;
   border: 0;
   background: transparent;
-  color: #244446;
+  color: var(--app-color-text);
   font: inherit;
   text-align: left;
   cursor: pointer;
@@ -121,21 +121,21 @@
   width: 10px;
   height: 10px;
   transform: translate(-50%, -50%);
-  border: 2px solid #f8f3fa;
+  border: 2px solid var(--app-color-background);
   border-radius: 50%;
   background: #7b8a88;
 }
 
 .timeline-event__dot--success {
-  background: #459a5d;
+  background: var(--app-color-positive);
 }
 
 .timeline-event__dot--warning {
-  background: #f39a25;
+  background: var(--app-color-caution);
 }
 
 .timeline-event__dot--danger {
-  background: #e13d37;
+  background: var(--app-color-challenge);
 }
 
 .timeline-event__dot--event {
@@ -165,7 +165,7 @@
 
 .timeline-event__info strong {
   overflow: hidden;
-  color: #174f4d;
+  color: var(--app-color-primary-strong);
   font-size: 0.92rem;
   font-weight: 760;
   text-overflow: ellipsis;
@@ -174,7 +174,7 @@
 
 .timeline-event__info > span {
   margin-top: 2px;
-  color: #647270;
+  color: var(--app-color-text-muted);
   font-size: 0.8rem;
 }
 

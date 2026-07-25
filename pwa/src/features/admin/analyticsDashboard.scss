@@ -1,5 +1,5 @@
 .analytics-dashboard {
-  --analytics-border: rgba(74, 102, 86, 0.16);
+  --analytics-border: var(--app-color-border);
 }
 
 .analytics-intro {
@@ -9,7 +9,7 @@
 
 .analytics-intro p {
   margin-bottom: 0.2rem;
-  color: var(--app-primary);
+  color: var(--app-color-primary);
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -36,9 +36,9 @@
 .analytics-kpis article,
 .analytics-panel {
   border: 1px solid var(--analytics-border);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: 0 8px 24px rgba(58, 79, 67, 0.06);
+  border-radius: var(--app-radius-lg);
+  background: color-mix(in srgb, var(--app-color-surface-raised) 86%, transparent);
+  box-shadow: var(--app-shadow-card);
 }
 
 .analytics-kpis article {
@@ -55,8 +55,8 @@
 .analytics-kpis strong {
   display: block;
   margin-top: 0.25rem;
-  color: var(--app-primary);
-  font-size: 1.8rem;
+  color: var(--app-color-primary);
+  font-size: var(--app-type-numeric);
 }
 
 .analytics-panel {
@@ -108,14 +108,14 @@
   height: 8px;
   overflow: hidden;
   border-radius: 999px;
-  background: rgba(97, 128, 107, 0.12);
+  background: var(--app-color-primary-soft);
 }
 
 .analytics-bar b {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: var(--app-primary);
+  background: var(--app-color-primary);
 }
 
 .analytics-table-wrap {

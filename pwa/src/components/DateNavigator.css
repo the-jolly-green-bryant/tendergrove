@@ -26,9 +26,9 @@
   min-width: 0;
   min-height: 42px;
   padding: 8px 14px;
-  border-radius: 999px;
-  background: rgba(23, 79, 77, 0.94);
-  box-shadow: 0 7px 18px rgba(17, 67, 64, 0.2);
+  border-radius: var(--app-radius-pill);
+  background: var(--app-color-primary-strong);
+  box-shadow: var(--app-shadow-card);
   color: #fff;
   font-weight: 760;
 }
@@ -45,11 +45,11 @@
   height: 42px;
   min-height: 42px;
   padding: 0;
-  border: 1px solid rgba(23, 79, 77, 0.2);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.76);
-  box-shadow: 0 5px 14px rgba(17, 67, 64, 0.12);
-  color: #174f4d;
+  border: 1px solid var(--app-color-border);
+  border-radius: var(--app-radius-sm);
+  background: color-mix(in srgb, var(--app-color-surface-raised) 80%, transparent);
+  box-shadow: var(--app-shadow-card);
+  color: var(--app-color-primary-strong);
   font-size: 1.35rem;
   --ionicon-stroke-width: 52px;
 }
@@ -62,11 +62,11 @@
   height: 42px;
   min-height: 42px;
   padding: 0;
-  border: 1px solid rgba(23, 79, 77, 0.2);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.76);
-  box-shadow: 0 5px 14px rgba(17, 67, 64, 0.1);
-  color: #174f4d;
+  border: 1px solid var(--app-color-border);
+  border-radius: var(--app-radius-sm);
+  background: color-mix(in srgb, var(--app-color-surface-raised) 80%, transparent);
+  box-shadow: var(--app-shadow-card);
+  color: var(--app-color-primary-strong);
   font: inherit;
   font-size: 1.2rem;
   font-weight: 780;
@@ -94,19 +94,19 @@
   font-family: inherit;
   font-size: 1.05rem;
   font-weight: 650;
-  color: #5f6f70;
+  color: var(--app-color-text-muted);
   cursor: pointer;
   -webkit-appearance: none;
   appearance: none;
 }
 
 .date-navigator__month-btn:active {
-  background: rgba(95, 111, 112, 0.1);
+  background: var(--app-color-surface-secondary);
 }
 
 .date-navigator__chevron {
   font-size: 0.9375rem;
-  color: #5f6f70;
+  color: var(--app-color-text-muted);
 }
 
 /* Controls group: back/forward arrows + today button */
@@ -129,12 +129,12 @@
   -webkit-appearance: none;
   appearance: none;
   padding: 0;
-  color: #5f6f70;
+  color: var(--app-color-text-muted);
   font-size: 1.1rem;
 }
 
 .date-navigator__arrow:active {
-  background: rgba(95, 111, 112, 0.1);
+  background: var(--app-color-surface-secondary);
 }
 
 .date-navigator__arrow:disabled {
@@ -160,12 +160,12 @@
 }
 
 .date-navigator__today-icon {
-  color: #5f6f70;
+  color: var(--app-color-text-muted);
   font-size: 29px;
 }
 
 .date-navigator__today-btn:active {
-  background: rgba(95, 111, 112, 0.1);
+  background: var(--app-color-surface-secondary);
 }
 
 .date-navigator__today-number {
@@ -176,7 +176,7 @@
   font-family: inherit;
   font-size: 0.6875rem;
   font-weight: 850;
-  color: #5f6f70;
+  color: var(--app-color-text-muted);
   line-height: 1;
   pointer-events: none;
 }
@@ -184,12 +184,12 @@
 /* Dropdown calendar container */
 .date-navigator__calendar {
   padding: 8px 12px 12px;
-  background: #f8f3fa;
-  border-top: 1px solid rgba(36, 63, 66, 0.08);
-  border-bottom: 1px solid #d8cfc2;
+  background: var(--app-color-background);
+  border-top: 1px solid var(--app-color-divider);
+  border-bottom: 1px solid var(--app-color-border);
   box-shadow:
-    inset 0 10px 24px rgba(36, 63, 66, 0.1),
-    inset 0 -10px 24px rgba(36, 63, 66, 0.1);
+    inset 0 10px 24px rgba(36, 63, 66, 0.07),
+    inset 0 -10px 24px rgba(36, 63, 66, 0.07);
   color: var(--ion-text-color);
   overflow: hidden;
   animation: date-navigator-slide-open 240ms ease-out;

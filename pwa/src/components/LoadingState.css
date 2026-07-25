@@ -1,28 +1,28 @@
 .loading-skeleton {
   display: grid;
-  gap: 14px;
+  gap: var(--app-space-4);
   width: 100%;
   padding: 4px 0 24px;
 }
 
 .loading-skeleton ion-skeleton-text {
   margin: 0;
-  --background: rgba(76, 119, 112, 0.12);
+  --background: color-mix(in srgb, var(--app-color-primary) 12%, transparent);
   --background-rgb: 76, 119, 112;
 }
 
 .loading-skeleton__line {
   height: 12px;
-  border-radius: 999px;
+  border-radius: var(--app-radius-pill);
 }
 
 .loading-skeleton__card,
 .loading-skeleton__chart,
 .loading-skeleton__form-intro {
-  padding: 16px;
+  padding: var(--app-card-padding);
   border: 1px solid var(--app-border-color);
   border-radius: var(--app-radius-lg);
-  background: var(--ion-card-background);
+  background: var(--app-color-surface-raised);
   box-shadow: var(--app-shadow-card);
 }
 
@@ -92,19 +92,19 @@
 .loading-skeleton__pill {
   width: 68px;
   height: 36px;
-  border-radius: 999px;
+  border-radius: var(--app-radius-pill);
 }
 
 .loading-skeleton__plot {
   width: 100%;
   height: 150px;
-  border-radius: 12px;
+  border-radius: var(--app-radius-sm);
 }
 
 .loading-skeleton__segment {
   width: 100%;
   height: 34px;
-  border-radius: 999px;
+  border-radius: var(--app-radius-pill);
 }
 
 .loading-skeleton__form-intro {

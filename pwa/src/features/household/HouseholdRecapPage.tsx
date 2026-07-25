@@ -1,9 +1,4 @@
-import {
-  IonContent,
-  IonIcon,
-  IonPage,
-  useIonViewWillEnter,
-} from '@ionic/react'
+import { IonContent, IonIcon, IonPage, useIonViewWillEnter } from '@ionic/react'
 import { closeOutline } from 'ionicons/icons'
 import { type ReactNode, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
@@ -387,7 +382,7 @@ const HouseholdRecapPage = () => {
       <IonContent
         fullscreen
         scrollY={false}
-        className="household-recap-content"
+        className="app-page household-recap-content"
       >
         {people.isLoading && (
           <LoadingState

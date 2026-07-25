@@ -223,15 +223,26 @@ const useCheckInDraft = (
   householdEventIds: string[],
   householdEventsLoading: boolean,
 ) => {
-  const draftKey = accountStorageKey(accountId, `check-in-draft:${personId}:${toLocalDateKey(selectedDate)}`)
+  const draftKey = accountStorageKey(
+    accountId,
+    `check-in-draft:${personId}:${toLocalDateKey(selectedDate)}`,
+  )
   const [checked, setChecked] = useState<CheckedIndicators>({})
   const [checkedEvents, setCheckedEvents] = useState<CheckedIndicators>({})
   const [note, setNote] = useState('')
   const [prefilled, setPrefilled] = useState(false)
 
   useEffect(() => {
-    let saved: { checked?: CheckedIndicators; checkedEvents?: CheckedIndicators; note?: string } = {}
-    try { saved = JSON.parse(localStorage.getItem(draftKey) ?? '{}') } catch { /* ignore damaged drafts */ }
+    let saved: {
+      checked?: CheckedIndicators
+      checkedEvents?: CheckedIndicators
+      note?: string
+    } = {}
+    try {
+      saved = JSON.parse(localStorage.getItem(draftKey) ?? '{}')
+    } catch {
+      /* ignore damaged drafts */
+    }
     setChecked(saved.checked ?? {})
     setCheckedEvents(saved.checkedEvents ?? {})
     setNote(saved.note ?? '')
@@ -560,19 +571,36 @@ const WizardStep = ({ personId, selectedDate, step }: WizardStepProps) => {
         onClick={undefined}
       />
       {urgentSignal && (
-        <section className="safety-escalation" role="alert">
+        <section
+          className="safety-escalation"
+          role="alert"
+        >
           <h2>Pause and check immediate safety</h2>
-          <p>This entry may describe an urgent safety concern. Grove cannot assess the danger. If anyone may be unsafe, contact trained help now.</p>
-          <IonButton color="danger" routerLink="/help-now">View support options</IonButton>
+          <p>
+            This entry may describe an urgent safety concern. Grove cannot assess the
+            danger. If anyone may be unsafe, contact trained help now.
+          </p>
+          <IonButton
+            color="danger"
+            routerLink="/help-now"
+          >
+            View support options
+          </IonButton>
           {!continuedAfterSafety && (
-            <IonButton fill="outline" color="danger" onClick={() => setContinuedAfterSafety(true)}>
+            <IonButton
+              fill="outline"
+              color="danger"
+              onClick={() => setContinuedAfterSafety(true)}
+            >
               I’m safe enough to continue recording
             </IonButton>
           )}
         </section>
       )}
       {urgentSignal && !continuedAfterSafety ? (
-        <p className="safety-escalation__pause">The ordinary check-in is paused until you choose a safety option above.</p>
+        <p className="safety-escalation__pause">
+          The ordinary check-in is paused until you choose a safety option above.
+        </p>
       ) : nothingToTrack ? (
         <EmptyIndicatorsMessage personId={personId} />
       ) : (
@@ -695,7 +723,7 @@ export const CheckInWizardPage = ({
         }
       />
       <IonContent
-        className={`ion-padding check-in-wizard-content${isTimeTravel ? ' time-travel-surface' : ''}`}
+        className={`app-page ion-padding check-in-wizard-content${isTimeTravel ? ' time-travel-surface' : ''}`}
       >
         {isTimeTravel &&
           renderTimeTravelNotice(selectedDate, () => setSelectedDate(new Date()))}
