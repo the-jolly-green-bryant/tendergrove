@@ -13,6 +13,7 @@ import '@ionic/react/css/typography.css'
 import '@ionic/react/css/padding.css'
 import '@ionic/react/css/flex-utils.css'
 import './theme/variables.css'
+import './theme/foundation.scss'
 import './theme/app.scss'
 import outputs from '../../amplify_outputs.json'
 

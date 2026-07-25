@@ -1,0 +1,359 @@
+/* Grove product-wide visual foundation.
+ *
+ * This layer styles shared Ionic primitives and resilient page states. Feature
+ * styles remain responsible for layout and data-specific composition.
+ */
+
+html,
+body,
+ion-app {
+  font-family: var(--app-font-body);
+  color: var(--app-color-text);
+  background: var(--app-color-background);
+}
+
+body {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app-page {
+  --background:
+    radial-gradient(circle at 88% -8%, rgba(117, 200, 196, 0.12), transparent 24rem),
+    linear-gradient(
+      180deg,
+      var(--app-color-background) 0%,
+      #faf8f2 58%,
+      var(--app-color-background) 100%
+    );
+  --color: var(--app-color-text);
+}
+
+.app-page::part(scroll) {
+  padding-bottom: max(
+    var(--app-space-7),
+    calc(env(safe-area-inset-bottom, 0px) + var(--app-space-6))
+  );
+}
+
+.app-page.ion-padding {
+  --padding-start: var(--app-page-gutter);
+  --padding-end: var(--app-page-gutter);
+  --padding-top: var(--app-space-5);
+  --padding-bottom: var(--app-space-7);
+}
+
+.app-page :where(h1, h2, h3, h4, p) {
+  text-wrap: pretty;
+}
+
+.app-page :where(h1, h2, h3, h4) {
+  color: var(--app-color-text);
+}
+
+.app-page > :where(h1, h2):first-child,
+.app-page .page-intro > :where(h1, h2):first-child {
+  margin-top: 0;
+}
+
+.app-page h1 {
+  font-size: var(--app-type-page);
+  line-height: var(--app-leading-tight);
+  letter-spacing: -0.025em;
+}
+
+.app-page h2 {
+  font-size: var(--app-type-section);
+  line-height: 1.3;
+}
+
+.app-page h3 {
+  font-size: var(--app-type-card);
+  line-height: 1.35;
+}
+
+.app-page p,
+.app-page li {
+  font-size: var(--app-type-body);
+  line-height: var(--app-leading-body);
+}
+
+.app-page :where(small, ion-note) {
+  color: var(--app-color-text-muted);
+  font-size: var(--app-type-supporting);
+  line-height: 1.45;
+}
+
+.app-page a {
+  color: var(--app-color-primary);
+  font-weight: 700;
+  text-underline-offset: 0.18em;
+}
+
+.app-page a:focus-visible,
+.app-page button:focus-visible,
+.app-page [tabindex]:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--app-color-focus) 36%, transparent);
+  outline-offset: 3px;
+}
+
+/* Meaningful surfaces */
+.app-page ion-card {
+  --background: var(--app-color-surface-raised);
+  color: var(--app-color-text);
+  border: 1px solid var(--app-color-border);
+  border-radius: var(--app-radius-lg);
+  box-shadow: var(--app-shadow-card);
+}
+
+.app-page ion-card-header {
+  padding: var(--app-card-padding) var(--app-card-padding) var(--app-space-2);
+}
+
+.app-page ion-card-content {
+  padding: var(--app-space-3) var(--app-card-padding) var(--app-card-padding);
+  color: var(--app-color-text-soft);
+}
+
+.app-page ion-card-title {
+  color: var(--app-color-text);
+  font-size: var(--app-type-section);
+  font-weight: 760;
+  letter-spacing: -0.015em;
+}
+
+.app-page ion-card-subtitle {
+  color: var(--app-color-text-muted);
+  font-size: var(--app-type-meta);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+/* Lists and form controls */
+.app-page ion-list {
+  background: transparent;
+}
+
+.app-page ion-list[inset],
+.app-page ion-list.list-inset {
+  margin-inline: 0;
+  overflow: hidden;
+  border: 1px solid var(--app-color-border);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-color-surface-raised);
+  box-shadow: var(--app-shadow-card);
+}
+
+.app-page ion-item {
+  --background: var(--app-color-surface-raised);
+  --border-color: var(--app-color-divider);
+  --color: var(--app-color-text);
+  --min-height: 54px;
+  --padding-start: var(--app-space-4);
+  --inner-padding-end: var(--app-space-4);
+}
+
+.app-page ion-item::part(detail-icon) {
+  color: var(--app-color-primary);
+  opacity: 0.72;
+}
+
+.app-page ion-label {
+  color: var(--app-color-text);
+}
+
+.app-page :where(ion-input, ion-textarea, ion-select, ion-datetime) {
+  --color: var(--app-color-text);
+  --placeholder-color: var(--app-color-text-muted);
+  --highlight-color-focused: var(--app-color-focus);
+  --highlight-color-invalid: var(--app-color-challenge);
+  font-size: var(--app-type-body);
+}
+
+.app-page :where(ion-input, ion-select) {
+  min-height: var(--app-control-height);
+}
+
+.app-page ion-textarea {
+  min-height: 96px;
+}
+
+.app-page ion-item:focus-within {
+  position: relative;
+  z-index: 1;
+}
+
+.app-page ion-item:focus-within::part(native) {
+  box-shadow: inset 3px 0 0 var(--app-color-focus);
+}
+
+.app-page ion-checkbox {
+  --border-color: #9caf9f;
+  --border-color-checked: var(--app-color-primary);
+  --checkbox-background-checked: var(--app-color-primary);
+  --checkmark-color: #ffffff;
+  --size: 24px;
+}
+
+.app-page ion-radio {
+  --color: #9caf9f;
+  --color-checked: var(--app-color-primary);
+}
+
+.app-page ion-toggle {
+  --track-background: #cfd8d1;
+  --track-background-checked: var(--app-color-primary-soft);
+  --handle-background: #ffffff;
+  --handle-background-checked: var(--app-color-primary);
+}
+
+.app-page ion-searchbar {
+  --background: var(--app-color-surface-raised);
+  --border-radius: var(--app-radius-md);
+  --box-shadow: 0 0 0 1px var(--app-color-border);
+  --color: var(--app-color-text);
+  --icon-color: var(--app-color-primary);
+  --placeholder-color: var(--app-color-text-muted);
+  padding-inline: 0;
+}
+
+/* Actions and compact selection controls */
+.app-page ion-button {
+  --border-radius: var(--app-radius-sm);
+  min-height: var(--app-tap-target);
+  letter-spacing: 0.005em;
+}
+
+.app-page ion-button[fill='solid']:not([color]) {
+  --background: var(--app-color-primary);
+  --background-activated: var(--app-color-primary-strong);
+  --background-hover: var(--app-color-primary-strong);
+  --color: #ffffff;
+}
+
+.app-page ion-button[fill='outline']:not([color]) {
+  --border-color: var(--app-color-primary);
+  --color: var(--app-color-primary);
+}
+
+.app-page ion-button[fill='clear']:not([color]) {
+  --color: var(--app-color-primary);
+}
+
+.app-page ion-button[disabled] {
+  --background: var(--app-color-disabled-soft);
+  --color: #75847d;
+  opacity: 1;
+}
+
+.app-page ion-segment {
+  padding: var(--app-space-1);
+  border: 1px solid var(--app-color-border);
+  border-radius: var(--app-radius-md);
+  background: var(--app-color-surface-secondary);
+}
+
+.app-page ion-segment-button {
+  --border-radius: var(--app-radius-sm);
+  --color: var(--app-color-text-muted);
+  --color-checked: var(--app-color-primary-strong);
+  --indicator-color: var(--app-color-surface-raised);
+  min-height: var(--app-tap-target);
+  font-weight: 750;
+  text-transform: none;
+}
+
+.app-page ion-chip {
+  --background: var(--app-color-surface-secondary);
+  --color: var(--app-color-text-soft);
+  min-height: 36px;
+  border: 1px solid var(--app-color-border);
+}
+
+/* Shared feedback states */
+.section-empty,
+.recap-page__fallback,
+.pattern-empty-state,
+.empty-state {
+  width: min(100%, 560px);
+  margin: var(--app-space-6) auto;
+  padding: var(--app-space-7) var(--app-space-5);
+  border: 1px dashed #b8c8bc;
+  border-radius: var(--app-radius-lg);
+  background: color-mix(in srgb, var(--app-color-surface-secondary) 74%, transparent);
+  color: var(--app-color-text-muted);
+  text-align: center;
+}
+
+.load-error,
+.error-state {
+  border-color: color-mix(
+    in srgb,
+    var(--app-color-challenge) 30%,
+    var(--app-color-border)
+  );
+  background: var(--app-color-challenge-soft);
+}
+
+ion-skeleton-text {
+  --background: #dde7df;
+  --background-rgb: 221, 231, 223;
+  border-radius: var(--app-radius-pill);
+}
+
+ion-modal,
+ion-popover {
+  --backdrop-opacity: 0.34;
+}
+
+ion-alert .alert-wrapper,
+ion-popover::part(content) {
+  border: 1px solid var(--app-color-border);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-color-surface-raised);
+  box-shadow: var(--app-shadow-overlay);
+}
+
+ion-toast {
+  --background: var(--app-color-primary-strong);
+  --border-radius: var(--app-radius-md);
+  --box-shadow: var(--app-shadow-overlay);
+  --color: #ffffff;
+}
+
+@media (max-width: 390px) {
+  .app-page.ion-padding {
+    --padding-start: var(--app-space-4);
+    --padding-end: var(--app-space-4);
+  }
+
+  .app-page ion-card {
+    margin-block: var(--app-space-3);
+  }
+
+  .app-page ion-segment-button {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 340px) {
+  .app-page {
+    --app-page-gutter: 14px;
+    --app-card-padding: 15px;
+  }
+
+  .app-page ion-button {
+    white-space: normal;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

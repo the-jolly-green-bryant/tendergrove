@@ -327,21 +327,21 @@ ion-chip {
 }
 
 ion-toolbar {
-  --background: rgba(236, 247, 245, 0.97);
-  --border-color: rgba(20, 125, 126, 0.16);
+  --background: color-mix(in srgb, var(--app-color-surface-accent) 94%, transparent);
+  --border-color: var(--app-color-border);
   --border-width: 0;
-  --color: #5f6f70;
+  --color: var(--app-color-text-soft);
   --padding-top: 6px;
   --padding-bottom: 6px;
   --min-height: 56px;
-  color: #5f6f70;
+  color: var(--app-color-text-soft);
 }
 
 ion-header {
-  background: rgba(236, 247, 245, 0.97);
-  background-color: rgba(236, 247, 245, 0.97);
-  border-bottom: 1px solid rgba(20, 125, 126, 0.16);
-  box-shadow: 0 10px 24px rgba(36, 63, 66, 0.12);
+  background: var(--app-color-surface-accent);
+  background-color: var(--app-color-surface-accent);
+  border-bottom: 1px solid var(--app-color-border);
+  box-shadow: 0 8px 22px rgba(36, 63, 66, 0.09);
 }
 
 .page-header--transparent {
@@ -355,10 +355,10 @@ ion-header {
 }
 
 .page-header--scrolled {
-  background: rgba(236, 247, 245, 0.97);
-  background-color: rgba(236, 247, 245, 0.97);
-  border-bottom: 1px solid rgba(20, 125, 126, 0.16);
-  box-shadow: 0 10px 24px rgba(36, 63, 66, 0.12);
+  background: var(--app-color-surface-accent);
+  background-color: var(--app-color-surface-accent);
+  border-bottom: 1px solid var(--app-color-border);
+  box-shadow: 0 8px 22px rgba(36, 63, 66, 0.09);
 }
 
 .page-header--transparent::after {
@@ -386,8 +386,8 @@ ion-header {
 }
 
 .page-header--scrolled ion-toolbar {
-  --background: rgba(236, 247, 245, 0.97);
-  --border-color: rgba(20, 125, 126, 0.16);
+  --background: var(--app-color-surface-accent);
+  --border-color: var(--app-color-border);
 }
 
 .page-header--transparent::part(background),
@@ -418,6 +418,11 @@ ion-toolbar {
 .page-toolbar ion-title {
   inset-inline: 72px;
   padding-inline: 0;
+  color: var(--app-color-text-soft);
+  font-family: var(--app-font-display);
+  font-size: 1.12rem;
+  font-weight: 600;
+  letter-spacing: -0.012em;
   text-align: center;
 }
 
@@ -460,11 +465,11 @@ ion-toolbar {
   height: 48px;
   padding: 0;
   place-items: center;
-  border: 1px solid rgba(23, 79, 77, 0.1);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 5px 14px rgba(17, 67, 64, 0.12);
-  color: #5e6c6c;
+  border: 1px solid var(--app-color-border);
+  border-radius: var(--app-radius-md);
+  background: color-mix(in srgb, var(--app-color-surface-raised) 94%, transparent);
+  box-shadow: var(--app-shadow-card);
+  color: var(--app-color-text-soft);
   font-size: 26px;
 }
 
@@ -868,32 +873,32 @@ ion-header::after {
 /* Toolbar controls match the dashboard header color. */
 ion-toolbar ion-button,
 ion-toolbar ion-buttons {
-  --color: #5f6f70;
-  color: #5f6f70;
+  --color: var(--app-color-text-soft);
+  color: var(--app-color-text-soft);
 }
 
 ion-back-button {
-  --background: rgba(255, 255, 255, 0.94);
-  --background-activated: #f1f2ef;
+  --background: color-mix(in srgb, var(--app-color-surface-raised) 94%, transparent);
+  --background-activated: var(--app-color-surface-secondary);
   --border-radius: 50%;
-  --color: #697275;
+  --color: var(--app-color-text-muted);
   width: 44px;
   height: 44px;
-  color: #697275;
+  color: var(--app-color-text-muted);
 }
 
 ion-back-button button {
-  color: #697275;
+  color: var(--app-color-text-muted);
 }
 
 ion-toolbar ion-menu-button {
-  --background: rgba(255, 255, 255, 0.94);
-  --background-activated: #f1f2ef;
+  --background: color-mix(in srgb, var(--app-color-surface-raised) 94%, transparent);
+  --background-activated: var(--app-color-surface-secondary);
   --border-radius: 50%;
-  --color: #697275;
+  --color: var(--app-color-text-muted);
   width: 44px;
   height: 44px;
-  color: #697275;
+  color: var(--app-color-text-muted);
 }
 
 ion-toolbar ion-menu-button::part(native),
@@ -2794,9 +2799,12 @@ a:visited {
   --amplify-components-authenticator-router-box-shadow: 0 24px 60px
     rgba(42, 68, 56, 0.14);
   --amplify-components-authenticator-router-border-width: 0;
-  --amplify-components-button-primary-background-color: #315f4b;
-  --amplify-components-button-primary-hover-background-color: #244f3d;
-  --amplify-components-fieldcontrol-focus-border-color: #568264;
+  --amplify-components-button-primary-background-color: var(--app-color-primary);
+  --amplify-components-button-primary-hover-background-color: var(
+    --app-color-primary-strong
+  );
+  --amplify-components-fieldcontrol-focus-border-color: var(--app-color-focus);
+  --amplify-fonts-default-variable: var(--app-font-body);
   min-height: 100%;
   padding: 20px;
   background: radial-gradient(circle at 50% 0%, #edf5e8 0%, #faf7f0 54%, #f4eee5 100%);
@@ -2804,28 +2812,28 @@ a:visited {
 
 [data-amplify-authenticator] [data-amplify-router] {
   overflow: hidden;
-  border: 1px solid rgba(49, 95, 75, 0.14);
-  border-radius: 24px;
-  background: rgba(255, 255, 252, 0.96);
+  border: 1px solid var(--app-color-border);
+  border-radius: var(--app-radius-xl);
+  background: color-mix(in srgb, var(--app-color-surface-raised) 96%, transparent);
 }
 
 [data-amplify-authenticator] .amplify-tabs__item {
-  color: #65776f;
+  color: var(--app-color-text-muted);
   font-weight: 750;
 }
 
 [data-amplify-authenticator] .amplify-tabs__item--active {
-  border-color: #568264;
-  color: #315f4b;
+  border-color: var(--app-color-secondary);
+  color: var(--app-color-primary-strong);
 }
 
 [data-amplify-authenticator] .amplify-button {
   min-height: 46px;
-  border-radius: 12px;
+  border-radius: var(--app-radius-sm);
 }
 [data-amplify-authenticator] .amplify-field-group__control {
   min-height: 46px;
-  border-radius: 11px;
+  border-radius: var(--app-radius-sm);
 }
 
 .auth-form-intro {
@@ -3663,54 +3671,54 @@ a:visited {
   max-width: 760px !important;
   margin: 16px auto !important;
   overflow: hidden;
-  border: 1px solid #d4dfd7;
-  border-radius: 18px;
-  box-shadow: 0 8px 24px rgba(29, 67, 60, 0.06);
+  border: 1px solid var(--app-color-border);
+  border-radius: var(--app-radius-lg);
+  box-shadow: var(--app-shadow-card);
 }
 .settings-page ion-list[inset]:not(.settings-nav),
 .settings-page ion-list.list-inset:not(.settings-nav),
 .report-form {
   padding: 8px;
-  border: 1px solid #d4dfd7;
-  border-radius: 18px;
-  background: #f7faf7;
+  border: 1px solid var(--app-color-border);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-color-surface-secondary);
 }
 .settings-page ion-list[inset]:not(.settings-nav) ion-item,
 .settings-page ion-list.list-inset:not(.settings-nav) ion-item,
 .report-form ion-item {
-  --background: #fff;
+  --background: var(--app-color-surface-raised);
   --border-color: transparent;
   --border-radius: 12px;
   --padding-start: 14px;
   --inner-padding-end: 14px;
   margin: 7px 0;
-  border: 1px solid #c7d5cc;
-  border-radius: 12px;
+  border: 1px solid var(--app-color-border);
+  border-radius: var(--app-radius-sm);
   box-shadow: 0 1px 2px rgba(29, 67, 60, 0.04);
 }
 .settings-page ion-input,
 .settings-page ion-select,
 .report-form ion-select,
 .report-form ion-textarea {
-  --highlight-color-focused: #34766c;
+  --highlight-color-focused: var(--app-color-focus);
   min-height: 58px;
 }
 .settings-page ion-item:focus-within,
 .report-form ion-item:focus-within {
-  border-color: #568264;
-  box-shadow: 0 0 0 3px rgba(86, 130, 100, 0.14);
+  border-color: var(--app-color-focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--app-color-focus) 18%, transparent);
 }
 .report-intro {
   max-width: 760px;
   margin: 0 auto 1.2rem;
   padding: 1.15rem 1.25rem;
-  border: 1px solid rgba(49, 95, 75, 0.14);
-  border-radius: 20px;
-  background: linear-gradient(145deg, #f5f9f2, #fffdf8);
+  border: 1px solid var(--app-color-border);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-color-surface-secondary);
 }
 .report-intro__eyebrow {
   margin: 0 0 0.25rem;
-  color: #568264;
+  color: var(--app-color-secondary);
   font-size: 0.75rem;
   font-weight: 850;
   letter-spacing: 0.09em;
@@ -3718,17 +3726,17 @@ a:visited {
 }
 .report-intro h2 {
   margin: 0 0 0.45rem;
-  color: #234d42;
-  font-family: Georgia, 'Times New Roman', serif;
+  color: var(--app-color-primary-strong);
+  font-family: var(--app-font-display);
 }
 .report-intro > p:not(.report-intro__eyebrow) {
-  color: #5e6e67;
+  color: var(--app-color-text-muted);
   line-height: 1.55;
 }
 .report-intro ol {
   margin: 0.9rem 0 0;
   padding-left: 1.25rem;
-  color: #40584e;
+  color: var(--app-color-text-soft);
 }
 .report-intro li {
   margin: 0.4rem 0;
@@ -3738,10 +3746,10 @@ a:visited {
   max-width: 760px;
   margin: 0 auto 1rem;
   padding: 1rem;
-  border: 1px solid #d8e2da;
-  border-radius: 18px;
-  background: #fff;
-  box-shadow: 0 8px 22px rgba(29, 67, 60, 0.05);
+  border: 1px solid var(--app-color-border);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-color-surface-raised);
+  box-shadow: var(--app-shadow-card);
 }
 .report-visual__heading {
   display: flex;
@@ -3753,11 +3761,11 @@ a:visited {
 }
 .report-visual__heading h3 {
   margin: 0;
-  color: #294f43;
+  color: var(--app-color-primary-strong);
   font-size: 1rem;
 }
 .report-visual__heading span {
-  color: #728078;
+  color: var(--app-color-text-muted);
   font-size: 0.78rem;
   text-align: right;
 }

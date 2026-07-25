@@ -407,7 +407,7 @@ export const Page = ({
           if (!transparentHeaderUntilScroll) return
           updateHeaderPosition(event.detail.scrollTop)
         }}
-        className={`${disablePadding ? '' : 'ion-padding'} safe-content ${className ?? ''}`}
+        className={`app-page ${disablePadding ? '' : 'ion-padding'} safe-content ${className ?? ''}`}
       >
         {children}
       </IonContent>

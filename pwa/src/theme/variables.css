@@ -1,4 +1,6 @@
 :root {
+  color-scheme: light;
+
   /** Brand **/
   --ion-color-primary: #147d7e;
   --ion-color-primary-rgb: 20, 125, 126;
@@ -66,13 +68,81 @@
   --ion-tab-bar-color-selected: var(--ion-color-primary);
 
   /** App tokens **/
-  --app-radius-sm: 10px;
-  --app-radius-md: 14px;
-  --app-radius-lg: 16px;
+  /* Color roles */
+  --app-color-background: #f7f4ed;
+  --app-color-background-rgb: 247, 244, 237;
+  --app-color-surface: #fffdf8;
+  --app-color-surface-raised: #ffffff;
+  --app-color-surface-secondary: #edf4ee;
+  --app-color-surface-accent: #e5f2ef;
+  --app-color-text: #203f3b;
+  --app-color-text-soft: #405b55;
+  --app-color-text-muted: #64766f;
+  --app-color-border: #d7dfd6;
+  --app-color-divider: #e4e9e2;
+  --app-color-primary: #1f6862;
+  --app-color-primary-strong: #174f4d;
+  --app-color-primary-soft: #dcece7;
+  --app-color-secondary: #64866c;
+  --app-color-secondary-soft: #e7efe4;
+  --app-color-positive: #347447;
+  --app-color-positive-soft: #e5f1e4;
+  --app-color-caution: #936b18;
+  --app-color-caution-soft: #fbf1d8;
+  --app-color-challenge: #a24940;
+  --app-color-challenge-soft: #f8e8e5;
+  --app-color-info: #356f76;
+  --app-color-info-soft: #e2eff0;
+  --app-color-focus: #287b72;
+  --app-color-disabled: #aeb9b3;
+  --app-color-disabled-soft: #edf0ed;
 
-  --app-border-color: #ded6c9;
-  --app-muted-text: #607675;
+  /* Typography */
+  --app-font-body:
+    Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI',
+    sans-serif;
+  --app-font-display: Georgia, 'Times New Roman', serif;
+  --app-type-page: clamp(1.35rem, 5.2vw, 1.75rem);
+  --app-type-intro: 1rem;
+  --app-type-section: 1.08rem;
+  --app-type-card: 0.98rem;
+  --app-type-body: 0.95rem;
+  --app-type-label: 0.82rem;
+  --app-type-supporting: 0.82rem;
+  --app-type-meta: 0.74rem;
+  --app-type-numeric: clamp(1.6rem, 8vw, 2.5rem);
+  --app-leading-tight: 1.18;
+  --app-leading-body: 1.55;
 
-  --app-shadow-soft: 0 8px 24px rgba(20, 125, 126, 0.1);
-  --app-shadow-card: 0 2px 8px rgba(36, 63, 66, 0.08);
+  /* Spacing */
+  --app-space-1: 4px;
+  --app-space-2: 8px;
+  --app-space-3: 12px;
+  --app-space-4: 16px;
+  --app-space-5: 20px;
+  --app-space-6: 24px;
+  --app-space-7: 32px;
+  --app-space-8: 40px;
+  --app-page-gutter: clamp(16px, 4.8vw, 24px);
+  --app-section-gap: 24px;
+  --app-card-padding: clamp(16px, 4.4vw, 22px);
+
+  /* Shape */
+  --app-radius-xs: 8px;
+  --app-radius-sm: 12px;
+  --app-radius-md: 16px;
+  --app-radius-lg: 20px;
+  --app-radius-xl: 26px;
+  --app-radius-pill: 999px;
+  --app-control-height: 48px;
+  --app-tap-target: 44px;
+
+  /* Elevation */
+  --app-border-color: var(--app-color-border);
+  --app-muted-text: var(--app-color-text-muted);
+  --app-shadow-card: 0 2px 10px rgba(29, 67, 60, 0.07);
+  --app-shadow-soft: 0 10px 30px rgba(29, 67, 60, 0.1);
+  --app-shadow-overlay: 0 20px 60px rgba(24, 54, 50, 0.2);
+  --app-transition-fast: 140ms ease;
+  --app-transition-standard: 220ms ease;
 }
