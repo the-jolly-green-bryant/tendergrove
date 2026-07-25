@@ -43,6 +43,7 @@ import ResearchMethodologyPage from '../features/about/ResearchMethodologyPage'
 import GroveScoreMethodologyPage, {
   GROVE_SCORE_METHODOLOGY_PATH,
 } from '../features/about/GroveScoreMethodologyPage'
+import AnalyticsDashboardPage from '../features/admin/AnalyticsDashboardPage'
 import {
   CHECK_IN_REMINDER_VERSION,
   readReminder,
@@ -50,6 +51,7 @@ import {
   scheduleReminder,
 } from '../features/settings/reminderNotifications'
 import { useAppAuth } from '../auth/AuthContext'
+import { ProductAnalyticsObserver } from '../components/ProductAnalyticsObserver'
 
 export const appRoutes = [
   { path: '/dashboard', component: HouseholdPage },
@@ -100,6 +102,7 @@ export const appRoutes = [
   { path: '/terms', component: TermsPage },
   { path: '/about/research', component: ResearchMethodologyPage },
   { path: GROVE_SCORE_METHODOLOGY_PATH, component: GroveScoreMethodologyPage },
+  { path: '/admin/analytics', component: AnalyticsDashboardPage },
 ]
 
 const modalRoutes = [
@@ -358,6 +361,7 @@ const AppShellRoutes = () => {
 
   return (
     <>
+      <ProductAnalyticsObserver />
       <AppMenu />
       {renderRoutes(backgroundLocation)}
       {renderModalRoutes()}

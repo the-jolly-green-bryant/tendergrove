@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { AuthUser } from 'aws-amplify/auth'
 
-import { isGroveScoreOwner } from './AuthContext'
+import { isGroveAdmin, isGroveScoreOwner } from './AuthContext'
 
 describe('Grove Score owner access', () => {
   it('recognizes the owner email from Amplify sign-in details', () => {
@@ -31,5 +31,29 @@ describe('Grove Score owner access', () => {
     } as AuthUser
 
     expect(isGroveScoreOwner(user, 'bryant@bryantjames.com')).toBe(true)
+  })
+})
+
+describe('Grove admin access', () => {
+  it('recognizes verified Bryant James domain accounts', () => {
+    expect(
+      isGroveAdmin(
+        {
+          username: 'Google_123',
+          userId: 'admin',
+        } as AuthUser,
+        'analytics@BryantJames.com',
+      ),
+    ).toBe(true)
+  })
+
+  it('rejects lookalike and unrelated domains', () => {
+    expect(
+      isGroveAdmin({
+        username: 'person@bryantjames.com.example',
+        userId: 'other',
+      } as AuthUser),
+    ).toBe(false)
+    expect(isGroveAdmin(undefined, 'person@example.com')).toBe(false)
   })
 })

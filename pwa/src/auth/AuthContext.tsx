@@ -2,6 +2,7 @@ import { createContext, ReactNode, useContext } from 'react'
 import type { AuthUser } from 'aws-amplify/auth'
 
 export const GROVE_SCORE_OWNER_EMAIL = 'bryant@bryantjames.com'
+export const GROVE_ADMIN_EMAIL_DOMAIN = '@bryantjames.com'
 
 export const isGroveScoreOwner = (
   user?: AuthUser,
@@ -17,6 +18,15 @@ export const isGroveScoreOwner = (
       identity?.trim().toLowerCase() === GROVE_SCORE_OWNER_EMAIL,
   )
 }
+
+export const isGroveAdmin = (
+  user?: AuthUser,
+  verifiedEmail?: string,
+): boolean =>
+  [verifiedEmail, user?.username, user?.signInDetails?.loginId].some(
+    (identity) =>
+      identity?.trim().toLowerCase().endsWith(GROVE_ADMIN_EMAIL_DOMAIN),
+  )
 
 interface AuthContextValue {
   user?: AuthUser

@@ -1,0 +1,153 @@
+.analytics-dashboard {
+  --analytics-border: rgba(74, 102, 86, 0.16);
+}
+
+.analytics-intro {
+  margin: 0 0 1rem;
+  text-align: center;
+}
+
+.analytics-intro p {
+  margin-bottom: 0.2rem;
+  color: var(--app-primary);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+}
+
+.analytics-intro h1 {
+  margin: 0;
+}
+
+.analytics-intro span,
+.analytics-footnote {
+  color: var(--app-muted-text);
+  font-size: 0.82rem;
+}
+
+.analytics-kpis {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-bottom: 0.8rem;
+}
+
+.analytics-kpis article,
+.analytics-panel {
+  border: 1px solid var(--analytics-border);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 8px 24px rgba(58, 79, 67, 0.06);
+}
+
+.analytics-kpis article {
+  padding: 0.9rem;
+}
+
+.analytics-kpis span {
+  display: block;
+  min-height: 2.2em;
+  color: var(--app-muted-text);
+  font-size: 0.78rem;
+}
+
+.analytics-kpis strong {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--app-primary);
+  font-size: 1.8rem;
+}
+
+.analytics-panel {
+  margin-bottom: 0.8rem;
+  padding: 1rem;
+}
+
+.analytics-panel h2 {
+  margin-top: 0;
+  font-size: 1.08rem;
+}
+
+.analytics-rates {
+  margin: 0;
+}
+
+.analytics-rates div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--analytics-border);
+}
+
+.analytics-rates div:last-child {
+  border-bottom: 0;
+}
+
+.analytics-rates dd {
+  margin: 0;
+  font-weight: 800;
+}
+
+.analytics-rates small {
+  color: var(--app-muted-text);
+}
+
+.analytics-bar {
+  display: grid;
+  grid-template-columns: minmax(90px, 1fr) minmax(90px, 2fr) 28px;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0.55rem 0;
+  font-size: 0.82rem;
+}
+
+.analytics-bar i {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(97, 128, 107, 0.12);
+}
+
+.analytics-bar b {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--app-primary);
+}
+
+.analytics-table-wrap {
+  overflow-x: auto;
+}
+
+.analytics-table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.analytics-table-wrap th,
+.analytics-table-wrap td {
+  padding: 0.5rem 0.4rem;
+  border-bottom: 1px solid var(--analytics-border);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.analytics-table-wrap th:first-child,
+.analytics-table-wrap td:first-child {
+  text-align: left;
+}
+
+.analytics-footnote {
+  margin: 1rem 0;
+  text-align: center;
+}
+
+@media (min-width: 700px) {
+  .analytics-kpis {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

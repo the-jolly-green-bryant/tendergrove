@@ -15,6 +15,7 @@ import { clearOfflineCache } from '../../lib/resilientCache'
 import { usePeople } from '../people/usePeople'
 import { ReminderSettings } from './ReminderSettings'
 import { CaregiverCollaboration } from './CaregiverCollaboration'
+import { isGroveAdmin, useAppAuth } from '../../auth/AuthContext'
 
 const downloadJson = (value: unknown): { url: string; name: string } => {
   const blob = new Blob([JSON.stringify(value, null, 2)], { type: 'application/json' })
@@ -31,6 +32,7 @@ const downloadJson = (value: unknown): { url: string; name: string } => {
 }
 
 const SettingsPage = () => {
+  const { user, email, emailResolved } = useAppAuth()
   const people = usePeople()
   const [presentAlert] = useIonAlert()
   const [preparedExport, setPreparedExport] = useState<{
@@ -119,7 +121,17 @@ const SettingsPage = () => {
           text: 'Delete account',
           role: 'destructive',
           handler: () => {
-            void deleteUser()
+            void (async () => {
+              const analytics = await client.models.AnalyticsEvent.list({
+                selectionSet: ['id'],
+              })
+              await Promise.all(
+                analytics.data.map(({ id }) =>
+                  client.models.AnalyticsEvent.delete({ id }),
+                ),
+              )
+              await deleteUser()
+            })()
           },
         },
       ],
@@ -156,6 +168,17 @@ const SettingsPage = () => {
         >
           <IonLabel>Terms of Use &amp; Medical Disclaimer</IonLabel>
         </IonItem>
+        {emailResolved && isGroveAdmin(user, email) && (
+          <IonItem
+            button
+            routerLink="/admin/analytics"
+          >
+            <IonLabel>
+              <h2>Product analytics</h2>
+              <p>Private activation, engagement, and severity reporting</p>
+            </IonLabel>
+          </IonItem>
+        )}
       </IonList>
 
       <IonCard>
