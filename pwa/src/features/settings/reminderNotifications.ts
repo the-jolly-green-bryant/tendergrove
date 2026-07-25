@@ -3,7 +3,7 @@ import { LocalNotifications } from '@capacitor/local-notifications'
 import { accountStorageKey } from '../../lib/accountStorage'
 
 export const CHECK_IN_REMINDER_ROUTE =
-  '/check-in/wizard?returnTo=%2Fdashboard'
+  '/household/recap'
 
 export const CHECK_IN_REMINDER_TITLE = "Ready for today's check-in?"
 
@@ -15,7 +15,7 @@ export const checkInReminderExtra = {
   purpose: 'daily-check-in',
 } as const
 
-export const CHECK_IN_REMINDER_VERSION = 2
+export const CHECK_IN_REMINDER_VERSION = 3
 
 export interface ReminderValue {
   enabled: boolean

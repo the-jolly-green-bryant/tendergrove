@@ -666,7 +666,10 @@ export const CheckInWizardPage = ({
     setCurrentIndex,
   })
 
-  const step = useWizardStepState({ personId, selectedDate })
+  const step = useWizardStepState({
+    personId: currentPerson?.id,
+    selectedDate,
+  })
   const onSave = async () => (await step.save()) && advance()
 
   return (

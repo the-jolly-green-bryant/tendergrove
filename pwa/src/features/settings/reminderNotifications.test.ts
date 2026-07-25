@@ -5,7 +5,7 @@ import {
 } from './reminderNotifications'
 
 describe('check-in reminder navigation', () => {
-  it('opens the household check-in wizard for Grove reminders', () => {
+  it('opens the household wellness recap for Grove reminders', () => {
     expect(
       reminderRouteFromExtra({
         purpose: 'daily-check-in',
