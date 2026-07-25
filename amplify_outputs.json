@@ -59,6 +59,118 @@
     "model_introspection": {
       "version": 1,
       "models": {
+        "AnalyticsEvent": {
+          "name": "AnalyticsEvent",
+          "fields": {
+            "id": {
+              "name": "id",
+              "isArray": false,
+              "type": "ID",
+              "isRequired": true,
+              "attributes": []
+            },
+            "eventName": {
+              "name": "eventName",
+              "isArray": false,
+              "type": {
+                "enum": "AnalyticsEventEventName"
+              },
+              "isRequired": false,
+              "attributes": []
+            },
+            "schemaVersion": {
+              "name": "schemaVersion",
+              "isArray": false,
+              "type": "Int",
+              "isRequired": true,
+              "attributes": []
+            },
+            "occurredAt": {
+              "name": "occurredAt",
+              "isArray": false,
+              "type": "AWSDateTime",
+              "isRequired": true,
+              "attributes": []
+            },
+            "propertiesJson": {
+              "name": "propertiesJson",
+              "isArray": false,
+              "type": "AWSJSON",
+              "isRequired": true,
+              "attributes": []
+            },
+            "createdAt": {
+              "name": "createdAt",
+              "isArray": false,
+              "type": "AWSDateTime",
+              "isRequired": false,
+              "attributes": [],
+              "isReadOnly": true
+            },
+            "updatedAt": {
+              "name": "updatedAt",
+              "isArray": false,
+              "type": "AWSDateTime",
+              "isRequired": false,
+              "attributes": [],
+              "isReadOnly": true
+            }
+          },
+          "syncable": true,
+          "pluralName": "AnalyticsEvents",
+          "attributes": [
+            {
+              "type": "model",
+              "properties": {}
+            },
+            {
+              "type": "key",
+              "properties": {
+                "name": "analyticsEventsByEventNameAndOccurredAt",
+                "queryField": "analyticsByEvent",
+                "fields": [
+                  "eventName",
+                  "occurredAt"
+                ]
+              }
+            },
+            {
+              "type": "auth",
+              "properties": {
+                "rules": [
+                  {
+                    "provider": "userPools",
+                    "ownerField": "owner",
+                    "allow": "owner",
+                    "operations": [
+                      "create",
+                      "read",
+                      "delete"
+                    ],
+                    "identityClaim": "cognito:username"
+                  },
+                  {
+                    "groupClaim": "cognito:groups",
+                    "provider": "userPools",
+                    "allow": "groups",
+                    "operations": [
+                      "read",
+                      "delete"
+                    ],
+                    "groups": [
+                      "Admin"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "primaryKeyInfo": {
+            "isCustomPrimaryKey": false,
+            "primaryKeyFieldName": "id",
+            "sortKeyFieldNames": []
+          }
+        },
         "ReportNarrative": {
           "name": "ReportNarrative",
           "fields": {
@@ -1259,6 +1371,17 @@
         }
       },
       "enums": {
+        "AnalyticsEventEventName": {
+          "name": "AnalyticsEventEventName",
+          "values": [
+            "screen_viewed",
+            "household_profile",
+            "check_in_saved",
+            "onboarding_completed",
+            "report_downloaded",
+            "collaboration_granted"
+          ]
+        },
         "PersonRole": {
           "name": "PersonRole",
           "values": [
@@ -1329,6 +1452,12 @@
       },
       "nonModels": {},
       "queries": {
+        "getAnalyticsDashboard": {
+          "name": "getAnalyticsDashboard",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false
+        },
         "generateReportNarrative": {
           "name": "generateReportNarrative",
           "isArray": false,

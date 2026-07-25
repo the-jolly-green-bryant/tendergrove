@@ -1,5 +1,9 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import {
+  AdminGetUserCommand,
+  CognitoIdentityProviderClient,
+} from '@aws-sdk/client-cognito-identity-provider'
+import {
   DynamoDBDocumentClient,
   ScanCommand,
   type ScanCommandInput,
@@ -26,6 +30,7 @@ type Profile = {
 }
 
 const documentClient = DynamoDBDocumentClient.from(new DynamoDBClient({}))
+const cognitoClient = new CognitoIdentityProviderClient({})
 
 const parseProperties = (value: unknown): Record<string, unknown> => {
   if (typeof value === 'string') {
@@ -56,12 +61,28 @@ const increment = (record: Record<string, number>, key: string) => {
 }
 
 export const handler = async (event: AppSyncEvent): Promise<string> => {
-  const email = String(event.identity?.claims?.email ?? '').trim().toLowerCase()
-  const emailVerified = event.identity?.claims?.email_verified
-  if (
-    !email.endsWith('@bryantjames.com') ||
-    (emailVerified !== true && emailVerified !== 'true')
-  ) {
+  const claims = event.identity?.claims ?? {}
+  const username = String(
+    claims['cognito:username'] ?? claims.username ?? claims.sub ?? '',
+  )
+  const userPoolId = process.env.USER_POOL_ID
+  if (!username || !userPoolId) {
+    throw new Error('Analytics dashboard access is restricted.')
+  }
+  const cognitoUser = await cognitoClient.send(
+    new AdminGetUserCommand({
+      UserPoolId: userPoolId,
+      Username: username,
+    }),
+  )
+  const attributes = new Map(
+    (cognitoUser.UserAttributes ?? []).map((attribute) => [
+      attribute.Name,
+      attribute.Value,
+    ]),
+  )
+  const email = String(attributes.get('email') ?? '').trim().toLowerCase()
+  if (!email.endsWith('@bryantjames.com')) {
     throw new Error('Analytics dashboard access is restricted.')
   }
 
@@ -203,4 +224,3 @@ export const handler = async (event: AppSyncEvent): Promise<string> => {
     daily: recentDaily,
   })
 }
-

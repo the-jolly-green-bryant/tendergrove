@@ -22,8 +22,19 @@ backend.getAnalyticsDashboardFunction.addEnvironment(
   'ANALYTICS_TABLE_NAME',
   analyticsTable.tableName,
 )
+backend.getAnalyticsDashboardFunction.addEnvironment(
+  'USER_POOL_ID',
+  backend.auth.resources.userPool.userPoolId,
+)
 analyticsTable.grantReadData(
   backend.getAnalyticsDashboardFunction.resources.lambda,
+)
+backend.getAnalyticsDashboardFunction.resources.lambda.addToRolePolicy(
+  new PolicyStatement({
+    effect: Effect.ALLOW,
+    actions: ['cognito-idp:AdminGetUser'],
+    resources: [backend.auth.resources.userPool.userPoolArn],
+  }),
 )
 
 backend.generateReportNarrativeFunction.resources.lambda.addToRolePolicy(

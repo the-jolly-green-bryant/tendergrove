@@ -16,6 +16,7 @@ export const generateReportNarrativeFunction = defineFunction({
 export const getAnalyticsDashboardFunction = defineFunction({
   entry: './getAnalyticsDashboard.ts',
   name: 'grove-analytics-dashboard',
+  resourceGroupName: 'data',
   timeoutSeconds: 20,
   memoryMB: 256,
 })
