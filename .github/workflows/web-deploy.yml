@@ -1,0 +1,111 @@
+name: Web Build & Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: grove-web-production
+  cancel-in-progress: true
+
+env:
+  AWS_REGION: us-west-2
+  AMPLIFY_APP_ID: d1f1oli2h9qymg
+  AMPLIFY_BRANCH: main
+
+jobs:
+  deploy:
+    name: Build and deploy Grove web
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.13.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run web tests
+        run: pnpm --filter pwa test -- --run
+
+      - name: Build web app
+        run: pnpm --filter pwa build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: arn:aws:iam::919698101555:role/GroveWebGitHubDeploy
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Package web app
+        run: |
+          cd pwa/dist
+          zip -qr "$GITHUB_WORKSPACE/grove-web.zip" .
+
+      - name: Deploy to Amplify Hosting
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          deployment="$(aws amplify create-deployment \
+            --app-id "$AMPLIFY_APP_ID" \
+            --branch-name "$AMPLIFY_BRANCH")"
+          job_id="$(jq -r '.jobId' <<<"$deployment")"
+          upload_url="$(jq -r '.zipUploadUrl' <<<"$deployment")"
+
+          curl --fail --silent --show-error \
+            -H "Expect:" \
+            --upload-file grove-web.zip \
+            "$upload_url"
+
+          aws amplify start-deployment \
+            --app-id "$AMPLIFY_APP_ID" \
+            --branch-name "$AMPLIFY_BRANCH" \
+            --job-id "$job_id" >/dev/null
+
+          for attempt in {1..60}; do
+            status="$(aws amplify get-job \
+              --app-id "$AMPLIFY_APP_ID" \
+              --branch-name "$AMPLIFY_BRANCH" \
+              --job-id "$job_id" \
+              --query 'job.summary.status' \
+              --output text)"
+
+            echo "Amplify deployment $job_id: $status"
+
+            case "$status" in
+              SUCCEED)
+                exit 0
+                ;;
+              FAILED|CANCELLED)
+                aws amplify get-job \
+                  --app-id "$AMPLIFY_APP_ID" \
+                  --branch-name "$AMPLIFY_BRANCH" \
+                  --job-id "$job_id"
+                exit 1
+                ;;
+            esac
+
+            sleep 5
+          done
+
+          echo "Timed out waiting for Amplify deployment $job_id"
+          exit 1
