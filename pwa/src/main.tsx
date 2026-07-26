@@ -48,7 +48,7 @@ if (isNative) {
 // intent filter + Cognito callback URLs). The getRedirectUrl shim
 // (see vite.config.ts) ensures Amplify selects it instead of localhost.
 const nativeRedirect = 'com.bryantjames.tendergrove://callback/'
-const webRedirect = 'http://localhost:8100/'
+const webRedirect = `${window.location.origin}/`
 
 Amplify.configure({
   ...outputs,

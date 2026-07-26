@@ -12,11 +12,15 @@ export const auth = defineAuth({
       callbackUrls: [
         'http://localhost:8100/',
         'https://localhost/',
+        'https://grove.bryantjames.com/',
+        'https://main.d1f1oli2h9qymg.amplifyapp.com/',
         'com.bryantjames.tendergrove://callback/',
       ],
       logoutUrls: [
         'http://localhost:8100/',
         'https://localhost/',
+        'https://grove.bryantjames.com/',
+        'https://main.d1f1oli2h9qymg.amplifyapp.com/',
         'com.bryantjames.tendergrove://callback/',
       ],
     },
