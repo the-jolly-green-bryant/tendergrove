@@ -469,7 +469,7 @@ const PersonPageLoadedContent = ({
   readonly onManageEvents: () => void
 }) => (
   <>
-    <div className="ion-padding">
+    <div className="ion-padding person-page__body">
       <PersonDateBanner
         viewDate={viewDate}
         isTimeTravel={isTimeTravel}
