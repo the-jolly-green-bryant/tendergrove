@@ -16,10 +16,13 @@ import './theme/variables.css'
 import './theme/foundation.scss'
 import './theme/app.scss'
 import outputs from '../../amplify_outputs.json'
+import { initializeGoogleAnalytics } from './lib/googleAnalytics'
 
 setupIonicReact({ mode: 'ios' })
 
 const isNative = Capacitor.isNativePlatform()
+
+initializeGoogleAnalytics()
 
 if (isNative) {
   // Amplify's completeOAuthFlow strips ?code= by calling
