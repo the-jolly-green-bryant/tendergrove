@@ -17,40 +17,57 @@ LISTING_LANGUAGE = os.environ.get("PLAY_LISTING_LANGUAGE", "en-US")
 LISTING_TITLE = os.environ.get("PLAY_LISTING_TITLE", "Grove")[:30]
 LISTING_SHORT_DESCRIPTION = os.environ.get(
     "PLAY_LISTING_SHORT_DESCRIPTION",
-    "Track family wellbeing with research-informed patterns and care-ready reports.",
+    "See family wellbeing patterns. Turn quick check-ins into care-ready insights.",
 )[:80]
 LISTING_FULL_DESCRIPTION = os.environ.get(
     "PLAY_LISTING_FULL_DESCRIPTION",
-    """Grove Care helps parents and caregivers turn everyday observations into an organized history for clearer conversations with clinicians, schools, and care teams.
+    """Care days blur together. Grove helps you remember what changed, notice what may be connected, and walk into care conversations with a clearer story.
 
-When life is difficult, important details can blur together. Grove makes it easier to record quick check-ins, meaningful events, difficult signals, positive changes, and what may be helping. Missing days remain unknown rather than being treated as good or bad days.
+CHECK IN WITHOUT WRITING A JOURNAL
 
-RESEARCH-INFORMED PATTERN ANALYSIS
+Capture the day in a few taps. Choose the signals and events that matter to your family, add a note when you want to, and leave missing days unknown—not automatically “good” or “bad.”
 
-Grove looks beyond a single day or simple average. Its proprietary Pattern Strain model describes longitudinal features such as:
+TURN DAILY MOMENTS INTO USEFUL PATTERNS
 
-• Burden: how frequently recorded challenges appear or cluster together
-• Instability: how sharply observations change between nearby days
-• Persistence: whether difficult periods carry across multiple observations
-• Recovery difficulty: how consistently observations return toward the person's established range
+See wellbeing over time instead of relying on the hardest or most recent day. Grove organizes recorded check-ins into approachable trends, calendars, and observations that help you notice:
 
-These concepts are informed by published research on affect and emotion dynamics, ecological momentary assessment, repeated real-world observation, and emotional variability in children and adolescents. Grove includes a transparent Research & Methodology library with the publications that inform its approach.
+• Difficult stretches and positive changes
+• Shifts from a person’s usual range
+• Signals that often appear together
+• Events that may be worth discussing
+• Patterns shared across your household
 
-BUILT FOR REAL CARE CONVERSATIONS
+ARRIVE PREPARED
 
-• Personalize the signals and events that matter to your family
-• See three-month wellbeing trends, observation calendars, and changes from personal history
-• Identify sustained strain, volatility, difficult stretches, and possible event associations
-• Keep missing or incomplete days out of pattern calculations
-• Prepare concise, provider-ready appointment summaries
-• Download organized PDF reports with charts and recorded evidence
-• Track multiple household members and explore shared patterns
+Create an appointment-prep summary for a clinician, therapist, school, or care team. Bring the details that are easy to forget:
 
-Grove helps families describe what they have observed without requiring a diagnosis or a perfect journal. Research informs the concepts behind Grove; it does not validate Grove's exact formulas, thresholds, labels, or recommendations.
+• Recent wellbeing trends
+• Recorded signals and notes
+• Meaningful events and possible associations
+• Clear charts and observation calendars
+• A downloadable PDF with supporting evidence
 
-Grove is an observation and organization tool. It does not diagnose a condition, predict an emergency, determine a level of care, or replace professional evaluation or treatment.""",
+MADE FOR REAL FAMILY LIFE
+
+• Track yourself, a child, a partner, a parent, or another person you support
+• Personalize signals for each person
+• Record difficult and positive observations
+• Revisit past dates when you need to fill a gap
+• Keep sensitive family information organized in one place
+
+THOUGHTFUL, TRANSPARENT ANALYSIS
+
+Grove’s pattern concepts are informed by published research on repeated real-world observation and emotional dynamics. The app includes a Research & Methodology library explaining how its summaries work and where their limits are.
+
+Grove helps you organize observations; it does not diagnose, predict emergencies, determine care, or replace professional evaluation or treatment.""",
 )[:4000]
 LISTING_ICON_PATH = os.environ.get("PLAY_LISTING_ICON_PATH")
+LISTING_FEATURE_GRAPHIC_PATH = os.environ.get("PLAY_LISTING_FEATURE_GRAPHIC_PATH")
+LISTING_PHONE_SCREENSHOT_PATHS = [
+    path.strip()
+    for path in os.environ.get("PLAY_LISTING_PHONE_SCREENSHOT_PATHS", "").split(",")
+    if path.strip()
+]
 BASE_URL = "https://androidpublisher.googleapis.com/androidpublisher/v3/applications"
 UPLOAD_BASE_URL = "https://androidpublisher.googleapis.com/upload/androidpublisher/v3/applications"
 
@@ -61,6 +78,36 @@ def request(session, method, url, **kwargs):
         print(response.text, file=sys.stderr)
         response.raise_for_status()
     return response.json() if response.content else {}
+
+
+def replace_listing_images(session, edit_id, image_type, paths):
+    if not paths:
+        return 0
+
+    listing_images_url = (
+        f"{BASE_URL}/{PACKAGE_NAME}/edits/{edit_id}/listings/"
+        f"{LISTING_LANGUAGE}/{image_type}"
+    )
+    request(session, "DELETE", listing_images_url)
+
+    for source_path in paths:
+        image_path = os.path.abspath(source_path)
+        if not os.path.isfile(image_path):
+            raise FileNotFoundError(f"Google Play {image_type} image not found: {image_path}")
+        upload_url = (
+            f"{UPLOAD_BASE_URL}/{PACKAGE_NAME}/edits/{edit_id}/listings/"
+            f"{LISTING_LANGUAGE}/{image_type}?uploadType=media"
+        )
+        with open(image_path, "rb") as image_file:
+            request(
+                session,
+                "POST",
+                upload_url,
+                data=image_file,
+                headers={"Content-Type": "image/png"},
+            )
+
+    return len(paths)
 
 
 def main():
@@ -109,6 +156,19 @@ def main():
                     headers={"Content-Type": "image/png"},
                 )
 
+        feature_graphic_count = replace_listing_images(
+            session,
+            edit_id,
+            "featureGraphic",
+            [LISTING_FEATURE_GRAPHIC_PATH] if LISTING_FEATURE_GRAPHIC_PATH else [],
+        )
+        phone_screenshot_count = replace_listing_images(
+            session,
+            edit_id,
+            "phoneScreenshots",
+            LISTING_PHONE_SCREENSHOT_PATHS,
+        )
+
         track = request(session, "GET", track_url)
         releases = track.get("releases", [])
         draft = next(
@@ -144,6 +204,8 @@ def main():
                     "listingTitle": LISTING_TITLE,
                     "listingLanguage": LISTING_LANGUAGE,
                     "listingIconUpdated": bool(LISTING_ICON_PATH),
+                    "listingFeatureGraphicUpdated": feature_graphic_count == 1,
+                    "listingPhoneScreenshotCount": phone_screenshot_count,
                 }
             )
         )

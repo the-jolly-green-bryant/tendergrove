@@ -149,37 +149,50 @@ jobs:
           PLAY_RELEASE_NOTES: ${{ steps.release_notes.outputs.NOTES }}
           PLAY_LISTING_LANGUAGE: en-US
           PLAY_LISTING_TITLE: Grove
-          PLAY_LISTING_SHORT_DESCRIPTION: Track family wellbeing with research-informed patterns and care-ready reports.
+          PLAY_LISTING_SHORT_DESCRIPTION: See family wellbeing patterns. Turn quick check-ins into care-ready insights.
           PLAY_LISTING_FULL_DESCRIPTION: |-
-            Grove Care helps parents and caregivers turn everyday observations into an organized history for clearer conversations with clinicians, schools, and care teams.
+            Care days blur together. Grove helps you remember what changed, notice what may be connected, and walk into care conversations with a clearer story.
 
-            When life is difficult, important details can blur together. Grove makes it easier to record quick check-ins, meaningful events, difficult signals, positive changes, and what may be helping. Missing days remain unknown rather than being treated as good or bad days.
+            CHECK IN WITHOUT WRITING A JOURNAL
 
-            RESEARCH-INFORMED PATTERN ANALYSIS
+            Capture the day in a few taps. Choose the signals and events that matter to your family, add a note when you want to, and leave missing days unknown—not automatically “good” or “bad.”
 
-            Grove looks beyond a single day or simple average. Its proprietary Pattern Strain model describes longitudinal features such as:
+            TURN DAILY MOMENTS INTO USEFUL PATTERNS
 
-            • Burden: how frequently recorded challenges appear or cluster together
-            • Instability: how sharply observations change between nearby days
-            • Persistence: whether difficult periods carry across multiple observations
-            • Recovery difficulty: how consistently observations return toward the person's established range
+            See wellbeing over time instead of relying on the hardest or most recent day. Grove organizes recorded check-ins into approachable trends, calendars, and observations that help you notice:
 
-            These concepts are informed by published research on affect and emotion dynamics, ecological momentary assessment, repeated real-world observation, and emotional variability in children and adolescents. Grove includes a transparent Research & Methodology library with the publications that inform its approach.
+            • Difficult stretches and positive changes
+            • Shifts from a person’s usual range
+            • Signals that often appear together
+            • Events that may be worth discussing
+            • Patterns shared across your household
 
-            BUILT FOR REAL CARE CONVERSATIONS
+            ARRIVE PREPARED
 
-            • Personalize the signals and events that matter to your family
-            • See three-month wellbeing trends, observation calendars, and changes from personal history
-            • Identify sustained strain, volatility, difficult stretches, and possible event associations
-            • Keep missing or incomplete days out of pattern calculations
-            • Prepare concise, provider-ready appointment summaries
-            • Download organized PDF reports with charts and recorded evidence
-            • Track multiple household members and explore shared patterns
+            Create an appointment-prep summary for a clinician, therapist, school, or care team. Bring the details that are easy to forget:
 
-            Grove helps families describe what they have observed without requiring a diagnosis or a perfect journal. Research informs the concepts behind Grove; it does not validate Grove's exact formulas, thresholds, labels, or recommendations.
+            • Recent wellbeing trends
+            • Recorded signals and notes
+            • Meaningful events and possible associations
+            • Clear charts and observation calendars
+            • A downloadable PDF with supporting evidence
 
-            Grove is an observation and organization tool. It does not diagnose a condition, predict an emergency, determine a level of care, or replace professional evaluation or treatment.
+            MADE FOR REAL FAMILY LIFE
+
+            • Track yourself, a child, a partner, a parent, or another person you support
+            • Personalize signals for each person
+            • Record difficult and positive observations
+            • Revisit past dates when you need to fill a gap
+            • Keep sensitive family information organized in one place
+
+            THOUGHTFUL, TRANSPARENT ANALYSIS
+
+            Grove’s pattern concepts are informed by published research on repeated real-world observation and emotional dynamics. The app includes a Research & Methodology library explaining how its summaries work and where their limits are.
+
+            Grove helps you organize observations; it does not diagnose, predict emergencies, determine care, or replace professional evaluation or treatment.
           PLAY_LISTING_ICON_PATH: pwa/store/google-play/icon-512.png
+          PLAY_LISTING_FEATURE_GRAPHIC_PATH: pwa/store/google-play/feature-graphic.png
+          PLAY_LISTING_PHONE_SCREENSHOT_PATHS: pwa/store/google-play/phone-screenshots/02-check-in.png,pwa/store/google-play/phone-screenshots/03-person-trend.png,pwa/store/google-play/phone-screenshots/04-appointment-prep.png,pwa/store/google-play/phone-screenshots/01-household-live.png
         run: |
           set -euo pipefail
           test -n "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" || {
@@ -197,6 +210,8 @@ jobs:
             and .status == "completed"
             and .listingTitle == "Grove"
             and .listingIconUpdated == true
+            and .listingFeatureGraphicUpdated == true
+            and .listingPhoneScreenshotCount == 4
             and (.versionCodes | length > 0)
           ' google-play-release.json > /dev/null
 
