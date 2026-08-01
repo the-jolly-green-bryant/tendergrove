@@ -17,11 +17,11 @@ export const GROVE_SCORE_HISTORY_DAYS = 1095
 export const GROVE_SCORE_STRAIN_DAYS = 90
 
 export const GROVE_SCORE_WEIGHTS = {
-  wellness: 0.6,
-  burden: 0.15,
-  persistence: 0.1,
-  recoveryDifficulty: 0.1,
-  instability: 0.05,
+  wellness: 0.8,
+  burden: 0.08,
+  persistence: 0.04,
+  recoveryDifficulty: 0.05,
+  instability: 0.03,
 } as const
 
 export const GROVE_SCORE_PRESSURE_LIMITS = {
@@ -31,22 +31,22 @@ export const GROVE_SCORE_PRESSURE_LIMITS = {
 
 export const GROVE_SCORE_RECOVERY_RATES = {
   low: 0.22,
-  emerging: 0.1,
-  elevated: 0.04,
-  sustained: 0.004,
-  standard: 0.06,
+  emerging: 0.16,
+  elevated: 0.11,
+  sustained: 0.07,
+  standard: 0.13,
 } as const
 
 export const GROVE_SCORE_REGRESSION_RATES = {
   low: 0.22,
-  emerging: 0.38,
-  elevatedOrHigher: 0.52,
+  emerging: 0.32,
+  elevatedOrHigher: 0.42,
 } as const
 
 export const GROVE_SCORE_SETBACK_DECAY = {
   low: 0.55,
-  emerging: 0.8,
-  elevatedOrHigher: 0.94,
+  emerging: 0.72,
+  elevatedOrHigher: 0.84,
 } as const
 
 /**
@@ -107,7 +107,7 @@ export const applyGroveScoreSoftFloor = (value: number): number => {
 /**
  * Grove Score v1 combines the current observation-based wellness score with
  * longitudinal Pattern Strain dimensions. At full confidence the documented
- * 60/15/10/10/5 weights apply. With limited longitudinal evidence, the
+ * 80/8/4/5/3 weights apply. With limited longitudinal evidence, the
  * temporal weights fade toward zero and the observed wellness score carries
  * the result, so missing history cannot manufacture strain.
  */
@@ -267,27 +267,6 @@ export const buildGroveScoreTrend = (
 ): TrendPoint[] => {
   let weightedScore: number | null = null
   let setbackMemory = 0
-  const latestDate = points.at(-1)?.date
-  const latestDynamics = latestDate
-    ? calculatePatternDynamics(
-        days.filter(
-          (day) =>
-            day.date >=
-              shiftDate(latestDate, -(DEFAULT_ANALYSIS_DAYS - 1)) &&
-            day.date <= latestDate,
-        ),
-        days.filter(
-          (day) =>
-            day.date >=
-              shiftDate(latestDate, -(GROVE_SCORE_STRAIN_DAYS - 1)) &&
-            day.date <
-              shiftDate(latestDate, -(DEFAULT_ANALYSIS_DAYS - 1)),
-        ),
-      )
-    : null
-  const requiresConservativeRegression =
-    latestDynamics?.band === 'sustained' ||
-    latestDynamics?.band === 'intensive'
   return points.map((point, index) => {
     if (point.score === null) {
       return {
@@ -319,9 +298,7 @@ export const buildGroveScoreTrend = (
           ? 0
           : Math.max(0, personalRange - point.score - 15)
       const setbackDecay =
-        requiresConservativeRegression
-          ? GROVE_SCORE_SETBACK_DECAY.elevatedOrHigher
-          : dynamics.band === 'low'
+        dynamics.band === 'low'
           ? GROVE_SCORE_SETBACK_DECAY.low
           : dynamics.band === 'emerging'
             ? GROVE_SCORE_SETBACK_DECAY.emerging
@@ -340,15 +317,8 @@ export const buildGroveScoreTrend = (
       } else {
         const alpha =
           adjustedDailyScore < weightedScore
-            ? requiresConservativeRegression
-              ? GROVE_SCORE_REGRESSION_RATES.elevatedOrHigher
-              : groveScoreRegressionAlpha(dynamics)
-            : requiresConservativeRegression
-              ? dynamics.persistence >= 50 ||
-                dynamics.recoveryDifficulty >= 50
-                ? GROVE_SCORE_RECOVERY_RATES.sustained
-                : GROVE_SCORE_RECOVERY_RATES.standard
-              : groveScoreRecoveryAlpha(dynamics)
+            ? groveScoreRegressionAlpha(dynamics)
+            : groveScoreRecoveryAlpha(dynamics)
         weightedScore =
           alpha * adjustedDailyScore + (1 - alpha) * weightedScore
       }

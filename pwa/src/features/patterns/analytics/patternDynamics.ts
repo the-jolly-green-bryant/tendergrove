@@ -328,13 +328,12 @@ export const determinePatternStrainBand = (
     confidence,
   } = dynamics
   if (confidence < MIN_CLASSIFICATION_CONFIDENCE)
-    return intensity < 35 ? 'low' : 'emerging'
+    return intensity < 50 ? 'low' : 'emerging'
   if (burden >= 70 && persistence >= 65 && recoveryDifficulty >= 65 && intensity >= 68)
     return 'intensive'
   if (
-    (persistence >= 60 && (burden >= 55 || recoveryDifficulty >= 55)) ||
-    (burden >= 70 && recoveryDifficulty >= 55) ||
-    (burden >= 70 && persistence >= 45)
+    (persistence >= 68 && burden >= 78) ||
+    (burden >= 78 && recoveryDifficulty >= 65)
   )
     return 'sustained'
   const enduringDimensions = [burden, persistence, recoveryDifficulty].filter(
@@ -344,6 +343,7 @@ export const determinePatternStrainBand = (
     intensity >= 55 ||
     persistence >= 55 ||
     recoveryDifficulty >= 55 ||
+    (burden >= 70 && persistence >= 45) ||
     enduringDimensions >= 2
   )
     return 'elevated'

@@ -199,18 +199,47 @@ describe('pattern strain classification and narrative', () => {
     ).toBe('elevated')
   })
 
-  it('requires persistence with burden or recovery for Sustained strain', () => {
+  it('keeps the low-confidence Belle reference pattern at Low strain', () => {
     expect(
       determinePatternStrainBand({
         ...dimensions,
-        burden: 60,
-        persistence: 65,
+        burden: 26,
+        instability: 44,
+        persistence: 59,
+        recoveryDifficulty: 49,
+        intensity: 44,
+        confidence: 27,
+      }),
+    ).toBe('low')
+  })
+
+  it('requires strongly persistent burden or recovery for Sustained strain', () => {
+    expect(
+      determinePatternStrainBand({
+        ...dimensions,
+        burden: 80,
+        persistence: 70,
+        recoveryDifficulty: 66,
         intensity: 55,
       }),
     ).toBe('sustained')
   })
 
-  it('recognizes sustained high burden with difficult recovery', () => {
+  it('keeps the Bryant reference pattern at Elevated strain', () => {
+    expect(
+      determinePatternStrainBand({
+        ...dimensions,
+        burden: 73,
+        instability: 55,
+        persistence: 95,
+        recoveryDifficulty: 56,
+        intensity: 71,
+        confidence: 88,
+      }),
+    ).toBe('elevated')
+  })
+
+  it('keeps high burden with mixed recovery evidence at Elevated strain', () => {
     expect(
       determinePatternStrainBand({
         ...dimensions,
@@ -220,10 +249,10 @@ describe('pattern strain classification and narrative', () => {
         recoveryDifficulty: 62,
         intensity: 60,
       }),
-    ).toBe('sustained')
+    ).toBe('elevated')
   })
 
-  it('recognizes sustained high burden with persistent difficulty on normalized scores', () => {
+  it('keeps high burden with moderate persistence at Elevated strain', () => {
     expect(
       determinePatternStrainBand({
         ...dimensions,
@@ -233,7 +262,7 @@ describe('pattern strain classification and narrative', () => {
         recoveryDifficulty: 38,
         intensity: 51,
       }),
-    ).toBe('sustained')
+    ).toBe('elevated')
   })
 
   it('keeps burden plus volatility emerging without persistence or recovery difficulty', () => {

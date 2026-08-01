@@ -61,14 +61,14 @@ describe('Grove Score v1', () => {
     expect(result?.effectiveWeights.instability).toBe(
       GROVE_SCORE_WEIGHTS.instability,
     )
-    expect(result?.score).toBe(55)
+    expect(result?.score).toBe(63)
   })
 
   it('fades temporal weighting when confidence is limited', () => {
     const result = calculateGroveScore(70, dynamics({ confidence: 50 }))
 
-    expect(result?.effectiveWeights.wellness).toBeCloseTo(0.8)
-    expect(result?.score).toBe(63)
+    expect(result?.effectiveWeights.wellness).toBeCloseTo(0.9)
+    expect(result?.score).toBe(66)
   })
 
   it('does not infer strain when longitudinal evidence is insufficient', () => {
@@ -161,14 +161,14 @@ describe('Grove Score v1', () => {
     const sustained = groveScoreRecoveryAlpha(dynamics())
 
     expect(low).toBe(0.22)
-    expect(sustained).toBe(0.004)
-    expect(low).toBeGreaterThan(sustained * 50)
+    expect(sustained).toBe(0.07)
+    expect(low).toBeGreaterThan(sustained * 3)
   })
 
   it('does not let one low-strain downturn carry sustained-strain weight', () => {
     expect(groveScoreRegressionAlpha({ band: 'low' })).toBe(0.22)
-    expect(groveScoreRegressionAlpha({ band: 'emerging' })).toBe(0.38)
-    expect(groveScoreRegressionAlpha({ band: 'sustained' })).toBe(0.52)
+    expect(groveScoreRegressionAlpha({ band: 'emerging' })).toBe(0.32)
+    expect(groveScoreRegressionAlpha({ band: 'sustained' })).toBe(0.42)
   })
 
   it('preserves distinctions among severely pressured low scores', () => {
@@ -202,5 +202,30 @@ describe('Grove Score v1', () => {
 
     expect(plotted).not.toBeNull()
     expect(Number.isInteger(plotted)).toBe(false)
+  })
+
+  it('keeps visible chart movement during a persistently difficult period', () => {
+    const scores = [28, 52, 34, 61, 40, 57, 31, 64, 38, 55, 30, 62]
+    const points = scores.map((score, index) => ({
+      date: `2026-07-${String(index + 1).padStart(2, '0')}`,
+      score,
+      rollingAverage: score,
+      eventCount: 0,
+    }))
+    const days: PatternDynamicsDay[] = points.map((point) => ({
+      date: point.date,
+      score: point.score,
+      challengeCount: point.score < 45 ? 3 : 1,
+      positiveCount: point.score >= 50 ? 1 : 0,
+      hasChallenges: true,
+      hasPositiveSigns: point.score >= 50,
+    }))
+
+    const values = buildGroveScoreTrend(points, days).flatMap((point) =>
+      point.rollingAverage === null ? [] : [point.rollingAverage],
+    )
+
+    expect(Math.max(...values) - Math.min(...values)).toBeGreaterThanOrEqual(8)
+    expect(values.at(-1)).toBeGreaterThan(values[0])
   })
 })
