@@ -5,6 +5,9 @@ import type { CheckInAnswers } from './checkInUtils'
 import { parseAnswers } from './checkInUtils'
 import { isSameLocalDay } from '../../../lib/dateKeys'
 import { countBand, trackProductEvent } from '../../../lib/productAnalytics'
+import type { RawCheckIn, RawPerson } from '../../patterns/analytics'
+import type { PatternsData } from '../../patterns/usePatternsData'
+import { writeCachedValue } from '../../../lib/resilientCache'
 
 /**
  *
@@ -15,14 +18,77 @@ export interface CheckInInput {
   note?: string
 }
 
+const updatePersonCheckIn = (
+  person: RawPerson,
+  personId: string,
+  checkIn: RawCheckIn,
+): RawPerson => {
+  if (person.id !== personId) return person
+
+  const checkIns = person.checkIns ?? []
+  const existingIndex = checkIns.findIndex((item) => item.id === checkIn.id)
+  const nextCheckIns =
+    existingIndex === -1
+      ? [...checkIns, checkIn]
+      : checkIns.map((item, index) => (index === existingIndex ? checkIn : item))
+
+  return { ...person, checkIns: nextCheckIns }
+}
+
 export const useCheckInMutations = (personId: string | undefined) => {
   const queryClient = useQueryClient()
 
-  const invalidate = async () =>
+  const cacheSavedCheckIn = (checkIn: RawCheckIn) => {
+    if (!personId) return
+
+    queryClient.setQueryData<RawPerson | null>(
+      ['person', personId],
+      (person) => (person ? updatePersonCheckIn(person, personId, checkIn) : person),
+    )
+
+    for (const [queryKey, people] of queryClient.getQueriesData<RawPerson[]>({
+      queryKey: ['people'],
+    })) {
+      if (!people) continue
+      const nextPeople = people.map((person) =>
+        updatePersonCheckIn(person, personId, checkIn),
+      )
+      queryClient.setQueryData(queryKey, nextPeople)
+      const accountKey = queryKey[1]
+      if (typeof accountKey === 'string') {
+        writeCachedValue(`${accountKey}:people`, nextPeople)
+      }
+    }
+
+    for (const [queryKey, patterns] of queryClient.getQueriesData<PatternsData>({
+      queryKey: ['patterns-data'],
+    })) {
+      if (!patterns) continue
+      const nextPatterns = {
+        ...patterns,
+        people: patterns.people.map((person) =>
+          updatePersonCheckIn(person, personId, checkIn),
+        ),
+      }
+      queryClient.setQueryData(queryKey, nextPatterns)
+      const accountKey = queryKey[1]
+      if (typeof accountKey === 'string') {
+        writeCachedValue(`${accountKey}:patterns`, nextPatterns)
+      }
+    }
+  }
+
+  const markCheckInQueriesStale = async () =>
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['person', personId] }),
-      queryClient.invalidateQueries({ queryKey: ['people'] }),
-      queryClient.invalidateQueries({ queryKey: ['patterns-data'] }),
+      queryClient.invalidateQueries({
+        queryKey: ['person', personId],
+        refetchType: 'none',
+      }),
+      queryClient.invalidateQueries({ queryKey: ['people'], refetchType: 'none' }),
+      queryClient.invalidateQueries({
+        queryKey: ['patterns-data'],
+        refetchType: 'none',
+      }),
     ])
 
   return {
@@ -55,7 +121,8 @@ export const useCheckInMutations = (personId: string | undefined) => {
         throw new Error(result.errors[0].message)
       }
 
-      await invalidate()
+      if (result.data) cacheSavedCheckIn(result.data as unknown as RawCheckIn)
+      await markCheckInQueriesStale()
       void trackProductEvent('check_in_saved', {
         mode: 'created',
         selectedSignalCountBand: countBand(input.answers.checked?.length ?? 0),
@@ -77,7 +144,8 @@ export const useCheckInMutations = (personId: string | undefined) => {
         throw new Error(result.errors[0].message)
       }
 
-      await invalidate()
+      if (result.data) cacheSavedCheckIn(result.data as unknown as RawCheckIn)
+      await markCheckInQueriesStale()
       void trackProductEvent('check_in_saved', {
         mode: 'updated',
         selectedSignalCountBand: countBand(input.answers.checked?.length ?? 0),
@@ -126,7 +194,7 @@ export const useCheckInMutations = (personId: string | undefined) => {
       const firstError = updates.flatMap((result) => result.errors ?? [])[0]
       if (firstError) throw new Error(firstError.message)
 
-      await invalidate()
+      await markCheckInQueriesStale()
     },
   }
 }
