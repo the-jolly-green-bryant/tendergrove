@@ -110,12 +110,48 @@ describe('pattern strain persistence and recovery', () => {
     )
   })
 
-  it('separates episodes across missing-day gaps', () => {
+  it('treats observed dates as neighbors across missing-day gaps', () => {
     const continuous = [day(20, 40), day(21, 40), day(22, 40)]
     const split = [day(20, 40), day(24, 40), day(28, 40)]
-    expect(calculatePersistence(continuous, baseline)).toBeGreaterThan(
-      calculatePersistence(split, baseline),
+    expect(calculatePersistence(split, baseline)).toBe(
+      calculatePersistence(continuous, baseline),
     )
+  })
+
+  it('treats sparse easier observations as neighboring recovery evidence', () => {
+    const continuous = [day(20, 35, 2, 0), day(21, 75), day(22, 78)]
+    const sparse = [day(20, 35, 2, 0), day(26, 75), day(34, 78)]
+    expect(calculateRecoveryDifficulty(sparse, baseline)).toBe(
+      calculateRecoveryDifficulty(continuous, baseline),
+    )
+  })
+
+  it('keeps chronically poor absolute levels visible despite a poor baseline', () => {
+    const poorBaseline = Array.from({ length: 18 }, (_, index) =>
+      day(index, 38, 0, 1),
+    )
+    const stillPoor = Array.from({ length: 8 }, (_, index) =>
+      day(30 + index * 3, 40, 0, 1),
+    )
+    expect(calculatePersistence(stillPoor, poorBaseline)).toBeGreaterThanOrEqual(65)
+    expect(calculateRecoveryDifficulty(stillPoor, poorBaseline)).toBeGreaterThanOrEqual(
+      55,
+    )
+  })
+
+  it('does not count a return to a poor baseline as meaningful recovery', () => {
+    const poorBaseline = Array.from({ length: 18 }, (_, index) =>
+      day(index, 38, 0, 1),
+    )
+    const returnToPoorBaseline = [
+      day(20, 20, 2, 0),
+      day(25, 38, 0, 1),
+      day(32, 40, 0, 1),
+    ]
+    const actualRecovery = [day(20, 20, 2, 0), day(25, 70), day(32, 74)]
+    expect(
+      calculateRecoveryDifficulty(returnToPoorBaseline, poorBaseline),
+    ).toBeGreaterThan(calculateRecoveryDifficulty(actualRecovery, poorBaseline))
   })
 
   it('requires sustained recovery and identifies unresolved or slower episodes', () => {

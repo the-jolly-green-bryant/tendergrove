@@ -3,6 +3,7 @@ export const MIN_ANALYSIS_OBSERVATIONS = 7
 export const MIN_BASELINE_OBSERVATIONS = 14
 export const MAX_CONTINUITY_GAP_DAYS = 2
 export const MIN_CLASSIFICATION_CONFIDENCE = 45
+export const ABSOLUTE_DIFFICULT_SCORE = 50
 
 /** Descriptive band derived from the four Pattern Strain dimensions. */
 export type PatternStrainBand =
@@ -126,6 +127,15 @@ const validTransitions = (days: ReturnType<typeof observed>) =>
         : [],
     )
 
+// Persistence and recovery operate on the sequence of observations, not the
+// calendar between them. Missing days remain unknown, while the observations
+// on either side are treated as neighboring samples.
+const adjacentObservedTransitions = (days: ReturnType<typeof observed>) =>
+  days.slice(1).map((day, index) => ({
+    previous: days[index],
+    current: day,
+  }))
+
 export const rootMeanSquareSuccessiveDifference = (days: PatternDynamicsDay[]) => {
   const transitions = validTransitions(observed(days))
   if (!transitions.length) return 0
@@ -199,13 +209,16 @@ const baselineLowerBound = (
     ? baselineScores
     : observed(currentDays).map((day) => day.score)
   if (!source.length) return 0
-  return average(source) - Math.max(5, standardDeviation(source))
+  return Math.max(
+    ABSOLUTE_DIFFICULT_SCORE,
+    average(source) - Math.max(5, standardDeviation(source)),
+  )
 }
 
 const isDifficultDay = (
   day: PatternDynamicsDay & { score: number },
   lowerBound: number,
-) => day.score < lowerBound || (day.hasChallenges && !day.hasPositiveSigns)
+) => day.score < lowerBound || day.hasChallenges
 
 const findEpisodes = (
   days: ReturnType<typeof observed>,
@@ -223,13 +236,10 @@ const findEpisodes = (
     let recoveryIndex: number | null = null
     index += 1
     while (index < days.length) {
-      if (gapDays(days[index - 1].date, days[index].date) > MAX_CONTINUITY_GAP_DAYS)
-        break
       if (
         !isDifficultDay(days[index], lowerBound) &&
         days[index + 1] !== undefined &&
-        !isDifficultDay(days[index + 1], lowerBound) &&
-        gapDays(days[index].date, days[index + 1].date) <= MAX_CONTINUITY_GAP_DAYS
+        !isDifficultDay(days[index + 1], lowerBound)
       ) {
         recoveryIndex = index + 1
         index += 2
@@ -252,7 +262,7 @@ export const calculatePersistence = (
   const lowerBound = baselineLowerBound(currentDays, baselineDays)
   const below = current.filter((day) => isDifficultDay(day, lowerBound))
   if (!below.length) return 0
-  const transitions = validTransitions(current)
+  const transitions = adjacentObservedTransitions(current)
   const belowContinuations = transitions.filter(
     ({ previous, current: day }) =>
       isDifficultDay(previous, lowerBound) && isDifficultDay(day, lowerBound),
