@@ -390,6 +390,242 @@ const observations: ObservationImport[] = [
   },
 ]
 
+// CSTC daily logs supplied in August 2026. These entries intentionally cover
+// only dates that did not already have a Beth check-in when this batch was
+// prepared. Signal choices are conservative and notes retain mixed outcomes.
+observations.push(
+  {
+    date: '2026-06-01',
+    signals: [
+      'Positive social interaction',
+      'Addresses feelings without significant prompting',
+      'Completed responsibilities',
+    ],
+    note: 'Source: CSTC daily report dated 6/1/2026. Beth began the day pleasant and sociable with peers, expressed frustration and overwhelm about peer behavior, participated well in recreation group, appropriately explained that peer discussion of weight was triggering and that she had mixed feelings about her own weight, then played games with good interactions and completed evening expectations.',
+  },
+  {
+    date: '2026-06-02',
+    signals: [
+      'Positive social interaction',
+      'Completed responsibilities',
+      'Worked toward a goal',
+      'Showed independence',
+    ],
+    note: 'Source: CSTC daily report dated 6/2/2026. Beth completed schoolwork, helped peers who were struggling, played appropriately with peers, participated in art group, packed for camp and appropriately asked for help, completed hygiene, and went to bed on time without reported issues.',
+  },
+  {
+    date: '2026-06-03',
+    signals: [
+      'Positive social interaction',
+      'Completed responsibilities',
+      'Worked toward a goal',
+    ],
+    note: 'Source: CSTC daily report dated 6/3/2026. Beth completed hygiene and school without incident, ate meals, passed a swim test at the state park, played games at the campsite, maintained safety expectations, and had no significant behavioral issue documented.',
+  },
+  {
+    date: '2026-06-04',
+    signals: [
+      'Using Coping Skills',
+      'Positive social interaction',
+      'Completed responsibilities',
+    ],
+    note: 'Source: CSTC daily report dated 6/4/2026. Beth ate with peers and staff, drew and colored in the milieu, attended individual therapy, used a deep breath and a break when frustrated, returned to the activity, met meal and hygiene expectations, and had no major issue reported.',
+  },
+  {
+    date: '2026-06-05',
+    signals: [
+      'Completed responsibilities',
+      'Positive social interaction',
+      'Addresses feelings without significant prompting',
+      'Emotional withdrawal',
+    ],
+    note: 'Source: CSTC daily report dated 6/5/2026. Beth completed schoolwork and participated without cues during the day. In the evening she made negative self-comments, declined basketball, and told staff she felt frustrated about family therapy and a staff interaction; she later watched a movie in the milieu and completed hygiene without further major issue.',
+  },
+  {
+    date: '2026-06-06',
+    signals: [
+      'Positive social interaction',
+      'Completed responsibilities',
+      'Difficulty recovering from distress',
+    ],
+    note: 'Source: CSTC daily report dated 6/6/2026. Staff documented positive morning behavior and interactions with no significant issue. Later Beth fixated on a peer comment, became argumentative and raised her voice when asked to wait, required prompting to request a personal time-out appropriately, and then took space and went to bed.',
+  },
+  {
+    date: '2026-06-07',
+    signals: ['Difficulty recovering from distress', 'Using Coping Skills', 'Anxiety'],
+    note: 'Source: CSTC daily report dated 6/7/2026. Beth showed low frustration tolerance at breakfast, cursed, slammed her door, spoke loudly, and initially struggled with directions. She later displayed a calmer affect, made appropriate requests, followed safety directions, joined milieu activities, and discussed anxiety about an upcoming overnight pass and making a cope-ahead plan.',
+  },
+  {
+    date: '2026-06-08',
+    signals: [
+      'Reduced participation',
+      'Positive social interaction',
+      'Completed responsibilities',
+      'Worked toward a goal',
+    ],
+    note: 'Source: CSTC daily report dated 6/8/2026. Beth participated only partly in school and voiced somatic complaints and boredom or tiredness, but maintained positive interactions, presented a poem at a school assembly, met expectations, participated in social-skills group, and followed staff directions during a cottage safety event.',
+  },
+  {
+    date: '2026-06-09',
+    signals: [
+      'Positive social interaction',
+      'Completed responsibilities',
+      'Worked toward a goal',
+    ],
+    note: 'Source: CSTC daily report dated 6/9/2026. Beth completed hygiene and classwork, participated in class, ignored peer negativity, attended a pizza party, colored and talked with staff, attended therapy, played a game, completed evening hygiene, and had no incident documented.',
+  },
+  {
+    date: '2026-06-10',
+    signals: [
+      'Using Coping Skills',
+      'Positive social interaction',
+      'Completed responsibilities',
+      'Difficulty recovering from distress',
+    ],
+    note: 'Source: CSTC daily report dated 6/10/2026. Beth completed hygiene, room tasks, and active school participation. She became upset with clinical staff before family therapy but appeared in a better mood afterward. During recreation she worked through peer-related frustration, continued playing, joined peers for games, and completed evening expectations without further issue.',
+  },
+  {
+    date: '2026-06-11',
+    signals: [
+      'Completed responsibilities',
+      'Positive social interaction',
+      'Addresses feelings without significant prompting',
+    ],
+    note: 'Source: CSTC daily report dated 6/11/2026. Beth initially argued about hygiene expectations, then calmed, apologized, checked in with staff, and completed morning tasks. She cleaned her room, joined cottage games and groups, complied with a safety event, was receptive to coaching about unfinished packing, and ended the day without further incident.',
+  },
+  {
+    date: '2026-06-14',
+    signals: [
+      'Difficulty recovering from distress',
+      'Using Coping Skills',
+      'Completed responsibilities',
+    ],
+    note: 'Source: CSTC daily report dated 6/14/2026. Beth remained visibly frustrated for much of the day and at times yelled or argued, but followed staff directions. She later accepted coaching, returned to a water-balloon activity, independently excused herself for two minutes to regulate after a peer comment, returned to the milieu, and completed evening expectations.',
+  },
+  {
+    date: '2026-06-15',
+    signals: [
+      'Using Coping Skills',
+      'Completed responsibilities',
+      'Positive social interaction',
+    ],
+    note: 'Source: CSTC daily report dated 6/15/2026. Beth completed schoolwork and responsibilities, needed cues for attitude toward staff, felt annoyed with peers but ignored the distraction through class, played well with others, participated in milieu and recreation activities, and completed hygiene.',
+  },
+  {
+    date: '2026-06-17',
+    signals: [
+      'Difficulty recovering from distress',
+      'Completed responsibilities',
+      'Worked toward a goal',
+    ],
+    note: 'Source: CSTC daily report dated 6/17/2026. Beth complained about a peer in front of that peer and argued with staff when redirected. She then completed all schoolwork and met expectations during recreation, meals, room transition, milieu activities, hygiene, and bedtime with no later issue reported.',
+  },
+  {
+    date: '2026-06-19',
+    signals: [
+      'Paranoia',
+      'Difficulty recovering from distress',
+      'Completed responsibilities',
+    ],
+    note: 'Source: CSTC daily report dated 6/19/2026. Beth began the day argumentative and assumed staff were speaking negatively about her when they were discussing another patient. After an apology process, staff documented no further significant issue; she later met expectations, colored in the milieu, completed hygiene, and watched cottage media without problems.',
+  },
+  {
+    date: '2026-06-20',
+    signals: [
+      'Positive social interaction',
+      'Addresses feelings without significant prompting',
+      'Difficulty recovering from distress',
+      'Completed responsibilities',
+    ],
+    note: 'Source: CSTC daily report dated 6/20/2026. Beth began with positive peer and staff interactions and completed hygiene and a milieu chore. Later she became frustrated about a peer and agitated after a call with her father, but worked with staff to identify the emotion and rate its intensity, apologized to staff, joined activities, and completed the evening without further issue.',
+  },
+  {
+    date: '2026-06-24',
+    signals: [
+      'Paranoia',
+      'Difficulty recovering from distress',
+      'Addresses feelings without significant prompting',
+    ],
+    note: 'Source: CSTC daily report dated 6/24/2026. Beth initially handled an assumption that staff were talking about her, then later cried, argued, and yelled during school, therapy, and peer interactions. She subsequently appeared regulated, colored in the milieu, and was receptive during a staff check-in about tone and interactions.',
+  },
+  {
+    date: '2026-06-29',
+    signals: [
+      'Laughed or showed joy',
+      'Addresses feelings without significant prompting',
+      'Completed responsibilities',
+    ],
+    note: 'Source: CSTC daily report dated 6/29/2026. Beth showed a bright, smiling affect, followed safety directions, completed medication and hygiene routines, and used an emotion tracker to identify feeling frustrated and rate the intensity two out of five. Staff noted minor complaints but no further significant issue, and she joined milieu activities and interacted with staff and peers.',
+  },
+  {
+    date: '2026-06-30',
+    signals: [
+      'Difficulty recovering from distress',
+      'School concern',
+      'Positive social interaction',
+      'Completed responsibilities',
+    ],
+    note: 'Source: CSTC daily report dated 6/30/2026. Beth argued at breakfast and needed repeated door-touch resets. In class she later threw a booklet and banged on the desk after repeated cues, then complied with a staff-directed time-out. She recovered, played cards with peers without incident, and met evening goals and hygiene expectations.',
+  },
+  {
+    date: '2026-07-03',
+    signals: [
+      'Positive social interaction',
+      'Difficulty recovering from distress',
+      'Using Coping Skills',
+    ],
+    note: 'Source: CSTC daily report dated 7/3/2026. Beth spent much of the day quietly watching movies in the milieu and completed room and meal expectations. In the evening she became argumentative and yelled after limits and staff interactions, but with prompting requested a break appropriately, took a personal time-out, and went to bed.',
+  },
+  {
+    date: '2026-07-06',
+    signals: [
+      'Using Coping Skills',
+      'Completed responsibilities',
+      'Worked toward a goal',
+      'Positive social interaction',
+    ],
+    note: 'Source: CSTC daily report dated 7/6/2026. Beth used coping skills to de-escalate after a peer comment and again when frustrated with a teacher, participated and followed directions at school, ate lunch with peers, completed reading, and had a good day overall. She later slammed down her plate after a dinner comment, with no further escalation documented.',
+  },
+  {
+    date: '2026-07-13',
+    signals: [
+      'Using Coping Skills',
+      'Worked toward a goal',
+      'Completed responsibilities',
+      'Positive social interaction',
+    ],
+    note: 'Source: CSTC daily report dated 7/13/2026. When a peer repeatedly kicked her desk, Beth asked him to stop, requested a break, used coping skills, and talked through the problem. Staff praised her handling of the antagonism; she participated successfully at school, recreation, meals, milieu activities, hygiene, and bedtime.',
+  },
+  {
+    date: '2026-07-17',
+    signals: [
+      'Positive social interaction',
+      'Difficulty recovering from distress',
+      'Addresses feelings without significant prompting',
+    ],
+    note: 'Source: CSTC daily report dated 7/17/2026. Beth met morning expectations and had positive interactions. In the evening she became argumentative with staff, declined dinner and initially resisted recreation, then communicated her frustrations, participated in pod time, and went to bed.',
+  },
+  {
+    date: '2026-07-18',
+    signals: [
+      'Positive social interaction',
+      'Completed responsibilities',
+      'Worked toward a goal',
+    ],
+    note: 'Source: CSTC daily report dated 7/18/2026. Beth completed medication, hygiene, and room expectations, watched media with peers, and had a good recreational outing. Although she felt it was unfair that other peers could not attend, staff documented no behavioral issue; she later joined milieu activities, meals, pod time, and bedtime routines.',
+  },
+  {
+    date: '2026-07-20',
+    signals: [
+      'Difficulty recovering from distress',
+      'Resists Intervention',
+      'Addresses feelings without significant prompting',
+      'Using Coping Skills',
+    ],
+    note: 'Source: CSTC daily report dated 7/20/2026. Beth became disruptive and argumentative in class, rejected an offered personal time-out and coaching, and required a staff-directed time-out. She later took accountability. During another escalation she accepted coaching and used a personal time-out, then completed room, hygiene, milieu, and bedtime routines.',
+  },
+)
+
 const aws = (args: string[]): string =>
   execFileSync('aws', args, {
     encoding: 'utf8',
