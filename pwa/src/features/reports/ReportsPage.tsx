@@ -11,9 +11,10 @@ import { toLocalDateKey } from '../../lib/dateKeys'
 import { buildProviderReport } from './reportBuilder'
 import { readReportPins, removeReportPin } from './reportPins'
 import { emphasisDirection, type SignalPolarity } from './reportEmphasis'
-import { narrativeTakeaways } from './reportNarrative'
+import { humanReadableTakeaways } from './reportNarrative'
 import { useReportNarrative } from './useReportNarrative'
 import { PatternStrainReportSection } from './components/PatternStrainReportSection'
+import { DistributionGauge } from '../../components/DistributionGauge'
 import { RESEARCH_METHODOLOGY_PATH } from '../about/researchReferences'
 import { trackProductEvent, wellnessBand } from '../../lib/productAnalytics'
 
@@ -27,63 +28,8 @@ const imageDataUrl = async (url: string) => {
   })
 }
 
-const SignalTrend = ({
-  observations,
-  kind,
-}: {
-  observations: NonNullable<ReturnType<typeof buildProviderReport>>['observations']
-  kind: 'concern' | 'positive'
-}) => {
-  const width = 680
-  const height = 120
-  const values = observations.map((day) =>
-    kind === 'concern' ? day.concernSignals : day.positiveSignals,
-  )
-  const maximum = Math.max(1, ...values)
-  const x = (index: number) =>
-    observations.length === 1
-      ? width / 2
-      : 18 + index * ((width - 36) / (observations.length - 1))
-  const y = (value: number) => 10 + (maximum - value) * ((height - 22) / maximum)
-  const title =
-    kind === 'concern' ? 'Concern signals over time' : 'Positive signals over time'
-  return (
-    <section
-      className={`report-visual report-visual--${kind}`}
-      aria-label={title}
-    >
-      <div className="report-visual__heading">
-        <h3>{title}</h3>
-        <span>
-          Number of selected {kind === 'concern' ? 'difficult' : 'positive'} signals on
-          each recorded day.
-        </span>
-      </div>
-      <svg
-        viewBox={`0 0 ${width} ${height}`}
-        role="img"
-        aria-label={`${title} across ${observations.length} days`}
-      >
-        <polyline
-          points={values.map((value, index) => `${x(index)},${y(value)}`).join(' ')}
-          className={`report-signal-line report-signal-line--${kind}`}
-        />
-        {values.map((value, index) => (
-          <circle
-            key={observations[index].date}
-            cx={x(index)}
-            cy={y(value)}
-            r="4"
-          >
-            <title>
-              {observations[index].date}: {value} signals
-            </title>
-          </circle>
-        ))}
-      </svg>
-    </section>
-  )
-}
+const displayDistributionScore = (value: number) =>
+  String(Math.round(value * 10) / 10)
 
 const EmphasizedText = ({
   text,
@@ -156,13 +102,70 @@ const ReportEvidenceList = ({
   </ul>
 )
 
+const EventWellnessDistributions = ({
+  report,
+}: {
+  report: NonNullable<ReturnType<typeof buildProviderReport>>
+}) => {
+  const concerningEvents = report.eventComparisons
+    .filter((event) => event.difference <= -5 && event.eventDays >= 2)
+    .slice(0, 3)
+  if (!concerningEvents.length) return null
+  const concerningDates = new Set(
+    concerningEvents.flatMap((event) => event.dates),
+  )
+  const ordinaryValues = report.calendarDays.flatMap((day) =>
+    day.score !== null &&
+    day.weightedScore !== null &&
+    !concerningDates.has(day.date)
+      ? [day.weightedScore]
+      : [],
+  )
+  if (!ordinaryValues.length) return null
+
+  return (
+    <div className="event-wellness-distributions">
+      <DistributionGauge
+        title="Ordinary recorded days"
+        recentValues={ordinaryValues}
+        baselineValues={ordinaryValues}
+        direction="higher-is-better"
+        unitLabel="Grove Score points"
+        scaleMode="absolute-100"
+      />
+      {concerningEvents.map((event) => {
+        const eventDates = new Set(event.dates)
+        const values = report.calendarDays.flatMap((day) =>
+          day.score !== null &&
+          day.weightedScore !== null &&
+          eventDates.has(day.date)
+            ? [day.weightedScore]
+            : [],
+        )
+        return values.length ? (
+          <DistributionGauge
+            key={event.label}
+            title={event.label}
+            recentValues={values}
+            baselineValues={ordinaryValues}
+            direction="higher-is-better"
+            unitLabel="Grove Score points"
+            scaleMode="absolute-100"
+          />
+        ) : null
+      })}
+    </div>
+  )
+}
+
 const ReportVisuals = ({
   observations,
   calendarDays,
+  groveScoreDistribution,
   sections,
 }: Pick<
   NonNullable<ReturnType<typeof buildProviderReport>>,
-  'observations' | 'calendarDays'
+  'observations' | 'calendarDays' | 'groveScoreDistribution'
 > & { sections: Record<string, string> }) => {
   if (!observations.length)
     return (
@@ -201,26 +204,6 @@ const ReportVisuals = ({
       polarity: SignalPolarity
     } => Boolean(item),
   )
-  const width = 680
-  const height = 170
-  const weighted = recentCalendarDays.filter(
-    (day): day is typeof day & { weightedScore: number } => day.weightedScore !== null,
-  )
-  const weightedValues = weighted.map((day) => day.weightedScore)
-  const rawMin = Math.min(...weightedValues)
-  const rawMax = Math.max(...weightedValues)
-  const padding = Math.max(6, Math.round((rawMax - rawMin) * 0.15))
-  const lowerBound = Math.max(0, rawMin - padding)
-  const upperBound = Math.min(100, rawMax + padding)
-  const span = Math.max(1, upperBound - lowerBound)
-  const y = (score: number) => 12 + (upperBound - score) * ((height - 30) / span)
-  const weightedX = (index: number) =>
-    weighted.length === 1
-      ? width / 2
-      : 18 + index * ((width - 36) / (weighted.length - 1))
-  const points = weighted
-    .map((day, index) => `${weightedX(index)},${y(day.weightedScore)}`)
-    .join(' ')
   const firstWeekday = new Date(`${recentCalendarDays[0].date}T12:00:00`).getDay()
   return (
     <>
@@ -234,61 +217,52 @@ const ReportVisuals = ({
             <EmphasizedText text={sections.trend_description} />
           </span>
         </div>
-        <svg
-          viewBox={`0 0 ${width} ${height}`}
-          role="img"
-          aria-label={`Weighted wellness trend across ${recentCalendarDays.length} calendar days`}
-        >
-          <text
-            x="18"
-            y="10"
-            className="report-trend__bound"
+        {groveScoreDistribution && (
+          <div
+            className="report-distribution"
+            role="img"
+            aria-label={`Past ${groveScoreDistribution.days} days: minimum ${displayDistributionScore(groveScoreDistribution.minimum)}, middle 50 percent ${displayDistributionScore(groveScoreDistribution.typicalLow)} to ${displayDistributionScore(groveScoreDistribution.typicalHigh)}, maximum ${displayDistributionScore(groveScoreDistribution.maximum)}${groveScoreDistribution.baseline === null ? '' : `, baseline ${displayDistributionScore(groveScoreDistribution.baseline)}`}`}
           >
-            {upperBound} pts
-          </text>
-          <text
-            x="18"
-            y={height - 2}
-            className="report-trend__bound"
-          >
-            {lowerBound} pts
-          </text>
-          {upperBound >= 80 && lowerBound <= 80 && (
-            <line
-              x1="18"
-              x2={width - 18}
-              y1={y(80)}
-              y2={y(80)}
-              className="report-trend__guide report-trend__guide--steady"
-            />
-          )}
-          {upperBound >= 60 && lowerBound <= 60 && (
-            <line
-              x1="18"
-              x2={width - 18}
-              y1={y(60)}
-              y2={y(60)}
-              className="report-trend__guide report-trend__guide--concern"
-            />
-          )}
-          <polyline
-            points={points}
-            className="report-trend__line"
-          />
-          {weighted.map((day, index) => (
-            <circle
-              key={day.date}
-              cx={weightedX(index)}
-              cy={y(day.weightedScore)}
-              r="4"
-              className={`report-trend__point report-day--${day.level}`}
-            >
-              <title>
-                {day.date}: {day.weightedScore} weighted wellness points
-              </title>
-            </circle>
-          ))}
-        </svg>
+            <div className="report-distribution__plot" aria-hidden="true">
+              <div className="report-distribution__temperature" />
+              <div
+                className="report-distribution__whisker"
+                style={{
+                  left: `${groveScoreDistribution.minimum}%`,
+                  width: `${groveScoreDistribution.maximum - groveScoreDistribution.minimum}%`,
+                }}
+              />
+              <span className="report-distribution__cap" style={{ left: `${groveScoreDistribution.minimum}%` }} />
+              <span className="report-distribution__cap" style={{ left: `${groveScoreDistribution.maximum}%` }} />
+              <div
+                className="report-distribution__box"
+                style={{
+                  left: `${groveScoreDistribution.typicalLow}%`,
+                  width: `${Math.max(1, groveScoreDistribution.typicalHigh - groveScoreDistribution.typicalLow)}%`,
+                }}
+              >
+                <span
+                  className="report-distribution__box-fill"
+                  style={{
+                    width: `${10000 / Math.max(1, groveScoreDistribution.typicalHigh - groveScoreDistribution.typicalLow)}%`,
+                    left: `${(-100 * groveScoreDistribution.typicalLow) / Math.max(1, groveScoreDistribution.typicalHigh - groveScoreDistribution.typicalLow)}%`,
+                  }}
+                />
+              </div>
+              {groveScoreDistribution.baseline !== null && (
+                <span className="report-distribution__baseline" style={{ left: `${groveScoreDistribution.baseline}%` }} />
+              )}
+            </div>
+            <div className="report-distribution__ends" aria-hidden="true">
+              <span>0 · More concern</span><span>100 · More steady</span>
+            </div>
+            <div className="report-distribution__legend">
+              <span><i className="report-distribution__legend-box" />Typical range (middle 50%) {displayDistributionScore(groveScoreDistribution.typicalLow)}–{displayDistributionScore(groveScoreDistribution.typicalHigh)}</span>
+              {groveScoreDistribution.baseline !== null && <span><i className="report-distribution__legend-baseline" />Baseline {displayDistributionScore(groveScoreDistribution.baseline)}</span>}
+              <span>Min {displayDistributionScore(groveScoreDistribution.minimum)} · Max {displayDistributionScore(groveScoreDistribution.maximum)}</span>
+            </div>
+          </div>
+        )}
       </section>
       <section
         className="report-visual"
@@ -365,17 +339,29 @@ const ReportVisuals = ({
           <ReportEvidenceList items={signalEvidence} />
         ) : (
           <p className="report-evidence-note">
-            Daily signal counts provide additional context for the weighted trend.
+            Daily signal counts provide additional context for the Grove Score trend.
           </p>
         )}
         <div className="report-signal-trends">
-          <SignalTrend
-            observations={recentObservations}
-            kind="concern"
+          <DistributionGauge
+            title="Concern signals over time"
+            recentValues={recentObservations.map((day) => day.concernSignals)}
+            baselineValues={observations
+              .filter((day) => day.date < recentStart)
+              .map((day) => day.concernSignals)}
+            direction="higher-is-worse"
+            unitLabel="signals per check-in"
+            scaleMode="normalize-to-100"
           />
-          <SignalTrend
-            observations={recentObservations}
-            kind="positive"
+          <DistributionGauge
+            title="Positive signals over time"
+            recentValues={recentObservations.map((day) => day.positiveSignals)}
+            baselineValues={observations
+              .filter((day) => day.date < recentStart)
+              .map((day) => day.positiveSignals)}
+            direction="higher-is-better"
+            unitLabel="signals per check-in"
+            scaleMode="normalize-to-100"
           />
         </div>
       </section>
@@ -415,8 +401,8 @@ const ReportsPage = () => {
   )
   const narrative = useReportNarrative(selected?.id, report)
   const topTakeaways = useMemo(
-    () => narrativeTakeaways(narrative.text),
-    [narrative.text],
+    () => (report ? humanReadableTakeaways(report) : []),
+    [report],
   )
   const reportText = report
     ? [
@@ -611,12 +597,12 @@ const ReportsPage = () => {
         pdf.setTextColor(37, 52, 47)
         pdf.setFont('helvetica', 'bold')
         pdf.setFontSize(14)
-        pdf.text('RAW WELLNESS TREND AND OBSERVATION CALENDAR', margin, 76)
+        pdf.text('GROVE SCORE TREND AND OBSERVATION CALENDAR', margin, 76)
         pdf.setFont('helvetica', 'normal')
         pdf.setFontSize(8.5)
         pdf.setTextColor(100, 112, 106)
         pdf.text(
-          'This chart preserves the observation-based wellness component for auditability. Missing or incomplete data is excluded from trend analysis.',
+          'This is the same Grove Score trend shown on the person page. The observation calendar preserves raw daily wellness for auditability.',
           margin,
           92,
         )
@@ -1014,14 +1000,34 @@ const ReportsPage = () => {
           </section>
           {report.groveScore && (
             <section className="report-grove-score" aria-label="Grove Score">
-              <div>
+              <div className="report-grove-score__value">
                 <p>Grove Score</p>
                 <strong>
                   {report.groveScore.score}
                   <span> points</span>
                 </strong>
               </div>
-              <p>
+              <div
+                className="report-grove-score__gauge"
+                role="meter"
+                aria-label={`Grove Score: ${report.groveScore.score} out of 100`}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={report.groveScore.score}
+              >
+                <div className="report-grove-score__scale">
+                  <span
+                    className="report-grove-score__marker"
+                    style={{ left: `${report.groveScore.score}%` }}
+                    aria-hidden="true"
+                  />
+                </div>
+                <div className="report-grove-score__labels" aria-hidden="true">
+                  <span>0 · More concern</span>
+                  <span>100 · More steady</span>
+                </div>
+              </div>
+              <p className="report-grove-score__description">
                 Combines recorded wellness with burden, persistence, recovery,
                 and instability. Longitudinal factors are weighted by available
                 data confidence.
@@ -1030,7 +1036,6 @@ const ReportsPage = () => {
           )}
           <PatternStrainReportSection
             dynamics={report.patternDynamics}
-            calendarDays={report.calendarDays}
           />
           <section className="report-flow-section">
             <p className="report-flow-section__eyebrow">Data &amp; Observations</p>
@@ -1039,6 +1044,7 @@ const ReportsPage = () => {
           <ReportVisuals
             observations={report.observations}
             calendarDays={report.calendarDays}
+            groveScoreDistribution={report.groveScoreDistribution}
             sections={narrative.sections}
           />
           <section className="report-evidence-section">
@@ -1064,6 +1070,7 @@ const ReportsPage = () => {
                 No event has enough recorded days for a meaningful comparison yet.
               </p>
             )}
+            <EventWellnessDistributions report={report} />
           </section>
           <section className="report-evidence-section">
             <div className="report-visual__heading">

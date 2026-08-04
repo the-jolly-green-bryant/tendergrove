@@ -1,3 +1,4 @@
+import { FlippableCard } from '../../components/FlippableCard'
 import { IonCard, IonCardContent } from '@ionic/react'
 import React from 'react'
 
@@ -55,14 +56,14 @@ const CurrentState = ({ view }: { readonly view: ScopedPatternsView }) => {
   const duration = daysBetween(current.date, scored[start].date) + 1
 
   return (
-    <IonCard className="pattern-current-state">
+    <FlippableCard className="pattern-current-state">
       <IonCardContent>
         <h2>
           {currentRelation.charAt(0).toUpperCase() + currentRelation.slice(1)} for{' '}
           {duration} {duration === 1 ? 'day' : 'days'}.
         </h2>
       </IonCardContent>
-    </IonCard>
+    </FlippableCard>
   )
 }
 
@@ -73,7 +74,7 @@ const TurningPointCard = ({
 }): React.JSX.Element => {
   const tag = TYPE_TAG[turningPoint.type]
   return (
-    <IonCard>
+    <FlippableCard>
       <IonCardContent>
         <div className="pattern-turning-card__head">
           <h3 className="pattern-turning-card__date">
@@ -83,7 +84,7 @@ const TurningPointCard = ({
         </div>
         <p className="pattern-insight__detail">{turningPoint.summary}</p>
       </IonCardContent>
-    </IonCard>
+    </FlippableCard>
   )
 }
 

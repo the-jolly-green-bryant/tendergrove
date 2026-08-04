@@ -1,3 +1,4 @@
+import { FlippableCard } from '../../components/FlippableCard'
 import {
   IonCard,
   IonCardContent,
@@ -29,7 +30,7 @@ const StrengthRow = ({
   const positive = correlation.correlation > 0
   const sign = positive ? '+' : '−'
   return (
-    <IonCard>
+    <FlippableCard>
       <IonCardContent>
         <div className="pattern-turning-card__head">
           <h3 className="pattern-row__title">{correlation.label}</h3>
@@ -43,7 +44,7 @@ const StrengthRow = ({
         <p className="pattern-insight__detail">{correlation.summary}</p>
         <ConfidenceBadge confidence={correlation.confidence} />
       </IonCardContent>
-    </IonCard>
+    </FlippableCard>
   )
 }
 

@@ -1,3 +1,4 @@
+import { FlippableCard } from '../../components/FlippableCard'
 import {
   IonCard,
   IonCardContent,
@@ -62,7 +63,7 @@ const TakeawayCard = ({
   readonly icon: string
   readonly text: string
 }): React.JSX.Element => (
-  <IonCard className="pattern-insight pattern-insight--neutral">
+  <FlippableCard className="pattern-insight pattern-insight--neutral">
     <IonCardContent>
       <div className="pattern-insight__head">
         <IonIcon
@@ -73,7 +74,7 @@ const TakeawayCard = ({
         <p className="pattern-insight__detail">{text}</p>
       </div>
     </IonCardContent>
-  </IonCard>
+  </FlippableCard>
 )
 
 const DayOfWeekView = ({
@@ -110,11 +111,11 @@ const DayOfWeekView = ({
 
   return (
     <>
-      <IonCard>
+      <FlippableCard>
         <IonCardContent>
           <BarChart bars={bars} />
         </IonCardContent>
-      </IonCard>
+      </FlippableCard>
       <TakeawayCard
         icon={calendarOutline}
         text={takeaway}
@@ -151,14 +152,14 @@ const TimeOfDayView = ({
 
   return (
     <>
-      <IonCard>
+      <FlippableCard>
         <IonCardContent>
           <BarChart
             bars={bars}
             yMax={yMax}
           />
         </IonCardContent>
-      </IonCard>
+      </FlippableCard>
       <TakeawayCard
         icon={moonOutline}
         text={`Incidents most often happen around ${TIME_BLOCKS[peak].label.replace('a', ' AM').replace('p', ' PM')}.`}

@@ -1,3 +1,4 @@
+import { FlippableCard } from '../../components/FlippableCard'
 import { IonCard, IonCardContent, IonIcon } from '@ionic/react'
 import { bulbOutline } from 'ionicons/icons'
 import React, { useMemo, useState } from 'react'
@@ -64,7 +65,7 @@ const rowPeak = (row: HeatmapRow): number =>
 const CellDetail = ({ cell }: { readonly cell: SelectedCell }): React.JSX.Element => {
   const count = Math.round((cell.probability / 100) * cell.sampleSize)
   return (
-    <IonCard>
+    <FlippableCard>
       <IonCardContent>
         <h3 className="pattern-day-detail__value">{Math.round(cell.probability)}%</h3>
         <p className="pattern-row__meta">
@@ -72,7 +73,7 @@ const CellDetail = ({ cell }: { readonly cell: SelectedCell }): React.JSX.Elemen
           {WEEKDAY_PLURAL[cell.weekday]}.
         </p>
       </IonCardContent>
-    </IonCard>
+    </FlippableCard>
   )
 }
 
@@ -91,7 +92,7 @@ const HeatmapLegend = ({
 )
 
 const HeatmapTip = (): React.JSX.Element => (
-  <IonCard className="pattern-insight pattern-insight--neutral">
+  <FlippableCard className="pattern-insight pattern-insight--neutral">
     <IonCardContent>
       <div className="pattern-insight__head">
         <IonIcon
@@ -106,7 +107,7 @@ const HeatmapTip = (): React.JSX.Element => (
         little extra planning or support.
       </p>
     </IonCardContent>
-  </IonCard>
+  </FlippableCard>
 )
 
 const HeatmapContent = ({
@@ -154,7 +155,7 @@ const HeatmapContent = ({
         Tap a cell for the details.
       </p>
 
-      <IonCard>
+      <FlippableCard>
         <IonCardContent>
           <HeatmapGrid
             rows={rows}
@@ -163,7 +164,7 @@ const HeatmapContent = ({
           />
           <HeatmapLegend scale={scale} />
         </IonCardContent>
-      </IonCard>
+      </FlippableCard>
 
       {selected && <CellDetail cell={selected} />}
 

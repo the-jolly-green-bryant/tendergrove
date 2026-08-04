@@ -8,6 +8,7 @@ import React, { useRef, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 
 import { PersonAvatar } from '../../components/PersonAvatar'
+import { DistributionGauge } from '../../components/DistributionGauge'
 import { LoadingState } from '../../components/LoadingState'
 import { toLocalDateKey } from '../../lib/dateKeys'
 import { PatternsEmptyState } from './components/PatternsEmptyState'
@@ -39,6 +40,7 @@ interface ScopedData {
   scoredDays: number
   anomalyPatterns: AnomalyPatterns | null
   subjectName: string | null
+  distributionValues: number[]
 }
 
 const PatternsBody = ({
@@ -182,6 +184,18 @@ const PatternsBody = ({
           </div>
         }
       />
+      {scope === 'person' && data.distributionValues.length > 0 && (
+        <section className="person-patterns__distribution">
+          <DistributionGauge
+            title="Recent Grove Score range"
+            recentValues={data.distributionValues.slice(-30)}
+            baselineValues={data.distributionValues.slice(-90, -30)}
+            direction="higher-is-better"
+            unitLabel="Grove Score points"
+            scaleMode="absolute-100"
+          />
+        </section>
+      )}
       <TrendComparisonMenu
         menuRef={comparisonMenuRef}
         people={comparisonPeople}
@@ -262,6 +276,10 @@ export const PersonPatternsSection = ({
     // whose page is being viewed.
     anomalyPatterns: personView.anomalyPatterns,
     subjectName: personName,
+    distributionValues: (scoped
+      ? result.personDailyScores[personId] ?? []
+      : result.householdDailyScores
+    ).flatMap((day) => (day.score === null ? [] : [day.score])),
   }
   const strainSource = scoped
     ? (result.personDailyScores[personId] ?? [])

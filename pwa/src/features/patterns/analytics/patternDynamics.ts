@@ -564,9 +564,15 @@ export const buildPatternStrainTrend = (
   if (dates.at(-1) !== endDate) dates.push(endDate)
 
   return dates.map((date) => {
-    const currentStart = shiftDate(date, -(DEFAULT_ANALYSIS_DAYS - 1))
+    // Calendar time without a new observation is not new evidence. Keep the
+    // most recent evidence-based value until another recorded day arrives.
+    const analysisEnd = days
+      .filter((day) => day.score !== null && day.date <= date)
+      .at(-1)?.date
+    if (!analysisEnd) return { date, intensity: null, band: null }
+    const currentStart = shiftDate(analysisEnd, -(DEFAULT_ANALYSIS_DAYS - 1))
     const dynamics = calculatePatternDynamics(
-      days.filter((day) => day.date >= currentStart && day.date <= date),
+      days.filter((day) => day.date >= currentStart && day.date <= analysisEnd),
       days.filter((day) => day.date < currentStart),
     )
     return {

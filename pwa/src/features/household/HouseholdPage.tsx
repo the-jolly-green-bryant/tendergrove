@@ -1,5 +1,10 @@
 import { IonButton, IonChip, IonIcon, IonSkeletonText } from '@ionic/react'
-import { alertCircleOutline, chevronForwardOutline, documentTextOutline, menuOutline } from 'ionicons/icons'
+import {
+  alertCircleOutline,
+  chevronForwardOutline,
+  documentTextOutline,
+  menuOutline,
+} from 'ionicons/icons'
 import { useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
 import { LoadErrorState } from '../../components/LoadErrorState'
@@ -8,19 +13,18 @@ import { IllustratedHeaderTitle, Page } from '../../components/Page'
 import { useDateNavigator } from '../../components/DateNavigator'
 import { PastDataNotice } from '../../components/PastDataNotice'
 import { PersonAvatar } from '../../components/PersonAvatar'
+import { DistributionGauge } from '../../components/DistributionGauge'
+import { FlippableCard } from '../../components/FlippableCard'
 import { HouseholdRecapTeaser, HouseholdTree } from '../../components/HouseholdTree'
 import { useAppAuth } from '../../auth/AuthContext'
 import { useSelectedDate } from '../../context/SelectedDateContext'
 import { usePeople } from '../people/usePeople'
-import {
-  derivePersonPatternDynamics,
-  derivePersonStatusFromPerson,
-  todayEmoji,
-} from '../../lib/status'
+import { derivePersonStatusFromPerson, todayEmoji } from '../../lib/status'
+import { currentPersonPatternDynamics } from '../../lib/groveScore'
 import { createHouseholdRecap, type HouseholdRecap } from '../../lib/householdRecap'
 import { isSameLocalDay, toLocalDateKey } from '../../lib/dateKeys'
 import './HouseholdPage.scss'
-import { RawPerson } from '../patterns/analytics'
+import { analyzeHousehold, RawPerson } from '../patterns/analytics'
 
 const SELF_CARE_QUOTES: ReadonlyArray<readonly [string, string]> = [
   ['Small steps still move you', 'toward steadier ground.'],
@@ -99,7 +103,7 @@ const renderTree = (
       onRecapClick={onRecapClick}
       people={people.map((person) => {
         const status = derivePersonStatusFromPerson(person, selectedDate)
-        const dynamics = derivePersonPatternDynamics(person, selectedDate)
+        const dynamics = currentPersonPatternDynamics(person, selectedDate)
         return {
           id: person.id,
           displayName: person.displayName,
@@ -251,6 +255,24 @@ const HouseholdHeroPanel = ({
     month: 'short',
     day: 'numeric',
   })
+  const householdScoreRange = useMemo(() => {
+    const analysis = analyzeHousehold(people, { now: selectedDate, windowDays: 90 })
+    const ranges = people.map((person) => {
+      const days = analysis.personDailyScores[person.id] ?? []
+      return {
+        recent: days
+          .slice(-30)
+          .flatMap((day) => (day.score === null ? [] : [day.score])),
+        baseline: days
+          .slice(-90, -30)
+          .flatMap((day) => (day.score === null ? [] : [day.score])),
+      }
+    })
+    return {
+      recent: ranges.flatMap((range) => range.recent),
+      baseline: ranges.flatMap((range) => range.baseline),
+    }
+  }, [people, selectedDate])
 
   return (
     <section
@@ -264,19 +286,15 @@ const HouseholdHeroPanel = ({
           className="past-data-notice--page"
         />
       )}
-      <div className="household-overview-card">
-        <header className="household-overview-heading">
-          <div>
-            <p>Today at a glance</p>
-            <h1>Household wellbeing</h1>
-          </div>
-          <span className="household-overview-heading__date">
-            {selectedDate.toLocaleDateString(undefined, {
-              month: 'short',
-              day: 'numeric',
-            })}
-          </span>
-        </header>
+      <FlippableCard
+        className="household-overview-card"
+        kicker="Today at a glance"
+        title="Household wellbeing"
+        description={selectedDate.toLocaleDateString(undefined, {
+          month: 'short',
+          day: 'numeric',
+        })}
+      >
         {renderTree(
           people,
           recap,
@@ -286,7 +304,21 @@ const HouseholdHeroPanel = ({
           onPersonClick,
           onRecapClick,
         )}
-      </div>
+        {householdScoreRange.recent.length > 0 && (
+          <div className="household-overview-card__distribution">
+            <DistributionGauge
+              title={
+                people.length === 1 ? 'Your recent range' : 'Household score range'
+              }
+              recentValues={householdScoreRange.recent}
+              baselineValues={householdScoreRange.baseline}
+              direction="higher-is-better"
+              unitLabel="Grove Score points"
+              scaleMode="absolute-100"
+            />
+          </div>
+        )}
+      </FlippableCard>
       {recap && (
         <HouseholdRecapTeaser
           recap={recap}
@@ -297,12 +329,25 @@ const HouseholdHeroPanel = ({
       )}
       {!isTimeTravel && (
         <div className="household-secondary-actions">
-          <IonButton fill="clear" routerLink="/reports">
-            <IonIcon slot="start" icon={documentTextOutline} />
+          <IonButton
+            fill="clear"
+            routerLink="/reports"
+          >
+            <IonIcon
+              slot="start"
+              icon={documentTextOutline}
+            />
             Appointment prep
           </IonButton>
-          <IonButton className="household-help-now" fill="clear" routerLink="/help-now">
-            <IonIcon slot="start" icon={alertCircleOutline} />
+          <IonButton
+            className="household-help-now"
+            fill="clear"
+            routerLink="/help-now"
+          >
+            <IonIcon
+              slot="start"
+              icon={alertCircleOutline}
+            />
             Safety &amp; support
           </IonButton>
         </div>
@@ -363,10 +408,6 @@ const HouseholdDashboardBody = ({
         <p className="household-legal__copyright">
           Copyright 2026 Bryant James. All rights reserved.
         </p>
-        <p>
-          App-generated insights are informational only and do not constitute medical,
-          clinical, legal, or professional advice.
-        </p>
       </footer>
     </section>
   </div>
@@ -410,18 +451,35 @@ const HouseholdPage = () => {
   const goToToday = () => setSelectedDate(new Date())
 
   const { navigationElement, calendarElement } = useDateNavigator({
-      date: selectedDate,
-      onChange: setSelectedDate,
-      eventDates,
-    })
+    date: selectedDate,
+    onChange: setSelectedDate,
+    eventDates,
+  })
 
   return (
     <Page
       title="Grove"
       headerContent={
         <IllustratedHeaderTitle
-          title={<img className="brand-wordmark-image brand-wordmark-image--dashboard" src="/assets/brand/grove-wordmark.png" alt="Grove" />}
-          start={<button className="dashboard-header-menu" type="button" aria-label="Open menu" onClick={() => void document.querySelector<HTMLIonMenuElement>('ion-menu')?.open()}><IonIcon icon={menuOutline} /></button>}
+          title={
+            <img
+              className="brand-wordmark-image brand-wordmark-image--dashboard"
+              src="/assets/brand/grove-wordmark.png"
+              alt="Grove"
+            />
+          }
+          start={
+            <button
+              className="dashboard-header-menu"
+              type="button"
+              aria-label="Open menu"
+              onClick={() =>
+                void document.querySelector<HTMLIonMenuElement>('ion-menu')?.open()
+              }
+            >
+              <IonIcon icon={menuOutline} />
+            </button>
+          }
         />
       }
       subHeaderContent={
@@ -455,7 +513,9 @@ const HouseholdPage = () => {
           selectedDateHasData={selectedDateHasData}
           onPersonClick={(personId) => history.push(`/person/${personId}`)}
           onRecapClick={() => history.push('/household/recap')}
-          onAddPersonClick={() => history.push(activePeople.length === 0 ? '/onboarding' : '/people/new')}
+          onAddPersonClick={() =>
+            history.push(activePeople.length === 0 ? '/onboarding' : '/people/new')
+          }
           onReturnToToday={goToToday}
         />
       )}

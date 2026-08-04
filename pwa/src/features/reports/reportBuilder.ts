@@ -1,15 +1,7 @@
 import { parseAnswers } from '../people/checkin/checkInUtils'
 import type { RawLifeEvent, RawPerson } from '../patterns/analytics'
-import {
-  computeScore,
-  derivePersonPatternDynamics,
-  STATUS_THRESHOLDS,
-} from '../../lib/status'
-import {
-  buildDailyScores,
-  computeTrend,
-  normalizeHousehold,
-} from '../patterns/analytics'
+import { computeScore, STATUS_THRESHOLDS } from '../../lib/status'
+import { buildDailyScores, normalizeHousehold } from '../patterns/analytics'
 import {
   PATTERN_STRAIN_LABELS,
   patternDimensionLevel,
@@ -19,7 +11,9 @@ import {
   researchReferences,
 } from '../about/researchReferences'
 import {
+  buildPersonGroveScoreTrend,
   currentPersonGroveScore,
+  currentPersonPatternDynamics,
 } from '../../lib/groveScore'
 
 export interface ProviderReportInput {
@@ -49,6 +43,21 @@ const frequencyLines = (person: RawPerson, polarity: 'desired' | 'undesired') =>
     .slice(0, 5)
 }
 
+const numericMean = (values: number[]) =>
+  values.length
+    ? values.reduce((total, value) => total + value, 0) / values.length
+    : null
+
+const percentile = (values: number[], fraction: number) => {
+  if (!values.length) return null
+  const ordered = [...values].sort((left, right) => left - right)
+  const position = (ordered.length - 1) * fraction
+  const lower = Math.floor(position)
+  const upper = Math.ceil(position)
+  if (lower === upper) return ordered[lower]
+  return ordered[lower] + (ordered[upper] - ordered[lower]) * (position - lower)
+}
+
 const compareFrequencies = (
   recentItems: ReturnType<typeof frequencyLines>,
   recentTotal: number,
@@ -64,8 +73,7 @@ const compareFrequencies = (
     const rates = references.map((reference) => ({
       label: reference.label,
       value: percentage(
-        reference.items.find((candidate) => candidate.name === item.name)?.count ??
-          0,
+        reference.items.find((candidate) => candidate.name === item.name)?.count ?? 0,
         reference.total,
       ),
     }))
@@ -106,6 +114,7 @@ export interface ReportCalendarDay {
 
 export interface EventComparison {
   label: string
+  dates: string[]
   eventDays: number
   eventAverage: number
   otherAverage: number
@@ -134,9 +143,8 @@ export const isHouseholdCorrelationNoteworthy = (
   coefficient: number,
 ) => pairedDays >= 7 && Math.abs(coefficient) >= 0.4
 
-export const isHouseholdConcernOverlapNoteworthy = (
-  concurrentConcernDays: number,
-) => concurrentConcernDays >= 3
+export const isHouseholdConcernOverlapNoteworthy = (concurrentConcernDays: number) =>
+  concurrentConcernDays >= 3
 
 const dateKey = (value: string) => {
   const date = new Date(value)
@@ -160,8 +168,7 @@ const formatDay = (key: string) => {
 
 const percentage = (count: number, total: number) =>
   total ? Math.round((count / total) * 100) : 0
-const formatPoints = (value: number) =>
-  `${value} ${value === 1 ? 'point' : 'points'}`
+const formatPoints = (value: number) => `${value} ${value === 1 ? 'point' : 'points'}`
 export interface ComparisonReference {
   label: string
   value: number | null
@@ -177,9 +184,7 @@ export const preferredComparisonFromReferences = (
       reference === null ? null : { reference, label },
     )
     .filter(
-      (
-        comparison,
-      ): comparison is { reference: number; label: string } =>
+      (comparison): comparison is { reference: number; label: string } =>
         comparison !== null &&
         comparison.reference !== 0 &&
         comparison.reference !== value,
@@ -188,15 +193,12 @@ export const preferredComparisonFromReferences = (
       const delta = value - comparison.reference
       const percent = Math.max(
         1,
-        Math.round(
-          (Math.abs(delta) / Math.abs(comparison.reference)) * 100,
-        ),
+        Math.round((Math.abs(delta) / Math.abs(comparison.reference)) * 100),
       )
       return {
         ...comparison,
         delta,
-        adverse:
-          adverseDirection === 'lower' ? delta < 0 : delta > 0,
+        adverse: adverseDirection === 'lower' ? delta < 0 : delta > 0,
         percent,
         magnitude: percent,
         phrase: `${percent}% ${delta < 0 ? 'below' : 'above'} baseline`,
@@ -469,10 +471,7 @@ export const buildProviderReport = ({
   const frequencyReferences = [
     {
       label: 'historical baseline',
-      items: frequencyLines(
-        { ...person, checkIns: historicalCheckIns },
-        'undesired',
-      ),
+      items: frequencyLines({ ...person, checkIns: historicalCheckIns }, 'undesired'),
       positiveItems: frequencyLines(
         { ...person, checkIns: historicalCheckIns },
         'desired',
@@ -488,7 +487,10 @@ export const buildProviderReport = ({
     {
       label: 'relevant baseline',
       items: frequencyLines({ ...person, checkIns: sixtyDayCheckIns }, 'undesired'),
-      positiveItems: frequencyLines({ ...person, checkIns: sixtyDayCheckIns }, 'desired'),
+      positiveItems: frequencyLines(
+        { ...person, checkIns: sixtyDayCheckIns },
+        'desired',
+      ),
       total: sixtyDayCheckIns.length,
     },
   ]
@@ -586,9 +588,7 @@ export const buildProviderReport = ({
   const sixtyDayKey = dateKey(sixtyDayCutoff.toISOString())
   const baseline = mean(observations)
   const recent = mean(observations.filter((day) => day.date >= recentKey))
-  const sixtyDayAverage = mean(
-    observations.filter((day) => day.date >= sixtyDayKey),
-  )
+  const sixtyDayAverage = mean(observations.filter((day) => day.date >= sixtyDayKey))
   const allTimeDays = historicalDays
   const allTimeKeys = dateKeysBetween(historicalCutoff, new Date())
   const allTimeNormalized = normalizeHousehold([person], {
@@ -624,11 +624,7 @@ export const buildProviderReport = ({
   const wellnessComparison =
     recent === null
       ? null
-      : preferredComparisonFromReferences(
-          recent,
-          comparisonReferences,
-          'lower',
-        )
+      : preferredComparisonFromReferences(recent, comparisonReferences, 'lower')
   const concernRateFor = (daysToMeasure: ReportDay[]) =>
     daysToMeasure.length
       ? percentage(
@@ -636,9 +632,7 @@ export const buildProviderReport = ({
           daysToMeasure.length,
         )
       : null
-  const sixtyDayObservations = observations.filter(
-    (day) => day.date >= sixtyDayKey,
-  )
+  const sixtyDayObservations = observations.filter((day) => day.date >= sixtyDayKey)
   const recentReferenceObservations = observations.filter(
     (day) => day.date >= recentKey,
   )
@@ -662,33 +656,59 @@ export const buildProviderReport = ({
   ]
   const observationByDate = new Map(observations.map((day) => [day.date, day]))
   const analyticsByDate = new Map(analyticsDays.map((day) => [day.date, day]))
-  const weightedTrend = computeTrend(
-    analyticsDays.map((day) => ({
-      date: day.date,
-      score: day.score,
-      eventCount: day.incidentCount,
-    })),
+  const canonicalGroveTrend = buildPersonGroveScoreTrend(person)
+  const groveTrendByDate = new Map(
+    canonicalGroveTrend.map((point) => [point.date, point]),
   )
-  const calendarDays: ReportCalendarDay[] = calendarKeys.map((date, index) => {
+  const calendarDays: ReportCalendarDay[] = calendarKeys.map((date) => {
     const day = observationByDate.get(date)
     const hasCheckIn = (analyticsByDate.get(date)?.checkInCount ?? 0) > 0
     return day && hasCheckIn
-      ? { ...day, weightedScore: weightedTrend.points[index].rollingAverage }
+      ? { ...day, weightedScore: groveTrendByDate.get(date)?.rollingAverage ?? null }
       : {
           date,
           score: null,
-          weightedScore: weightedTrend.points[index].rollingAverage,
+          weightedScore: groveTrendByDate.get(date)?.rollingAverage ?? null,
           level: 'missing',
           concernSignals: 0,
           positiveSignals: 0,
         }
   })
+  const recentGroveValues = calendarDays
+    .slice(-30)
+    .flatMap((day) => (day.weightedScore === null ? [] : [day.weightedScore]))
+  const baselineGroveValues = calendarDays
+    .slice(0, -30)
+    .flatMap((day) => (day.weightedScore === null ? [] : [day.weightedScore]))
+  const recentGroveStart = calendarDays.at(-30)?.date
+  const historicalGroveValues = recentGroveStart
+    ? canonicalGroveTrend
+        .filter(
+          (point) => point.date < recentGroveStart && point.rollingAverage !== null,
+        )
+        .slice(-365)
+        .map((point) => point.rollingAverage as number)
+    : []
+  const baselineCandidates = [
+    numericMean(baselineGroveValues),
+    numericMean(historicalGroveValues),
+  ].filter((value): value is number => value !== null)
+  const groveScoreDistribution = recentGroveValues.length
+    ? {
+        days: recentGroveValues.length,
+        minimum: Math.min(...recentGroveValues),
+        typicalLow: percentile(recentGroveValues, 0.25)!,
+        typicalHigh: percentile(recentGroveValues, 0.75)!,
+        maximum: Math.max(...recentGroveValues),
+        baseline: baselineCandidates.length ? Math.max(...baselineCandidates) : null,
+      }
+    : null
   const difficultPeriods = findPeriods(observations, 'difficult')
   const positivePeriods = findPeriods(observations, 'positive')
   const concernDays = observations.filter((day) => day.level === 'concern').length
   const steadyDays = observations.filter((day) => day.level === 'steady').length
   const recentObservations = observations.filter((day) => day.date >= recentKey)
-  const patternDynamics = derivePersonPatternDynamics(person)
+  const patternDynamics = currentPersonPatternDynamics(person)
   const groveScore = currentPersonGroveScore(person)
   const recentConcernDays = recentObservations.filter(
     (day) => day.level === 'concern',
@@ -743,6 +763,7 @@ export const buildProviderReport = ({
       return [
         {
           label: event.label?.trim() || 'Event',
+          dates: [...eventDates].sort(),
           eventDays: onEvent.length,
           eventAverage,
           otherAverage,
@@ -766,9 +787,7 @@ export const buildProviderReport = ({
         item,
       ): item is {
         event: EventComparison
-        comparison: NonNullable<
-          ReturnType<typeof preferredWellnessComparison>
-        >
+        comparison: NonNullable<ReturnType<typeof preferredWellnessComparison>>
       } => item.comparison !== null,
     )
     .sort(
@@ -790,26 +809,26 @@ export const buildProviderReport = ({
     ? correlation.strength === 'little or no'
       ? `Across ${correlation.pairedDays} observations, ${person.displayName}’s wellness had little or no correlation with the average wellness of other household members (r = ${correlation.coefficient}). The recorded scores do not show a consistent household wellness relationship; any overlapping concern observations remain descriptive only.`
       : [
-        `Across ${correlation.pairedDays} observations, ${person.displayName}’s wellness had a ${correlation.strength} ${correlation.direction} correlation with the average wellness of other household members (r = ${correlation.coefficient}).`,
-        correlation.direction === 'positive'
-          ? `A positive correlation means their scores tended to rise and fall together.${
-              correlation.concurrentConcernDays
-                ? correlation.noteworthy &&
-                  isHouseholdConcernOverlapNoteworthy(
-                    correlation.concurrentConcernDays,
-                  )
-                  ? ` On ${correlation.concurrentConcernDays} days, both ${person.displayName} and the rest of the household averaged in the concern range, which is concerning household context worth discussing.`
-                  : ` On ${correlation.concurrentConcernDays} ${correlation.concurrentConcernDays === 1 ? 'day' : 'days'}, both ${person.displayName} and the rest of the household averaged in the concern range; this isolated overlap is descriptive context rather than a repeated pattern.`
-                : ''
-            }`
-          : 'A negative correlation means their scores tended to move in opposite directions.',
-        correlation.noteworthy
-          ? `The amount and consistency of overlap suggest ${person.displayName}’s well-being may affect, or be affected by, the broader household.`
-          : '',
-        'This may reflect shared circumstances or interactions.',
-      ]
-        .filter(Boolean)
-        .join(' ')
+          `Across ${correlation.pairedDays} observations, ${person.displayName}’s wellness had a ${correlation.strength} ${correlation.direction} correlation with the average wellness of other household members (r = ${correlation.coefficient}).`,
+          correlation.direction === 'positive'
+            ? `A positive correlation means their scores tended to rise and fall together.${
+                correlation.concurrentConcernDays
+                  ? correlation.noteworthy &&
+                    isHouseholdConcernOverlapNoteworthy(
+                      correlation.concurrentConcernDays,
+                    )
+                    ? ` On ${correlation.concurrentConcernDays} days, both ${person.displayName} and the rest of the household averaged in the concern range, which is concerning household context worth discussing.`
+                    : ` On ${correlation.concurrentConcernDays} ${correlation.concurrentConcernDays === 1 ? 'day' : 'days'}, both ${person.displayName} and the rest of the household averaged in the concern range; this isolated overlap is descriptive context rather than a repeated pattern.`
+                  : ''
+              }`
+            : 'A negative correlation means their scores tended to move in opposite directions.',
+          correlation.noteworthy
+            ? `The amount and consistency of overlap suggest ${person.displayName}’s well-being may affect, or be affected by, the broader household.`
+            : '',
+          'This may reflect shared circumstances or interactions.',
+        ]
+          .filter(Boolean)
+          .join(' ')
     : 'At least 3 observations with changing scores for this person and another household member are needed to estimate household correlation.'
   const lines = [
     `GROVE CARE APPOINTMENT-PREP SUMMARY: ${person.displayName}`,
@@ -834,7 +853,7 @@ export const buildProviderReport = ({
     `• Recovery difficulty: ${patternDimensionLevel(patternDynamics.recoveryDifficulty)}.`,
     ...(patternDynamics.largestDecline >= 15
       ? [
-            `• Largest recent decline: ${formatPoints(patternDynamics.largestDecline)} across adjacent observed days.`,
+          `• Largest recent decline: ${formatPoints(patternDynamics.largestDecline)} across adjacent observed days.`,
         ]
       : []),
     `Based on ${patternDynamics.dataQuality.observedDays} recent observed days with ${patternDynamics.dataQuality.coverage}% coverage and ${patternDynamics.dataQuality.baselineDays} earlier baseline days. Confidence: ${patternDynamics.confidence}%.`,
@@ -866,18 +885,22 @@ export const buildProviderReport = ({
     '',
     'RECENT CONCERNS NOTICED MOST OFTEN',
     ...(recentDifficult.some((item) => item.delta !== 0)
-      ? recentDifficult.filter((item) => item.delta !== 0).map(
-          (item) =>
-            `• “${item.name}” was noted in ${item.recentRate}% of recent observations (${item.comparison.phrase}).`,
-        )
+      ? recentDifficult
+          .filter((item) => item.delta !== 0)
+          .map(
+            (item) =>
+              `• “${item.name}” was noted in ${item.recentRate}% of recent observations (${item.comparison.phrase}).`,
+          )
       : ['No difficult signals changed meaningfully from baseline.']),
     '',
     'RECENT POSITIVE SIGNS NOTICED MOST OFTEN',
     ...(recentPositive.some((item) => item.delta !== 0)
-      ? recentPositive.filter((item) => item.delta !== 0).map(
-          (item) =>
-            `• “${item.name}” was noted in ${item.recentRate}% of recent observations (${item.comparison.phrase}).`,
-        )
+      ? recentPositive
+          .filter((item) => item.delta !== 0)
+          .map(
+            (item) =>
+              `• “${item.name}” was noted in ${item.recentRate}% of recent observations (${item.comparison.phrase}).`,
+          )
       : ['No positive signals changed meaningfully from baseline.']),
     '',
     'DATED NOTES ABOUT EVENTS, MEDICATION, OR INTERVENTIONS',
@@ -944,6 +967,7 @@ export const buildProviderReport = ({
     householdCorrelationNarrative: correlationNarrative,
     patternDynamics,
     groveScore,
+    groveScoreDistribution,
   }
 }
 

@@ -9,6 +9,7 @@ import {
   reportCsv,
 } from './reportBuilder'
 import type { RawPerson } from '../patterns/analytics'
+import { buildPersonGroveScoreTrend } from '../../lib/groveScore'
 
 const person = {
   id: 'child-1', displayName: 'Sam', role: 'child', archived: false,
@@ -101,6 +102,20 @@ describe('provider report', () => {
     expect(report.text).toContain('not a diagnosis, validated risk assessment, or level-of-care recommendation')
     expect(report.calendarDays).toHaveLength(90)
     expect(report.calendarDays.filter((day) => day.level === 'missing')).toHaveLength(89)
+    expect(report.groveScoreDistribution).toMatchObject({ days: 1 })
+    expect(report.groveScoreDistribution?.minimum).toBe(
+      report.groveScoreDistribution?.maximum,
+    )
+    expect(report.groveScoreDistribution?.baseline).toBeNull()
+  })
+
+  it('uses the same canonical Grove Score trend as the person page', () => {
+    const report = buildProviderReport({ person, reason: '', questions: '' })
+    const canonicalLatest = buildPersonGroveScoreTrend(person).at(-1)
+
+    expect(report.calendarDays.at(-1)?.weightedScore).toBe(
+      canonicalLatest?.rollingAverage,
+    )
   })
 
   it('exports check-ins and signals as CSV', () => {

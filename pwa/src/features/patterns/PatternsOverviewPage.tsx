@@ -11,6 +11,9 @@ import React from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 
 import { LoadingState } from '../../components/LoadingState'
+import { DistributionGauge } from '../../components/DistributionGauge'
+import { CardExplanation } from '../../components/CardExplanation'
+import { FlippableCard } from '../../components/FlippableCard'
 import { IllustratedHeaderTitle, Page } from '../../components/Page'
 import { PersonAvatar } from '../../components/PersonAvatar'
 import { useSelectedDate } from '../../context/SelectedDateContext'
@@ -27,9 +30,12 @@ import { PatternsEmptyState } from './components/PatternsEmptyState'
 import { PatternsFilterBar } from './components/PatternsFilterBar'
 import { PeriodSelector } from './components/PeriodSelector'
 import { TrendChartPanel } from './components/TrendChartPanel'
+import { TrendChart, type ChartSeries } from './components/TrendChart'
 import { comparisonColor, TrendComparisonMenu } from './components/TrendComparisonMenu'
 import { usePatternsFilterStore } from './patternsFilterStore'
 import { useScopedPatterns } from './useScopedPatterns'
+import { usePatternsData } from './usePatternsData'
+import { parseAnswers, type RawLifeEvent, type RawPerson } from './analytics'
 import { CalendarContent } from './CalendarHeatmapPage'
 import { TurningPointsContent } from './TurningPointsPage'
 import {
@@ -179,6 +185,88 @@ const TrendView = ({
         onToggleStrain={() => setShowStrain((current) => !current)}
       />
     </>
+  )
+}
+
+const dateKey = (value: string) => value.slice(0, 10)
+
+const EventDistributions = ({
+  people,
+  lifeEvents,
+  result,
+  personId,
+}: {
+  people: RawPerson[]
+  lifeEvents: RawLifeEvent[]
+  result: AnalyticsResult
+  personId: string | null
+}) => {
+  const scopedPeople = personId
+    ? people.filter((person) => person.id === personId)
+    : people
+  const scores = personId
+    ? result.personDailyScores[personId] ?? []
+    : result.householdDailyScores
+  const scoreByDate = new Map(
+    scores.flatMap((day) => (day.score === null ? [] : [[day.date, day.score] as const])),
+  )
+  const events = lifeEvents.flatMap((event) => {
+    const dates = new Set(
+      scopedPeople.flatMap((person) =>
+        (person.checkIns ?? []).flatMap((checkIn) =>
+          parseAnswers(checkIn.answersJson).events.includes(event.id)
+            ? [dateKey(checkIn.occurredAt)]
+            : [],
+        ),
+      ),
+    )
+    const eventValues = [...dates].flatMap((date) => {
+      const score = scoreByDate.get(date)
+      return score === undefined ? [] : [score]
+    })
+    const ordinaryValues = [...scoreByDate].flatMap(([date, score]) =>
+      dates.has(date) ? [] : [score],
+    )
+    if (eventValues.length < 2 || ordinaryValues.length < 2) return []
+    const average = (values: number[]) =>
+      values.reduce((total, value) => total + value, 0) / values.length
+    return [{
+      id: event.id,
+      label: event.label || 'Event',
+      values: eventValues,
+      baseline: ordinaryValues,
+      impact: average(eventValues) - average(ordinaryValues),
+    }]
+  }).sort((left, right) => left.impact - right.impact || left.label.localeCompare(right.label))
+
+  if (!events.length) return null
+  return (
+    <section className="patterns-event-distributions">
+      <FlippableCard
+        className="patterns-event-distributions__intro"
+        kicker="Event distributions"
+        title="How event days compare"
+        description="Lowest-scoring event days appear first."
+      />
+      <FlippableCard className="patterns-event-distributions__visuals">
+        <div className="event-wellness-distributions">
+          {events.map((event) => (
+            <DistributionGauge
+              key={event.id}
+              title={event.label}
+              recentValues={event.values}
+              baselineValues={event.baseline}
+              direction="higher-is-better"
+              unitLabel="Grove Score points"
+              scaleMode="absolute-100"
+              compact
+              hideSummary
+              hideZeroTypical
+            />
+          ))}
+        </div>
+      </FlippableCard>
+    </section>
   )
 }
 
@@ -541,7 +629,13 @@ const SignalArcNetwork = ({
   )
 }
 
-const HouseholdView = ({ view }: { view: ScopedPatternsView }) => {
+const HouseholdView = ({
+  view,
+  result,
+}: {
+  view: ScopedPatternsView
+  result: AnalyticsResult
+}) => {
   const breakdown = view.anomalyPatterns?.otherPeople?.items ?? []
   if (view.indicatorSignals.length === 0 && breakdown.length === 0) {
     return (
@@ -554,18 +648,33 @@ const HouseholdView = ({ view }: { view: ScopedPatternsView }) => {
   return (
     <>
       {view.indicatorSignals.length > 0 && (
-        <section className="signal-overlap-section">
-          <p className="patterns-eyebrow">Signal connections</p>
-          <h2>Positive and negative signals that overlap</h2>
+        <FlippableCard
+          className="signal-overlap-section"
+          kicker="Signal connections"
+          title="Positive and negative signals that overlap"
+          back={(
+            <CardExplanation
+              summary="This view connects signals that were recorded for different household members on the same days."
+              points={[
+                'Red connections join concern signals.',
+                'Green connections join positive signals.',
+                'More shared days create a stronger connection, but do not prove that one signal caused another.',
+              ]}
+            />
+          )}
+        >
           <SignalArcNetwork
             overlaps={view.indicatorOverlaps}
             signals={view.indicatorSignals}
           />
-        </section>
+        </FlippableCard>
       )}
       {breakdown.length > 0 && (
-        <section className="household-breakdown">
-          <h2>Others in your home</h2>
+        <FlippableCard
+          className="household-breakdown"
+          title="Others in your home"
+          back={<CardExplanation summary="This list highlights household observations that overlap with unusually difficult days in the selected view." />}
+        >
           {breakdown.slice(0, 10).map((item) => {
             const other = item as AnomalyOtherPersonItem
             return (
@@ -577,14 +686,86 @@ const HouseholdView = ({ view }: { view: ScopedPatternsView }) => {
               </div>
             )
           })}
-        </section>
+        </FlippableCard>
       )}
+      <NormalizedHouseholdTrend result={result} />
     </>
+  )
+}
+
+const NormalizedHouseholdTrend = ({ result }: { result: AnalyticsResult }) => {
+  const rangeDays = usePatternsFilterStore((state) => state.rangeDays)
+  const setRangeDays = usePatternsFilterStore((state) => state.setRangeDays)
+  const dates = result.householdTrend.points
+    .slice(-rangeDays)
+    .map((point) => point.date)
+  const series = result.people.flatMap((person) => {
+    const valuesByDate = new Map(
+      (result.personTrends[person.id]?.points ?? []).map((point) => [
+        point.date,
+        point.rollingAverage,
+      ]),
+    )
+    const values = dates.map((date) => valuesByDate.get(date) ?? null)
+    const scored = values.filter((value): value is number => value !== null)
+    if (!scored.length) return []
+    return [{
+      id: person.id,
+      name: person.displayName,
+      color: comparisonColor(person.id),
+      minimum: Math.min(...scored),
+      maximum: Math.max(...scored),
+      values,
+    }]
+  })
+
+  if (!series.length) return null
+  return (
+    <FlippableCard
+      className="normalized-household-trend"
+      kicker="Relative movement"
+      title="Everyone’s trend"
+      description="Each line uses that person’s own low and high for this period, making shared rises and dips easier to compare."
+      back={(
+        <CardExplanation
+          summary="This chart compares the timing of household members’ rises and dips."
+          points={[
+            'Each person’s line is scaled to their own range, so the shapes can be compared.',
+            'The values below the chart show each person’s actual low and high.',
+            'Lines moving together are an observation, not proof that the changes are related.',
+          ]}
+        />
+      )}
+    >
+      <div className="normalized-household-trend__chart">
+        <TrendChart
+          dates={dates}
+          series={series.map((person): ChartSeries => ({
+            label: person.name,
+            color: person.color,
+            values: person.values,
+          }))}
+          eventCounts={dates.map(() => 0)}
+        />
+        <div className="pattern-overview-chart__period">
+          <PeriodSelector value={rangeDays} onChange={setRangeDays} />
+        </div>
+        <div className="normalized-household-trend__ranges">
+          {series.map((person) => (
+            <span key={person.id}>
+              <i style={{ background: person.color }} />
+              {person.name} <small>{Math.round(person.minimum)}–{Math.round(person.maximum)}</small>
+            </span>
+          ))}
+        </div>
+      </div>
+    </FlippableCard>
   )
 }
 
 const PatternsOverviewPage = (): React.JSX.Element => {
   const { view, result, isLoading, hasError, showDelta } = useScopedPatterns()
+  const { data: patternsData } = usePatternsData()
   const [tab, setTab] = usePatternsTab()
   const history = useHistory()
   const { setSelectedDate } = useSelectedDate()
@@ -616,17 +797,6 @@ const PatternsOverviewPage = (): React.JSX.Element => {
       {hasError && <p>We couldn’t load your patterns just now. Please try again.</p>}
       {!isLoading && !hasError && view && result && (
         <>
-          <aside
-            className="patterns-disclaimer"
-            role="note"
-          >
-            <strong>Observations, not conclusions.</strong>
-            <span>
-              Patterns reflect only what was recorded. They may have other explanations
-              and do not diagnose a condition, predict an emergency, or determine
-              whether hospital care is needed.
-            </span>
-          </aside>
           <PatternsTabs
             active={tab}
             onChange={setTab}
@@ -635,11 +805,21 @@ const PatternsOverviewPage = (): React.JSX.Element => {
             {view.scoredDays === 0 ? (
               <PatternsEmptyState message="Keep logging daily check-ins and patterns will appear here." />
             ) : tab === 'trend' ? (
-              <TrendView
-                view={view}
-                result={result}
-                showDelta={showDelta}
-              />
+              <>
+                <TrendView
+                  view={view}
+                  result={result}
+                  showDelta={showDelta}
+                />
+                {patternsData && (
+                  <EventDistributions
+                    people={patternsData.people}
+                    lifeEvents={patternsData.lifeEvents}
+                    result={result}
+                    personId={view.personId}
+                  />
+                )}
+              </>
             ) : tab === 'calendar' ? (
               <CalendarContent
                 calendar={view.calendar}
@@ -651,7 +831,7 @@ const PatternsOverviewPage = (): React.JSX.Element => {
                 view={view}
               />
             ) : tab === 'household' ? (
-              <HouseholdView view={view} />
+              <HouseholdView view={view} result={result} />
             ) : (
               <TurningPointsContent view={view} />
             )}

@@ -1,3 +1,4 @@
+import { FlippableCard } from '../../components/FlippableCard'
 import { IonCard, IonCardContent } from '@ionic/react'
 import React from 'react'
 
@@ -53,7 +54,7 @@ const RelationshipCard = ({
   const { dates, series } = relationshipSeries(relationship, showDelta)
   return (
     <section className="patterns-section">
-      <IonCard>
+      <FlippableCard>
         <IonCardContent>
           <TrendChart
             dates={dates}
@@ -62,13 +63,13 @@ const RelationshipCard = ({
             baseline={showDelta ? 0 : undefined}
           />
         </IonCardContent>
-      </IonCard>
-      <IonCard className="pattern-insight pattern-insight--neutral">
+      </FlippableCard>
+      <FlippableCard className="pattern-insight pattern-insight--neutral">
         <IonCardContent>
           <p className="pattern-insight__detail">{relationship.summary}</p>
           <ConfidenceBadge confidence={relationship.confidence} />
         </IonCardContent>
-      </IonCard>
+      </FlippableCard>
     </section>
   )
 }

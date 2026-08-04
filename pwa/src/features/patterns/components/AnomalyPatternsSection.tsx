@@ -1,3 +1,4 @@
+import { FlippableCard } from '../../../components/FlippableCard'
 import { IonButton, IonCard, IonCardContent, IonIcon } from '@ionic/react'
 
 import {
@@ -134,7 +135,7 @@ const SignalRows = ({
 )
 
 const EMPTY_STATE = (
-  <IonCard className="anomaly-patterns__empty">
+  <FlippableCard className="anomaly-patterns__empty">
     <IonCardContent>
       <h3>No repeated pattern stands out yet</h3>
 
@@ -143,7 +144,7 @@ const EMPTY_STATE = (
         household connection currently appears often enough to call out.
       </p>
     </IonCardContent>
-  </IonCard>
+  </FlippableCard>
 )
 
 const CardFooter = ({
@@ -184,7 +185,7 @@ const renderWeekdayChart = (
   onExplore: AnomalyPatternsSectionProps['onExplore'],
 ) =>
   patterns.weekday && (
-    <IonCard className="anomaly-pattern-card anomaly-pattern-card--weekday">
+    <FlippableCard className="anomaly-pattern-card anomaly-pattern-card--weekday">
       <IonCardContent>
         <div className="anomaly-pattern-card__main">
           <div className="anomaly-pattern-card__copy">
@@ -212,7 +213,7 @@ const renderWeekdayChart = (
           onClick={() => onExplore('calendar')}
         />
       </IonCardContent>
-    </IonCard>
+    </FlippableCard>
   )
 
 const renderEventsChart = (
@@ -225,7 +226,7 @@ const renderEventsChart = (
     const higherOnEventDays = top.anomalyRate > top.typicalRate
 
     return (
-      <IonCard className="anomaly-pattern-card anomaly-pattern-card--event">
+      <FlippableCard className="anomaly-pattern-card anomaly-pattern-card--event">
         <IonCardContent>
           <div className="anomaly-pattern-card__main">
             <div className="anomaly-pattern-card__copy">
@@ -252,7 +253,7 @@ const renderEventsChart = (
             onClick={() => onExplore('trend')}
           />
         </IonCardContent>
-      </IonCard>
+      </FlippableCard>
     )
   })()
 
@@ -288,7 +289,7 @@ export const AnomalyPatternsSection = ({
       {renderEventsChart(patterns, onExplore)}
 
       {patterns.otherPeople && (
-        <IonCard className="anomaly-pattern-card anomaly-pattern-card--household">
+        <FlippableCard className="anomaly-pattern-card anomaly-pattern-card--household">
           <IonCardContent>
             <div className="anomaly-pattern-card__main">
               <div className="anomaly-pattern-card__copy">
@@ -327,7 +328,7 @@ export const AnomalyPatternsSection = ({
               onClick={() => onExplore('household')}
             />
           </IonCardContent>
-        </IonCard>
+        </FlippableCard>
       )}
     </section>
   ))()

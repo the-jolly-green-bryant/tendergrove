@@ -1,4 +1,6 @@
 import React, { useMemo } from 'react'
+import { FlippableCard } from '../../../components/FlippableCard'
+import { CardExplanation } from '../../../components/CardExplanation'
 
 import type { TrendPoint } from '../analytics'
 import {
@@ -113,7 +115,19 @@ export const TrendChartPanel = ({
       : []
 
   return (
-    <div className={`pattern-chart__container ${className}`.trim()}>
+    <FlippableCard
+      className={`pattern-chart__container ${className}`.trim()}
+      back={(
+        <CardExplanation
+          summary="This chart shows how Grove Score changes over time."
+          points={[
+            'The daily line reflects each day’s recorded observations.',
+            'The smoother trend line makes longer rises and dips easier to see.',
+            'Use the time buttons to look at a shorter or longer period.',
+          ]}
+        />
+      )}
+    >
       <TrendChart
         dates={chart.dates}
         series={[...chart.series, ...comparisonSeries, ...strainSeries]}
@@ -123,6 +137,6 @@ export const TrendChartPanel = ({
         action={action}
       />
       {controls}
-    </div>
+    </FlippableCard>
   )
 }

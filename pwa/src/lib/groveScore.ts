@@ -81,10 +81,7 @@ export interface GroveScoreAnalysis {
   dynamics: PatternDynamics
 }
 
-const personAnalysisCache = new WeakMap<
-  RawPerson,
-  Map<string, GroveScoreAnalysis>
->()
+const personAnalysisCache = new WeakMap<RawPerson, Map<string, GroveScoreAnalysis>>()
 
 const clamp = (value: number) => Math.max(0, Math.min(100, value))
 const round = (value: number) => Math.round(clamp(value))
@@ -98,10 +95,7 @@ export const applyGroveScoreSoftFloor = (value: number): number => {
   const scaled = value / GROVE_SCORE_SOFT_FLOOR_SCALE
   if (scaled > 20) return Math.min(100, value)
   if (scaled < -20) return 0
-  return Math.min(
-    100,
-    GROVE_SCORE_SOFT_FLOOR_SCALE * Math.log1p(Math.exp(scaled)),
-  )
+  return Math.min(100, GROVE_SCORE_SOFT_FLOOR_SCALE * Math.log1p(Math.exp(scaled)))
 }
 
 /**
@@ -123,8 +117,7 @@ export const calculateGroveScore = (
   const effectiveWeights = {
     burden: GROVE_SCORE_WEIGHTS.burden * confidenceFactor,
     persistence: GROVE_SCORE_WEIGHTS.persistence * confidenceFactor,
-    recoveryDifficulty:
-      GROVE_SCORE_WEIGHTS.recoveryDifficulty * confidenceFactor,
+    recoveryDifficulty: GROVE_SCORE_WEIGHTS.recoveryDifficulty * confidenceFactor,
     instability: GROVE_SCORE_WEIGHTS.instability * confidenceFactor,
   }
   const temporalWeight =
@@ -166,21 +159,10 @@ const shiftDate = (date: string, days: number) => {
 }
 
 const mean = (values: number[]) =>
-  values.length
-    ? values.reduce((sum, value) => sum + value, 0) / values.length
-    : null
+  values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null
 
-const observedBetween = (
-  days: PatternDynamicsDay[],
-  start: string,
-  end: string,
-) =>
-  days.filter(
-    (day) =>
-      day.score !== null &&
-      day.date >= start &&
-      day.date <= end,
-  )
+const observedBetween = (days: PatternDynamicsDay[], start: string, end: string) =>
+  days.filter((day) => day.score !== null && day.date >= start && day.date <= end)
 
 export const negativeTrajectoryPressure = (
   days: PatternDynamicsDay[],
@@ -197,8 +179,7 @@ export const negativeTrajectoryPressure = (
   const priorCount = mean(prior.map((day) => day.challengeCount)) ?? 0
   const recentFrequency =
     recent.filter((day) => day.hasChallenges).length / recent.length
-  const priorFrequency =
-    prior.filter((day) => day.hasChallenges).length / prior.length
+  const priorFrequency = prior.filter((day) => day.hasChallenges).length / prior.length
   const countIncrease = Math.max(0, recentCount - priorCount)
   const frequencyIncrease = Math.max(0, recentFrequency - priorFrequency)
 
@@ -230,16 +211,11 @@ const worseningEventPressure = (
 }
 
 export const groveScoreRecoveryAlpha = (
-  dynamics: Pick<
-    PatternDynamics,
-    'band' | 'persistence' | 'recoveryDifficulty'
-  >,
+  dynamics: Pick<PatternDynamics, 'band' | 'persistence' | 'recoveryDifficulty'>,
 ): number => {
   if (dynamics.band === 'low') return GROVE_SCORE_RECOVERY_RATES.low
-  if (dynamics.band === 'emerging')
-    return GROVE_SCORE_RECOVERY_RATES.emerging
-  if (dynamics.band === 'elevated')
-    return GROVE_SCORE_RECOVERY_RATES.elevated
+  if (dynamics.band === 'emerging') return GROVE_SCORE_RECOVERY_RATES.emerging
+  if (dynamics.band === 'elevated') return GROVE_SCORE_RECOVERY_RATES.elevated
   if (
     dynamics.band === 'sustained' ||
     dynamics.band === 'intensive' ||
@@ -255,8 +231,7 @@ export const groveScoreRegressionAlpha = (
   dynamics: Pick<PatternDynamics, 'band'>,
 ): number => {
   if (dynamics.band === 'low') return GROVE_SCORE_REGRESSION_RATES.low
-  if (dynamics.band === 'emerging')
-    return GROVE_SCORE_REGRESSION_RATES.emerging
+  if (dynamics.band === 'emerging') return GROVE_SCORE_REGRESSION_RATES.emerging
   return GROVE_SCORE_REGRESSION_RATES.elevatedOrHigher
 }
 
@@ -271,32 +246,23 @@ export const buildGroveScoreTrend = (
     if (point.score === null) {
       return {
         ...point,
-        rollingAverage:
-          weightedScore === null ? null : roundTrend(weightedScore),
+        rollingAverage: weightedScore === null ? null : roundTrend(weightedScore),
       }
     }
     const currentStart = shiftDate(point.date, -(DEFAULT_ANALYSIS_DAYS - 1))
     const strainStart = shiftDate(point.date, -(GROVE_SCORE_STRAIN_DAYS - 1))
     const dynamics = calculatePatternDynamics(
       days.filter((day) => day.date >= currentStart && day.date <= point.date),
-      days.filter(
-        (day) =>
-          day.date >= strainStart &&
-          day.date < currentStart,
-      ),
+      days.filter((day) => day.date >= strainStart && day.date < currentStart),
     )
     const dailyScore = calculateGroveScore(point.score, dynamics)?.score ?? null
     if (dailyScore !== null) {
       const priorScores = points
         .slice(Math.max(0, index - 28), index)
-        .flatMap((candidate) =>
-          candidate.score === null ? [] : [candidate.score],
-        )
+        .flatMap((candidate) => (candidate.score === null ? [] : [candidate.score]))
       const personalRange = mean(priorScores)
       const disproportionateDrop =
-        personalRange === null
-          ? 0
-          : Math.max(0, personalRange - point.score - 15)
+        personalRange === null ? 0 : Math.max(0, personalRange - point.score - 15)
       const setbackDecay =
         dynamics.band === 'low'
           ? GROVE_SCORE_SETBACK_DECAY.low
@@ -319,15 +285,13 @@ export const buildGroveScoreTrend = (
           adjustedDailyScore < weightedScore
             ? groveScoreRegressionAlpha(dynamics)
             : groveScoreRecoveryAlpha(dynamics)
-        weightedScore =
-          alpha * adjustedDailyScore + (1 - alpha) * weightedScore
+        weightedScore = alpha * adjustedDailyScore + (1 - alpha) * weightedScore
       }
     }
     return {
       ...point,
       score: dailyScore,
-      rollingAverage:
-        weightedScore === null ? null : roundTrend(weightedScore),
+      rollingAverage: weightedScore === null ? null : roundTrend(weightedScore),
     }
   })
 }
@@ -337,12 +301,51 @@ const dateKeysEndingAt = (now: Date, days: number) => {
   const start = new Date(end)
   start.setDate(start.getDate() - days + 1)
   const keys: string[] = []
-  for (const cursor = new Date(start); cursor <= end; cursor.setDate(cursor.getDate() + 1)) {
+  for (
+    const cursor = new Date(start);
+    cursor <= end;
+    cursor.setDate(cursor.getDate() + 1)
+  ) {
     keys.push(
       `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}-${String(cursor.getDate()).padStart(2, '0')}`,
     )
   }
   return keys
+}
+
+const buildPersonScoreHistory = (person: RawPerson, now: Date) => {
+  const dates = dateKeysEndingAt(now, GROVE_SCORE_HISTORY_DAYS)
+  const normalized = normalizeHousehold([person], {
+    now,
+    windowDays: GROVE_SCORE_HISTORY_DAYS,
+  })
+  const scores =
+    buildDailyScores(normalized.people, dates).personDailyScores[person.id] ?? []
+  const rawTrend = computeTrend(
+    scores.map((day) => ({
+      date: day.date,
+      score: day.score,
+      eventCount: day.eventCount,
+    })),
+  )
+  const patternDays: PatternDynamicsDay[] = scores.map((day) => ({
+    date: day.date,
+    score: day.score,
+    challengeCount: day.negativeCount,
+    positiveCount: day.positiveCount,
+    hasChallenges: day.negativeCount > 0,
+    hasPositiveSigns: day.positiveCount > 0,
+  }))
+  const groveTrend = buildGroveScoreTrend(rawTrend.points, patternDays)
+  return { dates, rawTrend, patternDays, groveTrend }
+}
+
+/** Canonical plotted Grove Score series shared by person and report views. */
+export const buildPersonGroveScoreTrend = (
+  person: RawPerson,
+  now: Date = new Date(),
+): TrendPoint[] => {
+  return buildPersonScoreHistory(person, now).groveTrend
 }
 
 /** Current raw trend value used as the observation component everywhere. */
@@ -376,36 +379,16 @@ export const currentPersonGroveAnalysis = (
   const cached = personAnalysisCache.get(person)?.get(cacheKey)
   if (cached) return cached
 
-  const dates = dateKeysEndingAt(now, GROVE_SCORE_HISTORY_DAYS)
-  const normalized = normalizeHousehold([person], {
+  const { dates, rawTrend, patternDays, groveTrend } = buildPersonScoreHistory(
+    person,
     now,
-    windowDays: GROVE_SCORE_HISTORY_DAYS,
-  })
-  const scores =
-    buildDailyScores(normalized.people, dates).personDailyScores[person.id] ?? []
-  const rawTrend = computeTrend(
-    scores.map((day) => ({
-      date: day.date,
-      score: day.score,
-      eventCount: day.eventCount,
-    })),
   )
-  const patternDays: PatternDynamicsDay[] = scores.map((day) => ({
-    date: day.date,
-    score: day.score,
-    challengeCount: day.negativeCount,
-    positiveCount: day.positiveCount,
-    hasChallenges: day.negativeCount > 0,
-    hasPositiveSigns: day.positiveCount > 0,
-  }))
   const endDate = dates.at(-1)!
   const currentStart = shiftDate(endDate, -(DEFAULT_ANALYSIS_DAYS - 1))
   const strainStart = shiftDate(endDate, -(GROVE_SCORE_STRAIN_DAYS - 1))
   const dynamics = calculatePatternDynamics(
     patternDays.filter((day) => day.date >= currentStart),
-    patternDays.filter(
-      (day) => day.date >= strainStart && day.date < currentStart,
-    ),
+    patternDays.filter((day) => day.date >= strainStart && day.date < currentStart),
   )
   const base = calculateGroveScore(
     rawTrend.points.at(-1)?.rollingAverage ?? null,
@@ -414,11 +397,7 @@ export const currentPersonGroveAnalysis = (
   const score = base
     ? {
         ...base,
-        score:
-          round(
-            buildGroveScoreTrend(rawTrend.points, patternDays).at(-1)
-              ?.rollingAverage ?? base.score,
-          ),
+        score: round(groveTrend.at(-1)?.rollingAverage ?? base.score),
       }
     : null
   const analysis = { score, dynamics }
@@ -427,6 +406,16 @@ export const currentPersonGroveAnalysis = (
   personAnalysisCache.set(person, personCache)
   return analysis
 }
+
+/**
+ * Canonical Pattern Strain calculation for a complete person record.
+ * All full-person UI and report surfaces must use this function so the
+ * displayed band cannot drift from the Grove analysis inputs or windowing.
+ */
+export const currentPersonPatternDynamics = (
+  person: RawPerson,
+  now: Date = new Date(),
+): PatternDynamics => currentPersonGroveAnalysis(person, now).dynamics
 
 export const currentPersonGroveScore = (
   person: RawPerson,

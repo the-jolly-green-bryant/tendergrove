@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildNarrativeEnvelope,
   fallbackNarrative,
+  humanReadableTakeaways,
   narrativeTakeaways,
   qualifyRegressionIntensity,
   renderNarrative,
@@ -206,6 +207,35 @@ describe('report narrative facts', () => {
     const fallback = fallbackNarrative(buildNarrativeEnvelope(report))
     expect(fallback).toContain('50%')
     expect(narrativeTakeaways(fallback)).toHaveLength(4)
+  })
+
+  it('turns mixed strain evidence into concise, human-readable takeaways', () => {
+    const takeaways = humanReadableTakeaways({
+      ...(report as unknown as Record<string, unknown>),
+      personName: 'Beth',
+      recent: 50,
+      baseline: 38,
+      eventComparisons: [
+        {
+          label: 'Therapy day',
+          dates: ['2026-07-20'],
+          eventDays: 5,
+          eventAverage: 27,
+          otherAverage: 48,
+          concernDays: 4,
+          difference: -21,
+        },
+      ],
+    } as never)
+
+    expect(takeaways).toHaveLength(4)
+    expect(takeaways[0]).toContain('recent month is mixed')
+    expect(takeaways.join(' ')).toContain('Sleep disruption')
+    expect(takeaways.join(' ')).toContain('100% of recent check-ins')
+    expect(takeaways.join(' ')).toContain('Therapy day')
+    expect(takeaways.join(' ')).toContain('29% below baseline')
+    expect(takeaways.join(' ')).toContain('Difficult periods tended to continue')
+    expect(takeaways.join(' ')).not.toMatch(/regression|driven most|sustainable/)
   })
 
   it('rejects model-authored numbers and unknown placeholders', () => {

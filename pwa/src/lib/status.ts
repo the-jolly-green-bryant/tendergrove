@@ -1,15 +1,7 @@
 import { parseAnswers } from '../features/people/checkin/checkInUtils'
-import {
-  buildDailyScores,
-  normalizeHousehold,
-  type RawIndicator,
-  type RawPerson,
-} from '../features/patterns/analytics'
+import type { RawIndicator, RawPerson } from '../features/patterns/analytics'
 import { balancedIndicatorWellness } from './indicatorScoring'
-import {
-  currentPersonGroveAnalysis,
-  GROVE_SCORE_STRAIN_DAYS,
-} from './groveScore'
+import { currentPersonGroveScore, currentPersonPatternDynamics } from './groveScore'
 import {
   calculatePatternDynamics,
   DEFAULT_ANALYSIS_DAYS,
@@ -202,7 +194,11 @@ export const derivePersonStatus = (
   const scoreStatus = statusFromScore(computeWeightedScore(indicators, checkIns, now))
   const dynamics = derivePatternDynamics(indicators, checkIns, now)
   if (dynamics.dataQuality.observedDays < MIN_ANALYSIS_OBSERVATIONS) {
-    return { ...scoreStatus, label: scoreStatus.score === null ? 'No data' : 'Pattern forming', color: 'medium' }
+    return {
+      ...scoreStatus,
+      label: scoreStatus.score === null ? 'No data' : 'Pattern forming',
+      color: 'medium',
+    }
   }
   const colorByBand: Record<PatternStrainBand, Status['color']> = {
     low: 'success',
@@ -211,7 +207,11 @@ export const derivePersonStatus = (
     sustained: 'danger',
     intensive: 'danger',
   }
-  return { ...scoreStatus, label: PATTERN_STRAIN_LABELS[dynamics.band], color: colorByBand[dynamics.band] }
+  return {
+    ...scoreStatus,
+    label: PATTERN_STRAIN_LABELS[dynamics.band],
+    color: colorByBand[dynamics.band],
+  }
 }
 
 /**
@@ -223,10 +223,9 @@ export const derivePersonStatusFromPerson = (
   person: RawPerson,
   now: Date = new Date(),
 ): Status => {
-  const analysis = currentPersonGroveAnalysis(person, now)
-  const dynamics = analysis.dynamics
+  const dynamics = currentPersonPatternDynamics(person, now)
   const scoreStatus = statusFromScore(
-    analysis.score?.score ?? null,
+    currentPersonGroveScore(person, now)?.score ?? null,
   )
   if (!dynamics.dataQuality.isSufficient) {
     return {
@@ -254,15 +253,34 @@ export const derivePatternDynamics = (
   checkIns: CheckInLike[],
   now: Date = new Date(),
 ): PatternDynamics => {
-  const currentStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - DEFAULT_ANALYSIS_DAYS + 1)
-  const difficultIds = new Set(indicators.filter((indicator) => indicator.polarity === 'undesired').map((indicator) => indicator.id))
-  const positiveIds = new Set(indicators.filter((indicator) => indicator.polarity === 'desired').map((indicator) => indicator.id))
-  const grouped = new Map<string, { checked: Set<string>; challenges: Set<string>; positives: Set<string> }>()
+  const currentStart = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() - DEFAULT_ANALYSIS_DAYS + 1,
+  )
+  const difficultIds = new Set(
+    indicators
+      .filter((indicator) => indicator.polarity === 'undesired')
+      .map((indicator) => indicator.id),
+  )
+  const positiveIds = new Set(
+    indicators
+      .filter((indicator) => indicator.polarity === 'desired')
+      .map((indicator) => indicator.id),
+  )
+  const grouped = new Map<
+    string,
+    { checked: Set<string>; challenges: Set<string>; positives: Set<string> }
+  >()
   checkIns.forEach((checkIn) => {
     const occurredAt = new Date(checkIn.occurredAt)
     if (occurredAt > now) return
     const key = `${occurredAt.getFullYear()}-${String(occurredAt.getMonth() + 1).padStart(2, '0')}-${String(occurredAt.getDate()).padStart(2, '0')}`
-    const values = grouped.get(key) ?? { checked: new Set<string>(), challenges: new Set<string>(), positives: new Set<string>() }
+    const values = grouped.get(key) ?? {
+      checked: new Set<string>(),
+      challenges: new Set<string>(),
+      positives: new Set<string>(),
+    }
     parseAnswers(checkIn.answersJson).checked.forEach((id) => {
       values.checked.add(id)
       if (difficultIds.has(id)) values.challenges.add(id)
@@ -288,64 +306,21 @@ export const derivePatternDynamics = (
     })
     const score = balancedIndicatorWellness(scoreable, values.checked)
     if (score === null) return []
-    return [{
-      date,
-      score,
-      challengeCount: values.challenges.size,
-      positiveCount: values.positives.size,
-      hasChallenges: values.challenges.size > 0,
-      hasPositiveSigns: values.positives.size > 0,
-    }]
+    return [
+      {
+        date,
+        score,
+        challengeCount: values.challenges.size,
+        positiveCount: values.positives.size,
+        hasChallenges: values.challenges.size > 0,
+        hasPositiveSigns: values.positives.size > 0,
+      },
+    ]
   })
   const currentKey = `${currentStart.getFullYear()}-${String(currentStart.getMonth() + 1).padStart(2, '0')}-${String(currentStart.getDate()).padStart(2, '0')}`
   return calculatePatternDynamics(
     days.filter((day) => day.date >= currentKey),
     days.filter((day) => day.date < currentKey),
-  )
-}
-
-export const derivePersonPatternDynamics = (
-  person: RawPerson,
-  now: Date = new Date(),
-  windowDays = GROVE_SCORE_STRAIN_DAYS,
-): PatternDynamics => {
-  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12)
-  const start = new Date(end)
-  start.setDate(start.getDate() - windowDays + 1)
-  const dateKeys: string[] = []
-  const cursor = new Date(start)
-  while (cursor <= end) {
-    dateKeys.push(
-      `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}-${String(cursor.getDate()).padStart(2, '0')}`,
-    )
-    cursor.setDate(cursor.getDate() + 1)
-  }
-  const normalized = normalizeHousehold([person], { now, windowDays })
-  const scored =
-    buildDailyScores(normalized.people, dateKeys).personDailyScores[person.id] ?? []
-  const dynamicsDays: PatternDynamicsDay[] = scored.flatMap((day) =>
-    day.score === null
-      ? []
-      : [
-          {
-            date: day.date,
-            score: day.score,
-            challengeCount: day.negativeCount,
-            positiveCount: day.positiveCount,
-            hasChallenges: day.negativeCount > 0,
-            hasPositiveSigns: day.positiveCount > 0,
-          },
-        ],
-  )
-  const currentStart = new Date(
-    end.getFullYear(),
-    end.getMonth(),
-    end.getDate() - DEFAULT_ANALYSIS_DAYS + 1,
-  )
-  const currentKey = `${currentStart.getFullYear()}-${String(currentStart.getMonth() + 1).padStart(2, '0')}-${String(currentStart.getDate()).padStart(2, '0')}`
-  return calculatePatternDynamics(
-    dynamicsDays.filter((day) => day.date >= currentKey),
-    dynamicsDays.filter((day) => day.date < currentKey),
   )
 }
 
@@ -364,7 +339,10 @@ export const explainPersonStatus = (
     .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))
   const lines = recent.slice(0, 7).map((checkIn) => {
     const score = computeScore(active, checkIn)
-    const daysAgo = Math.max(0, Math.floor((now.getTime() - new Date(checkIn.occurredAt).getTime()) / 86_400_000))
+    const daysAgo = Math.max(
+      0,
+      Math.floor((now.getTime() - new Date(checkIn.occurredAt).getTime()) / 86_400_000),
+    )
     return `${new Date(checkIn.occurredAt).toLocaleDateString()}: ${score ?? 'not scored'}/100 · ${daysAgo === 0 ? 'full recent weight' : `weight decreases with age (${daysAgo} days ago)`}`
   })
   return [
@@ -372,7 +350,9 @@ export const explainPersonStatus = (
     `Burden: ${dynamics.burden}/100. Instability: ${dynamics.instability}/100. Persistence: ${dynamics.persistence}/100. Recovery difficulty: ${dynamics.recoveryDifficulty}/100. These are descriptive pattern dimensions, not clinical scores.`,
     `This view also retains the existing wellness calculation using ${active.length} active signals and ${recent.length} check-ins from the last ${STATUS_LOOKBACK_DAYS} days.`,
     'Desired signals count positively when checked. Difficult signals lower the daily score only when they are explicitly recorded; leaving one unchecked is neutral. Recent check-ins receive more weight. Missing days are ignored—not scored as good or bad.',
-    lines.length ? `Recent contributions:\n${lines.join('\n')}` : 'There are no scoreable recent check-ins.',
+    lines.length
+      ? `Recent contributions:\n${lines.join('\n')}`
+      : 'There are no scoreable recent check-ins.',
     'This score reflects only what was recorded. It is not a diagnosis or a measure of immediate safety.',
   ].join('\n\n')
 }

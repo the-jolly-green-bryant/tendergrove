@@ -1,3 +1,4 @@
+import { FlippableCard } from '../../components/FlippableCard'
 import { IonButton, IonCard, IonCardContent, IonModal } from '@ionic/react'
 import React, { useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
@@ -73,7 +74,7 @@ const DayDetail = ({
   readonly day: CalendarDayPattern
   readonly onAddCheckIn: (dateKey: string) => void
 }): React.JSX.Element => (
-  <IonCard>
+  <FlippableCard>
     <IonCardContent>
       <h3 className="pattern-turning-card__date">{formatDayLabel(day.date)}</h3>
       <p className="pattern-row__meta">{day.shortSummary}</p>
@@ -103,7 +104,7 @@ const DayDetail = ({
         Go to day
       </IonButton>
     </IonCardContent>
-  </IonCard>
+  </FlippableCard>
 )
 
 const MonthGrid = ({
@@ -115,8 +116,7 @@ const MonthGrid = ({
   readonly selectedDate: string | undefined
   readonly onSelect: (day: CalendarDayPattern) => void
 }): React.JSX.Element => (
-  <section className="pattern-calendar-month">
-    <h2 className="pattern-calendar-heading">{month.label}</h2>
+  <FlippableCard className="pattern-calendar-month" title={month.label}>
     <div className="pattern-calendar-grid">
       {DOW.map((dow) => (
         <div
@@ -154,7 +154,7 @@ const MonthGrid = ({
         ),
       )}
     </div>
-  </section>
+  </FlippableCard>
 )
 
 export const CalendarContent = ({
@@ -190,7 +190,7 @@ export const CalendarContent = ({
         />
       ))}
 
-      <div className="pattern-legend">
+      <FlippableCard className="pattern-legend">
         {(Object.keys(LEVEL_LABEL) as WellbeingLevel[]).map((level) => (
           <span
             key={level}
@@ -202,7 +202,7 @@ export const CalendarContent = ({
             {LEVEL_LABEL[level]}
           </span>
         ))}
-      </div>
+      </FlippableCard>
 
       <IonModal
         isOpen={selected !== null}

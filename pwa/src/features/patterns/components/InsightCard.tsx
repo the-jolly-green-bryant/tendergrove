@@ -1,4 +1,5 @@
-import { IonCard, IonCardContent } from '@ionic/react'
+import { FlippableCard } from '../../../components/FlippableCard'
+import { IonCardContent } from '@ionic/react'
 import React from 'react'
 
 import type { PatternInsight } from '../analytics'
@@ -17,19 +18,14 @@ export const InsightCard = ({
   readonly insight: PatternInsight
   readonly showConfidence?: boolean
 }): React.JSX.Element => (
-  <IonCard className={`pattern-insight pattern-insight--${insight.tone}`}>
+  <FlippableCard
+    className={`pattern-insight pattern-insight--${insight.tone}`}
+    kicker={<span className="pattern-insight__icon" aria-hidden="true">{TONE_ICON[insight.tone]}</span>}
+    title={insight.title}
+  >
     <IonCardContent>
-      <div className="pattern-insight__head">
-        <span
-          className="pattern-insight__icon"
-          aria-hidden="true"
-        >
-          {TONE_ICON[insight.tone]}
-        </span>
-        <h3 className="pattern-insight__title">{insight.title}</h3>
-      </div>
       <p className="pattern-insight__detail">{insight.detail}</p>
       {showConfidence && <ConfidenceBadge confidence={insight.confidence} />}
     </IonCardContent>
-  </IonCard>
+  </FlippableCard>
 )

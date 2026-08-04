@@ -27,6 +27,8 @@ const percentage = (count: number, total: number) =>
   total ? Math.round((count / total) * 100) : 0
 const formatPoints = (value: number) =>
   `${value} ${value === 1 ? 'point' : 'points'}`
+const formatDistributionScore = (value: number) =>
+  String(Math.round(value * 10) / 10)
 const relativeRateToBaseline = (value: number, baseline: number) => {
   if (value === baseline) return 'unchanged from baseline'
   if (baseline === 0) return value > 0 ? 'above baseline' : 'below baseline'
@@ -273,29 +275,22 @@ export const buildNarrativeEnvelope = (report: ProviderReport): NarrativeEnvelop
       id: 'wellness_comparison',
       meaning:
         essentiallyUnchanged
-          ? 'Recent weighted wellness is unchanged from the longer-window average.'
-          : `Recent weighted wellness is ${delta > 0 ? 'higher' : 'lower'} than the longer-window average.`,
+          ? 'Recent observed wellness is unchanged from the longer-window average.'
+          : `Recent observed wellness is ${delta > 0 ? 'higher' : 'lower'} than the longer-window average.`,
       replacement: `Recent wellness averaged ${formatPoints(report.recent)}, ${relative.phrase}. This suggests recorded well-being was ${essentiallyUnchanged ? 'essentially unchanged' : delta > 0 ? 'improving' : 'declining'} overall.`,
     })
   }
 
   if (recent.length) {
-    const ordered = orderedRecent
-    const changes = ordered
-      .slice(1)
-      .map((day, index) => Math.abs(day.score - ordered[index].score))
-    const largestChange = changes.length ? Math.max(...changes) : 0
-    const steepChanges = changes.filter((change) => change >= 15).length
-    const minimum = Math.min(...ordered.map((day) => day.score))
-    const maximum = Math.max(...ordered.map((day) => day.score))
+    const distribution = report.groveScoreDistribution
     facts.push({
       id: 'trend_description',
       meaning:
-        'Provider-facing description of the recent 30-day direction and volatility.',
+        'Provider-facing description of the recent 30-day Grove Score distribution, labeled as wellness for readability.',
       replacement:
-        baseline === null || report.recent === null
-          ? `Recent observations ranged from ${formatPoints(minimum)} to ${formatPoints(maximum)}.`
-          : `Recent wellness averaged ${formatPoints(report.recent)}, ${report.wellnessComparison?.phrase ?? 'unchanged from baseline'}. Scores ranged from ${formatPoints(minimum)} to ${formatPoints(maximum)}${largestChange ? `; the largest day-to-day change was ${formatPoints(largestChange)}${steepChanges ? `, with ${steepChanges} changes of 15 points or more` : ''}` : ''}. This suggests ${steepChanges ? 'meaningful volatility rather than a smooth trend' : 'a comparatively steady pattern'}.`,
+        !distribution
+          ? 'There is not enough Grove Score history yet to describe the recent wellness trend.'
+          : `Over the past ${distribution.days} days, the middle half of the wellness trend ranged from ${formatDistributionScore(distribution.typicalLow)} to ${formatDistributionScore(distribution.typicalHigh)} Grove Score points.${distribution.baseline === null ? '' : ` The higher applicable baseline was ${formatDistributionScore(distribution.baseline)}.`} The full range, including unusual highs and lows, was ${formatDistributionScore(distribution.minimum)} to ${formatDistributionScore(distribution.maximum)}.`,
     })
     const recentDifficult = report.difficultPeriods.filter(
       (period) => period.start >= recentKey && period.days >= 2,
@@ -691,3 +686,98 @@ export const narrativeTakeaways = (text: string) =>
     .map((line) => line.trim().replace(/^[•-]\s+/, ''))
     .filter(Boolean)
     .slice(0, 4)
+
+export const humanReadableTakeaways = (report: ProviderReport) => {
+  if (!report.observations.length)
+    return ['There are not enough recorded observations yet to describe a recent pattern.']
+
+  const latestDate = report.observations.at(-1)!.date
+  const recentStart = new Date(`${latestDate}T12:00:00`)
+  recentStart.setDate(recentStart.getDate() - 29)
+  const recentStartKey = [
+    recentStart.getFullYear(),
+    String(recentStart.getMonth() + 1).padStart(2, '0'),
+    String(recentStart.getDate()).padStart(2, '0'),
+  ].join('-')
+  const recent = report.observations.filter((day) => day.date >= recentStartKey)
+  const concernDays = recent.filter((day) => day.level === 'concern').length
+  const recentAverage =
+    report.recent ??
+    recent.reduce((total, day) => total + day.score, 0) / Math.max(1, recent.length)
+  const baseline = report.baseline ?? recentAverage
+  const comparison = recentAverage - baseline
+  const strain = report.patternDynamics
+  const takeaways: string[] = []
+
+  if (concernDays && comparison > 2)
+    takeaways.push(
+      `${report.personName}’s recent month is mixed: the overall average improved, but ${concernDays} of ${recent.length} recorded days were still difficult.`,
+    )
+  else if (concernDays)
+    takeaways.push(
+      `${concernDays} of ${recent.length} recorded days were difficult${comparison < -2 ? ', and the overall average was below the usual range' : ''}.`,
+    )
+  else
+    takeaways.push(
+      `${report.personName} had no recorded days in the concern range during the recent month.`,
+    )
+
+  const troublesomeEvent = [...report.eventComparisons]
+    .filter((event) => event.difference <= -5)
+    .sort((left, right) => left.difference - right.difference)[0]
+  if (troublesomeEvent)
+    takeaways.push(
+      `The clearest event association was “${troublesomeEvent.label}”: wellness averaged ${troublesomeEvent.eventAverage} points on those ${troublesomeEvent.eventDays} recorded days, ${relativeToBaseline(troublesomeEvent.eventAverage, baseline).phrase}.`,
+    )
+
+  const mostCommonDifficult = [...report.recentDifficult].sort(
+    (left, right) => right.recentRate - left.recentRate,
+  )[0]
+  const mostCommonPositive = [...report.recentPositive].sort(
+    (left, right) => right.recentRate - left.recentRate,
+  )[0]
+  if (mostCommonDifficult || mostCommonPositive) {
+    const difficultText = mostCommonDifficult
+      ? `“${mostCommonDifficult.name}” was the most common difficult signal, appearing in ${mostCommonDifficult.recentRate}% of recent check-ins (${mostCommonDifficult.comparison?.phrase ?? relativeRateToBaseline(mostCommonDifficult.recentRate, mostCommonDifficult.baselineRate)})`
+      : ''
+    const positiveText = mostCommonPositive
+      ? `“${mostCommonPositive.name}” was the most common positive signal, appearing in ${mostCommonPositive.recentRate}% (${mostCommonPositive.comparison?.phrase ?? relativeRateToBaseline(mostCommonPositive.recentRate, mostCommonPositive.baselineRate)})`
+      : ''
+    takeaways.push(
+      `${difficultText}${difficultText && positiveText ? '; meanwhile, ' : ''}${positiveText}${positiveText ? ' of recent check-ins' : ''}.`,
+    )
+  }
+
+  if (strain.band === 'sustained' || strain.band === 'intensive') {
+    const reasons: string[] = []
+    if (strain.persistence >= 55)
+      reasons.push('difficult periods tended to continue across check-ins')
+    if (strain.recoveryDifficulty >= 55)
+      reasons.push('returns toward the usual range were limited')
+    if (strain.burden >= 70)
+      reasons.push('challenges appeared on many recorded days')
+    const patternExplanation =
+      reasons.slice(0, 2).join(', and ') ||
+      'The difficult pattern repeated across recent check-ins'
+    takeaways.push(
+      `${patternExplanation.charAt(0).toUpperCase()}${patternExplanation.slice(1)}.${strain.largestDecline >= 15 ? ` The largest one-day drop was ${formatPoints(strain.largestDecline)}.` : ''}`,
+    )
+  } else {
+    takeaways.push(strain.summary.replace(/^The recorded pattern /, 'The recent pattern '))
+  }
+
+  if (Math.abs(comparison) <= 2)
+    takeaways.push(
+      `Recent wellness averaged ${Math.round(recentAverage)} points, close to the longer-term baseline.`,
+    )
+  else if (comparison > 0)
+    takeaways.push(
+      `Recent wellness averaged ${Math.round(recentAverage)} points, above the ${Math.round(baseline)}-point baseline. That improvement matters, but it has not yet become a consistently easier pattern.`,
+    )
+  else
+    takeaways.push(
+      `Recent wellness averaged ${Math.round(recentAverage)} points, below the ${Math.round(baseline)}-point baseline.`,
+    )
+
+  return takeaways.slice(0, 4)
+}

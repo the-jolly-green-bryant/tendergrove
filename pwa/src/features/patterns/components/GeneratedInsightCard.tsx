@@ -1,4 +1,5 @@
-import { IonButton, IonCard, IonCardContent, IonIcon } from '@ionic/react'
+import { FlippableCard } from '../../../components/FlippableCard'
+import { IonButton, IonCardContent, IonIcon } from '@ionic/react'
 import {
   alertCircleOutline,
   calendarOutline,
@@ -49,16 +50,12 @@ export const GeneratedInsightCard = ({
   }
 
   return (
-    <IonCard className={`pattern-insight pattern-insight--${insight.tone}`}>
+    <FlippableCard
+      className={`pattern-insight pattern-insight--${insight.tone}`}
+      kicker={<IonIcon className="pattern-insight__icon" icon={ICON[insight.icon]} aria-hidden="true" />}
+      title={insight.title}
+    >
       <IonCardContent>
-      <div className="pattern-insight__head">
-        <IonIcon
-          className="pattern-insight__icon"
-          icon={ICON[insight.icon]}
-          aria-hidden="true"
-        />
-        <h3 className="pattern-insight__title">{insight.title}</h3>
-      </div>
       <p className="pattern-insight__detail">{insight.description}</p>
       {insight.evidence && <p><strong>What we observed:</strong> {insight.evidence}</p>}
       {insight.alternative && <p><strong>What else could explain it:</strong> {insight.alternative}</p>}
@@ -67,6 +64,6 @@ export const GeneratedInsightCard = ({
       <IonButton size="small" fill="clear" onClick={() => void share()}>Share or discuss</IonButton>
       <IonButton size="small" fill="clear" disabled={pinned} onClick={addToReport}>{pinned ? 'Added to appointment' : 'Add to appointment'}</IonButton>
       </IonCardContent>
-    </IonCard>
+    </FlippableCard>
   )
 }

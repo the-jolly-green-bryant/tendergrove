@@ -1,3 +1,4 @@
+import { FlippableCard } from '../../../components/FlippableCard'
 import { IonCard, IonCardContent, IonSkeletonText } from '@ionic/react'
 import React from 'react'
 
@@ -6,7 +7,7 @@ export const AnalyticsLoadingSkeleton = (): React.JSX.Element => (
     className="pattern-skeleton"
     aria-hidden="true"
   >
-    <IonCard>
+    <FlippableCard>
       <IonCardContent>
         <IonSkeletonText
           animated
@@ -17,9 +18,9 @@ export const AnalyticsLoadingSkeleton = (): React.JSX.Element => (
           style={{ width: '100%', height: 140, marginTop: 14, borderRadius: 12 }}
         />
       </IonCardContent>
-    </IonCard>
+    </FlippableCard>
     {[0, 1].map((row) => (
-      <IonCard key={row}>
+      <FlippableCard key={row}>
         <IonCardContent>
           <IonSkeletonText
             animated
@@ -30,7 +31,7 @@ export const AnalyticsLoadingSkeleton = (): React.JSX.Element => (
             style={{ width: '90%', height: 12, marginTop: 10 }}
           />
         </IonCardContent>
-      </IonCard>
+      </FlippableCard>
     ))}
   </div>
 )

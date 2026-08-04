@@ -34,15 +34,17 @@ import { useArchivePerson } from './useArchivePerson'
 import { parseAnswers } from './checkin/checkInUtils'
 import { useDateNavigator } from '../../components/DateNavigator'
 import { PersonAvatar } from '../../components/PersonAvatar'
+import { AppDisclaimer } from '../../components/AppDisclaimer'
+import { FlippableCard } from '../../components/FlippableCard'
 import { PersonRole } from '../../lib/domain'
 import {
   derivePatternDynamics,
-  derivePersonPatternDynamics,
   derivePersonStatus,
   derivePersonStatusFromPerson,
   type Status,
   todayEmoji,
 } from '../../lib/status'
+import { currentPersonPatternDynamics } from '../../lib/groveScore'
 import { PersonPatternsSection } from '../patterns/PersonPatternsSection'
 import { RawCheckIn, RawIndicator, RawPerson } from '../patterns/analytics'
 
@@ -118,7 +120,7 @@ const usePersonPageSummary = (
     ? derivePersonStatusFromPerson(person as RawPerson)
     : derivePersonStatus(activeIndicators, checkIns)
   const patternDynamics = person
-    ? derivePersonPatternDynamics(person as RawPerson)
+    ? currentPersonPatternDynamics(person as RawPerson)
     : derivePatternDynamics(indicators, checkIns)
   const emoji = todayEmoji(activeIndicators, checkIns, new Date(), personId)
   const selectedDateCheckIn = checkIns.find((ci) => isSameDay(ci.occurredAt, viewDate))
@@ -257,7 +259,8 @@ export const PersonCheckInButton = ({
   readonly title: string
   readonly onClick?: () => void
 }) => (
-  <button
+  <FlippableCard
+    button
     type="button"
     className="person-checkin-button"
     onClick={onClick ?? (() => {})}
@@ -293,7 +296,7 @@ export const PersonCheckInButton = ({
         className="person-checkin-button__chevron"
       />
     )}
-  </button>
+  </FlippableCard>
 )
 
 const PersonPageHeader = ({
@@ -364,7 +367,8 @@ const SetupNavCard = ({
   readonly subtitle: string
   readonly onClick: () => void
 }) => (
-  <button
+  <FlippableCard
+    button
     type="button"
     className="person-setup-card"
     onClick={onClick}
@@ -381,7 +385,7 @@ const SetupNavCard = ({
       className="person-setup-card__chevron"
       icon={chevronForwardOutline}
     />
-  </button>
+  </FlippableCard>
 )
 
 const TrackingSetupCards = ({
@@ -602,6 +606,7 @@ const PersonPage = (): React.JSX.Element | null => {
             onManageEvents={manageEvents}
           />
         )}
+        <AppDisclaimer />
       </IonContent>
     </IonPage>
   )

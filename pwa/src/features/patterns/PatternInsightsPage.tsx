@@ -1,3 +1,4 @@
+import { FlippableCard } from '../../components/FlippableCard'
 import React from 'react'
 import { IonButton, IonCard, IonCardContent } from '@ionic/react'
 
@@ -24,7 +25,7 @@ const InsightsContent = ({
 
   if (insights.length === 0) {
     return (
-      <IonCard className="first-week-payoff"><IonCardContent>
+      <FlippableCard className="first-week-payoff"><IonCardContent>
         <h2>Your starting picture</h2>
         <p>{view.scoredDays === 0 ? 'Your first check-in will create a baseline.' : `${view.scoredDays} day${view.scoredDays === 1 ? '' : 's'} recorded so far. That is already useful context for an appointment.`}</p>
         <h3>Questions worth noticing next</h3>
@@ -36,7 +37,7 @@ const InsightsContent = ({
         </ul>
         <p>There is no streak to protect. Check in when you can; we will wait for enough observations before calling something a pattern.</p>
         <IonButton routerLink="/reports">Prepare for an appointment now</IonButton>
-      </IonCardContent></IonCard>
+      </IonCardContent></FlippableCard>
     )
   }
 

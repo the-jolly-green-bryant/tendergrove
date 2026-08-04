@@ -3,16 +3,21 @@ import { describe, expect, it } from 'vitest'
 import type { RawIndicator, RawPerson } from '../features/patterns/analytics'
 import {
   computeScore,
-  derivePersonPatternDynamics,
   derivePersonStatus,
   derivePersonStatusFromPerson,
   statusFromScore,
 } from './status'
+import { currentPersonPatternDynamics } from './groveScore'
 import { PATTERN_STRAIN_LABELS } from '../features/patterns/analytics/patternDynamics'
 
 const indicators = [
   { id: 'sleep', name: 'Severe sleep disruption', polarity: 'undesired', active: true },
-  { id: 'voices', name: 'Responding to things others do not perceive', polarity: 'undesired', active: true },
+  {
+    id: 'voices',
+    name: 'Responding to things others do not perceive',
+    polarity: 'undesired',
+    active: true,
+  },
   { id: 'support', name: 'Accepted support', polarity: 'desired', active: true },
 ] as RawIndicator[]
 
@@ -67,17 +72,23 @@ describe('shared observation status', () => {
       occurredAt.setDate(occurredAt.getDate() - index * 3)
       return {
         occurredAt: occurredAt.toISOString(),
-        answersJson: JSON.stringify({ checked: index < 9 ? ['sleep', 'voices'] : ['support'] }),
+        answersJson: JSON.stringify({
+          checked: index < 9 ? ['sleep', 'voices'] : ['support'],
+        }),
       }
     })
     expect(derivePersonStatus(indicators, checkIns, now).label).toMatch(/strain$/)
   })
 
   it('uses a forming state instead of a score-derived strain label when data is sparse', () => {
-    expect(derivePersonStatus(indicators, [{
-      occurredAt: new Date().toISOString(),
-      answersJson: JSON.stringify({ checked: ['sleep'] }),
-    }]).label).toBe('Pattern forming')
+    expect(
+      derivePersonStatus(indicators, [
+        {
+          occurredAt: new Date().toISOString(),
+          answersJson: JSON.stringify({ checked: ['sleep'] }),
+        },
+      ]).label,
+    ).toBe('Pattern forming')
   })
 
   it('uses the authoritative normalized strain label for complete person records', () => {
@@ -99,7 +110,7 @@ describe('shared observation status', () => {
       checkIns,
       events: [],
     } as unknown as RawPerson
-    const dynamics = derivePersonPatternDynamics(person, now)
+    const dynamics = currentPersonPatternDynamics(person, now)
 
     expect(derivePersonStatusFromPerson(person, now).label).toBe(
       PATTERN_STRAIN_LABELS[dynamics.band],

@@ -373,4 +373,24 @@ describe('pattern strain trend', () => {
       true,
     )
   })
+
+  it('holds the last evidence-based value when no new observations are recorded', () => {
+    const observed = Array.from({ length: 100 }, (_, index) =>
+      index < 60 ? day(index, 80, 0, 1) : day(index, 35, 2, 0),
+    )
+    const trend = buildPatternStrainTrend(
+      [...observed, ...Array.from({ length: 20 }, (_, index) => day(100 + index, null))],
+      day(119, null).date,
+    )
+    const finalObservedValue = buildPatternStrainTrend(observed, day(99, 0).date).at(-1)
+
+    expect(trend.at(-1)).toMatchObject({
+      intensity: finalObservedValue?.intensity,
+      band: finalObservedValue?.band,
+    })
+    expect(trend.at(-2)).toMatchObject({
+      intensity: finalObservedValue?.intensity,
+      band: finalObservedValue?.band,
+    })
+  })
 })
