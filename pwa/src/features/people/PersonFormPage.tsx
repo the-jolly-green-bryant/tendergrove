@@ -33,6 +33,8 @@ import { useAppAuth } from '../../auth/AuthContext'
 import { LoadingState } from '../../components/LoadingState'
 import { usePerson } from './usePerson'
 import { PersonAvatar } from '../../components/PersonAvatar'
+import { FlippableCard } from '../../components/FlippableCard'
+import { AppDisclaimer } from '../../components/AppDisclaimer'
 import { useRouteModal } from '../../components/RouteModalContext'
 import { useIndicatorMutations } from './indicators/useIndicatorMutations'
 import type { Polarity, InputType } from './indicators/indicatorMeta'
@@ -264,7 +266,8 @@ const RoleCard = ({
   readonly selected: boolean
   readonly onSelect: () => void
 }) => (
-  <button
+  <FlippableCard
+    button
     type="button"
     className={`role-card ${selected ? 'role-card--selected' : ''}`}
     aria-pressed={selected}
@@ -284,7 +287,7 @@ const RoleCard = ({
         icon={checkmarkCircle}
       />
     )}
-  </button>
+  </FlippableCard>
 )
 
 const RoleStep = ({
@@ -972,6 +975,7 @@ const PersonFormPage = () => {
             onFinish={actions.handleFinish}
           />
         )}
+        <AppDisclaimer />
       </IonContent>
     </IonPage>
   )

@@ -13,6 +13,7 @@ import {
   IonToolbar,
   useIonRouter,
 } from '@ionic/react'
+import { FlippableCard } from '../../components/FlippableCard'
 import { arrowBack, cameraOutline } from 'ionicons/icons'
 import { ChangeEvent, useMemo, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
@@ -23,6 +24,7 @@ import { writeCachedValue } from '../../lib/resilientCache'
 import { trackProductEvent } from '../../lib/productAnalytics'
 import type { RawPerson } from '../patterns/analytics'
 import { createAvatarDataUrl } from '../people/PersonFormPage'
+import { AppDisclaimer } from '../../components/AppDisclaimer'
 
 type Step = 0 | 1 | 2 | 3 | 4 | 5
 type PersonKind = 'child' | 'self'
@@ -299,7 +301,7 @@ const OnboardingPage = () => {
         <IonProgressBar value={(step + 1) / 6} />
       </IonHeader>
       <IonContent fullscreen className="setup-wizard">
-        <main className="setup-wizard__card">
+        <FlippableCard className="setup-wizard__card">
           <p className="setup-wizard__step">Step {step + 1} of 6</p>
 
           {step === 0 && <>
@@ -358,7 +360,8 @@ const OnboardingPage = () => {
           {saveError && <p className="setup-wizard__error" role="alert">{saveError}</p>}
           <IonButton className="setup-wizard__continue" expand="block" disabled={nextDisabled || saving} onClick={() => step === 5 ? void finish() : setStep((step + 1) as Step)}>{saving ? 'Building your dashboard…' : step === 5 ? 'Finish and see my dashboard' : 'Continue'}</IonButton>
           {step === 4 && <IonButton expand="block" fill="clear" disabled={unsafe === null} onClick={() => setStep(5)}>Skip photos</IonButton>}
-        </main>
+        </FlippableCard>
+        <AppDisclaimer />
       </IonContent>
     </IonPage>
   )

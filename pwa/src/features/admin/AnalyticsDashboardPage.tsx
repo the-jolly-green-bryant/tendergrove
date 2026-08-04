@@ -3,6 +3,7 @@ import { Redirect } from 'react-router-dom'
 
 import { isGroveAdmin, useAppAuth } from '../../auth/AuthContext'
 import { IllustratedHeaderTitle, Page } from '../../components/Page'
+import { FlippableCard } from '../../components/FlippableCard'
 import { client } from '../../lib/api'
 import './analyticsDashboard.scss'
 
@@ -53,8 +54,7 @@ const Distribution = ({
   const rows = Object.entries(values).sort(([, left], [, right]) => right - left)
   const maximum = Math.max(1, ...rows.map(([, value]) => value))
   return (
-    <section className="analytics-panel">
-      <h2>{title}</h2>
+    <FlippableCard className="analytics-panel" title={title}>
       {rows.length ? (
         <div className="analytics-bars">
           {rows.map(([key, value]) => (
@@ -73,7 +73,7 @@ const Distribution = ({
       ) : (
         <p>No data collected yet.</p>
       )}
-    </section>
+    </FlippableCard>
   )
 }
 
@@ -121,11 +121,10 @@ const AnalyticsDashboardPage = () => {
     >
       {!data && !error && <p className="page-loading-message">Preparing analytics…</p>}
       {error && (
-        <section className="analytics-panel">
-          <h2>Analytics are not available yet</h2>
+        <FlippableCard className="analytics-panel" title="Analytics are not available yet">
           <p>{error}</p>
           <p>The analytics backend must be deployed before this page can load data.</p>
-        </section>
+        </FlippableCard>
       )}
       {data && (
         <>
@@ -142,26 +141,13 @@ const AnalyticsDashboardPage = () => {
           </header>
 
           <section className="analytics-kpis">
-            <article>
-              <span>Observed accounts</span>
-              <strong>{accountTotal}</strong>
-            </article>
-            <article>
-              <span>Active in 7 days</span>
-              <strong>{data.accounts.active7Days}</strong>
-            </article>
-            <article>
-              <span>Active in 30 days</span>
-              <strong>{data.accounts.active30Days}</strong>
-            </article>
-            <article>
-              <span>People per household</span>
-              <strong>{data.households.averagePeopleTracked}</strong>
-            </article>
+            <FlippableCard kicker="Observed accounts" title={accountTotal} />
+            <FlippableCard kicker="Active in 7 days" title={data.accounts.active7Days} />
+            <FlippableCard kicker="Active in 30 days" title={data.accounts.active30Days} />
+            <FlippableCard kicker="People per household" title={data.households.averagePeopleTracked} />
           </section>
 
-          <section className="analytics-panel">
-            <h2>Activation and value</h2>
+          <FlippableCard className="analytics-panel" title="Activation and value">
             <dl className="analytics-rates">
               <div>
                 <dt>Completed onboarding</dt>
@@ -206,7 +192,7 @@ const AnalyticsDashboardPage = () => {
                 </dd>
               </div>
             </dl>
-          </section>
+          </FlippableCard>
 
           <Distribution
             title="Pattern Strain mix"
@@ -230,8 +216,7 @@ const AnalyticsDashboardPage = () => {
             values={data.screenViews}
           />
 
-          <section className="analytics-panel">
-            <h2>Recent daily activity</h2>
+          <FlippableCard className="analytics-panel" title="Recent daily activity">
             {data.daily.length ? (
               <div className="analytics-table-wrap">
                 <table>
@@ -260,7 +245,7 @@ const AnalyticsDashboardPage = () => {
             ) : (
               <p>No activity collected yet.</p>
             )}
-          </section>
+          </FlippableCard>
 
           <p className="analytics-footnote">
             Wellness is grouped into 10-point bands. Small cohorts should not be

@@ -1,3 +1,4 @@
+import { FlippableCard } from '../../components/FlippableCard'
 import {
   IonButton,
   IonCard,
@@ -181,10 +182,11 @@ const SettingsPage = () => {
         )}
       </IonList>
 
-      <IonCard>
+      <FlippableCard
+        title="Your data"
+        description="Export a readable JSON copy before deleting anything."
+      >
         <IonCardContent>
-          <h2>Your data</h2>
-          <p>Export a readable JSON copy before deleting anything.</p>
           <IonButton
             expand="block"
             fill="outline"
@@ -236,17 +238,17 @@ const SettingsPage = () => {
             Delete account
           </IonButton>
         </IonCardContent>
-      </IonCard>
-      <IonCard>
+      </FlippableCard>
+      <FlippableCard title="Gentle reminders">
         <IonCardContent>
           <ReminderSettings />
         </IonCardContent>
-      </IonCard>
-      <IonCard>
+      </FlippableCard>
+      <FlippableCard title="Caregiver collaboration">
         <IonCardContent>
           <CaregiverCollaboration />
         </IonCardContent>
-      </IonCard>
+      </FlippableCard>
       <p className="legal-note">
         Grove does not diagnose, predict emergencies, or replace professional care.
       </p>

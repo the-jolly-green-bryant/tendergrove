@@ -1,5 +1,6 @@
 import { IonSkeletonText, IonSpinner } from '@ionic/react'
 import React from 'react'
+import { FlippableCard } from './FlippableCard'
 
 import './LoadingState.css'
 
@@ -23,7 +24,7 @@ const Line = ({ width }: { readonly width: string }) => (
 )
 
 const Card = ({ index }: { readonly index: number }) => (
-  <div className="loading-skeleton__card">
+  <FlippableCard className="loading-skeleton__card">
     <div className="loading-skeleton__card-head">
       <IonSkeletonText
         animated
@@ -35,7 +36,7 @@ const Card = ({ index }: { readonly index: number }) => (
       </div>
     </div>
     <Line width="92%" />
-  </div>
+  </FlippableCard>
 )
 
 const ChartSkeleton = () => (

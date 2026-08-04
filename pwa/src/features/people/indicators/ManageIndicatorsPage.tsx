@@ -27,6 +27,7 @@ import {
 import { useParams } from 'react-router-dom'
 
 import { LoadingState } from '../../../components/LoadingState'
+import { AppDisclaimer } from '../../../components/AppDisclaimer'
 import { useIndicators, type Indicator } from './useIndicators'
 import { useIndicatorMutations } from './useIndicatorMutations'
 import { polarityMeta, type InputType, type Polarity } from './indicatorMeta'
@@ -222,6 +223,7 @@ const ManageIndicatorsPage = () => {
             </div>
           </>
         )}
+        <AppDisclaimer />
       </IonContent>
     </IonPage>
   )

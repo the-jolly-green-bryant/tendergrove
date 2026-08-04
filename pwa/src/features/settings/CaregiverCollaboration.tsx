@@ -93,7 +93,6 @@ export const CaregiverCollaboration = () => {
   }
 
   return <section>
-    <h2>Caregiver collaboration</h2>
     <p>Give another Grove account read-only access to one person’s structured observations, check-ins, and events. Free-text notes and descriptions remain private to the account owner. They cannot edit or delete records.</p>
     <p className="legal-note">Your Grove account ID: <code>{user?.userId}</code></p>
     {!available && <p>Collaboration will become available after the latest Grove backend deployment finishes.</p>}

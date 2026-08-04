@@ -34,7 +34,6 @@ export const ReminderSettings = () => {
   }
   const notToday = () => void save({ ...value, skippedDate: new Date().toISOString().slice(0, 10) })
   return <section>
-    <h2>Gentle reminders</h2>
     <p>No streaks and no guilt. Check in when you can; days you miss simply stay blank and do not change the picture.</p>
     <IonList inset>
       <IonItem><IonToggle checked={value.enabled} onIonChange={(event) => setValue((current) => ({ ...current, enabled: event.detail.checked }))}>Daily reminder</IonToggle></IonItem>

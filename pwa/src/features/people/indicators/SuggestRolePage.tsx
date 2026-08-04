@@ -12,6 +12,8 @@ import {
 import { useParams } from 'react-router-dom'
 
 import { roleKeys, roleTemplates, type RoleKey } from '../../../templates/roleTemplates'
+import { AppDisclaimer } from '../../../components/AppDisclaimer'
+import { FlippableCard } from '../../../components/FlippableCard'
 
 /**
  * Lets the user pick a role whose starter indicators will be suggested for the
@@ -52,7 +54,8 @@ const SuggestRolePage = () => {
           {roleKeys.map((key) => {
             const template = roleTemplates[key]
             return (
-              <button
+              <FlippableCard
+                button
                 key={key}
                 type="button"
                 className="role-card"
@@ -66,10 +69,11 @@ const SuggestRolePage = () => {
                   <span className="role-card__label">{template.label}</span>
                   <span className="role-card__desc">{template.description}</span>
                 </span>
-              </button>
+              </FlippableCard>
             )
           })}
         </div>
+        <AppDisclaimer />
       </IonContent>
     </IonPage>
   )

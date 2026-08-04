@@ -33,7 +33,6 @@
   margin-bottom: 0.8rem;
 }
 
-.analytics-kpis article,
 .analytics-panel {
   border: 1px solid var(--analytics-border);
   border-radius: var(--app-radius-lg);
@@ -41,18 +40,14 @@
   box-shadow: var(--app-shadow-card);
 }
 
-.analytics-kpis article {
-  padding: 0.9rem;
-}
-
-.analytics-kpis span {
+.analytics-kpis .flippable-card__kicker {
   display: block;
   min-height: 2.2em;
   color: var(--app-muted-text);
   font-size: 0.78rem;
 }
 
-.analytics-kpis strong {
+.analytics-kpis .flippable-card__title {
   display: block;
   margin-top: 0.25rem;
   color: var(--app-color-primary);

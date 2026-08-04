@@ -7,6 +7,7 @@ import { LoadingState } from '../../components/LoadingState'
 import { CheckInDrawerSurface } from '../../components/CheckInDrawerSurface'
 import { PastDataNotice } from '../../components/PastDataNotice'
 import { PersonAvatar } from '../../components/PersonAvatar'
+import { AppDisclaimer } from '../../components/AppDisclaimer'
 import { RouteModalProvider, useRouteModal } from '../../components/RouteModalContext'
 import {
   createHouseholdRecap,
@@ -402,6 +403,7 @@ const HouseholdRecapPage = () => {
         {!people.isLoading && !people.error && !recap && (
           <p className="recap-page__fallback">No household members to recap yet.</p>
         )}
+        <AppDisclaimer />
       </IonContent>
     </IonPage>
   )

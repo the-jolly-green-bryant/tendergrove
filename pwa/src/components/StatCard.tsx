@@ -1,10 +1,5 @@
-import {
-  IonCard,
-  IonCardContent,
-  IonCardHeader,
-  IonCardSubtitle,
-  IonCardTitle,
-} from '@ionic/react'
+import { FlippableCard } from './FlippableCard'
+import { IonCardContent } from '@ionic/react'
 
 export const StatCard = ({
   title,
@@ -15,11 +10,7 @@ export const StatCard = ({
   readonly value: string | number
   readonly note?: string
 }) => (
-  <IonCard className="stat-card">
-    <IonCardHeader>
-      <IonCardSubtitle>{title}</IonCardSubtitle>
-      <IonCardTitle>{value}</IonCardTitle>
-    </IonCardHeader>
+  <FlippableCard className="stat-card" kicker={title} title={value}>
     {note && <IonCardContent>{note}</IonCardContent>}
-  </IonCard>
+  </FlippableCard>
 )

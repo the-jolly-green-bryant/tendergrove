@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { FlippableCard } from '../../../components/FlippableCard'
 
 export const ResearchConceptCard = ({
   id,
@@ -11,12 +12,12 @@ export const ResearchConceptCard = ({
   children: ReactNode
   qualification: string
 }) => (
-  <article
+  <FlippableCard
     id={id}
     className="research-concept-card"
+    title={title}
+    description={qualification}
   >
-    <h3>{title}</h3>
     <div>{children}</div>
-    <p className="research-concept-card__qualification">{qualification}</p>
-  </article>
+  </FlippableCard>
 )

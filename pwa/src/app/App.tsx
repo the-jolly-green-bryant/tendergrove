@@ -1,6 +1,7 @@
 // src/App.tsx
 import { useEffect, useState } from 'react'
 import { IonApp } from '@ionic/react'
+import { FlippableCard } from '../components/FlippableCard'
 import { Authenticator } from '@aws-amplify/ui-react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Capacitor } from '@capacitor/core'
@@ -58,7 +59,7 @@ const WelcomeJourney = ({ onContinue }: { readonly onContinue: (intent: AuthInte
           <div className="welcome-journey__brand"><img src="/assets/brand/grove-wordmark.png" alt="Grove" /></div>
           <button type="button" onClick={() => onContinue('signIn')}>Already have an account</button>
         </header>
-        <section className="welcome-journey__card">
+        <FlippableCard className="welcome-journey__card">
           <div className="welcome-journey__progress" aria-label={`Step ${step + 1} of ${WELCOME_STEPS.length}`}>
             {WELCOME_STEPS.map((item, index) => <i key={item.eyebrow} className={index <= step ? 'is-active' : ''} />)}
           </div>
@@ -75,7 +76,7 @@ const WelcomeJourney = ({ onContinue }: { readonly onContinue: (intent: AuthInte
             <button type="button" className="welcome-journey__next" onClick={() => last ? onContinue('signUp') : setStep((value) => value + 1)}>{last ? 'Create my account' : 'Continue'}</button>
           </div>
           <small>{step + 1} of {WELCOME_STEPS.length} · Grove does not diagnose or decide whether hospital care is needed.</small>
-        </section>
+        </FlippableCard>
       </main>
     </IonApp>
   )

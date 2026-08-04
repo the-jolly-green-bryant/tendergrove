@@ -20,6 +20,7 @@ import React, { type Dispatch, type SetStateAction, useEffect, useState } from '
 import { useParams, useLocation } from 'react-router-dom'
 
 import { LoadingState } from '../../../components/LoadingState'
+import { AppDisclaimer } from '../../../components/AppDisclaimer'
 import { useIndicatorMutations } from './useIndicatorMutations'
 import { useRoleTemplate } from './useRoleTemplates'
 import { polarityMeta, type Polarity } from './indicatorMeta'
@@ -360,6 +361,7 @@ const IndicatorChecklistPage = (): React.JSX.Element => {
           onSave={saveIndicators}
           onSkip={skip}
         />
+        <AppDisclaimer />
       </IonContent>
     </IonPage>
   )

@@ -18,6 +18,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
 import { LoadingState } from '../../../components/LoadingState'
+import { AppDisclaimer } from '../../../components/AppDisclaimer'
 import { useIndicators } from './useIndicators'
 import { type IndicatorInput, useIndicatorMutations } from './useIndicatorMutations'
 import { polarityMeta, type Polarity } from './indicatorMeta'
@@ -121,6 +122,7 @@ const IndicatorFormContent = ({
     >
       Save Indicator
     </IonButton>
+    <AppDisclaimer />
   </IonContent>
 )
 

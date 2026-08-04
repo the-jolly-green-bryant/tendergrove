@@ -35,6 +35,7 @@ import React, { ReactNode, useCallback, useEffect, useRef, useState } from 'reac
 import { useLocation } from 'react-router-dom'
 
 import { useAppAuth } from '../auth/AuthContext'
+import { AppDisclaimer } from './AppDisclaimer'
 
 interface PageProps {
   readonly title: string
@@ -410,6 +411,7 @@ export const Page = ({
         className={`app-page ${disablePadding ? '' : 'ion-padding'} safe-content ${className ?? ''}`}
       >
         {children}
+        <AppDisclaimer />
       </IonContent>
     </IonPage>
   )

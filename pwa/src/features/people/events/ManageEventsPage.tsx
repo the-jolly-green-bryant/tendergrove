@@ -23,6 +23,7 @@ import {
 import { useParams } from 'react-router-dom'
 
 import { LoadingState } from '../../../components/LoadingState'
+import { AppDisclaimer } from '../../../components/AppDisclaimer'
 import { usePerson } from '../usePerson'
 import { useHouseholdLifeEvents, type LifeEvent } from './useLifeEvents'
 import { useLifeEventMutations } from './useLifeEventMutations'
@@ -245,6 +246,7 @@ const ManageEventsPage = () => {
             Add Event
           </IonButton>
         </div>
+        <AppDisclaimer />
       </IonContent>
     </IonPage>
   )

@@ -1,3 +1,4 @@
+import { FlippableCard } from '../../../components/FlippableCard'
 import {
   IonBackButton,
   IonButtons,
@@ -15,6 +16,7 @@ import { chevronForwardOutline, informationCircleOutline } from 'ionicons/icons'
 import { useParams } from 'react-router-dom'
 
 import { polarityMeta, type Polarity } from './indicatorMeta'
+import { AppDisclaimer } from '../../../components/AppDisclaimer'
 
 const order: Polarity[] = ['undesired', 'desired']
 
@@ -70,11 +72,13 @@ const ChooseIndicatorTypePage = () => {
         {order.map((polarity) => {
           const meta = polarityMeta[polarity]
           return (
-            <IonCard
+            <FlippableCard
               key={polarity}
               button
               onClick={() => choose(polarity)}
               className={`choose-type-card choose-type-card--${meta.color}`}
+              kicker={`${meta.title} signal`}
+              description={meta.blurb}
             >
               <IonCardContent className="choose-type-card__body">
                 <IonIcon
@@ -83,8 +87,6 @@ const ChooseIndicatorTypePage = () => {
                   className="choose-type-card__icon"
                 />
                 <div className="choose-type-card__text">
-                  <h2>{meta.title} Signal</h2>
-                  <p>{meta.blurb}</p>
                   <p className="choose-type-card__examples">
                     Examples: {meta.examples}
                   </p>
@@ -94,11 +96,12 @@ const ChooseIndicatorTypePage = () => {
                   color="medium"
                 />
               </IonCardContent>
-            </IonCard>
+            </FlippableCard>
           )
         })}
 
         {HELP_TEXT}
+        <AppDisclaimer />
       </IonContent>
     </IonPage>
   )

@@ -2,6 +2,7 @@ import React, { useMemo } from 'react'
 import './HouseholdTree.css'
 
 import { PersonAvatar } from './PersonAvatar'
+import { FlippableCard } from './FlippableCard'
 import type { HouseholdRecap } from '../lib/householdRecap'
 import type { PatternStrainBand } from '../features/patterns/analytics'
 
@@ -558,7 +559,7 @@ export const HouseholdTree: React.FC<HouseholdTreeProps> = ({
 
   return (
     <div className={`household-tree-container ${className}`}>
-      <div className={`household-tree-card ${isSinglePerson ? 'is-single' : ''}`}>
+      <FlippableCard className={`household-tree-card ${isSinglePerson ? 'is-single' : ''}`}>
         <div className="tree-composition">
           <TreeVisual
             people={people}
@@ -585,7 +586,7 @@ export const HouseholdTree: React.FC<HouseholdTreeProps> = ({
             narrative={narrative}
           />
         ) : null}
-      </div>
+      </FlippableCard>
     </div>
   )
 }
